@@ -21,8 +21,16 @@ The specification is currently in the **EXPERIMENTAL** stage and welcomes feedba
 
 ## Implementations
 
-For the reference implementation see [kamu-cli](https://github.com/kamu-data/kamu-cli/) data management tool.
+`Coordinator` implementations:
+- [kamu-cli](https://github.com/kamu-data/kamu-cli/) - data management tool that serves as the reference implementation.
+
+`Engine` implementations:
+- [kamu-engine-spark](https://github.com/kamu-data/kamu-engine-spark) - engine based on Apache Spark.
+- [kamu-engine-flink](https://github.com/kamu-data/kamu-engine-flink) - engine based on Apache Flink.
 
 ## History
 
 The specification was originally developed by [Kamu](https://kamu.dev) as part of the [kamu-cli](https://github.com/kamu-data/kamu-cli/) data management tool. While developing it, we quickly realized that the very essence of what we're trying to build - a collaborative open data processing pipeline based on verifiable trust - requires full transparency and openness on our part. We strongly believe in the potential of our ideas to bring data management to the next level, to provide better quality data faster to the people who need it to innovate, fight deceases, build better businesses, and make informed political decisions. Therefore, we saw it as our duty to share these ideas with the community and make the system as inclusive as possible for the existing technologies and future innovations, and work together to build momentum needed to achieve such radical change.
+
+## Contributing
+See [Contribution Guidelines](./CONTRIBUTING.md)
