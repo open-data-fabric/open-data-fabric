@@ -1,0 +1,42 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/FetchStep.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the external source of data.",
+  "definitions": {
+    "Url": {
+      "description": "Pulls data from one of the supported sources by its URL.",
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "url",
+          "description": "URL of the data source"
+        }
+      }
+    },
+    "FilesGlob": {
+      "description": "Uses glob operator to match files on the local file system.",
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path with a glob pattern."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/Url"
+    },
+    {
+      "$ref": "#/definitions/FilesGlob"
+    }
+  ]
+}

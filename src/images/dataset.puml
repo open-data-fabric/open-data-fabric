@@ -1,0 +1,28 @@
+@startuml dataset
+hide circle
+hide empty members
+
+skinparam classFontSize 15
+skinparam minClassWidth 200
+skinparam nodesep 10
+skinparam ranksep 10
+skinparam ClassBorderColor Black
+
+skinparam DatabaseBackgroundColor Cornsilk
+
+skinparam class {
+    backgroundColor White
+
+}
+
+database Dataset {
+    class Identity
+    class Metadata
+    class Checkpoints
+    class Data #back:lightgreen
+
+    Identity --[hidden] Metadata
+    Metadata --[hidden] Checkpoints
+    Checkpoints --[hidden] Data
+}
+@enduml

@@ -1,0 +1,54 @@
+@startuml dataset_kinds
+left to right direction
+
+skinparam rectangle {
+    roundCorner 25
+}
+
+skinparam file {
+    BorderColor FireBrick
+    BackgroundColor MistyRose
+}
+
+skinparam card {
+    BorderColor FireBrick
+    BackgroundColor EBEDF5
+}
+
+skinparam nodesep 20
+skinparam ranksep 60
+
+rectangle "External Sources" {
+    file "<<http>>" as http
+    file "<<ftp>>" as ftp
+    file "<<s3>>" as s3
+}
+
+rectangle "Open Data Fabric" {
+    agent "root" as root1
+    agent "root" as root2
+    agent "root" as root3
+    card "derivative" as derivative1
+    card "derivative" as derivative2
+    card "derivative" as derivative3
+    card "derivative" as derivative4
+    card "derivative" as derivative5
+    card "derivative" as derivative6
+}
+
+http --> root1
+ftp --> root2
+s3 --> root3
+
+root1 ---> derivative1
+root1 ---> derivative3
+root2 --> derivative2
+root3 --> derivative4
+
+derivative2 --> derivative3
+derivative2 --> derivative5
+derivative4 --> derivative5
+derivative3 --> derivative6
+'derivative4 --> derivative6
+
+@enduml

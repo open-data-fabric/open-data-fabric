@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="158px" preserveAspectRatio="none" style="width:549px;height:158px;" version="1.1" viewBox="0 0 549 158" width="549px" zoomAndPan="magnify"><defs><filter height="300%" id="f43wqh388mupg" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[8efdf175f43f45650fcf6d8558b13c8f]
+cluster e--><rect fill="#FFFFFF" filter="url(#f43wqh388mupg)" height="103" style="stroke: #000000; stroke-width: 1.5;" width="201" x="172" y="24"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="78" x="233.5" y="38.9951">«sandbox»</text><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="53" x="246" y="55.292">Engine</text><!--MD5=[4b52362e67c82d91eba5cb75921775cc]
+entity t--><rect fill="#FEFECE" filter="url(#f43wqh388mupg)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="169" x="188" y="75"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="149" x="198" y="97.9951">Transformation Query</text><!--MD5=[21e9faaae1927b116601d310a19ac3ea]
+entity i1--><rect fill="#FEFECE" filter="url(#f43wqh388mupg)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="121" x="6.5" y="40"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="101" x="16.5" y="62.9951">Input Stream 1</text><!--MD5=[c569a04d117501bdea7ea3eb00570cbf]
+entity i2--><rect fill="#FEFECE" filter="url(#f43wqh388mupg)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="122" x="6" y="111"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="102" x="16" y="133.9951">Input Stream N</text><!--MD5=[75aabecaf70a71b0ff4b871eebba9af6]
+entity o--><rect fill="#FEFECE" filter="url(#f43wqh388mupg)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="121" x="417" y="75"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="101" x="427" y="97.9951">Output Stream</text><!--MD5=[530175d8ccafaecc62fa99666362f23f]
+link i1 to t--><path d="M127.68,68.26 C144.83,71.21 163.92,74.5 182.44,77.68 " fill="none" id="i1-&gt;t" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="187.65,78.58,179.4557,73.1162,182.722,77.7348,178.1033,81.001,187.65,78.58" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[ff0afe0bc929ef56276272e858b05efb]
+link i2 to t--><path d="M128.23,118.34 C145.26,115.33 164.17,111.99 182.52,108.74 " fill="none" id="i2-&gt;t" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="187.67,107.83,178.1098,105.4629,182.7468,108.703,179.5067,113.34,187.67,107.83" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[609649892cc08ced75a8bc3fc81838ee]
+link t to o--><path d="M357.24,93 C375.35,93 394.24,93 411.51,93 " fill="none" id="t-&gt;o" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="416.81,93,407.81,89,411.81,93,407.81,97,416.81,93" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[8d1ee432ea61768c5679e7ba33a053e4]
+@startuml transform
+left to right direction
+
+rectangle "Input Stream 1" as i1
+rectangle "Input Stream N" as i2
+rectangle Engine <<sandbox>> as e {
+    rectangle "Transformation Query" as t
+}
+rectangle "Output Stream" as o
+
+i1 - -> t
+i2 - -> t
+t - -> o
+
+@enduml
+
+PlantUML version 1.2020.07(Sun Apr 19 04:42:40 PDT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 1.8.0_252-b09
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: CA
+--></g></svg>

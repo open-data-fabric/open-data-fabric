@@ -1,0 +1,23 @@
+@startuml dataset_layout
+
+salt
+{
+  {T
+  + ca.vancouver.opendata.property.tax-report | <color:green>Dataset ID
+  ++ meta | <color:green>All metadata should use FlatBuffers encoding
+  +++ blocks
+  ++++ 1fde...4d2f | <color:green>Metadata blocks are named according to their hashes
+  ++++ a4fe...a803
+  ++++ ...
+  +++ refs
+  ++++ head | <color:green>Contains hash of the last block in the chain
+  ++++ ...
+  ++ checkpoint
+  +++ ... | <color:green>Checkpoints contain opaque engine-specific data
+  ++ data
+  +++ 2020-01-01T120000000Z.snappy.parquet | <color:green>Part files containing raw data
+  +++ 2020-01-02T120000000Z.snappy.parquet
+  +++ ...
+  }
+}
+@enduml

@@ -1,0 +1,70 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DatasetSource.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the source of data within a dataset.",
+  "definitions": {
+    "Root": {
+      "description": "Root sources are the points of entry of external data into the system.\n\nRoot source includes information like:\n- Where to fetch the data from - e.g. source URL, a protocol to use, cache control\n- How to prepare the binary data - e.g. decompression, file filtering, format conversions\n- How to interpret the data - e.g. data format, schema to apply, error handling\n- How to combine data ingested in the past with the new data - e.g. append as log or diff as a snapshot of the current state.",
+      "type": "object",
+      "required": [
+        "fetch",
+        "read",
+        "merge"
+      ],
+      "properties": {
+        "fetch": {
+          "$ref": "FetchStep.json",
+          "description": "Determines where data is sourced from."
+        },
+        "prepare": {
+          "type": "array",
+          "items": {
+            "$ref": "PrepStep.json"
+          },
+          "description": "Defines how raw data is prepared before reading."
+        },
+        "read": {
+          "$ref": "ReadStep.json",
+          "description": "Defines how data is read into structured format."
+        },
+        "preprocess": {
+          "$ref": "Transform.json",
+          "description": "Pre-processing query that shapes the data."
+        },
+        "merge": {
+          "$ref": "MergeStrategy.json",
+          "description": "Determines how newly-ingested data should be merged with existing history."
+        }
+      }
+    },
+    "Derivative": {
+      "description": "Derivative sources produce data by transforming and combining one or multiple existing datasets.",
+      "type": "object",
+      "required": [
+        "inputs",
+        "transform"
+      ],
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "DerivativeInput.json"
+          },
+          "description": "Datasets that will be used as sources for this derivative"
+        },
+        "transform": {
+          "$ref": "Transform.json",
+          "description": "Transformation that will be applied to produce new data"
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/Root"
+    },
+    {
+      "$ref": "#/definitions/Derivative"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+@startuml engine_transform
+
+"Client" -> "Coodinator" as C: transform(dataset)
+activate C
+
+C -> C: prepare_transform_batches(metadata)
+activate C
+deactivate C
+
+loop foreach batch
+
+    C -> "Engine" as E: \
+        execute_query(transaction_id, input_slices, transform, prev_checkpoint)
+    activate E
+
+    E --> C: data_slice, new_checkpoint
+    deactivate E
+
+    C -> C: compute_hash(data_slice)
+    activate C
+    deactivate C
+
+    C -> C: add_system_columns(data_slice)
+    activate C
+    deactivate C
+
+    C -> C: commit(metadata_block)
+    activate C
+    deactivate C
+
+end
+
+deactivate C
+
+@enduml

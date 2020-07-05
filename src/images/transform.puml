@@ -1,0 +1,15 @@
+@startuml transform
+left to right direction
+
+rectangle "Input Stream 1" as i1
+rectangle "Input Stream N" as i2
+rectangle Engine <<sandbox>> as e {
+    rectangle "Transformation Query" as t
+}
+rectangle "Output Stream" as o
+
+i1 --> t
+i2 --> t
+t --> o
+
+@enduml

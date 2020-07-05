@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="240px" preserveAspectRatio="none" style="width:266px;height:240px;" version="1.1" viewBox="0 0 266 240" width="266px" zoomAndPan="magnify"><defs><filter height="300%" id="f1thuoslcxdjsd" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[8bd827e509459be1ba63ea5dfdf379d3]
+cluster Dataset--><path d="M22,34 C22,24 138,24 138,24 C138,24 254,24 254,34 L254,218 C254,228 138,228 138,228 C138,228 22,228 22,218 L22,34 " fill="#FFF8DC" filter="url(#f1thuoslcxdjsd)" style="stroke: #000000; stroke-width: 1.5;"/><path d="M22,34 C22,44 138,44 138,44 C138,44 254,44 254,34 " fill="none" style="stroke: #000000; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="60" x="108" y="58.9951">Dataset</text><!--MD5=[d89522dc17e4c35c83a603e675ef016b]
+class Identity--><rect fill="#FFFFFF" filter="url(#f1thuoslcxdjsd)" height="27.4609" id="Identity" style="stroke: #000000; stroke-width: 1.5;" width="200" x="38" y="74"/><text fill="#000000" font-family="sans-serif" font-size="15" lengthAdjust="spacingAndGlyphs" textLength="53" x="111.5" y="92.9233">Identity</text><!--MD5=[7d2c4ae7970c32f414f93e7b18676929]
+class Metadata--><rect fill="#FFFFFF" filter="url(#f1thuoslcxdjsd)" height="27.4609" id="Metadata" style="stroke: #000000; stroke-width: 1.5;" width="200" x="38" y="111"/><text fill="#000000" font-family="sans-serif" font-size="15" lengthAdjust="spacingAndGlyphs" textLength="70" x="103" y="129.9233">Metadata</text><!--MD5=[408960f0b6bd6bb15e5bf8c84586e58b]
+class Checkpoints--><rect fill="#FFFFFF" filter="url(#f1thuoslcxdjsd)" height="27.4609" id="Checkpoints" style="stroke: #000000; stroke-width: 1.5;" width="200" x="38" y="148"/><text fill="#000000" font-family="sans-serif" font-size="15" lengthAdjust="spacingAndGlyphs" textLength="88" x="94" y="166.9233">Checkpoints</text><!--MD5=[60c9ed31c535bee25c55ce21b5b01399]
+class Data--><rect fill="#90EE90" filter="url(#f1thuoslcxdjsd)" height="27.4609" id="Data" style="stroke: #000000; stroke-width: 1.5;" width="200" x="38" y="185"/><text fill="#000000" font-family="sans-serif" font-size="15" lengthAdjust="spacingAndGlyphs" textLength="35" x="120.5" y="203.9233">Data</text><!--MD5=[1cbe51854c8fd8e58ffc01246275ad1e]
+link Identity to Metadata--><!--MD5=[06889c79541464bd1e738ef528a10060]
+link Metadata to Checkpoints--><!--MD5=[f73648aafc57d772aef381d845f5a5dc]
+link Checkpoints to Data--><!--MD5=[3b1b1e08f2d41c029023fa87e96e7e02]
+@startuml dataset
+hide circle
+hide empty members
+
+skinparam classFontSize 15
+skinparam minClassWidth 200
+skinparam nodesep 10
+skinparam ranksep 10
+skinparam ClassBorderColor Black
+
+skinparam DatabaseBackgroundColor Cornsilk
+
+skinparam class {
+    backgroundColor White
+
+}
+
+database Dataset {
+    class Identity
+    class Metadata
+    class Checkpoints
+    class Data #back:lightgreen
+
+    Identity - -[hidden] Metadata
+    Metadata - -[hidden] Checkpoints
+    Checkpoints - -[hidden] Data
+}
+@enduml
+
+PlantUML version 1.2020.07(Sun Apr 19 04:42:40 PDT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 1.8.0_252-b09
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: CA
+--></g></svg>

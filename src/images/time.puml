@@ -1,0 +1,76 @@
+@startuml time
+title Propagation / Processing Delay
+concise "Event Time" as Client
+concise "System Time" as Server
+
+'Server is idle
+'Client is idle
+
+@Client
+0 is e1
++10 is e2
+Client -> Server@+10
++10 is e3
++10 is e4
++10 is e5
+Client -> Server@+10
++10 is e6
+Client -> Server@+30
++10 is e7
+Client -> Server@+20
++10 is e8
+Client -> Server@+10
++10 is {-}
+
+'@100 <-> @275 : watermark
+
+@Server
+0 is {-}
++10 is e1
++10 is e2
++10 is e3
++10 is e4
++10 is {-}
++20 is e5..7
++10 is e8
++10 is {-}
+@0 <-> @10 : delay
+@50 <-> @70 : interruption
+
+@enduml
+
+@startuml time2
+title Out of Order
+concise "Event Time" as Client
+concise "System Time" as Server
+
+'Server is idle
+'Client is idle
+
+@Client
+0 is e1
++10 is e2
++10 is e3
++10 is e4
+Client -> Server@+40 : Out of order\n
++10 is e5
++10 is e6
++10 is e7
++10 is e8
++10 is e9
+
+'@100 <-> @275 : watermark
+
+@Server
+0 is {-}
++10 is e1
++10 is e2
++10 is {-}
++10 is e4
++10 is e5
++10 is e3
++10 is e6
++10 is e7
+@30 <-> @40 : blip
+
+@enduml

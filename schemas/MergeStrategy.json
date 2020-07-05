@@ -1,0 +1,74 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/MergeStrategy.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Merge strategy determines how newly ingested data should be combined with the data that already exists in the dataset.",
+  "definitions": {
+    "Append": {
+      "description": "Append merge strategy.\n\nUnder this strategy polled data will be appended in its original form to the already ingested data without modifications. Optionally can add a system time column.",
+      "type": "object",
+      "required": [],
+      "properties": {
+      }
+    },
+    "Ledger": {
+      "description": "Ledger merge strategy.\n\nThis strategy should be used for data files containing append-only event streams. New data files can have new rows added, but once data already made it into one version of a file it never changes or disappears.\n\nThis strategy relies on a user-specified primary key columns to identify which records were already seen and not duplicate them.\n\nIt will always preserve all columns from existing and new snapshots, so the set of columns can only grow.",
+      "type": "object",
+      "required": ["primaryKey"],
+      "properties": {
+        "primaryKey": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the columns that uniquely identify the record throughout its lifetime"
+        }
+      }
+    },
+    "Snapshot": {
+      "description": "Snapshot merge strategy.\n\nThis strategy can be used for data dumps that are taken periodically and contain only the latest state of the observed entity or system. Over time such dumps can have new rows added, and old rows either removed or modified.\n\nThis strategy transforms snapshot data into an append-only event stream where data already added is immutable. It does so by treating rows in snapshots as \"observation\" events and adding an \"observed\" column that will contain:\n- \"I\" - when a row appears for the first time\n- \"D\" - when row disappears\n- \"U\" - whenever any row data has changed.\n\nThis strategy relies on a user-specified primary key columns to correlate the rows between the two snapshots. If the data contains a column that is guaranteed to change whenever any of the data columns changes (for example this can be a last modification timestamp, an incremental version, or a data hash), then it can be specified as modification indicator to speed up the detection of modified rows.\n\nThe time when a snapshot was taken is usually captured in some form of the data source metadata (e.g. in the name of the file, or in the caching headers). This time will be populated in an extra \"event_time\" column.\n\nThis strategy will always preserve all columns from the existing and new snapshots, so the set of columns can only grow.",
+      "type": "object",
+      "required": ["primaryKey"],
+      "properties": {
+        "primaryKey": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the columns that uniquely identify the record throughout its lifetime."
+        },
+        "compareColumns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the columns to compared to determine if a row has changed between two snapshots."
+        },
+        "eventTimeColumn": {
+          "type": "string",
+          "description": "Name of the event time column that will be added to the data."
+        },
+        "observationColumn": {
+          "type": "string",
+          "description": "Name of the observation type column that will be added to the data."
+        },
+        "obsvAdded": {
+          "type": "string",
+          "description": "Name of the observation type when the data with certain primary key is seen for the first time."
+        },
+        "obsvChanged": {
+          "type": "string",
+          "description": "Name of the observation type when the data with certain primary key has changed compared to the last time it was seen."
+        },
+        "obsvRemoved": {
+          "type": "string",
+          "description": "Name of the observation type when the data with certain primary key has been seen before but now is missing from the snapshot."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/definitions/Append"},
+    {"$ref": "#/definitions/Ledger"},
+    {"$ref": "#/definitions/Snapshot"}
+  ]
+}

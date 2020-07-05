@@ -1,0 +1,52 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/PrepStep.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the steps to prepare raw data for ingestion.",
+  "definitions": {
+    "Decompress": {
+      "description": "Pulls data from one of the supported sources by its URL.",
+      "type": "object",
+      "required": [
+        "format"
+      ],
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": [
+            "gzip",
+            "zip"
+          ],
+          "description": "Name of a compression algorithm used on data."
+        },
+        "subPath": {
+          "type": "string",
+          "description": "Path to a data file within a multi-file archive. Can contain glob patterns."
+        }
+      }
+    },
+    "Pipe": {
+      "description": "Executes external command to process the data using piped input/output.",
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command to execute and its arguments."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/Decompress"
+    },
+    {
+      "$ref": "#/definitions/Pipe"
+    }
+  ]
+}
