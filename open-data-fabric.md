@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.14.1
+Version: 0.15.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -923,13 +923,17 @@ An individual block in the metadata chain that captures the history of modificat
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `blockHash` | `string` | V |  | Hash sum of this metadata block's information |
-| `prevBlockHash` | `string` | V |  | Hash sum of the preceding block |
-| `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time when this block was written |
-| `outputSlice` | [DataSlice](#dataslice-schema) |  |  | Properties of output data written during this update, if any |
-| `inputSlices` | array([DataSlice](#dataslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any |
-| `rootPollingSource` | [RootPollingSource](#rootpollingsource-schema) |  |  | If metadata relates to a root dataset - defines the external data source and the transformation steps |
-| `derivativeSource` | [DerivativeSource](#derivativesource-schema) |  |  | If metadata relates to a derivative dataset - defines the sources and applied transformations |
+| `blockHash` | `string` | V |  | Hash sum of this metadata block's information. |
+| `prevBlockHash` | `string` | V |  | Hash sum of the preceding block. |
+| `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time when this block was written. |
+| `outputSlice` | [DataSlice](#dataslice-schema) |  |  | Properties of output data written during this update, if any. |
+| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream.
+Watermarks are usually derived from the event times in data based on the properties of the source,
+but sometimes they can also be assigned manually. Manual watermarks are useful in cases of slow-moving
+datasets in order to let the computations continue even when no new events were observed for a long time. |
+| `outputSchema` | [Schema](#schema-schema) |  |  | Describes the output data schema. |
+| `inputSlices` | array([DataSlice](#dataslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any. |
+| `source` | [DatasetSource](#datasetsource-schema) |  |  | Contains the definition of the source of data when it changes. |
 
 [JSON Schema](schemas/MetadataBlock.json)
 
@@ -939,7 +943,7 @@ Defines a subset of data in a dataset
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `hash` | `string` | V |  | Hash sum of the data in this slice |
-| `systemTimeInterval` | `string` | V | `date-time-interval` | Defines the system time boundaries of data in this slice |
+| `interval` | `string` | V | `date-time-interval` | Defines the system time boundaries of data in this slice |
 | `numRecords` | `integer` | V | `int64` | Number of records in this slice |
 
 [JSON Schema](schemas/DataSlice.json)
@@ -975,23 +979,14 @@ Derivative sources produce data by transforming and combining one or multiple ex
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `inputs` | array([DerivativeInput](#derivativeinput-schema)) | V |  | Datasets that will be used as sources for this derivative |
+| `inputs` | array(`string`) | V |  | Identifiers of the datasets that will be used as sources. |
 | `transform` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data |
 
 [JSON Schema](schemas/DatasetSource.json)
 
 
-### DerivativeInput Schema
-Defines an input dataset used in derivative source and its configuration
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `id` | `string` | V |  | Identifier of the input dataset. |
-
-[JSON Schema](schemas/DerivativeInput.json)
-
 ### Transform Schema
-Engine-specific processing queries that shape the resulting data
+Engine-specific processing queries that shape the resulting data.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1012,6 +1007,8 @@ Pulls data from one of the supported sources by its URL.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `url` | `string` | V | `url` | URL of the data source |
+| `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
+| `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
 
 [JSON Schema](schemas/FetchStep.json)
 
@@ -1021,8 +1018,71 @@ Uses glob operator to match files on the local file system.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `path` | `string` | V |  | Path with a glob pattern. |
+| `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
+| `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
+| `order` | [SourceOrdering](#sourceordering-schema) |  |  | Specifies how input files should be ordered before ingestion.
+Order is important as every file will be processed individually
+and will advance the dataset's watermark. |
 
 [JSON Schema](schemas/FetchStep.json)
+
+
+### EventTimeSource Schema
+Defines the external source of data.
+
+Union type:
+- [EventTimeSource::FromPath](#eventtimesourcefrompath-schema)
+
+#### EventTimeSource::FromPath Schema
+Extracts event time from the path component of the source.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `pattern` | `string` | V | `regex` | Regular expression where first group contains the timestamp string. |
+| `timestampFormat` | `string` |  |  | Format of the expected timestamp in java.text.SimpleDateFormat form. |
+
+[JSON Schema](schemas/EventTimeSource.json)
+
+
+### SourceCaching Schema
+Defines the external source of data.
+
+Union type:
+- [SourceCaching::Forever](#sourcecachingforever-schema)
+
+#### SourceCaching::Forever Schema
+After source was processed once it will never be ingested again.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[JSON Schema](schemas/SourceCaching.json)
+
+
+### SourceOrdering Schema
+Specifies how input files should be ordered before ingestion.
+Order is important as every file will be processed individually
+and will advance the dataset's watermark.
+
+Union type:
+- [SourceOrdering::ByEventTime](#sourceorderingbyeventtime-schema)
+- [SourceOrdering::ByName](#sourceorderingbyname-schema)
+
+#### SourceOrdering::ByEventTime Schema
+Order by event time extracted from source's metadata.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[JSON Schema](schemas/SourceOrdering.json)
+
+#### SourceOrdering::ByName Schema
+Process in lexicographic order of the file names.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[JSON Schema](schemas/SourceOrdering.json)
 
 
 ### PrepStep Schema
@@ -1047,7 +1107,7 @@ Executes external command to process the data using piped input/output.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `path` | array(`string`) | V |  | Command to execute and its arguments. |
+| `command` | array(`string`) | V |  | Command to execute and its arguments. |
 
 [JSON Schema](schemas/PrepStep.json)
 
@@ -1058,8 +1118,8 @@ Defines how raw data should be read into the structured form.
 Union type:
 - [ReadStep::Csv](#readstepcsv-schema)
 - [ReadStep::JsonLines](#readstepjsonlines-schema)
-- [ReadStep::GeoJSON](#readstepgeojson-schema)
-- [ReadStep::Shapefile](#readstepshapefile-schema)
+- [ReadStep::GeoJson](#readstepgeojson-schema)
+- [ReadStep::EsriShapefile](#readstepesrishapefile-schema)
 
 #### ReadStep::Csv Schema
 Reader for comma-separated files.
@@ -1102,7 +1162,7 @@ Reader for files containing concatenation of multiple JSON records with the same
 
 [JSON Schema](schemas/ReadStep.json)
 
-#### ReadStep::GeoJSON Schema
+#### ReadStep::GeoJson Schema
 Reader for GeoJSON files.
 
 | Property | Type | Required | Format | Description |
@@ -1111,7 +1171,7 @@ Reader for GeoJSON files.
 
 [JSON Schema](schemas/ReadStep.json)
 
-#### ReadStep::Shapefile Schema
+#### ReadStep::EsriShapefile Schema
 Reader for ESRI Shapefile format.
 
 | Property | Type | Required | Format | Description |
@@ -1133,7 +1193,7 @@ Union type:
 #### MergeStrategy::Append Schema
 Append merge strategy.
 
-Under this strategy polled data will be appended in its original form to the already ingested data without modifications. Optionally can add a system time column.
+Under this strategy polled data will be appended in its original form to the already ingested data without modifications.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1143,11 +1203,18 @@ Under this strategy polled data will be appended in its original form to the alr
 #### MergeStrategy::Ledger Schema
 Ledger merge strategy.
 
-This strategy should be used for data files containing append-only event streams. New data files can have new rows added, but once data already made it into one version of a file it never changes or disappears.
+This strategy should be used for data sources containing append-only event
+streams. New data dumps can have new rows added, but once data already
+made it into one dump it never changes or disappears.
 
-This strategy relies on a user-specified primary key columns to identify which records were already seen and not duplicate them.
+A system time column will be added to the data to indicate the time
+when the record was observed first by the system.
 
-It will always preserve all columns from existing and new snapshots, so the set of columns can only grow.
+It relies on a user-specified primary key columns to identify which records
+were already seen and not duplicate them.
+
+It will always preserve all columns from existing and new snapshots, so
+the set of columns can only grow.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1158,16 +1225,35 @@ It will always preserve all columns from existing and new snapshots, so the set 
 #### MergeStrategy::Snapshot Schema
 Snapshot merge strategy.
 
-This strategy can be used for data dumps that are taken periodically and contain only the latest state of the observed entity or system. Over time such dumps can have new rows added, and old rows either removed or modified.
+This strategy can be used for data dumps that are taken periodical
+and contain only the latest state of the observed entity or system.
+Over time such dumps can have new rows added, and old rows either removed
+or modified.
 
-This strategy transforms snapshot data into an append-only event stream where data already added is immutable. It does so by treating rows in snapshots as "observation" events and adding an "observed" column that will contain:
-- "I" - when a row appears for the first time
-- "D" - when row disappears
-- "U" - whenever any row data has changed.
+This strategy transforms snapshot data into an append-only event stream
+where data already added is immutable. It does so by treating rows in
+snapshots as "observation" events and adding an "observed" column
+that will contain:
+  - "I" - when a row appears for the first time
+  - "D" - when row disappears
+  - "U" - whenever any row data has changed
 
-This strategy relies on a user-specified primary key columns to correlate the rows between the two snapshots. If the data contains a column that is guaranteed to change whenever any of the data columns changes (for example this can be a last modification timestamp, an incremental version, or a data hash), then it can be specified as modification indicator to speed up the detection of modified rows.
+It relies on a user-specified primary key columns to correlate the rows
+between the two snapshots.
 
-The time when a snapshot was taken is usually captured in some form of the data source metadata (e.g. in the name of the file, or in the caching headers). This time will be populated in an extra "event_time" column.
+The time when a snapshot was taken (event time) is usually captured in some
+form of metadata (e.g. in the name of the snapshot file, or in the caching
+headers). In order to populate the event time we rely on the `FetchStep`
+to extract the event time from metadata. User then should specify the name
+of the event time column that will be populated from this value.
+
+If the data contains a column that is guaranteed to change whenever
+any of the data columns changes (for example this can be a last
+modification timestamp, an incremental version, or a data hash), then
+it can be specified as modification indicator to speed up the detection of
+modified rows.
+
+Schema Changes:
 
 This strategy will always preserve all columns from the existing and new snapshots, so the set of columns can only grow.
 
@@ -1175,7 +1261,6 @@ This strategy will always preserve all columns from the existing and new snapsho
 | :---: | :---: | :---: | :---: | --- |
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime. |
 | `compareColumns` | array(`string`) |  |  | Names of the columns to compared to determine if a row has changed between two snapshots. |
-| `eventTimeColumn` | `string` |  |  | Name of the event time column that will be added to the data. |
 | `observationColumn` | `string` |  |  | Name of the observation type column that will be added to the data. |
 | `obsvAdded` | `string` |  |  | Name of the observation type when the data with certain primary key is seen for the first time. |
 | `obsvChanged` | `string` |  |  | Name of the observation type when the data with certain primary key has changed compared to the last time it was seen. |
@@ -1183,6 +1268,28 @@ This strategy will always preserve all columns from the existing and new snapsho
 
 [JSON Schema](schemas/MergeStrategy.json)
 
+
+### DatasetSnapshot Schema
+Represents a snapshot of the dataset definition in a single point in time.
+This type is typically used for defining new datasets and changing the existing ones.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `id` | `string` | V | `dataset-id` | Unique identifier of the dataset |
+| `source` | [DatasetSource](#datasetsource-schema) | V |  | Contains information about the source of the data and/or applied transformations. |
+| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Vocabulary lets you manipulate system column names to avoid conflicts. |
+
+[JSON Schema](schemas/DatasetSnapshot.json)
+
+### DatasetVocabulary Schema
+Lets you manipulate names of the system columns to avoid conflicts.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `systemTimeColumn` | `string` |  |  | Name of the system time column. |
+| `eventTimeColumn` | `string` |  |  | Name of the event time column. |
+
+[JSON Schema](schemas/DatasetVocabulary.json)
 
 
 ## Engine API Reference

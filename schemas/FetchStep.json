@@ -6,6 +6,7 @@
     "Url": {
       "description": "Pulls data from one of the supported sources by its URL.",
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "url"
       ],
@@ -14,12 +15,21 @@
           "type": "string",
           "format": "url",
           "description": "URL of the data source"
+        },
+        "eventTime": {
+          "$ref": "EventTimeSource.json",
+          "description": "Describes how event time is extracted from the source metadata."
+        },
+        "cache": {
+          "$ref": "SourceCaching.json",
+          "description": "Describes the caching settings used for this source."
         }
       }
     },
     "FilesGlob": {
       "description": "Uses glob operator to match files on the local file system.",
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "path"
       ],
@@ -27,6 +37,18 @@
         "path": {
           "type": "string",
           "description": "Path with a glob pattern."
+        },
+        "eventTime": {
+          "$ref": "EventTimeSource.json",
+          "description": "Describes how event time is extracted from the source metadata."
+        },
+        "cache": {
+          "$ref": "SourceCaching.json",
+          "description": "Describes the caching settings used for this source."
+        },
+        "order": {
+          "$ref": "SourceOrdering.json",
+          "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark."
         }
       }
     }

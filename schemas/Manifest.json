@@ -3,7 +3,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "An object that wraps the metadata resources providing versioning and type identification. All root-level resources are wrapped with a manifest when serialized to disk.",
   "type": "object",
-  "additionalProperties": {},
+  "additionalProperties": false,
   "required": [
     "apiVersion",
     "kind",
@@ -20,7 +20,6 @@
     },
     "content": {
       "type": "object",
-      "additionalProperties": {},
       "description": "Resource data."
     }
   }

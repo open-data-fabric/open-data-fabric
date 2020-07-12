@@ -6,6 +6,7 @@
     "Decompress": {
       "description": "Pulls data from one of the supported sources by its URL.",
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "format"
       ],
@@ -27,11 +28,12 @@
     "Pipe": {
       "description": "Executes external command to process the data using piped input/output.",
       "type": "object",
+      "additionalProperties": false,
       "required": [
-        "path"
+        "command"
       ],
       "properties": {
-        "path": {
+        "command": {
           "type": "array",
           "items": {
             "type": "string"

@@ -1,0 +1,19 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SourceCaching.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the external source of data.",
+  "definitions": {
+    "Forever": {
+      "description": "After source was processed once it will never be ingested again.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/Forever"
+    }
+  ]
+}

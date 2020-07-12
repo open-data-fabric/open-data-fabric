@@ -4,16 +4,19 @@
   "description": "Merge strategy determines how newly ingested data should be combined with the data that already exists in the dataset.",
   "definitions": {
     "Append": {
-      "description": "Append merge strategy.\n\nUnder this strategy polled data will be appended in its original form to the already ingested data without modifications. Optionally can add a system time column.",
+      "description": "Append merge strategy.\n\nUnder this strategy polled data will be appended in its original form to the already ingested data without modifications.",
       "type": "object",
+      "additionalProperties": false,
       "required": [],
-      "properties": {
-      }
+      "properties": {}
     },
     "Ledger": {
-      "description": "Ledger merge strategy.\n\nThis strategy should be used for data files containing append-only event streams. New data files can have new rows added, but once data already made it into one version of a file it never changes or disappears.\n\nThis strategy relies on a user-specified primary key columns to identify which records were already seen and not duplicate them.\n\nIt will always preserve all columns from existing and new snapshots, so the set of columns can only grow.",
+      "description": "Ledger merge strategy.\n\nThis strategy should be used for data sources containing append-only event\nstreams. New data dumps can have new rows added, but once data already\nmade it into one dump it never changes or disappears.\n\nA system time column will be added to the data to indicate the time\nwhen the record was observed first by the system.\n\nIt relies on a user-specified primary key columns to identify which records\nwere already seen and not duplicate them.\n\nIt will always preserve all columns from existing and new snapshots, so\nthe set of columns can only grow.",
       "type": "object",
-      "required": ["primaryKey"],
+      "additionalProperties": false,
+      "required": [
+        "primaryKey"
+      ],
       "properties": {
         "primaryKey": {
           "type": "array",
@@ -25,9 +28,12 @@
       }
     },
     "Snapshot": {
-      "description": "Snapshot merge strategy.\n\nThis strategy can be used for data dumps that are taken periodically and contain only the latest state of the observed entity or system. Over time such dumps can have new rows added, and old rows either removed or modified.\n\nThis strategy transforms snapshot data into an append-only event stream where data already added is immutable. It does so by treating rows in snapshots as \"observation\" events and adding an \"observed\" column that will contain:\n- \"I\" - when a row appears for the first time\n- \"D\" - when row disappears\n- \"U\" - whenever any row data has changed.\n\nThis strategy relies on a user-specified primary key columns to correlate the rows between the two snapshots. If the data contains a column that is guaranteed to change whenever any of the data columns changes (for example this can be a last modification timestamp, an incremental version, or a data hash), then it can be specified as modification indicator to speed up the detection of modified rows.\n\nThe time when a snapshot was taken is usually captured in some form of the data source metadata (e.g. in the name of the file, or in the caching headers). This time will be populated in an extra \"event_time\" column.\n\nThis strategy will always preserve all columns from the existing and new snapshots, so the set of columns can only grow.",
+      "description": "Snapshot merge strategy.\n\nThis strategy can be used for data dumps that are taken periodical\nand contain only the latest state of the observed entity or system.\nOver time such dumps can have new rows added, and old rows either removed\nor modified.\n\nThis strategy transforms snapshot data into an append-only event stream\nwhere data already added is immutable. It does so by treating rows in\nsnapshots as \"observation\" events and adding an \"observed\" column\nthat will contain:\n  - \"I\" - when a row appears for the first time\n  - \"D\" - when row disappears\n  - \"U\" - whenever any row data has changed\n\nIt relies on a user-specified primary key columns to correlate the rows\nbetween the two snapshots.\n\nThe time when a snapshot was taken (event time) is usually captured in some\nform of metadata (e.g. in the name of the snapshot file, or in the caching\nheaders). In order to populate the event time we rely on the `FetchStep`\nto extract the event time from metadata. User then should specify the name\nof the event time column that will be populated from this value.\n\nIf the data contains a column that is guaranteed to change whenever\nany of the data columns changes (for example this can be a last\nmodification timestamp, an incremental version, or a data hash), then\nit can be specified as modification indicator to speed up the detection of\nmodified rows.\n\nSchema Changes:\n\nThis strategy will always preserve all columns from the existing and new snapshots, so the set of columns can only grow.",
       "type": "object",
-      "required": ["primaryKey"],
+      "additionalProperties": false,
+      "required": [
+        "primaryKey"
+      ],
       "properties": {
         "primaryKey": {
           "type": "array",
@@ -42,10 +48,6 @@
             "type": "string"
           },
           "description": "Names of the columns to compared to determine if a row has changed between two snapshots."
-        },
-        "eventTimeColumn": {
-          "type": "string",
-          "description": "Name of the event time column that will be added to the data."
         },
         "observationColumn": {
           "type": "string",
@@ -67,8 +69,14 @@
     }
   },
   "oneOf": [
-    {"$ref": "#/definitions/Append"},
-    {"$ref": "#/definitions/Ledger"},
-    {"$ref": "#/definitions/Snapshot"}
+    {
+      "$ref": "#/definitions/Append"
+    },
+    {
+      "$ref": "#/definitions/Ledger"
+    },
+    {
+      "$ref": "#/definitions/Snapshot"
+    }
   ]
 }

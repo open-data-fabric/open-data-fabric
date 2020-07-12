@@ -3,6 +3,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "blockHash",
     "prevBlockHash",
@@ -11,35 +12,40 @@
   "properties": {
     "blockHash": {
       "type": "string",
-      "description": "Hash sum of this metadata block's information"
+      "description": "Hash sum of this metadata block's information."
     },
     "prevBlockHash": {
       "type": "string",
-      "description": "Hash sum of the preceding block"
+      "description": "Hash sum of the preceding block."
     },
     "systemTime": {
       "type": "string",
       "format": "date-time",
-      "description": "System time when this block was written"
+      "description": "System time when this block was written."
     },
     "outputSlice": {
       "$ref": "DataSlice.json",
-      "description": "Properties of output data written during this update, if any"
+      "description": "Properties of output data written during this update, if any."
+    },
+    "outputWatermark": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last watermark of the output data stream.\nWatermarks are usually derived from the event times in data based on the properties of the source,\nbut sometimes they can also be assigned manually. Manual watermarks are useful in cases of slow-moving\ndatasets in order to let the computations continue even when no new events were observed for a long time."
+    },
+    "outputSchema": {
+      "$ref": "Schema.json",
+      "description": "Describes the output data schema."
     },
     "inputSlices": {
       "type": "array",
       "items": {
         "$ref": "DataSlice.json"
       },
-      "description": "Defines input datasets and their data slices used in this block, if any"
+      "description": "Defines input datasets and their data slices used in this block, if any."
     },
-    "rootPollingSource": {
-      "$ref": "RootPollingSource.json",
-      "description": "If metadata relates to a root dataset - defines the external data source and the transformation steps"
-    },
-    "derivativeSource": {
-      "$ref": "DerivativeSource.json",
-      "description": "If metadata relates to a derivative dataset - defines the sources and applied transformations"
+    "source": {
+      "$ref": "DatasetSource.json",
+      "description": "Contains the definition of the source of data when it changes."
     }
   }
 }

@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.14.1
+Version: 0.15.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -864,12 +864,16 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 ![](build/schemas/MetadataBlock.md)
 ![](build/schemas/DataSlice.md)
 ![](build/schemas/DatasetSource.md)
-![](build/schemas/DerivativeInput.md)
 ![](build/schemas/Transform.md)
 ![](build/schemas/FetchStep.md)
+![](build/schemas/EventTimeSource.md)
+![](build/schemas/SourceCaching.md)
+![](build/schemas/SourceOrdering.md)
 ![](build/schemas/PrepStep.md)
 ![](build/schemas/ReadStep.md)
 ![](build/schemas/MergeStrategy.md)
+![](build/schemas/DatasetSnapshot.md)
+![](build/schemas/DatasetVocabulary.md)
 
 ## Engine API Reference
 > **TODO**: Provide `gRPC + FlatBuffers` IDL

@@ -6,6 +6,7 @@
     "Csv": {
       "description": "Reader for comma-separated files.",
       "type": "object",
+      "additionalProperties": false,
       "required": [],
       "properties": {
         "schema": {
@@ -92,6 +93,7 @@
     "JsonLines": {
       "description": "Reader for files containing concatenation of multiple JSON records with the same schema.",
       "type": "object",
+      "additionalProperties": false,
       "required": [],
       "properties": {
         "schema": {
@@ -123,9 +125,10 @@
         }
       }
     },
-    "GeoJSON": {
+    "GeoJson": {
       "description": "Reader for GeoJSON files.",
       "type": "object",
+      "additionalProperties": false,
       "required": [],
       "properties": {
         "schema": {
@@ -137,9 +140,10 @@
         }
       }
     },
-    "Shapefile": {
+    "EsriShapefile": {
       "description": "Reader for ESRI Shapefile format.",
       "type": "object",
+      "additionalProperties": false,
       "required": [],
       "properties": {
         "schema": {
@@ -158,10 +162,16 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Decompress"
+      "$ref": "#/definitions/Csv"
     },
     {
-      "$ref": "#/definitions/Pipe"
+      "$ref": "#/definitions/JsonLines"
+    },
+    {
+      "$ref": "#/definitions/GeoJson"
+    },
+    {
+      "$ref": "#/definitions/EsriShapefile"
     }
   ]
 }

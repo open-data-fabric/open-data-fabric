@@ -1,7 +1,7 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/Transform.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Engine-specific processing queries that shape the resulting data",
+  "description": "Engine-specific processing queries that shape the resulting data.",
   "type": "object",
   "additionalProperties": {},
   "required": [

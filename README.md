@@ -15,7 +15,7 @@ The goal of this specification is to develop a method of data exchange that woul
 
 ## Current State
 
-Latest version: [0.14.1](./open-data-fabric.md)
+Latest version: [0.15.0](./open-data-fabric.md)
 
 The specification is currently in the **EXPERIMENTAL** stage and welcomes feedback.
 
