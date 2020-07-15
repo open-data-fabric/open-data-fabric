@@ -47,7 +47,12 @@
           "description": "Describes the caching settings used for this source."
         },
         "order": {
-          "$ref": "SourceOrdering.json",
+          "type": "string",
+          "enumName": "SourceOrdering",
+          "enum": [
+            "byEventTime",
+            "byName"
+          ],
           "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark."
         }
       }

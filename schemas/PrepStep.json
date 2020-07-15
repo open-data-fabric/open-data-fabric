@@ -17,6 +17,7 @@
             "gzip",
             "zip"
           ],
+          "enumName": "CompressionFormat",
           "description": "Name of a compression algorithm used on data."
         },
         "subPath": {

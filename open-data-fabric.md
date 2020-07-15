@@ -931,7 +931,6 @@ An individual block in the metadata chain that captures the history of modificat
 Watermarks are usually derived from the event times in data based on the properties of the source,
 but sometimes they can also be assigned manually. Manual watermarks are useful in cases of slow-moving
 datasets in order to let the computations continue even when no new events were observed for a long time. |
-| `outputSchema` | [Schema](#schema-schema) |  |  | Describes the output data schema. |
 | `inputSlices` | array([DataSlice](#dataslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any. |
 | `source` | [DatasetSource](#datasetsource-schema) |  |  | Contains the definition of the source of data when it changes. |
 
@@ -1020,7 +1019,7 @@ Uses glob operator to match files on the local file system.
 | `path` | `string` | V |  | Path with a glob pattern. |
 | `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
-| `order` | [SourceOrdering](#sourceordering-schema) |  |  | Specifies how input files should be ordered before ingestion.
+| `order` | `string` |  |  | Specifies how input files should be ordered before ingestion.
 Order is important as every file will be processed individually
 and will advance the dataset's watermark. |
 
@@ -1057,32 +1056,6 @@ After source was processed once it will never be ingested again.
 | :---: | :---: | :---: | :---: | --- |
 
 [JSON Schema](schemas/SourceCaching.json)
-
-
-### SourceOrdering Schema
-Specifies how input files should be ordered before ingestion.
-Order is important as every file will be processed individually
-and will advance the dataset's watermark.
-
-Union type:
-- [SourceOrdering::ByEventTime](#sourceorderingbyeventtime-schema)
-- [SourceOrdering::ByName](#sourceorderingbyname-schema)
-
-#### SourceOrdering::ByEventTime Schema
-Order by event time extracted from source's metadata.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
-[JSON Schema](schemas/SourceOrdering.json)
-
-#### SourceOrdering::ByName Schema
-Process in lexicographic order of the file names.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
-[JSON Schema](schemas/SourceOrdering.json)
 
 
 ### PrepStep Schema

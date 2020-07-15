@@ -868,7 +868,6 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 ![](build/schemas/FetchStep.md)
 ![](build/schemas/EventTimeSource.md)
 ![](build/schemas/SourceCaching.md)
-![](build/schemas/SourceOrdering.md)
 ![](build/schemas/PrepStep.md)
 ![](build/schemas/ReadStep.md)
 ![](build/schemas/MergeStrategy.md)
