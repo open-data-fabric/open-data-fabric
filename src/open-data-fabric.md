@@ -356,9 +356,13 @@ See also:
 - [Merge Strategies](#merge-strategies)
 
 ## Hash
-A [cryptographic hash function](https://en.wikipedia.org/wiki/Cryptographic_hash_function) is used by the system to map an arbitrarily large [Data Slice](#data-slice) into a short checksum which can then be used to validate the integrity of data.
+[Cryptographic hash functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function) are used by the system in these two scenarios:
+- For computing a checksum of a [Data Slice](#data-slice).
+- For computing a digital signature of a [MetadataBlock](#metadata-chain).
 
-Whenever new events are appended to the [Data](#data) the [Metadata Chain](#metadata-chain) will also be appended with a block containing a checksum of the new data slice.
+Whenever new events are appended to the [Data](#data) the [Metadata Chain](#metadata-chain) will also be extended with a block containing a checksum of the new data slice. The checksum provides a very quick and reliable way to later validate that the data matches the one that has been written earlier.
+
+The new [MetadataBlock](#metadata-chain) will also be cryptographically signed to guarantee its integrity - this excludes any malicious or accidental alterations to the block.
 
 Usage examples:
 - If the [Metadata Chain](#metadata-chain) of a certain dataset is reliably known (e.g. available from many independent peers) a peer can then download the [Data](#data) from any untrusted source and use the hash function to validate the authenticity of every data slice that composes it.
@@ -716,7 +720,7 @@ This operations is used to trace back a set of events in the output [Dataset](#d
 ### Engine Versioning
 As [described previously](#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](#engine) will break this guarantee.
 
-Whenever the [Coordinator](#coordinator) uses an [Engine](#engine) to execute a query it must specify the full [SHA-256](https://en.wikipedia.org/wiki/SHA-2) digest of its Docker image in the resulting [Metadata Block](#metadata-chain). [Engine](#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
+Whenever the [Coordinator](#coordinator) uses an [Engine](#engine) to execute a query it must specify the full digest of the Docker image in the resulting [Metadata Block](#metadata-chain). [Engine](#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
 
 See also:
 - [Engine Deprecation](#engine-deprecation)
@@ -739,11 +743,18 @@ The procedure for calculating the stable [Hash](#hash) of a [Data Slice](#data-s
 1. Drop the `system_time` column
 2. Sort all rows based on the `event_time` column
 3. Convert rows to the canonical string representation
-4. Calculate [SHA-256](https://en.wikipedia.org/wiki/SHA-2) digest of the file
+4. Calculate [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest of the file
 
 > **TODO:** This is a stop-gap implementation. Release version of the hashing function should have a streaming nature while also be tolerant of row reordering, as many processing engine are concurrent and don't enforce ordering between outputs of independent calculations.
 
 #### Metadata Block Hashing
+
+Metadata structures that are part of the [MetadataBlock](#metadata-chain) are hashed as follows:
+
+1. Iterate over block fields in depth-first order
+2. Convert fields into their canonical representation
+3. Feed data into [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest algorithm.
+
 > **TODO:** Add details on format-agnostic hashing
 
 ### Data Ingestion
