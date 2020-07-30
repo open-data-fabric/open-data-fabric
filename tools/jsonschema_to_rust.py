@@ -88,7 +88,7 @@ def render_struct(name, sch):
         yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     else:
         yield '#[serde(rename_all = "camelCase")]'
-    yield '#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]'
+    yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
     yield f'pub struct {name} {{'
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
@@ -122,29 +122,28 @@ def render_field(pname, psch, required, modifier=None):
 def render_oneof(name, sch):
     yield '#[skip_serializing_none]'
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
-    yield '#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]'
+    yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
     yield f'pub enum {name} {{'
     for (ename, esch) in sch.get('definitions', {}).items():
-        yield from indent(render_oneof_element(ename, esch))
+        yield from indent(render_oneof_element(name, ename, esch))
     yield '}'
 
 
-def render_oneof_element(ename, esch):
+def render_oneof_element(name, ename, esch):
     yield '#[serde(rename_all = "camelCase")]'
     if not esch.get('properties', ()):
         yield f'{ename},'
     else:
-        yield f'{ename} {{'
-        for pname, psch in esch.get('properties', {}).items():
-            required = pname in esch.get('required', ())
-            yield from indent(render_field(pname, psch, required))
-        yield '},'
+        struct_name = f'{name}{ename}'
+        yield f'{ename}({struct_name}),'
+        # See: https://github.com/rust-lang/rfcs/pull/2593
+        extra_types.append(lambda: render_struct(struct_name, esch))
 
 
 def render_string_enum(name, sch):
     yield '#[skip_serializing_none]'
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
-    yield '#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]'
+    yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
     yield f'pub enum {name} {{'
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
