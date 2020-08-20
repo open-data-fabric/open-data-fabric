@@ -208,17 +208,15 @@ More formally, a slice is a:
 
 ![Diagram: Data Slices](images/metadata_transform.svg)
 
-> **TODO:** Consider using row IDs instead of system time
-
 ## Metadata Chain
-Metadata chain captures all essential information about the [Dataset](#dataset) it's associated with, including:
+Metadata chain captures all essential information about the [Dataset](#dataset), including:
 - Where the data comes from (see [Data Ingestion](#data-ingestion))
 - How data was processed (see [Query](#query))
-- The data [Schema](#schema)
+- Its [Schema](#schema)
 - Log of all modifications made to the data, including information used to verify the integrity of data
-- Current dataset [Watermark](#watermark)
+- Current [Watermark](#watermark)
 
-Just like [Data](#data), the metadata chain also has a historical nature. It consists of individual **Metadata Blocks** that are linked together, forming a full historical timeline of how data was evolving. Just like [Events](#event), all metadata blocks are immutable.
+Just like [Data](#data), the metadata chain also has a historical nature. It consists of individual **Metadata Blocks** that are linked together, forming a full timeline of how data was evolving. Much [Events](#event), all metadata blocks are immutable.
 
 ![Diagram: Metadata Chain](images/metadata_chain.svg)
 
@@ -233,9 +231,6 @@ These extensions are out of scope of this document.
 
 See also:
 - [Metadata Chain Format](#metadata-chain-format)
-
-> **TODO:**
-> - add watermark field to the diagram
 
 ## Dataset
 Dataset is the main unit of data exchange in the system. It's simply a combination of:
@@ -527,9 +522,6 @@ For our **on-disk format** we choose [Apache Parquet](https://parquet.apache.org
 
 Data on disk is stored in the multiple "part" files. Once a part file is written it is immutable for the entire lifetime of the dataset.
 
-> **TODO:**
-> - Support compactions on Parquet files
-
 ## Schema Format
 We chose SQL-like [DDL](https://en.wikipedia.org/wiki/Data_definition_language) syntax for defining data [Schemas](#schema), as it:
 - Operates with logical types, abstracting the physical data layout from the user
@@ -607,8 +599,8 @@ This layout must be used when sharing datasets via file or object-based [Remotes
 
 When a [Dataset](#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](#coordinator) implementation, as we expect all interactions with the [Dataset](#dataset) to go through it.
 
-> **TODO:** See Also:
-> - [Sharing Datasets](#TODO)
+See Also:
+- [Dataset Sharing](#dataset-sharing)
 
 ## Engine Contract
 This section provides the details on the contract between an [Engine](#engine) and the [Coordinator](#coordinator).
@@ -654,7 +646,8 @@ Engine implementation should support the following operations:
 - [Migrate query](#validate-query) - Updates the transformation state from one query to another.
 - [Derive Provenance](#derive-provenance) - Explains the origin of some data produced in the past.
 
-> **TODO**: add links to API reference
+See also:
+- [Engine API Reference](#engine-api-reference)
 
 #### Validate Query
 This operation may be used by the [Coordinator](#coordinator) when creating a new [Derivative Dataset](#derivative-dataset) or when changing the [Query](#query) of an existing one to validate the user-specified query for basic syntax and schema correctness.
@@ -767,8 +760,6 @@ The reason we include the ingest configuration in this document at all is that w
 #### Pull vs. Push
 Although we aspire to reach a state where all authoritative data publishers **push** new events into the system as soon as those occur, we realize that this level of integration is hard to achieve. We believe that for a long time the vast majority of data will be ingested via the **pull** model, where the system periodically scans a remote data source and ingests the latest updates.
 
-> **TODO:**
-
 #### Ingestion Phases
 Ingestion is composed of the following phases:
 - **Fetch phase** - Obtains the data from some external source (e.g. HTTP/FTP) in its original raw form.
@@ -830,7 +821,7 @@ The procedure for modifying the [Query](#query) of a [Derivative Dataset](#deriv
 3. A new [Metadata Block](#metadata-chain) is created and committed.
 
 > **TODO**: Specify how Schema changes in the upstream datasets should be handled
-> - Do we stop processing and ask user to validate that the query takes into accont the new columns?
+> - Do we stop processing and ask user to validate that the query takes into account the new columns?
 
 ### Dataset Sharing
 Dataset sharing involves uploading the data to some [Remote](#remote) where it can be discovered and accessed by other peers. Due to immutable nature of data and metadata it is very easy to keep shared data up-to-date as only new blocks and part files need to be uploaded.
@@ -891,15 +882,3 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 ## Remote API Reference
 > **TODO**: Provide `gRPC + FlatBuffers` IDL
 
-# Version History
-
-| Version  |    Date    | Author(s) | Description    |
-| :------: | :--------: | :-------: | -------------- |
-| `0.14.1` | 2020-04-XX | sergiimk  | Public release |
-
-> **TODO:**
-> Inspiration:
-> - https://tools.ietf.org/html/rfc8289
-> - https://www.asyncapi.com/docs/specifications/2.0.0/
-> - https://github.com/dvidelabs/flatcc/blob/master/doc/binary-format.md#bidirectional-buffers
-> - https://github.com/opencontainers/runtime-spec/blob/master/spec.md
