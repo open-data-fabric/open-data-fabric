@@ -405,7 +405,7 @@ See also:
 ## Hash
 [Cryptographic hash functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function) are used by the system in these two scenarios:
 - For computing a checksum of a [Data Slice](#data-slice).
-- For computing a digital signature of a [MetadataBlock](#metadata-chain).
+- For computing a checksum of a [MetadataBlock](#metadata-chain).
 
 Whenever new events are appended to the [Data](#data) the [Metadata Chain](#metadata-chain) will also be extended with a block containing a checksum of the new data slice. The checksum provides a very quick and reliable way to later validate that the data matches the one that has been written earlier.
 
@@ -650,7 +650,7 @@ The recommended layout of the dataset on disk is:
 
 ![Diagram: Dataset Layout](images/dataset_layout.svg)
 
-This layout must be used when sharing datasets via file or object-based [Remotes](#remote) (e.g. local FS, S3, HDFS).
+This layout must be used when sharing datasets via file or object-based [Remotes](#remote) (e.g. local FS, S3, IPFS, DAT...).
 
 When a [Dataset](#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](#coordinator) implementation, as we expect all interactions with the [Dataset](#dataset) to go through it.
 
@@ -1041,7 +1041,16 @@ and will advance the dataset's watermark. |
 Defines the external source of data.
 
 Union type:
+- [EventTimeSource::FromMetadata](#eventtimesourcefrommetadata-schema)
 - [EventTimeSource::FromPath](#eventtimesourcefrompath-schema)
+
+#### EventTimeSource::FromMetadata Schema
+Extracts event time from the source's metadata.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[JSON Schema](schemas/EventTimeSource.json)
 
 #### EventTimeSource::FromPath Schema
 Extracts event time from the path component of the source.

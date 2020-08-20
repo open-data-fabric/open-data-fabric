@@ -1,4 +1,4 @@
-# Open Data Fabric
+![Open Data Fabric Logo](./images/odf_logo.svg)
 
 [Latest Version](./open-data-fabric.md)
 

@@ -3,6 +3,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Defines the external source of data.",
   "definitions": {
+    "FromMetadata": {
+      "description": "Extracts event time from the source's metadata.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
     "FromPath": {
       "description": "Extracts event time from the path component of the source.",
       "type": "object",
@@ -24,6 +31,9 @@
     }
   },
   "oneOf": [
+    {
+      "$ref": "#/definitions/FromMetadata"
+    },
     {
       "$ref": "#/definitions/FromPath"
     }

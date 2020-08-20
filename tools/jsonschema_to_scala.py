@@ -36,6 +36,9 @@ DEFAULT_INDENT = 2
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
 
 
+extra_types = []
+
+
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
 
@@ -55,6 +58,14 @@ def render(schemas_dir):
             for l in render_schema(name, sch):
                 print(l)
             print()
+
+            # Any extra sibling types that schema needs
+            for gen in extra_types:
+                for l in gen():
+                    print(l)
+                print()
+            extra_types.clear()
+
         except Exception as ex:
             raise Exception(
                 f'Error while rendering {name} schema:\n{sch}'
@@ -117,10 +128,24 @@ def render_oneof_element(ename, esch, parent):
     yield f') extends {parent}'
 
 
+def render_string_enum(name, sch):
+    yield f'sealed trait {name}'
+    yield ''
+    yield f'object {name} {{'
+    for value in sch['enum']:
+        capitalized = value[0].upper() + value[1:]
+        yield ' ' * DEFAULT_INDENT + f'case object {capitalized} extends {name}'
+    yield '}'
+
+
 def get_composite_type(sch):
     if sch.get('type') == 'array':
         ptyp = get_primitive_type(sch['items'])
         return f'Vector[{ptyp}]'
+    elif 'enum' in sch:
+        assert sch['type'] == 'string'
+        extra_types.append(lambda: render_string_enum(sch['enumName'], sch))
+        return sch['enumName']
     else:
         return get_primitive_type(sch)
 
