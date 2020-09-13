@@ -252,7 +252,7 @@ More formally, a slice is a:
 - That has the same [Schema](#schema)
 - Defined by its `[start; end]` [System Time](#system-time) interval
 
-![Diagram: Data Slices](images/metadata_transform.svg)
+![Diagram: Data Slices and Metadata](images/metadata.svg)
 
 ## Metadata Chain
 Metadata chain captures all essential information about the [Dataset](#dataset), including:
@@ -289,7 +289,7 @@ Depending on where the data comes from datasets can be of these kinds:
 - [Root](#root-dataset)
 - [Derivative](#derivative-dataset)
 
-![Diagram: Dataset Kinds](images/dataset_kinds.svg)
+![Diagram: Dataset Graph](images/dataset_graph.svg)
 
 ### Root Dataset
 Root datasets are the points of entry of external data into the system. They are usually owned by the organization that has full authority and responsibility over that data, i.e. a trusted source.
@@ -357,7 +357,7 @@ Engine is an interface shared by all specific implementations of a [Query](#quer
 
 Engines run in a sandboxed environments and are not permitted to use any external resources to guarantee the reproducibility of all operations.
 
-![Diagram: Derivative Transformation](images/transform_component.svg)
+![Diagram: Derivative Transformation](images/engine-execution-env.svg)
 
 As Engines are in the full control of all data transformations, they are also responsible for answering the [Provenance](#provenance) queries.
 
