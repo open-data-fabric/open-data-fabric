@@ -72,7 +72,7 @@ Functional:
 
 Non-Functional:
 - **Transparency** - the method itself should be developed in the open, easy to understand, and reason about.
-- **Timeliness** - the method should aim to minimize the propagation time of data through the transformation pipeline.
+- **Timeliness** - the method should aim to minimize the propagation time of data through the transformation pipeline. The frequency with which data is presented to consumers should be optimized for their experience and usability, not dictated by limitations of the data pipeline.
 - **Transactionality** - once data is in the system all operations should have [ACID properties](https://en.wikipedia.org/wiki/ACID) and exactly-once semantics.
 - **Decentralization** - there must be no entity in the system with any kind of special privileges over data, or abilities to circumvent any of the above requirements.
 
