@@ -1,4 +1,4 @@
-<img src="./images/odf_logo.svg" alt="Open Data Fabric" width="600">
+<img src="./images/odf_logo_2.svg" alt="Open Data Fabric" width="500">
 
 [Latest Version](./open-data-fabric.md)
 
@@ -13,7 +13,7 @@ The goal of this specification is to develop a method of data exchange that woul
 - Improve liquidity of data by speeding up the data propagation times from publishers to consumers
 - Create a feedback loop between data consumers and publishers, allowing them to collaborate on better data availability, recency, and design
 
-Introduction materials:
+### Introductory materials
 - [Introducing Open Data Fabric: World's First Decentralized Collaborative Data Pipeline](https://www.kamu.dev/blog/introducing-odf/)
 
 ## Current State

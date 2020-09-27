@@ -9,14 +9,17 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="watermarks_in_stream.svg"
-   id="svg180"
-   content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2020-07-02T02:37:39.916Z&quot; agent=&quot;5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36&quot; version=&quot;13.3.6&quot; etag=&quot;ASlJBfzw3cmMhcyAPAw2&quot; type=&quot;google&quot;&gt;&lt;diagram id=&quot;t0HtR702eQo2qgjS6eyg&quot;&gt;7VpRj9soEP4t95DHVDYYx/u4ybZ30t2pJ+1JfSYGx6jY5DBpsv31h21IYvBuXSeNt9Vmo6wZYAzffAwzxjO4Kg6/S7zN/xaE8hkIyGEGH2YAhBEAs/obkKdWsgBJK9hIRkyjk+CRfaVGGBjpjhFadRoqIbhi264wFWVJU9WRYSnFvtssE7x71y3eUE/wmGLuSz8xovJWmoDFSf4HZZvc3jmM79qaAtvGZiZVjonYn4ng+xlcSSFUe1UcVpTX4Flc2n4fnqk9DkzSUg3pYAzxBfOdmZsZl3qyk5ViVxJatw9mcLnPmaKPW5zWtXttXi3LVcF1KdSXGeN8JbiQTV+YZRlIUy2vlBSf6VkNidcxinWNGQCVih6enUR4hEZzioqCKvmkm9gOlheGTuGdKe9PxomsLD8zDDIybPiwOao+QaYvDGr9CEIPQTuasRheAxHQRQQEPiKwBxB4BUAiH5BwekDi6QBBPiDR5IAcAZgAkNgH5EK307oX64uB74gIogmJ+hxRAtYwvpIjAovpQF34oKLJWQbD6QBJfEDi6QGZ0A/d+YDcTQ5INOFOZcl5jgi8DBE3/klS2h//rBMUoaDXdV0D1Qkdkd3tz1Fd/BLuHU3JVT9SD5NfA9UJXWI4KHqnJbmvs0ZdIgwXoiT/5qxscMFS9Vd1cNatPjBuy1rdWSkTpTIZbgiGWCXDcRIEfVZZLSBqatoZUOJlsUNtMg87JpkD3ySoxyRWJinHin3p3r3PTmYA/wimx3UKoyKHEZFj6krsZEpNr/Ps9huKjomhVaQts6Hq24rm3srv6hFZVtGOioZ5R2CHkXFQ5vRGxtuSEaIrkdFV9MrJ2JO1+knaTcn4/dR7Lrb6ackYuVn7WDK6il45GXueGPjJ7ZtnvDEZ3cBtNBnjn4qM/pOWv7Civ73Ex1KUWrgkuMqb6Dx8KRLv9X112agOLuZNlzbhbVmToK6N3Dh+MGtcRclY1rjHBz+ENf7jqI+7ehAiq38koVL/XzeiSrGm78c/3zg1iFPgWpzyFL1uTvlP9D5pTyQLLD/r+9x77NFJuuqyBHO20fvgQ6qtrBkIl3Uqz1LM701FwQipuy8lrdhXvDZsgcttPeFmNmg5Qw+1rp0SleHXMLpddqQTObZCPueSHs65m8KY5wZWx0vnplWOt/VlxunBrNnl2fJNOa4qln73onWiDFT/9UUZcfO5KMq4zeJ1o4gweofGrd7QjY59Vc+s3xGLz070jQJXoIB7TDSeA7Gbrv9QDgCPA49KUlw0yGng9E05F3u9P9ceI/5vV7/XsRQ7NRfZvNn0KSlpVZ3qbERQA+yfEr8aB27Jf9FpqX13wu6RKPYcOOh7bWOEB9fF00s1raVPrybB9/8D&lt;/diagram&gt;&lt;/mxfile&gt;"
-   viewBox="-0.5 -0.5 652.99994 155.60361"
-   height="155.60361"
+   inkscape:export-ydpi="120"
+   inkscape:export-xdpi="120"
+   inkscape:export-filename="/home/smikhtoniuk/Work/projects/kamu/open-data-fabric/src/images/watermarks_in_stream.png"
+   version="1.1"
    width="652.99994"
-   version="1.1">
+   height="155.60361"
+   viewBox="-0.5 -0.5 652.99994 155.60361"
+   content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2020-07-02T02:37:39.916Z&quot; agent=&quot;5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36&quot; version=&quot;13.3.6&quot; etag=&quot;ASlJBfzw3cmMhcyAPAw2&quot; type=&quot;google&quot;&gt;&lt;diagram id=&quot;t0HtR702eQo2qgjS6eyg&quot;&gt;7VpRj9soEP4t95DHVDYYx/u4ybZ30t2pJ+1JfSYGx6jY5DBpsv31h21IYvBuXSeNt9Vmo6wZYAzffAwzxjO4Kg6/S7zN/xaE8hkIyGEGH2YAhBEAs/obkKdWsgBJK9hIRkyjk+CRfaVGGBjpjhFadRoqIbhi264wFWVJU9WRYSnFvtssE7x71y3eUE/wmGLuSz8xovJWmoDFSf4HZZvc3jmM79qaAtvGZiZVjonYn4ng+xlcSSFUe1UcVpTX4Flc2n4fnqk9DkzSUg3pYAzxBfOdmZsZl3qyk5ViVxJatw9mcLnPmaKPW5zWtXttXi3LVcF1KdSXGeN8JbiQTV+YZRlIUy2vlBSf6VkNidcxinWNGQCVih6enUR4hEZzioqCKvmkm9gOlheGTuGdKe9PxomsLD8zDDIybPiwOao+QaYvDGr9CEIPQTuasRheAxHQRQQEPiKwBxB4BUAiH5BwekDi6QBBPiDR5IAcAZgAkNgH5EK307oX64uB74gIogmJ+hxRAtYwvpIjAovpQF34oKLJWQbD6QBJfEDi6QGZ0A/d+YDcTQ5INOFOZcl5jgi8DBE3/klS2h//rBMUoaDXdV0D1Qkdkd3tz1Fd/BLuHU3JVT9SD5NfA9UJXWI4KHqnJbmvs0ZdIgwXoiT/5qxscMFS9Vd1cNatPjBuy1rdWSkTpTIZbgiGWCXDcRIEfVZZLSBqatoZUOJlsUNtMg87JpkD3ySoxyRWJinHin3p3r3PTmYA/wimx3UKoyKHEZFj6krsZEpNr/Ps9huKjomhVaQts6Hq24rm3srv6hFZVtGOioZ5R2CHkXFQ5vRGxtuSEaIrkdFV9MrJ2JO1+knaTcn4/dR7Lrb6ackYuVn7WDK6il45GXueGPjJ7ZtnvDEZ3cBtNBnjn4qM/pOWv7Civ73Ex1KUWrgkuMqb6Dx8KRLv9X112agOLuZNlzbhbVmToK6N3Dh+MGtcRclY1rjHBz+ENf7jqI+7ehAiq38koVL/XzeiSrGm78c/3zg1iFPgWpzyFL1uTvlP9D5pTyQLLD/r+9x77NFJuuqyBHO20fvgQ6qtrBkIl3Uqz1LM701FwQipuy8lrdhXvDZsgcttPeFmNmg5Qw+1rp0SleHXMLpddqQTObZCPueSHs65m8KY5wZWx0vnplWOt/VlxunBrNnl2fJNOa4qln73onWiDFT/9UUZcfO5KMq4zeJ1o4gweofGrd7QjY59Vc+s3xGLz070jQJXoIB7TDSeA7Gbrv9QDgCPA49KUlw0yGng9E05F3u9P9ceI/5vV7/XsRQ7NRfZvNn0KSlpVZ3qbERQA+yfEr8aB27Jf9FpqX13wu6RKPYcOOh7bWOEB9fF00s1raVPrybB9/8D&lt;/diagram&gt;&lt;/mxfile&gt;"
+   id="svg180"
+   sodipodi:docname="watermarks_in_stream.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)">
   <metadata
      id="metadata184">
     <rdf:RDF>
@@ -25,71 +28,72 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <sodipodi:namedview
-     inkscape:current-layer="g170"
-     inkscape:window-maximized="0"
-     inkscape:window-y="0"
-     inkscape:window-x="0"
-     inkscape:cy="81.798527"
-     inkscape:cx="313.61048"
-     inkscape:zoom="1.9454245"
-     fit-margin-bottom="2"
-     fit-margin-right="2"
-     fit-margin-left="2"
-     fit-margin-top="2"
-     lock-margins="true"
-     showgrid="false"
-     id="namedview182"
-     inkscape:window-height="1080"
-     inkscape:window-width="1920"
-     inkscape:pageshadow="2"
-     inkscape:pageopacity="0"
-     guidetolerance="10"
-     gridtolerance="10"
-     objecttolerance="10"
-     borderopacity="1"
+     inkscape:document-rotation="0"
+     pagecolor="#ffffff"
      bordercolor="#666666"
-     pagecolor="#ffffff" />
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1080"
+     id="namedview182"
+     showgrid="false"
+     lock-margins="true"
+     fit-margin-top="2"
+     fit-margin-left="2"
+     fit-margin-right="2"
+     fit-margin-bottom="2"
+     inkscape:zoom="1.9454245"
+     inkscape:cx="205.15086"
+     inkscape:cy="81.798527"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g170" />
   <defs
      id="defs2" />
   <g
-     transform="translate(1.5,1.5)"
-     id="g170">
+     id="g170"
+     transform="translate(1.5,1.5)">
     <rect
-       id="rect4"
-       pointer-events="all"
-       stroke-width="1.1"
-       stroke="#d6b656"
-       fill="#fff2cc"
-       height="55"
-       width="539"
+       x="55"
        y="37.400002"
-       x="55" />
-    <rect
-       id="rect6"
-       pointer-events="all"
+       width="539"
+       height="55"
+       fill="#fff2cc"
+       stroke="#d6b656"
        stroke-width="1.1"
-       stroke="#000000"
-       fill="#ffffff"
-       height="33"
-       width="33"
+       pointer-events="all"
+       id="rect4" />
+    <rect
+       x="66"
        y="48.400002"
-       x="66" />
+       width="33"
+       height="33"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="1.1"
+       pointer-events="all"
+       id="rect6" />
     <g
-       id="g12"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g12">
       <switch
          id="switch10">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 61px;">
             <xhtml:div
@@ -100,36 +104,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text8"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="75"
            y="63"
-           x="75">10</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text8">10</text>
       </switch>
     </g>
     <rect
-       id="rect14"
-       pointer-events="all"
-       stroke-width="1.1"
-       stroke="#000000"
-       fill="#ffffff"
-       height="33"
-       width="33"
+       x="110"
        y="48.400002"
-       x="110" />
+       width="33"
+       height="33"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="1.1"
+       pointer-events="all"
+       id="rect14" />
     <g
-       id="g20"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g20">
       <switch
          id="switch18">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 101px;">
             <xhtml:div
@@ -140,36 +144,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text16"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="115"
            y="63"
-           x="115">11</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text16">11</text>
       </switch>
     </g>
     <rect
-       id="rect22"
-       pointer-events="all"
-       stroke-width="1.1"
-       stroke="#000000"
-       fill="#ffffff"
-       height="33"
-       width="33"
+       x="154"
        y="48.400002"
-       x="154" />
+       width="33"
+       height="33"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="1.1"
+       pointer-events="all"
+       id="rect22" />
     <g
-       id="g28"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g28">
       <switch
          id="switch26">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 141px;">
             <xhtml:div
@@ -180,36 +184,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text24"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="155"
            y="63"
-           x="155">14</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text24">14</text>
       </switch>
     </g>
     <rect
-       id="rect30"
-       pointer-events="all"
-       stroke-width="2.2"
-       stroke="#82b366"
-       fill="#d5e8d4"
-       height="33"
-       width="33"
+       x="231"
        y="48.400002"
-       x="231" />
+       width="33"
+       height="33"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       stroke-width="2.2"
+       pointer-events="all"
+       id="rect30" />
     <g
-       id="g36"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g36">
       <switch
          id="switch34">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 211px;">
             <xhtml:div
@@ -220,36 +224,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text32"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="225"
            y="63"
-           x="225">12</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text32">12</text>
       </switch>
     </g>
     <rect
-       id="rect38"
-       pointer-events="all"
-       stroke-width="1.1"
-       stroke="#000000"
-       fill="#ffffff"
-       height="33"
-       width="33"
+       x="275"
        y="48.400002"
-       x="275" />
+       width="33"
+       height="33"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="1.1"
+       pointer-events="all"
+       id="rect38" />
     <g
-       id="g44"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g44">
       <switch
          id="switch42">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 251px;">
             <xhtml:div
@@ -260,36 +264,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text40"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="265"
            y="63"
-           x="265">15</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text40">15</text>
       </switch>
     </g>
     <rect
-       id="rect46"
-       pointer-events="all"
-       stroke-width="1.1"
-       stroke="#000000"
-       fill="#ffffff"
-       height="33"
-       width="33"
+       x="330"
        y="48.400002"
-       x="330" />
+       width="33"
+       height="33"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="1.1"
+       pointer-events="all"
+       id="rect46" />
     <g
-       id="g52"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g52">
       <switch
          id="switch50">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 301px;">
             <xhtml:div
@@ -300,36 +304,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text48"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="315"
            y="63"
-           x="315">16</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text48">16</text>
       </switch>
     </g>
     <rect
-       id="rect54"
-       pointer-events="all"
-       stroke-width="1.1"
-       stroke="#000000"
-       fill="#ffffff"
-       height="33"
-       width="33"
+       x="396"
        y="48.400002"
-       x="396" />
+       width="33"
+       height="33"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="1.1"
+       pointer-events="all"
+       id="rect54" />
     <g
-       id="g60"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g60">
       <switch
          id="switch58">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 361px;">
             <xhtml:div
@@ -340,36 +344,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text56"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="375"
            y="63"
-           x="375">19</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text56">19</text>
       </switch>
     </g>
     <rect
-       id="rect62"
-       pointer-events="all"
-       stroke-width="2.2"
-       stroke="#b85450"
-       fill="#f8cecc"
-       height="33"
-       width="33"
+       x="451"
        y="48.400002"
-       x="451" />
+       width="33"
+       height="33"
+       fill="#f8cecc"
+       stroke="#b85450"
+       stroke-width="2.2"
+       pointer-events="all"
+       id="rect62" />
     <g
-       id="g68"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g68">
       <switch
          id="switch66">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 411px;">
             <xhtml:div
@@ -380,36 +384,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text64"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="425"
            y="63"
-           x="425">13</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text64">13</text>
       </switch>
     </g>
     <rect
-       id="rect70"
-       pointer-events="all"
-       stroke-width="2.2"
-       stroke="#82b366"
-       fill="#d5e8d4"
-       height="33"
-       width="33"
+       x="506"
        y="48.400002"
-       x="506" />
+       width="33"
+       height="33"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       stroke-width="2.2"
+       pointer-events="all"
+       id="rect70" />
     <g
-       id="g76"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g76">
       <switch
          id="switch74">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 461px;">
             <xhtml:div
@@ -420,36 +424,36 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text72"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="475"
            y="63"
-           x="475">17</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text72">17</text>
       </switch>
     </g>
     <rect
-       id="rect78"
-       pointer-events="all"
-       stroke-width="2.2"
-       stroke="#82b366"
-       fill="#d5e8d4"
-       height="33"
-       width="33"
+       x="550"
        y="48.400002"
-       x="550" />
+       width="33"
+       height="33"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       stroke-width="2.2"
+       pointer-events="all"
+       id="rect78" />
     <g
-       id="g84"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g84">
       <switch
          id="switch82">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 59px; margin-left: 501px;">
             <xhtml:div
@@ -460,50 +464,50 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text80"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="515"
            y="63"
-           x="515">18</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text80">18</text>
       </switch>
     </g>
     <path
-       id="path86"
-       pointer-events="stroke"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
-       stroke="#c73500"
+       d="M 198,87.429997 V 42.369998"
        fill="none"
-       d="M 198,87.429997 V 42.369998" />
-    <path
-       id="path88"
-       pointer-events="all"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
        stroke="#c73500"
-       fill="#c73500"
-       d="m 198,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z" />
-    <path
-       id="path90"
-       pointer-events="all"
-       stroke-miterlimit="10"
        stroke-width="2.2"
-       stroke="#c73500"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path86" />
+    <path
+       d="m 198,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z"
        fill="#c73500"
-       d="m 198,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z" />
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path88" />
+    <path
+       d="m 198,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z"
+       fill="#c73500"
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path90" />
     <g
-       id="g96"
-       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)"
+       id="g96">
       <switch
          id="switch94">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 104px; margin-left: 180px;">
             <xhtml:div
@@ -514,52 +518,52 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text92"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="180"
            y="108"
-           x="180"><tspan
-             id="tspan1009"
-             style="font-weight:bold">10</tspan></text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text92"><tspan
+             style="font-weight:bold"
+             id="tspan1009">10</tspan></text>
       </switch>
     </g>
     <path
-       id="path98"
-       pointer-events="stroke"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
-       stroke="#c73500"
+       d="M 319,90.554527 V 42.370002"
        fill="none"
-       d="M 319,90.554527 V 42.370002" />
-    <path
-       id="path100"
-       pointer-events="all"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
        stroke="#c73500"
-       fill="#c73500"
-       d="m 319,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z" />
-    <path
-       id="path102"
-       pointer-events="all"
-       stroke-miterlimit="10"
        stroke-width="2.2"
-       stroke="#c73500"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path98" />
+    <path
+       d="m 319,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z"
        fill="#c73500"
-       d="m 319,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z" />
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path100" />
+    <path
+       d="m 319,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z"
+       fill="#c73500"
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path102" />
     <g
-       id="g108"
-       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)"
+       id="g108">
       <switch
          id="switch106">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 104px; margin-left: 290px;">
             <xhtml:div
@@ -570,52 +574,52 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text104"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="290"
            y="108"
-           x="290"><tspan
-             id="tspan1017"
-             style="font-weight:bold">11</tspan></text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text104"><tspan
+             style="font-weight:bold"
+             id="tspan1017">11</tspan></text>
       </switch>
     </g>
     <path
-       id="path110"
-       pointer-events="stroke"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
-       stroke="#c73500"
+       d="M 374,90.554527 V 42.370002"
        fill="none"
-       d="M 374,90.554527 V 42.370002" />
-    <path
-       id="path112"
-       pointer-events="all"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
        stroke="#c73500"
-       fill="#c73500"
-       d="m 374,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z" />
-    <path
-       id="path114"
-       pointer-events="all"
-       stroke-miterlimit="10"
        stroke-width="2.2"
-       stroke="#c73500"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path110" />
+    <path
+       d="m 374,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z"
        fill="#c73500"
-       d="m 374,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z" />
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path112" />
+    <path
+       d="m 374,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z"
+       fill="#c73500"
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path114" />
     <g
-       id="g120"
-       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)"
+       id="g120">
       <switch
          id="switch118">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 104px; margin-left: 340px;">
             <xhtml:div
@@ -626,52 +630,52 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text116"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="340"
            y="108"
-           x="340"><tspan
-             id="tspan1019"
-             style="font-weight:bold">12</tspan></text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text116"><tspan
+             style="font-weight:bold"
+             id="tspan1019">12</tspan></text>
       </switch>
     </g>
     <path
-       id="path122"
-       pointer-events="stroke"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
-       stroke="#c73500"
+       d="M 440,90.554527 V 42.370002"
        fill="none"
-       d="M 440,90.554527 V 42.370002" />
-    <path
-       id="path124"
-       pointer-events="all"
-       stroke-miterlimit="10"
-       stroke-width="2.2"
        stroke="#c73500"
-       fill="#c73500"
-       d="m 440,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z" />
-    <path
-       id="path126"
-       pointer-events="all"
-       stroke-miterlimit="10"
        stroke-width="2.2"
-       stroke="#c73500"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path122" />
+    <path
+       d="m 440,96.23 -2.59,-4.4 2.59,-4.4 2.59,4.4 z"
        fill="#c73500"
-       d="m 440,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z" />
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path124" />
+    <path
+       d="m 440,33.57 2.59,4.4 -2.59,4.4 -2.59,-4.4 z"
+       fill="#c73500"
+       stroke="#c73500"
+       stroke-width="2.2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path126" />
     <g
-       id="g132"
-       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)"
+       id="g132">
       <switch
          id="switch130">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 104px; margin-left: 400px;">
             <xhtml:div
@@ -682,37 +686,37 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text128"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="400"
            y="108"
-           x="400"><tspan
-             id="tspan1021"
-             style="font-weight:bold">15</tspan></text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text128"><tspan
+             style="font-weight:bold"
+             id="tspan1021">15</tspan></text>
       </switch>
     </g>
     <path
-       id="path134"
-       pointer-events="stroke"
-       stroke-dasharray="3.3, 3.3"
-       stroke-miterlimit="10"
-       stroke-width="1.1"
-       stroke="#000000"
+       d="m 467.5,83.4 v 42.38918"
        fill="none"
-       d="m 467.5,83.4 v 42.38918" />
+       stroke="#000000"
+       stroke-width="1.1"
+       stroke-miterlimit="10"
+       stroke-dasharray="3.3, 3.3"
+       pointer-events="stroke"
+       id="path134" />
     <g
-       id="g140"
-       transform="matrix(1.1,0,0,1.1,-0.5,-12.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-12.5)"
+       id="g140">
       <switch
          id="switch138">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 134px; margin-left: 425px;">
             <xhtml:div
@@ -723,37 +727,37 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text136"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="425"
            y="138"
-           x="425"><tspan
-             id="tspan1015"
-             style="font-weight:bold">Late!</tspan></text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text136"><tspan
+             style="font-weight:bold"
+             id="tspan1015">Late!</tspan></text>
       </switch>
     </g>
     <path
-       id="path142"
-       pointer-events="stroke"
-       stroke-dasharray="3.3, 3.3"
-       stroke-miterlimit="10"
-       stroke-width="1.1"
-       stroke="#000000"
+       d="m 247.5,83.4 v 42.38918"
        fill="none"
-       d="m 247.5,83.4 v 42.38918" />
+       stroke="#000000"
+       stroke-width="1.1"
+       stroke-miterlimit="10"
+       stroke-dasharray="3.3, 3.3"
+       pointer-events="stroke"
+       id="path142" />
     <g
-       id="g148"
-       transform="matrix(1.1,0,0,1.1,-0.5,-12.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-12.5)"
+       id="g148">
       <switch
          id="switch146">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 134px; margin-left: 225px;">
             <xhtml:div
@@ -764,40 +768,40 @@
           </xhtml:div>
         </foreignObject>
         <text
-           style="white-space:pre;inline-size:92.157"
-           id="text144"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
-           y="138"
+           xml:space="preserve"
            x="225"
-           xml:space="preserve"><tspan
+           y="138"
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text144"
+           style="white-space:pre;inline-size:92.157"><tspan
              x="225"
              y="138"><tspan
                style="font-weight:bold">Out of order</tspan></tspan></text>
       </switch>
     </g>
     <rect
-       id="rect150"
-       pointer-events="all"
-       stroke="none"
-       fill="none"
-       height="22"
-       width="88"
+       x="93.5"
        y="103.4"
-       x="93.5" />
+       width="88"
+       height="22"
+       fill="none"
+       stroke="none"
+       pointer-events="all"
+       id="rect150" />
     <g
-       id="g156"
-       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-6.5)"
+       id="g156">
       <switch
          id="switch154">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 104px; margin-left: 125px;">
             <xhtml:div
@@ -808,55 +812,55 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text152"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="125"
            y="108"
-           x="125"><tspan
-             id="tspan1011"
-             style="font-weight:bold">Watermarks:</tspan></text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text152"><tspan
+             style="font-weight:bold"
+             id="tspan1011">Watermarks:</tspan></text>
       </switch>
     </g>
     <path
-       id="path158"
-       pointer-events="all"
-       stroke-miterlimit="10"
-       stroke-linejoin="round"
-       stroke-width="1.1"
-       stroke="#666666"
+       d="m 0.55,69.85 v -11 h 22 V 47.3 L 43.45,64.35 22.55,81.4 V 69.85 Z"
        fill="#f5f5f5"
-       d="m 0.55,69.85 v -11 h 22 V 47.3 L 43.45,64.35 22.55,81.4 V 69.85 Z" />
+       stroke="#666666"
+       stroke-width="1.1"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path158" />
     <path
-       id="path160"
-       pointer-events="all"
-       stroke-miterlimit="10"
-       stroke-linejoin="round"
-       stroke-width="1.1"
-       stroke="#666666"
+       d="m 605.55,69.85 v -11 h 22 V 47.3 l 20.9,17.05 -20.9,17.05 V 69.85 Z"
        fill="#f5f5f5"
-       d="m 605.55,69.85 v -11 h 22 V 47.3 l 20.9,17.05 -20.9,17.05 V 69.85 Z" />
-    <rect
-       id="rect162"
+       stroke="#666666"
+       stroke-width="1.1"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
        pointer-events="all"
-       stroke="none"
-       fill="none"
-       height="22"
-       width="319"
+       id="path160" />
+    <rect
+       x="179.3"
        y="0"
-       x="179.3" />
+       width="319"
+       height="22"
+       fill="none"
+       stroke="none"
+       pointer-events="all"
+       id="rect162" />
     <g
-       id="g168"
-       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)">
+       transform="matrix(1.1,0,0,1.1,-0.5,-0.5)"
+       id="g168">
       <switch
          id="switch166">
         <foreignObject
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           height="100%"
-           width="100%"
+           style="overflow: visible; text-align: left;"
            pointer-events="none"
-           style="overflow: visible; text-align: left;">
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 10px; margin-left: 308px;">
             <xhtml:div
@@ -867,34 +871,34 @@
           </xhtml:div>
         </foreignObject>
         <text
-           id="text164"
-           font-weight="bold"
-           text-anchor="middle"
-           font-size="12px"
-           font-family="Helvetica"
-           fill="#000000"
+           x="308"
            y="14"
-           x="308">Stream with allowed &quot;out-of-orderedness&quot; of t=4</text>
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           font-weight="bold"
+           id="text164">Stream with allowed &quot;out-of-orderedness&quot; of t=4</text>
       </switch>
     </g>
   </g>
   <switch
-     transform="translate(1.5,1.5)"
-     id="switch178">
+     id="switch178"
+     transform="translate(1.5,1.5)">
     <g
-       id="g172"
-       requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" />
+       requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+       id="g172" />
     <a
-       id="a176"
-       target="_blank"
+       transform="translate(0,-5)"
        xlink:href="https://desk.draw.io/support/solutions/articles/16000042487"
-       transform="translate(0,-5)">
+       target="_blank"
+       id="a176">
       <text
-         id="text174"
-         y="100%"
-         x="50%"
+         text-anchor="middle"
          font-size="10px"
-         text-anchor="middle">Viewer does not support full SVG 1.1</text>
+         x="50%"
+         y="100%"
+         id="text174">Viewer does not support full SVG 1.1</text>
     </a>
   </switch>
 </svg>
