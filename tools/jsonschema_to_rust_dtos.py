@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import re
+import sys
 import json
 
 
@@ -10,16 +11,12 @@ PREAMBLE = [
     '// See: http://opendatafabric.org/',
     '/' * 80,
     '',
-    'use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};',
-    'use crate::domain::DatasetIDBuf;',
-    'use crate::domain::TimeInterval;',
+    'use super::{DatasetIDBuf, TimeInterval, Sha3_256};',
     'use chrono::{DateTime, Utc};',
-    'use serde::{Deserialize, Serialize};',
-    'use serde_with::skip_serializing_none;',
     '',
 ]
 
-DEFAULT_INDENT = 2
+DEFAULT_INDENT = 4
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
 
@@ -84,9 +81,7 @@ def render_schema(name, sch):
 
 def render_struct(name, sch):
     assert sch.get('additionalProperties', False) is False
-    yield '#[skip_serializing_none]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
-    yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
+    yield '#[derive(Clone, PartialEq, Eq, Debug)]'
     yield f'pub struct {name} {{'
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
@@ -96,12 +91,6 @@ def render_struct(name, sch):
 
 def render_field(pname, psch, required, modifier=None):
     typ = get_composite_type(psch)
-
-    if typ == 'DateTime<Utc>':
-        if required:
-            yield '#[serde(with = "datetime_rfc3339")]'
-        else:
-            yield '#[serde(default, with = "datetime_rfc3339_opt")]'
 
     if not required:
         typ = to_optional_type(psch, typ)
@@ -113,9 +102,7 @@ def render_field(pname, psch, required, modifier=None):
 
 
 def render_oneof(name, sch):
-    yield '#[skip_serializing_none]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
-    yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
+    yield '#[derive(Clone, PartialEq, Eq, Debug)]'
     yield f'pub enum {name} {{'
     for (ename, esch) in sch.get('definitions', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
@@ -123,7 +110,6 @@ def render_oneof(name, sch):
 
 
 def render_oneof_element(name, ename, esch):
-    yield '#[serde(rename_all = "camelCase")]'
     if not esch.get('properties', ()):
         yield f'{ename},'
     else:
@@ -134,9 +120,7 @@ def render_oneof_element(name, ename, esch):
 
 
 def render_string_enum(name, sch):
-    yield '#[skip_serializing_none]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
-    yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
+    yield '#[derive(Clone, Copy, PartialEq, Eq, Debug)]'
     yield f'pub enum {name} {{'
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
@@ -165,7 +149,7 @@ def get_primitive_type(sch):
             return 'i64'
         elif fmt == 'sha3-256':
             assert ptype == 'string'
-            return 'String'
+            return 'Sha3_256'
         elif fmt == 'url':
             assert ptype == 'string'
             return 'String'
@@ -207,5 +191,4 @@ def indent(gen, i=DEFAULT_INDENT):
 
 
 if __name__ == "__main__":
-    import sys
     render(sys.argv[1])

@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.15.0
+Version: 0.16.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -742,13 +742,14 @@ The procedure for calculating the stable [Hash](#hash) of a [Data Slice](#data-s
 
 #### Metadata Block Hashing
 
-Metadata structures that are part of the [MetadataBlock](#metadata-chain) are hashed as follows:
+[MetadataBlocks](#metadata-chain) are cryptographically secured through the following procedure:
 
-1. Iterate over block fields in depth-first order
-2. Convert fields into their canonical representation
-3. Feed data into [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest algorithm.
-
-> **TODO:** Add details on format-agnostic hashing
+1. The block is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) following a two-step process to ensure that all variable-size buffers are layed out in memory in a consistent order:
+   1. First, we iterate over all fields of the block in the same order they appear in the [schemas](#metadata-reference) serializing into buffers all vector-like and variable-size fields and recursing into nested data structures (tables) in the depth-first order.
+   2. Second, we iterate over all fields again this time serializing all leftover fixed-size fields
+2. Since the `blockHash` field appears first in the [MetadataBlock schema](#metadata-reference) it will be the very first buffer to be added into the `flatbuffer`. Knowing that `flatbuffers` are serialized in the back-to-front order and that `Sha3-256` data always takes up 32 bytes - we can easily exclude the `blockHash` field contents when computing the hash.
+3. The resulting `flatbuffer` (excluding the last 32 bytes) is fed into [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest algorithm.
+4. The resulting digest can now be directly copied into the last 32 bytes of the `flatbuffer` to secure the block, or compared to the hash that is already stored there to validate it.
 
 ### Data Ingestion
 It should be made clear that it's not the goal of this document to standardize the data ingestion techniques. Information here is given only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see as a result.

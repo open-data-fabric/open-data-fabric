@@ -30,7 +30,6 @@
         },
         "preprocess": {
           "$ref": "Transform.json",
-          "partial": true,
           "description": "Pre-processing query that shapes the data."
         },
         "merge": {
@@ -58,7 +57,6 @@
         },
         "transform": {
           "$ref": "Transform.json",
-          "partial": true,
           "description": "Transformation that will be applied to produce new data"
         }
       }

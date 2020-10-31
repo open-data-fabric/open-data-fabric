@@ -6,16 +6,17 @@
   "additionalProperties": false,
   "required": [
     "blockHash",
-    "prevBlockHash",
     "systemTime"
   ],
   "properties": {
     "blockHash": {
       "type": "string",
+      "format": "sha3-256",
       "description": "Hash sum of this metadata block's information."
     },
     "prevBlockHash": {
       "type": "string",
+      "format": "sha3-256",
       "description": "Hash sum of the preceding block."
     },
     "systemTime": {

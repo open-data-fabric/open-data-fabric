@@ -1,0 +1,24 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/TemporalTable.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Temporary Flink-specific extension for creating temporal tables from streams.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "primaryKey"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the dataset to be converted into a temporal table."
+    },
+    "primaryKey": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Column names used as the primary key for creating a table."
+    }
+  }
+}

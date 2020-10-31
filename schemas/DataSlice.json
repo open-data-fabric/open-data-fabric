@@ -12,6 +12,7 @@
   "properties": {
     "hash": {
       "type": "string",
+      "format": "sha3-256",
       "description": "Hash sum of the data in this slice"
     },
     "interval": {

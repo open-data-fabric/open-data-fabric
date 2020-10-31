@@ -84,7 +84,10 @@ def render_preamble(f, name, desc):
 
 
 def render_footer(f, name):
-    f.write(f"[JSON Schema](schemas/{name[0]}.json)\n")
+    f.write(
+        f"[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/{name[0]}.json)\n")
+    f.write(
+        "[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)\n")
 
 
 def render_table(f, header, header_fmt, rows):

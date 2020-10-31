@@ -2,15 +2,47 @@
   "$id": "http://open-data-fabric.github.com/schemas/Transform.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Engine-specific processing queries that shape the resulting data.",
-  "type": "object",
-  "additionalProperties": {},
-  "required": [
-    "engine"
-  ],
-  "properties": {
-    "engine": {
-      "type": "string",
-      "description": "Identifier of the engine used for this transformation."
+  "definitions": {
+    "Sql": {
+      "description": "Transform using one of the SQL dialects.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine"
+      ],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "description": "Identifier of the engine used for this transformation."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the engine to use."
+        },
+        "query": {
+          "type": "string",
+          "description": "SQL query the result of which will be used as an output."
+        },
+        "queries": {
+          "type": "array",
+          "description": "Use this instead of query field for specifying multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`.",
+          "items": {
+            "$ref": "SqlQueryStep"
+          }
+        },
+        "temporalTables": {
+          "type": "array",
+          "description": "Temporary Flink-specific extension for creating temporal tables from streams.",
+          "items": {
+            "$ref": "TemporalTable"
+          }
+        }
+      }
     }
-  }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/Sql"
+    }
+  ]
 }

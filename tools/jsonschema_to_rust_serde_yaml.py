@@ -11,11 +11,11 @@ PREAMBLE = [
     '/' * 80,
     '',
     'use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};',
-    'use crate::domain::DatasetIDBuf;',
-    'use crate::domain::TimeInterval;',
-    'use chrono::{DateTime, Utc};',
-    'use serde::{Deserialize, Serialize};',
-    'use serde_with::skip_serializing_none;',
+    'use crate::*;',
+    'use ::chrono::{DateTime, Utc};',
+    'use ::serde::{Deserialize, Deserializer, Serialize, Serializer};',
+    'use ::serde_with::serde_as;',
+    'use ::serde_with::skip_serializing_none;',
     '',
 ]
 
@@ -76,18 +76,23 @@ def read_schemas(schemas_dir):
 def render_schema(name, sch):
     if sch.get('type') == 'object':
         yield from render_struct(name, sch)
+        yield ''
+        yield from render_struct_as(name, sch)
     elif 'oneOf' in sch:
         yield from render_oneof(name, sch)
+        yield ''
+        yield from render_oneof_as(name, sch)
     else:
         raise Exception(f'Unsupported schema: {sch}')
 
 
 def render_struct(name, sch):
-    assert sch.get('additionalProperties', False) is False
+    yield f'#[serde(remote = "{name}")]'
+    yield '#[serde_as]'
     yield '#[skip_serializing_none]'
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
-    yield f'pub struct {name} {{'
+    yield f'pub struct {name}Def {{'
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
         yield from indent(render_field(pname, psch, required, 'pub'))
@@ -104,19 +109,59 @@ def render_field(pname, psch, required, modifier=None):
             yield '#[serde(default, with = "datetime_rfc3339_opt")]'
 
     if not required:
-        typ = to_optional_type(psch, typ)
+        typ = to_optional_type(typ)
 
     ret = f'{to_snake_case(pname)}: {typ},'
     if modifier:
         ret = ' '.join((modifier, ret))
+
+    ext_typ = get_composite_type_external(psch)
+    if ext_typ:
+        if not required:
+            ext_typ = to_optional_type(ext_typ)
+        yield f'#[serde_as(as = "{ext_typ}")]'
+        if not required:
+            yield '#[serde(default)]'
     yield ret
 
 
+def render_struct_as(name, sch):
+    tpl = f"""
+impl serde_with::SerializeAs<{name}> for {name}Def {{
+  fn serialize_as<S>(source: &{name}, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {{
+    #[derive(Serialize)]
+    struct Helper<'a>(#[serde(with = "{name}Def")] &'a {name});
+    Helper(source).serialize(serializer)
+  }}
+}}
+
+impl<'de> serde_with::DeserializeAs<'de, {name}> for {name}Def {{
+  fn deserialize_as<D>(deserializer: D) -> Result<{name}, D::Error>
+  where
+    D: Deserializer<'de>,
+  {{
+    #[derive(Deserialize)]
+    struct Helper(#[serde(with = "{name}Def")] {name});
+    let helper = Helper::deserialize(deserializer)?;
+    let Helper(v) = helper;
+    Ok(v)
+  }}
+}}
+"""
+    for l in tpl.split('\n'):
+        yield l
+
+
 def render_oneof(name, sch):
+    yield f'#[serde(remote = "{name}")]'
+    yield '#[serde_as]'
     yield '#[skip_serializing_none]'
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
-    yield f'pub enum {name} {{'
+    yield f'pub enum {name}Def {{'
     for (ename, esch) in sch.get('definitions', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
     yield '}'
@@ -128,16 +173,25 @@ def render_oneof_element(name, ename, esch):
         yield f'{ename},'
     else:
         struct_name = f'{name}{ename}'
-        yield f'{ename}({struct_name}),'
+        yield f'{ename}(#[serde_as(as = "{struct_name}Def")] {struct_name}),'
         # See: https://github.com/rust-lang/rfcs/pull/2593
         extra_types.append(lambda: render_struct(struct_name, esch))
 
 
+def render_oneof_as(name, sch):
+    yield from render_struct_as(name, sch)
+    for (ename, esch) in sch.get('definitions', {}).items():
+        if esch.get('properties', ()):
+            struct_name = f'{name}{ename}'
+            yield from render_struct_as(struct_name, esch)
+
+
 def render_string_enum(name, sch):
+    yield f'#[serde(remote = "{name}")]'
     yield '#[skip_serializing_none]'
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
-    yield f'pub enum {name} {{'
+    yield f'pub enum {name}Def {{'
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
         yield ' ' * DEFAULT_INDENT + capitalized + ','
@@ -151,6 +205,7 @@ def get_composite_type(sch):
     elif 'enum' in sch:
         assert sch['type'] == 'string'
         extra_types.append(lambda: render_string_enum(sch['enumName'], sch))
+        extra_types.append(lambda: render_struct_as(sch['enumName'], sch))
         return sch['enumName']
     else:
         return get_primitive_type(sch)
@@ -165,7 +220,7 @@ def get_primitive_type(sch):
             return 'i64'
         elif fmt == 'sha3-256':
             assert ptype == 'string'
-            return 'String'
+            return 'Sha3_256'
         elif fmt == 'url':
             assert ptype == 'string'
             return 'String'
@@ -192,8 +247,25 @@ def get_primitive_type(sch):
         raise Exception(f'Expected primitive type schema: {sch}')
 
 
-def to_optional_type(sch, typ):
+def to_optional_type(typ):
     return f'Option<{typ}>'
+
+
+def get_composite_type_external(sch):
+    if sch.get('type') == 'array':
+        ptyp = get_primitive_type_external(sch['items'])
+        return f'Vec<{ptyp}>' if ptyp else None
+    elif 'enum' in sch:
+        assert sch['type'] == 'string'
+        return sch['enumName'] + 'Def'
+    else:
+        return get_primitive_type_external(sch)
+
+
+def get_primitive_type_external(sch):
+    if '$ref' in sch:
+        return sch['$ref'].split('.')[0] + 'Def'
+    return None
 
 
 def to_snake_case(name):

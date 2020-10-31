@@ -75,7 +75,10 @@ def render(schemas_dir):
 def read_schemas(schemas_dir):
     schemas = {}
     for sch in os.listdir(schemas_dir):
-        with open(os.path.join(schemas_dir, sch)) as f:
+        path = os.path.join(schemas_dir, sch)
+        if not os.path.isfile(path):
+            continue
+        with open(path) as f:
             s = json.load(f)
             name = os.path.splitext(s['$id'].split('/')[-1])[0]
             schemas[name] = s
@@ -161,6 +164,9 @@ def get_primitive_type(sch):
             assert ptype == 'string'
             return 'URI'
         elif fmt == 'regex':
+            assert ptype == 'string'
+            return 'String'
+        elif fmt == 'sha3-256':
             assert ptype == 'string'
             return 'String'
         elif fmt == 'date-time':

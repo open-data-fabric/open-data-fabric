@@ -12,7 +12,10 @@ DIAGRAMS_RAW = $(subst src/images,images,$(DIAGRAMS_SRC_RAW))
 SCHEMAS_SRC = $(wildcard schemas/*.json)
 SCHEMAS = $(subst schemas,build/schemas,$(patsubst %.json, %.md, $(SCHEMAS_SRC)))
 
-all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) $(SCHEMAS) open-data-fabric.md
+SCHEMA_FLATBUFFERS = schemas/flatbuffers/opendatafabric.fbs
+SCHEMA_FLATBUFFERSC = python tools/jsonschema_to_flatbuffers.py schemas/
+
+all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) $(SCHEMAS) $(SCHEMA_FLATBUFFERS) open-data-fabric.md
 
 build/:
 	mkdir -p build/schemas
@@ -25,6 +28,9 @@ $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 
 $(SCHEMAS): build/schemas/%.md: schemas/%.json
 	$(SCHEMAC) $^ $@
+
+$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC)
+	$(SCHEMA_FLATBUFFERSC) > $@
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMAS)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
