@@ -22,7 +22,8 @@ The goal of this specification is to develop a method of data exchange that woul
 </p>
 
 ### Introductory materials
-- [Introducing Open Data Fabric: World's First Decentralized Collaborative Data Pipeline](https://www.kamu.dev/blog/introducing-odf/)
+- [Kamu Blog: Introducing Open Data Fabric](https://www.kamu.dev/blog/introducing-odf/)
+- [Data+AI Summit 2020 Talk: Building a Distributed Collaborative Data Pipeline](https://databricks.com/session_eu20/building-a-distributed-collaborative-data-pipeline-with-apache-spark)
 
 ## Current State
 
