@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.16.0
+Version: 0.17.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -936,6 +936,7 @@ but sometimes they can also be assigned manually. Manual watermarks are useful i
 datasets in order to let the computations continue even when no new events were observed for a long time. |
 | `inputSlices` | array([DataSlice](#dataslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any. |
 | `source` | [DatasetSource](#datasetsource-schema) |  |  | Contains the definition of the source of data when it changes. |
+| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Vocabulary lets you change system column names to avoid conflicts. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MetadataBlock.json)
 [![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)

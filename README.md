@@ -2,7 +2,7 @@
 <img src="./src/images/odf_logo_2.png" alt="Open Data Fabric" width="500">
 </p>
 
-[![Latest Version](https://img.shields.io/badge/open--data--fabric-0.16.0-green)](./open-data-fabric.md)
+[![Latest Version](https://img.shields.io/badge/open--data--fabric-0.17.0-green)](./open-data-fabric.md)
 
 ## Introduction
 
@@ -27,7 +27,7 @@ The goal of this specification is to develop a method of data exchange that woul
 
 ## Current State
 
-Latest version: [![Latest Version](https://img.shields.io/badge/open--data--fabric-0.16.0-green)](./open-data-fabric.md)
+Latest version: [![Latest Version](https://img.shields.io/badge/open--data--fabric-0.17.0-green)](./open-data-fabric.md)
 
 The specification is currently in the **EXPERIMENTAL** stage and welcomes feedback.
 

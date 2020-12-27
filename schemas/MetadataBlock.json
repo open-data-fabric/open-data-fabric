@@ -43,6 +43,10 @@
     "source": {
       "$ref": "DatasetSource.json",
       "description": "Contains the definition of the source of data when it changes."
+    },
+    "vocab": {
+      "$ref": "DatasetVocabulary.json",
+      "description": "Vocabulary lets you change system column names to avoid conflicts."
     }
   }
 }
