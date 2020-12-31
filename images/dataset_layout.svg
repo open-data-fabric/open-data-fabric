@@ -14,16 +14,16 @@
    sodipodi:docname="dataset_layout.svg"
    id="svg8"
    version="1.1"
-   viewBox="0 0 189.70672 71.14752"
-   height="71.147522mm"
-   width="189.70671mm">
+   viewBox="0 0 135.70043 70.472631"
+   height="70.472633mm"
+   width="135.70042mm">
   <defs
      id="defs2">
     <rect
        x="84.7827"
-       y="-77.126967"
-       width="99.230313"
-       height="83.002207"
+       y="-77.126968"
+       width="99.230316"
+       height="83.002205"
        id="rect1110" />
     <marker
        inkscape:stockid="Arrow2Lend"
@@ -502,9 +502,9 @@
      inkscape:document-rotation="0"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="104.16754"
-     inkscape:cx="274.42578"
-     inkscape:zoom="1.1458305"
+     inkscape:cy="144.14891"
+     inkscape:cx="344.95587"
+     inkscape:zoom="1.620449"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -519,12 +519,12 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     transform="translate(13.39327,68.54563)"
+     transform="translate(13.39327,68.433426)"
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
@@ -556,7 +556,7 @@
          y="-63.759621"
          x="-8.091136"
          sodipodi:role="line"
-         id="tspan1300">ca.vancouver.opendata.property.tax-report</tspan></text>
+         id="tspan1300">ca.vancouver.property.tax-report</tspan></text>
     <text
        id="text1321"
        y="-58.469177"
@@ -775,7 +775,7 @@
          y="-5.5647469"
          x="0.37748992"
          sodipodi:role="line"
-         id="tspan1455">2020-09-07T211913145Z.snappy.parquet</tspan></text>
+         id="tspan1455">61d6...434a</tspan></text>
     <text
        id="text1461"
        y="-0.27430439"
@@ -787,7 +787,7 @@
          y="-0.27430439"
          x="0.37748992"
          sodipodi:role="line"
-         id="tspan1459">2020-09-07T212139540Z.snappy.parquet</tspan></text>
+         id="tspan1459">962f...2d80</tspan></text>
     <g
        id="g1601"
        transform="matrix(0.72538122,0,0,0.72320184,-0.49474909,-0.42319746)"
@@ -921,78 +921,82 @@
     <text
        id="text1649"
        y="-63.759621"
-       x="87.180916"
+       x="69.185081"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.64667px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#447821;stroke-width:0.264583"
        xml:space="preserve"
        transform="scale(0.99976866,1.0002314)"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#447821;stroke-width:0.264583"
          y="-63.759621"
-         x="87.180916"
+         x="69.185081"
          sodipodi:role="line"
-         id="tspan1647">&lt; Dataset ID</tspan></text>
+         id="tspan1647">Dataset ID</tspan></text>
     <text
        id="text1653"
-       y="-53.178734"
-       x="87.180916"
+       y="-42.597832"
+       x="56.48214"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.64667px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#447821;stroke-width:0.264583"
        xml:space="preserve"
        transform="scale(0.99976866,1.0002314)"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#447821;stroke-width:0.264583"
-         y="-53.178734"
-         x="87.180916"
+         y="-42.597832"
+         x="56.48214"
          sodipodi:role="line"
-         id="tspan1651">&lt; Metadata blocks</tspan></text>
+         id="tspan1651">Metadata chain blocks</tspan></text>
     <text
        id="text1657"
-       y="-32.01696"
-       x="87.180916"
+       y="-26.726511"
+       x="56.48214"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.64667px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#447821;stroke-width:0.264583"
        xml:space="preserve"
        transform="scale(0.99976866,1.0002314)"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#447821;stroke-width:0.264583"
-         y="-32.01696"
-         x="87.180916"
+         y="-26.726511"
+         x="56.48214"
          sodipodi:role="line"
-         id="tspan1655">&lt; Pointers to blocks in the chain</tspan></text>
+         id="tspan1655">References to blocks in the chain</tspan></text>
     <text
        id="text1661"
-       y="-21.436075"
-       x="87.180916"
+       y="-16.145624"
+       x="56.48214"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.64667px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#447821;stroke-width:0.264583"
        xml:space="preserve"
        transform="scale(0.99976866,1.0002314)"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#447821;stroke-width:0.264583"
-         y="-21.436075"
-         x="87.180916"
+         y="-16.145624"
+         x="56.48214"
          sodipodi:role="line"
-         id="tspan1659">&lt; Opaque engine-specific checkpoint data</tspan></text>
+         id="tspan1659">Checkpoint data</tspan></text>
     <text
        id="text1665"
-       y="-5.5647488"
-       x="87.180916"
+       y="-3.4485722"
+       x="56.48214"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.64667px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#447821;stroke-width:0.264583"
        xml:space="preserve"
        transform="scale(0.99976866,1.0002314)"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#447821;stroke-width:0.264583"
-         y="-5.5647488"
-         x="87.180916"
+         y="-3.4485722"
+         x="56.48214"
          sodipodi:role="line"
-         id="tspan1663">&lt; Data part files</tspan></text>
+         id="tspan1663">Data part files</tspan></text>
     <path
        style="fill:none;stroke:#447821;stroke-width:0.1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 13.536069,-33.321287 h 71.15844"
+       d="M 13.848086,-33.321287 H 119.28241"
        id="path1667" />
     <path
        style="fill:none;stroke:#447821;stroke-width:0.1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 17.139509,-54.487955 h 67.555"
+       d="M 17.996765,-54.487955 H 118.11801"
        id="path1669" />
     <path
        style="fill:none;stroke:#447821;stroke-width:0.0999999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 21.585383,-22.737953 H 84.694509"
+       d="M 23.115346,-22.737953 H 118.63706"
        id="path1671" />
     <text
        xml:space="preserve"
        id="text1108"
-       style="line-height:1.25;font-family:sans-serif;font-size:2.82222222px;white-space:pre;shape-inside:url(#rect1110);" />
+       style="font-size:2.82222px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect1110);" />
+    <path
+       style="fill:none;stroke:#447821;stroke-width:0.0999994;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 11.473973,-11.625446 H 120.30716"
+       id="path161" />
   </g>
 </svg>
