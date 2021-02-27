@@ -15,6 +15,10 @@ The goal of this specification is to develop a method of data exchange that woul
 - Improve liquidity of data by speeding up the data propagation times from publishers to consumers
 - Create a feedback loop between data consumers and publishers, allowing them to collaborate on better data availability, recency, and design
 
+<p align="center">
+<img src="./src/images/dataset_graph.png" alt="Dataset Graph">
+</p>
+
 `ODF` protocol is a **Web 3.0 technology** that powers a distributed structured data supply chain for providing timely, high-quality, and verifiable data for data science, smart contracts, web and applications.
 
 <p align="center">
