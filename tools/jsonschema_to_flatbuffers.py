@@ -10,9 +10,6 @@ PREAMBLE = [
     '// See: http://opendatafabric.org/',
     '/' * 80,
     '',
-    'struct Option_bool { value: bool; }',
-    'struct Option_int64 { value: int64; }',
-    '',
     'struct Timestamp {',
     '  year: int32;',
     '  ordinal: uint16;',
@@ -162,7 +159,7 @@ def render_struct(name, sch):
 
 
 def render_field(pname, psch, required, modifier=None):
-    typ = get_composite_type(psch)
+    typ = get_composite_type(psch, required)
     ret = f'{to_snake_case(pname)}: {typ};'
     if modifier:
         ret = ' '.join((modifier, ret))
@@ -188,13 +185,11 @@ def render_string_enum(name, sch):
         capitalized = value[0].upper() + value[1:]
         yield ' ' * DEFAULT_INDENT + capitalized + ','
     yield '}'
-    yield ''
-    yield f'struct Option_{name} {{ value: {name}; }}'
 
 
-def get_composite_type(sch):
+def get_composite_type(sch, required):
     if sch.get('type') == 'array':
-        ptyp = get_primitive_type(sch['items'])
+        ptyp = get_composite_type(sch['items'], required=True)
         if ptyp == 'PrepStep':
             extra_types.append(['table PrepStepWrapper { value: PrepStep; }'])
             return f'[PrepStepWrapper]'
@@ -202,12 +197,20 @@ def get_composite_type(sch):
             return f'[{ptyp}]'
     elif 'enum' in sch:
         assert sch['type'] == 'string'
-        extra_types.append(list(render_string_enum(sch['enumName'], sch)))
-        return 'Option_' + sch['enumName']
+        ptyp = sch['enumName']
+        extra_types.append(list(render_string_enum(ptyp, sch)))
+        if not required:
+            ptyp += " = null"
+        return ptyp
     elif sch.get('type') == 'object' and 'properties' not in sch:
         return '[ubyte]'
+    elif '$ref' in sch:
+        return sch['$ref'].split('.')[0]
     else:
-        return get_primitive_type(sch)
+        ptyp = get_primitive_type(sch)
+        if not required and ptyp not in ('string', '[ubyte]', 'Timestamp'):
+            ptyp += " = null"
+        return ptyp
 
 
 def get_primitive_type(sch):
@@ -216,7 +219,7 @@ def get_primitive_type(sch):
     if fmt is not None:
         if fmt == 'int64':
             assert ptype == 'integer'
-            return 'Option_int64'
+            return 'int64'
         elif fmt == 'url':
             assert ptype == 'string'
             return 'string'
@@ -234,13 +237,11 @@ def get_primitive_type(sch):
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':
-        return 'Option_bool'
+        return 'bool'
     elif ptype == 'integer':
-        return 'Option_int32'
+        return 'int32'
     elif ptype == 'string':
         return 'string'
-    elif '$ref' in sch:
-        return sch['$ref'].split('.')[0]
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
 

@@ -5,65 +5,211 @@ import sys
 import json
 
 
-PREAMBLE = [
-    "/" * 80,
-    "// WARNING: This file is auto-generated from Open Data Fabric Schemas",
-    "// See: http://opendatafabric.org/",
-    "/" * 80,
-    "",
-    "use crate as odf;"
-    "use super::odf_generated as fb;"
-    "use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};",
-    "use std::convert::TryInto;",
-    "use chrono::prelude::*;",
-    "",
-    "pub trait FlatbuffersSerializable<'fb, T> {",
-    "    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> WIPOffset<T>;",
-    "}",
-    "",
-    "pub trait FlatbuffersDeserializable<T> {",
-    "    fn deserialize(fb: T) -> Self;",
-    "}",
-    "",
-    "trait FlatbuffersEnumSerializable<'fb, E> {",
-    "    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (E, WIPOffset<UnionWIPOffset>);",
-    "}",
-    "",
-    "trait FlatbuffersEnumDeserializable<'fb, E> {",
-    "    fn deserialize(table: Table<'fb>, t: E) -> Self;",
-    "}",
-    '',
-]
+PREAMBLE = """
+////////////////////////////////////////////////////////////////////////////////
+// WARNING: This file is auto-generated from Open Data Fabric Schemas
+// See: http://opendatafabric.org/
+////////////////////////////////////////////////////////////////////////////////
+
+use super::odf_generated as fb;
+mod odf {
+    pub use crate::dataset_id::*;
+    pub use crate::dtos::*;
+    pub use crate::sha::*;
+    pub use crate::time_interval::*;
+}
+use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
+use chrono::prelude::*;
+use std::convert::{TryFrom, TryInto};
+use std::str::FromStr;
+
+pub trait FlatbuffersSerializable<'fb> {
+    type OffsetT;
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT;
+}
+
+pub trait FlatbuffersDeserializable<T> {
+    fn deserialize(fb: T) -> Self;
+}
+
+trait FlatbuffersEnumSerializable<'fb, E> {
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (E, WIPOffset<UnionWIPOffset>);
+}
+
+trait FlatbuffersEnumDeserializable<'fb, E> {
+    fn deserialize(table: Table<'fb>, t: E) -> Self
+    where
+        Self: Sized;
+}
+"""
+
+FOOTER = """
+///////////////////////////////////////////////////////////////////////////////
+// Helpers
+///////////////////////////////////////////////////////////////////////////////
+
+fn datetime_to_fb(dt: &DateTime<Utc>) -> fb::Timestamp {
+    fb::Timestamp::new(
+        dt.year(),
+        dt.ordinal() as u16,
+        dt.naive_utc().num_seconds_from_midnight(),
+        dt.naive_utc().nanosecond(),
+    )
+}
+
+fn fb_to_datetime(dt: &fb::Timestamp) -> DateTime<Utc> {
+    Utc.yo(dt.year(), dt.ordinal() as u32)
+        .and_time(
+            NaiveTime::from_num_seconds_from_midnight_opt(
+                dt.seconds_from_midnight(),
+                dt.nanoseconds(),
+            )
+            .unwrap(),
+        )
+        .unwrap()
+}
+
+fn interval_to_fb(iv: &odf::TimeInterval) -> fb::TimeInterval {
+    use intervals_general::interval::Interval;
+    match iv.0 {
+        Interval::Closed { bound_pair: p } => fb::TimeInterval::new(
+            fb::TimeIntervalType::Closed,
+            &datetime_to_fb(p.left()),
+            &datetime_to_fb(p.right()),
+        ),
+        Interval::Open { bound_pair: p } => fb::TimeInterval::new(
+            fb::TimeIntervalType::Open,
+            &datetime_to_fb(p.left()),
+            &datetime_to_fb(p.right()),
+        ),
+        Interval::LeftHalfOpen { bound_pair: p } => fb::TimeInterval::new(
+            fb::TimeIntervalType::LeftHalfOpen,
+            &datetime_to_fb(p.left()),
+            &datetime_to_fb(p.right()),
+        ),
+        Interval::RightHalfOpen { bound_pair: p } => fb::TimeInterval::new(
+            fb::TimeIntervalType::RightHalfOpen,
+            &datetime_to_fb(p.left()),
+            &datetime_to_fb(p.right()),
+        ),
+        Interval::UnboundedClosedRight { right } => fb::TimeInterval::new(
+            fb::TimeIntervalType::UnboundedClosedRight,
+            &fb::Timestamp::default(),
+            &datetime_to_fb(&right),
+        ),
+        Interval::UnboundedOpenRight { right } => fb::TimeInterval::new(
+            fb::TimeIntervalType::UnboundedOpenRight,
+            &fb::Timestamp::default(),
+            &datetime_to_fb(&right),
+        ),
+        Interval::UnboundedClosedLeft { left } => fb::TimeInterval::new(
+            fb::TimeIntervalType::UnboundedClosedLeft,
+            &datetime_to_fb(&left),
+            &fb::Timestamp::default(),
+        ),
+        Interval::UnboundedOpenLeft { left } => fb::TimeInterval::new(
+            fb::TimeIntervalType::UnboundedOpenLeft,
+            &datetime_to_fb(&left),
+            &fb::Timestamp::default(),
+        ),
+        Interval::Singleton { at } => fb::TimeInterval::new(
+            fb::TimeIntervalType::Singleton,
+            &datetime_to_fb(&at),
+            &fb::Timestamp::default(),
+        ),
+        Interval::Unbounded => fb::TimeInterval::new(
+            fb::TimeIntervalType::Unbounded,
+            &fb::Timestamp::default(),
+            &fb::Timestamp::default(),
+        ),
+        Interval::Empty => fb::TimeInterval::new(
+            fb::TimeIntervalType::Empty,
+            &fb::Timestamp::default(),
+            &fb::Timestamp::default(),
+        ),
+    }
+}
+
+fn fb_to_interval(iv: &fb::TimeInterval) -> odf::TimeInterval {
+    match iv.type_() {
+        fb::TimeIntervalType::Closed => {
+            odf::TimeInterval::closed(fb_to_datetime(iv.left()), fb_to_datetime(iv.right()))
+                .unwrap()
+        }
+        fb::TimeIntervalType::Open => {
+            odf::TimeInterval::open(fb_to_datetime(iv.left()), fb_to_datetime(iv.right())).unwrap()
+        }
+        fb::TimeIntervalType::LeftHalfOpen => {
+            odf::TimeInterval::left_half_open(fb_to_datetime(iv.left()), fb_to_datetime(iv.right()))
+                .unwrap()
+        }
+        fb::TimeIntervalType::RightHalfOpen => odf::TimeInterval::right_half_open(
+            fb_to_datetime(iv.left()),
+            fb_to_datetime(iv.right()),
+        )
+        .unwrap(),
+        fb::TimeIntervalType::UnboundedClosedRight => {
+            odf::TimeInterval::unbounded_closed_right(fb_to_datetime(iv.right()))
+        }
+        fb::TimeIntervalType::UnboundedOpenRight => {
+            odf::TimeInterval::unbounded_open_right(fb_to_datetime(iv.right()))
+        }
+        fb::TimeIntervalType::UnboundedClosedLeft => {
+            odf::TimeInterval::unbounded_closed_left(fb_to_datetime(iv.left()))
+        }
+        fb::TimeIntervalType::UnboundedOpenLeft => {
+            odf::TimeInterval::unbounded_open_left(fb_to_datetime(iv.left()))
+        }
+        fb::TimeIntervalType::Singleton => odf::TimeInterval::singleton(fb_to_datetime(iv.left())),
+        fb::TimeIntervalType::Unbounded => odf::TimeInterval::unbounded(),
+        fb::TimeIntervalType::Empty => odf::TimeInterval::empty(),
+    }
+}
+
+fn empty_table<'fb>(
+    fb: &mut FlatBufferBuilder<'fb>,
+) -> WIPOffset<flatbuffers::TableFinishedWIPOffset> {
+    let wip = fb.start_table();
+    fb.end_table(wip)
+}
+"""
 
 INDENT = 4
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
 
 
+struct_types = set()
+enum_types = set()
+string_enum_types = set()
+
 extra_types = []
 
 
 def is_struct_type(typ):
-    return typ in (
-        'DatasetVocabulary',
-        'DataSlice',
-        'SqlQueryStep',
-        'TemporalTable',
-    )
+    return typ in struct_types
 
 
-def is_string_enum(typ):
-    return typ in (
-        'CompressionFormat',
-        'SourceOrdering',
-    )
+def is_enum(typ_or_sch):
+    if isinstance(typ_or_sch, dict):
+        typ_or_sch = typ_or_sch.get('$ref', '')[:-5]
+    return typ_or_sch in enum_types
+
+
+def is_string_enum(sch):
+    return "enumName" in sch and sch.get("type") == "string"
 
 
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
 
-    for l in PREAMBLE:
-        print(l)
+    for name, sch in schemas.items():
+        if sch.get("type") == "object":
+            struct_types.add(name)
+        elif 'oneOf' in sch:
+            enum_types.add(name)
+
+    print(PREAMBLE)
 
     for name, sch in schemas.items():
         try:
@@ -91,6 +237,8 @@ def render(schemas_dir):
                 f'Error while rendering {name} schema:\n{sch}'
             ) from ex
 
+    print(FOOTER)
+
 
 def read_schemas(schemas_dir):
     schemas = {}
@@ -116,8 +264,10 @@ def render_schema(name, sch):
 
 def render_struct(name, sch):
     assert sch.get('additionalProperties', False) is False
-    yield f"impl<'fb> FlatbuffersSerializable<'fb, fb::{name}<'fb>> for odf::{name} {{"
-    yield f"    fn serialize(&self, fb: &mut FlatBufferBuilder <'fb>) -> WIPOffset<fb::{name}<'fb>> {{"
+    yield f"impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{"
+    yield f"type OffsetT = WIPOffset<fb::{name}<'fb>>;"
+    yield ""
+    yield f"    fn serialize(&self, fb: &mut FlatBufferBuilder <'fb>) -> Self::OffsetT {{"
     preserialized = set()
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
@@ -130,7 +280,10 @@ def render_struct(name, sch):
     yield f"        let mut builder = fb::{name}Builder::new(fb);"
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
-        yield from indent(render_field_ser(pname, psch, required, pname in preserialized), INDENT * 2)
+        yield from indent(
+            render_field_ser(pname, psch, required, pname in preserialized),
+            INDENT * 2
+        )
     yield f"        builder.finish()"
     yield "    }"
     yield "}"
@@ -140,7 +293,10 @@ def render_struct(name, sch):
     yield f"        odf::{name} {{"
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
-        yield from indent(render_field_de(pname, psch, required), INDENT * 3)
+        yield from indent(
+            render_field_de(pname, psch, required),
+            INDENT * 3
+        )
     yield "        }"
     yield "    }"
     yield "}"
@@ -168,9 +324,17 @@ def render_field_ser(pname, psch, required, preserialized):
     name = to_snake_case(pname)
     if preserialized:
         if required:
-            yield f"builder.add_{name}({name}_offset);"
+            if is_enum(psch):
+                yield f"builder.add_{name}_type({name}_offset.0);"
+                yield f"builder.add_{name}({name}_offset.1);"
+            else:
+                yield f"builder.add_{name}({name}_offset);"
         else:
-            yield f"{name}_offset.map(|off| builder.add_{name}(off));"
+            if is_enum(psch):
+                yield f"{name}_offset.map(|(e, off)| {{ builder.add_{name}_type(e); builder.add_{name}(off) }});"
+            else:
+                yield f"{name}_offset.map(|off| builder.add_{name}(off));"
+
     else:
         if required:
             yield f"builder.add_{name}({{"
@@ -217,7 +381,7 @@ def render_oneof(name, sch):
 def render_oneof_element_ser(name, ename, esch):
     struct_name = f'{name}{ename}'
     if not esch.get('properties', ()):
-        yield f"odf::{name}::{ename} => panic!(\"Nothing to serialize\"),"
+        yield f"odf::{name}::{ename} => (fb::{name}::{struct_name}, empty_table(fb).as_union_value()),"
     else:
         yield f"odf::{name}::{ename}(v) => (fb::{name}::{struct_name}, v.serialize(fb).as_union_value()),"
 
@@ -322,7 +486,7 @@ def ser_primitive_type(name, sch):
     if fmt is not None:
         if fmt == 'int64':
             assert ptype == 'integer'
-            yield f'&fb::Option_int64 {{ value_: {name} }}'
+            yield name
         elif fmt == 'sha3-256':
             assert ptype == 'string'
         elif fmt == 'url':
@@ -330,17 +494,17 @@ def ser_primitive_type(name, sch):
         elif fmt == 'regex':
             assert ptype == 'string'
         elif fmt == 'date-time':
-            yield f'&fb::Timestamp {{ x_: 0 }}'
+            yield f'&datetime_to_fb(&{name})'
         elif fmt == 'date-time-interval':
-            yield f'&fb::TimeInterval {{ x_: 0 }}'
+            yield f'&interval_to_fb(&{name})'
         elif fmt == 'dataset-id':
             pass
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
-        yield f'fb::Option_bool {{ value_: *{name} }}'
+        yield name
     elif ptype == 'integer':
-        pass
+        yield name
     elif ptype == 'string':
         pass
     elif '$ref' in sch:
@@ -356,7 +520,7 @@ def de_primitive_type(name, sch, enum_t_accessor):
     if fmt is not None:
         if fmt == 'int64':
             assert ptype == 'integer'
-            yield f'{name}.value()'
+            yield f'{name}'
         elif fmt == 'sha3-256':
             assert ptype == 'string'
             yield f'odf::Sha3_256::new({name}.try_into().unwrap())'
@@ -375,9 +539,9 @@ def de_primitive_type(name, sch, enum_t_accessor):
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
-        yield f'{name}.value()'
+        yield f'{name}'
     elif ptype == 'integer':
-        yield f'{name}.value()'
+        yield f'{name}'
     elif ptype == 'string':
         yield f'{name}.to_owned()'
     elif '$ref' in sch:
