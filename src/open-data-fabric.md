@@ -863,19 +863,33 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 
 ## Metadata Reference
 
+- [Manifest](#manifest-schema)
+- [DatasetSnapshot](#datasetsnapshot-schema)
+- [DatasetSource](#datasetsource-schema)
+- [ReadStep](#readstep-schema)
+- [PrepStep](#prepstep-schema)
+- [FetchStep](#fetchstep-schema)
+- [Transform](#transform-schema)
+- [MergeStrategy](#mergestrategy-schema)
+- [DatasetVocabulary](#datasetvocabulary-schema)
+- [MetadataBlock](#metadatablock-schema)
+- [DataSlice](#dataslice-schema)
+- [EventTimeSource](#eventtimesource-schema)
+- [SourceCaching](#sourcecaching-schema)
+
 ![](build/schemas/Manifest.md)
+![](build/schemas/DatasetSnapshot.md)
+![](build/schemas/DatasetSource.md)
+![](build/schemas/ReadStep.md)
+![](build/schemas/PrepStep.md)
+![](build/schemas/FetchStep.md)
+![](build/schemas/Transform.md)
+![](build/schemas/MergeStrategy.md)
+![](build/schemas/DatasetVocabulary.md)
 ![](build/schemas/MetadataBlock.md)
 ![](build/schemas/DataSlice.md)
-![](build/schemas/DatasetSource.md)
-![](build/schemas/Transform.md)
-![](build/schemas/FetchStep.md)
 ![](build/schemas/EventTimeSource.md)
 ![](build/schemas/SourceCaching.md)
-![](build/schemas/PrepStep.md)
-![](build/schemas/ReadStep.md)
-![](build/schemas/MergeStrategy.md)
-![](build/schemas/DatasetSnapshot.md)
-![](build/schemas/DatasetVocabulary.md)
 
 ## Engine API Reference
 > **TODO**: Provide `gRPC + FlatBuffers` IDL
