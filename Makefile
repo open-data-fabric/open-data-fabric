@@ -34,6 +34,7 @@ $(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC)
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMAS)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
+	@# Dependency: nodejs-markdown-toc
 	markdown-toc --maxdepth 2 -i open-data-fabric.md
 
 clean:

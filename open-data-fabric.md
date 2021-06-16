@@ -654,12 +654,9 @@ This section provides the details on the contract between an [Engine](#engine) a
 ### Execution Model
 [Engine](#engine) executes in a very restricted environment (a "sandbox") that prevents it from accessing any external resources other than those explicitly provided by the [Coordinator](#coordinator). Isolating the [Engine](#engine) from making network calls and accessing any random files ensures both that the [Data](#data) being processed cannot be leaked, and that non-deterministic behavior is harder to introduce accidentally.
 
-Our isolation technology of choice is [Docker](https://www.docker.com/) because:
-- It's currently the most popular containerization tool
-- It supports most major operating systems
-- [Docker Hub](https://hub.docker.com/) provides a convenient way to reliably distribute the images
+Our isolation technology of choice is  [OCI containers](https://opencontainers.org/) - a lightweight mechanism that provides good performance and strong isolation guarantees. We rely on OCI-compatible images as the distribution mechanism for the engines.
 
-> **TODO:** Add exact `docker` commands to reproduce the sandboxed environment
+> **TODO:** Add exact `podman` and `docker` commands to reproduce the sandboxed environment
 
 ### Communication Interface
 This section describes the [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) mechanism used in communications between the [Coordinator](#coordinator) and the [Engine](#engine).
@@ -759,7 +756,7 @@ This operations is used to trace back a set of events in the output [Dataset](#d
 ### Engine Versioning
 As [described previously](#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](#engine) will break this guarantee.
 
-Whenever the [Coordinator](#coordinator) uses an [Engine](#engine) to execute a query it must specify the full digest of the Docker image in the resulting [Metadata Block](#metadata-chain). [Engine](#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
+Whenever the [Coordinator](#coordinator) uses an [Engine](#engine) to execute a query it must specify the full digest of the OCI container image in the resulting [Metadata Block](#metadata-chain). [Engine](#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
 
 See also:
 - [Engine Deprecation](#engine-deprecation)
