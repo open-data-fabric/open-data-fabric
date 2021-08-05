@@ -2,7 +2,7 @@
 <img src="./src/images/odf_logo_2.png" alt="Open Data Fabric" width="500">
 </p>
 
-[![Latest Version](https://img.shields.io/badge/open--data--fabric-0.17.0-green)](./open-data-fabric.md)
+[![Latest Version](https://img.shields.io/badge/open--data--fabric-0.18.0-green)](./open-data-fabric.md)
 
 ## Introduction
 

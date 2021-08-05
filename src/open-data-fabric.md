@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.17.0
+Version: 0.18.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -277,7 +277,7 @@ Queries define how input data is combined, modified, and re-shaped to produce ne
 
 Queries are used in two contexts:
 - When defining new [Derivative Datasets](#derivative-dataset)
-- When analyzing and extracting data from an existing [Dataset](#dataset) (local or [Remote](#remote))
+- When analyzing and extracting data from an existing [Dataset](#dataset) (locally or from a [repository](#repository))
 
 The system is agnostic to the exact language used to define the query and the set of supported dialects can be extended by implementing a new [Engine](#engine).
 
@@ -435,24 +435,24 @@ Watermarks in the system are defined per every [Metadata Block](#metadata-chain)
 
 Watermarks can also be set based on the [System Time](#system-time) manually or semi-automatically. This is valuable for the slow moving [Datasets](#dataset) where it's normal not to see any events in days or even months. Setting the watermark explicitly allows all computations based on such stream to proceed, knowing that there were no events for that time period, where otherwise the output would be stalled assuming the [Dataset](#dataset) was not updated for a while and old data can still arrive.
 
-## Remote
-Remotes let participants of the system to exchange [Datasets](#dataset).
+## repository
+Repositories let participants of the system exchange [Datasets](#dataset) with one another.
 
-Remote definition includes:
-- Location where the remote can be reached (URL)
+Repository definition includes:
+- Location where the repository can be reached (URL)
 - Protocols that it supports
 - Credentials needed to access it
 - Any necessary protocol-specific configuration
 
-In the most basic form, a Remote can simply be a location where the dataset files are hosted over one of the [supported](#supported-protocols) file or object-based data transfer protocols. The owner of a dataset will have push privileges to this location, while other participants can pull data from it.
+In the most basic form, a [Repository](#repository) can simply be a location where the dataset files are hosted over one of the [supported](#supported-protocols) file or object-based data transfer protocols. The owner of a dataset will have push privileges to this location, while other participants can pull data from it.
 
-An advanced remote can support more functionality like:
+An advanced repository can support more functionality like:
 - Push data API for publishers
 - Subscription API for consumers
-- Query API for making use of remote's compute resources and reducing the amount of transferred data
+- Query API for making use of repository's compute resources and reducing the amount of transferred data
 
 See also:
-- [Remote Contract](#remote-contract)
+- [Repository Contract](#repository-contract)
 
 ## Projection
 In relational algebra, a [projection](https://en.wikipedia.org/wiki/Projection_(relational_algebra)) is an operation that removes one or many dimensions from a data tuple. In the context of our system the most common projections are *temporal projections* involving the [System Time](#system-time) and [Event Time](#event-time) dimensions.
@@ -471,8 +471,8 @@ See also:
 ## Dataset Identity
 Identity formats described below are used to unambiguously refer to a certain dataset. Depending on the context we differentiate the following formats of dataset identity:
 - **Local Format** - used to refer to a dataset within a local workspace
-- **Remote Format** - used to refer to a dataset located in a known [Remote](#remote) provider.
-- **Remote Multi-Tenant Format** - used to refer to a dataset located in a known [Remote](#remote) provider and belonging to a particular tenant of that provider.
+- **Remote Format** - used to refer to a dataset located in a known [Repository](#repository) provider.
+- **Remote Multi-Tenant Format** - used to refer to a dataset located in a known [Repository](#repository) and belonging to a particular tenant of that provider.
 
 As you will see in the examples below, we recommend (but not require) using the [reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) for [Dataset](#dataset) names - this style has proven to be easy to work with, carries an additional value in identifying the authoritative source of the information or the entity that maintains the [Derivative Dataset](#derivative-dataset), and it largely excludes the possibility of name collisions when working with similarly named datasets from different providers.
 
@@ -483,7 +483,7 @@ Examples:
 <b>org.geonames.cities</b>
 <b>com.naturalearthdata.admin0.countries.10m</b>
 
-// Remote Format - RemoteID prefix is highlighted
+// Remote Format - Repository prefix is highlighted
 <b>statcan.gc.ca/</b>ca.gc.statcan.census.2016.population
 <b>nyc.gov/</b>us.cityofnewyork.public-safety.ems-incident-dispatch
 
@@ -494,10 +494,10 @@ data.gov/<b>ny-newyork</b>/us.cityofnewyork.public-safety.ems-incident-dispatch
 
 Full [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) grammar:
 ```
-DatasetRef = (RemoteID "/")? (Username "/")? DatasetID
+DatasetRef = (Repository "/")? (Username "/")? DatasetID
 DatasetID = Hostname
 
-RemoteID = Hostname
+Repository = Hostname
 Username = Subdomain
 
 Hostname = Subdomain ("." Subdomain)*
@@ -595,7 +595,7 @@ The recommended layout of the dataset on disk is:
 
 ![Diagram: Dataset Layout](images/dataset_layout.svg)
 
-This layout must be used when sharing datasets via file or object-based [Remotes](#remote) (e.g. local FS, S3, IPFS, DAT...).
+This layout must be used when sharing datasets via file or object-based [Repositories](#repository) (e.g. local FS, S3, IPFS, DAT...).
 
 When a [Dataset](#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](#coordinator) implementation, as we expect all interactions with the [Dataset](#dataset) to go through it.
 
@@ -721,7 +721,7 @@ The main functions of the [Coordinator](#coordinator) are:
 - Guarantee the validity and integrity of the [Metadata](#metadata-chain)
 - Provide means for ingesting external data into the system
 - Interface with the [Engines](#engine) to implement data transformations
-- Enable data sharing functionality via [Remotes](#remote)
+- Enable data sharing functionality via [Repositories](#repository)
 - Provide additional functionality to simplify working with [Datasets](#dataset) and their metadata
 
 ### Common Metadata Operations
@@ -822,11 +822,11 @@ The procedure for modifying the [Query](#query) of a [Derivative Dataset](#deriv
 > - Do we stop processing and ask user to validate that the query takes into account the new columns?
 
 ### Dataset Sharing
-Dataset sharing involves uploading the data to some [Remote](#remote) where it can be discovered and accessed by other peers. Due to immutable nature of data and metadata it is very easy to keep shared data up-to-date as only new blocks and part files need to be uploaded.
+Dataset sharing involves uploading the data to some [Repository](#repository) where it can be discovered and accessed by other peers. Due to immutable nature of data and metadata it is very easy to keep shared data up-to-date as only new blocks and part files need to be uploaded.
 
 It is important to ensure the atomicity of the sharing, or at least create the perception of atomicity to someone who happens to be downloading the data concurrently with the upload.
 
-For [Remotes](#remote) that do not support atomic file/object operations the following sequence of operations can ensure that concurrent downloads will always see the [Dataset](#dataset) in a consistent state:
+For [Repositories](#repository) that do not support atomic file/object operations the following sequence of operations can ensure that concurrent downloads will always see the [Dataset](#dataset) in a consistent state:
 1. Upload data part files
 2. Upload metadata blocks
 3. Update references in `metadata/refs` directory
@@ -845,10 +845,10 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 3. If the results produced in every step match the recorded ones - we can safely consider that the newer version of the [Engine](#engine) is fully compatible with the older one.
 4. A special [Metadata](#metadata-chain) record is created to record this compatibility, therefore, allowing all users to use the latest version of the [Engine](#engine) instead of downloading all the versions seen previously.
 
-## Remote Contract
+## Repository Contract
 > **TODO:**
 > - Supported protocols
-> - Querying data in advanced remote
+> - Querying data in advanced repository
 
 ## Future Topics
 
@@ -891,6 +891,6 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 ## Engine API Reference
 > **TODO**: Provide `gRPC + FlatBuffers` IDL
 
-## Remote API Reference
+## Repository API Reference
 > **TODO**: Provide `gRPC + FlatBuffers` IDL
 
