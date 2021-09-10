@@ -190,13 +190,13 @@ extra_types = []
 
 def is_struct_type(typ_or_sch):
     if isinstance(typ_or_sch, dict):
-        typ_or_sch = typ_or_sch.get('$ref', '')[:-5]
+        typ_or_sch = typ_or_sch.get('$ref', '').split('/')[-1]
     return typ_or_sch in struct_types
 
 
 def is_enum(typ_or_sch):
     if isinstance(typ_or_sch, dict):
-        typ_or_sch = typ_or_sch.get('$ref', '')[:-5]
+        typ_or_sch = typ_or_sch.get('$ref', '').split('/')[-1]
     return typ_or_sch in enum_types
 
 
@@ -396,7 +396,7 @@ def render_oneof(name, sch):
     yield f"impl<'fb> FlatbuffersEnumSerializable<'fb, fb::{name}> for odf::{name} {{"
     yield f"    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (fb::{name}, WIPOffset<UnionWIPOffset>) {{"
     yield f"        match self {{"
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element_ser(name, ename, esch), INDENT * 3)
     yield "        }"
     yield "    }"
@@ -405,7 +405,7 @@ def render_oneof(name, sch):
     yield f"impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::{name}> for odf::{name} {{"
     yield f"    fn deserialize(table: flatbuffers::Table<'fb>, t: fb::{name}) -> Self {{"
     yield f"        match t {{"
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element_de(name, ename, esch), INDENT * 3)
     yield f"            _ => panic!(\"Invalid enum value: {{}}\", t.0),"
     yield "        }"
@@ -478,7 +478,7 @@ def de_composite_type(name, sch, enum_t_accessor):
     elif 'enum' in sch:
         yield f"{name}.into()"
     elif '$ref' in sch:
-        t = sch['$ref'].split('.')[0]
+        t = sch['$ref'].split('/')[-1]
         if is_struct_type(t):
             yield f'odf::{t}::deserialize({name})'
         else:

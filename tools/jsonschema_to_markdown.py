@@ -12,7 +12,7 @@ def render_type(sch):
         items = render_type(sch["items"])
         typ = f"array({items})"
     elif typ is None:
-        typ = sch["$ref"].split(".")[0]
+        typ = sch["$ref"].split("/")[-1]
         typ = f"[{typ}](#{typ.lower()}-schema)"
     else:
         typ = f"`{typ}`"
@@ -43,14 +43,14 @@ def render_union(f, sch, name):
     render_preamble(f, name, desc)
 
     f.write("\n\nUnion type:\n")
-    for dname in sch["definitions"]:
+    for dname in sch["$defs"]:
         fdname = "::".join(name + (dname,))
         anchor = "".join(name + (dname,)).lower() + "-schema"
         f.write(f"- [{fdname}](#{anchor})\n")
 
     f.write('\n')
 
-    for dname, dsch in sch["definitions"].items():
+    for dname, dsch in sch["$defs"].items():
         render_object(f, dsch, name + (dname,))
         f.write('\n')
 

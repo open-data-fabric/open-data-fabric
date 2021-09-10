@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/FetchStep.json",
+  "$id": "http://open-data-fabric.github.com/schemas/FetchStep",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Defines the external source of data.",
-  "definitions": {
+  "$defs": {
     "Url": {
       "description": "Pulls data from one of the supported sources by its URL.",
       "type": "object",
@@ -17,11 +17,11 @@
           "description": "URL of the data source"
         },
         "eventTime": {
-          "$ref": "EventTimeSource.json",
+          "$ref": "/schemas/EventTimeSource",
           "description": "Describes how event time is extracted from the source metadata."
         },
         "cache": {
-          "$ref": "SourceCaching.json",
+          "$ref": "/schemas/SourceCaching",
           "description": "Describes the caching settings used for this source."
         }
       }
@@ -39,11 +39,11 @@
           "description": "Path with a glob pattern."
         },
         "eventTime": {
-          "$ref": "EventTimeSource.json",
+          "$ref": "/schemas/EventTimeSource",
           "description": "Describes how event time is extracted from the source metadata."
         },
         "cache": {
-          "$ref": "SourceCaching.json",
+          "$ref": "/schemas/SourceCaching",
           "description": "Describes the caching settings used for this source."
         },
         "order": {
@@ -60,10 +60,10 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Url"
+      "$ref": "#/$defs/Url"
     },
     {
-      "$ref": "#/definitions/FilesGlob"
+      "$ref": "#/$defs/FilesGlob"
     }
   ]
 }

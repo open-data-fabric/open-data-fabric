@@ -166,7 +166,7 @@ def render_oneof(name, sch):
     yield f'#[serde(remote = "{name}")]'
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
     yield f'pub enum {name}Def {{'
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
     yield '}'
 
@@ -184,7 +184,7 @@ def render_oneof_element(name, ename, esch):
 
 def render_oneof_as(name, sch):
     yield from render_struct_as(name, sch)
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         if esch.get('properties', ()):
             struct_name = f'{name}{ename}'
             yield from render_struct_as(struct_name, esch)
@@ -245,7 +245,7 @@ def get_primitive_type(sch):
     elif ptype == 'string':
         return 'String'
     elif '$ref' in sch:
-        return sch['$ref'].split('.')[0]
+        return sch['$ref'].split('/')[-1]
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
 
@@ -267,7 +267,7 @@ def get_composite_type_external(sch):
 
 def get_primitive_type_external(sch):
     if '$ref' in sch:
-        return sch['$ref'].split('.')[0] + 'Def'
+        return sch['$ref'].split('/')[-1] + 'Def'
     return None
 
 

@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DatasetSource.json",
+  "$id": "http://open-data-fabric.github.com/schemas/DatasetSource",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Defines the source of data within a dataset.",
-  "definitions": {
+  "$defs": {
     "Root": {
       "description": "Root sources are the points of entry of external data into the system.\n\nRoot source includes information like:\n- Where to fetch the data from - e.g. source URL, a protocol to use, cache control\n- How to prepare the binary data - e.g. decompression, file filtering, format conversions\n- How to interpret the data - e.g. data format, schema to apply, error handling\n- How to combine data ingested in the past with the new data - e.g. append as log or diff as a snapshot of the current state.",
       "type": "object",
@@ -14,26 +14,26 @@
       ],
       "properties": {
         "fetch": {
-          "$ref": "FetchStep.json",
+          "$ref": "/schemas/FetchStep",
           "description": "Determines where data is sourced from."
         },
         "prepare": {
           "type": "array",
           "items": {
-            "$ref": "PrepStep.json"
+            "$ref": "/schemas/PrepStep"
           },
           "description": "Defines how raw data is prepared before reading."
         },
         "read": {
-          "$ref": "ReadStep.json",
+          "$ref": "/schemas/ReadStep",
           "description": "Defines how data is read into structured format."
         },
         "preprocess": {
-          "$ref": "Transform.json",
+          "$ref": "/schemas/Transform",
           "description": "Pre-processing query that shapes the data."
         },
         "merge": {
-          "$ref": "MergeStrategy.json",
+          "$ref": "/schemas/MergeStrategy",
           "description": "Determines how newly-ingested data should be merged with existing history."
         }
       }
@@ -56,7 +56,7 @@
           "description": "Identifiers of the datasets that will be used as sources."
         },
         "transform": {
-          "$ref": "Transform.json",
+          "$ref": "/schemas/Transform",
           "description": "Transformation that will be applied to produce new data"
         }
       }
@@ -64,10 +64,10 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Root"
+      "$ref": "#/$defs/Root"
     },
     {
-      "$ref": "#/definitions/Derivative"
+      "$ref": "#/$defs/Derivative"
     }
   ]
 }

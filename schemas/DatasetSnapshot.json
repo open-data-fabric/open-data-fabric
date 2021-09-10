@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DatasetSnapshot.json",
+  "$id": "http://open-data-fabric.github.com/schemas/DatasetSnapshot",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Represents a snapshot of the dataset definition in a single point in time.\nThis type is typically used for defining new datasets and changing the existing ones.",
   "type": "object",
@@ -15,11 +15,11 @@
       "description": "Unique identifier of the dataset"
     },
     "source": {
-      "$ref": "DatasetSource.json",
+      "$ref": "/schemas/DatasetSource",
       "description": "Contains information about the source of the data and/or applied transformations."
     },
     "vocab": {
-      "$ref": "DatasetVocabulary.json",
+      "$ref": "/schemas/DatasetVocabulary",
       "description": "Vocabulary lets you manipulate system column names to avoid conflicts."
     }
   }

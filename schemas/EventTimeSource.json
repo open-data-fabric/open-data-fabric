@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/EventTimeSource.json",
+  "$id": "http://open-data-fabric.github.com/schemas/EventTimeSource",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Defines the external source of data.",
-  "definitions": {
+  "$defs": {
     "FromMetadata": {
       "description": "Extracts event time from the source's metadata.",
       "type": "object",
@@ -32,10 +32,10 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/FromMetadata"
+      "$ref": "#/$defs/FromMetadata"
     },
     {
-      "$ref": "#/definitions/FromPath"
+      "$ref": "#/$defs/FromPath"
     }
   ]
 }

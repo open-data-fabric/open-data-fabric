@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/PrepStep.json",
+  "$id": "http://open-data-fabric.github.com/schemas/PrepStep",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Defines the steps to prepare raw data for ingestion.",
-  "definitions": {
+  "$defs": {
     "Decompress": {
       "description": "Pulls data from one of the supported sources by its URL.",
       "type": "object",
@@ -46,10 +46,10 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Decompress"
+      "$ref": "#/$defs/Decompress"
     },
     {
-      "$ref": "#/definitions/Pipe"
+      "$ref": "#/$defs/Pipe"
     }
   ]
 }

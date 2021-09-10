@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ReadStep.json",
+  "$id": "http://open-data-fabric.github.com/schemas/ReadStep",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Defines how raw data should be read into the structured form.",
-  "definitions": {
+  "$defs": {
     "Csv": {
       "description": "Reader for comma-separated files.",
       "type": "object",
@@ -162,16 +162,16 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Csv"
+      "$ref": "#/$defs/Csv"
     },
     {
-      "$ref": "#/definitions/JsonLines"
+      "$ref": "#/$defs/JsonLines"
     },
     {
-      "$ref": "#/definitions/GeoJson"
+      "$ref": "#/$defs/GeoJson"
     },
     {
-      "$ref": "#/definitions/EsriShapefile"
+      "$ref": "#/$defs/EsriShapefile"
     }
   ]
 }

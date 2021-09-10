@@ -164,10 +164,10 @@ def render_field_convert(pname, psch, required):
 def render_oneof(name, sch):
     has_struct_members = any(
         esch.get('properties')
-        for esch in sch.get('definitions', {}).values()
+        for esch in sch.get('$defs', {}).values()
     )
     yield f"pub enum {name}<'a> {{"
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
     if not has_struct_members:
         yield ' ' * DEFAULT_INDENT + "_Phantom(std::marker::PhantomData<&'a ()>),"
@@ -188,7 +188,7 @@ def render_oneof_impl(name, sch):
     yield f"impl<'a> From<&'a super::{name}> for {name}<'a> {{"
     yield ' ' * DEFAULT_INDENT + f"fn from(other: &'a super::{name}) -> Self {{"
     yield ' ' * DEFAULT_INDENT * 2 + f"match other {{"
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(indent(indent(render_oneof_element_impl(name, ename, esch))))
     yield ' ' * DEFAULT_INDENT * 2 + '}'
     yield ' ' * DEFAULT_INDENT + '}'
@@ -207,12 +207,12 @@ def render_oneof_element_impl(name, ename, esch):
 def render_oneof_convert(name, sch):
     has_struct_members = any(
         esch.get('properties')
-        for esch in sch.get('definitions', {}).values()
+        for esch in sch.get('$defs', {}).values()
     )
     yield f"impl Into<super::{name}> for {name}<'_> {{"
     yield ' ' * DEFAULT_INDENT + f"fn into(self) -> super::{name} {{"
     yield ' ' * DEFAULT_INDENT * 2 + f"match self {{"
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element_convert(name, ename, esch), DEFAULT_INDENT * 3)
     if not has_struct_members:
         yield ' ' * DEFAULT_INDENT * 3 + f"{name}::_Phantom(_) => panic!(),"
@@ -281,7 +281,7 @@ def get_primitive_type(sch):
     elif ptype == 'string':
         return "&str"
     elif '$ref' in sch:
-        t = sch['$ref'].split('.')[0]
+        t = sch['$ref'].split('/')[-1]
         if is_struct_type(t):
             return f"&dyn {t}"
         else:
@@ -306,7 +306,7 @@ def render_accessor(name, sch, optional, in_ref=False):
     if 'enum' in sch:
         yield f'*{name}' if in_ref else name
     elif '$ref' in sch:
-        t = sch['$ref'].split('.')[0]
+        t = sch['$ref'].split('/')[-1]
         if is_struct_type(t):
             yield name if in_ref else f'&{name}'
         elif not is_string_enum(t):

@@ -116,8 +116,8 @@ def in_dependency_order(schemas):
 
 
 def _in_dependency_order_rec(schema, visited, schemas):
-    if 'definitions' in schema:
-        for dschema in schema['definitions'].values():
+    if '$defs' in schema:
+        for dschema in schema['$defs'].values():
             yield from _in_dependency_order_rec(dschema, visited, schemas)
 
     if schema.get('type') == 'object':
@@ -133,8 +133,8 @@ def _in_dependency_order_rec(schema, visited, schemas):
 
     if '$ref' in schema:
         ref = schema['$ref']
-        if ref.endswith('.json'):
-            name = ref.split('.')[0]
+        if ref.startswith('/schemas/'):
+            name = ref.split('/')[-1]
             if name not in visited:
                 visited.add(name)
                 yield from _in_dependency_order_rec(schemas[name], visited, schemas)
@@ -169,7 +169,7 @@ def render_field(pname, psch, required, modifier=None):
 
 def render_oneof(name, sch):
     yield f'union {name} {{'
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
     yield '}'
 
@@ -206,7 +206,7 @@ def get_composite_type(sch, required):
     elif sch.get('type') == 'object' and 'properties' not in sch:
         return '[ubyte]'
     elif '$ref' in sch:
-        return sch['$ref'].split('.')[0]
+        return sch['$ref'].split('/')[-1]
     else:
         ptyp = get_primitive_type(sch)
         if not required and ptyp not in ('string', '[ubyte]', 'Timestamp'):

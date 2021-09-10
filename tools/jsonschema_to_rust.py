@@ -117,7 +117,7 @@ def render_oneof(name, sch):
     yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
     yield f'pub enum {name} {{'
-    for (ename, esch) in sch.get('definitions', {}).items():
+    for (ename, esch) in sch.get('$defs', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
     yield '}'
 
@@ -187,7 +187,7 @@ def get_primitive_type(sch):
     elif ptype == 'string':
         return 'String'
     elif '$ref' in sch:
-        return sch['$ref'].split('.')[0]
+        return sch['$ref'].split('/')[-1]
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
 

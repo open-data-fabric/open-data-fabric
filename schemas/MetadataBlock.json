@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/MetadataBlock.json",
+  "$id": "http://open-data-fabric.github.com/schemas/MetadataBlock",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
   "type": "object",
@@ -25,7 +25,7 @@
       "description": "System time when this block was written."
     },
     "outputSlice": {
-      "$ref": "DataSlice.json",
+      "$ref": "/schemas/DataSlice",
       "description": "Properties of output data written during this update, if any."
     },
     "outputWatermark": {
@@ -36,16 +36,16 @@
     "inputSlices": {
       "type": "array",
       "items": {
-        "$ref": "DataSlice.json"
+        "$ref": "/schemas/DataSlice"
       },
       "description": "Defines input datasets and their data slices used in this block, if any."
     },
     "source": {
-      "$ref": "DatasetSource.json",
+      "$ref": "/schemas/DatasetSource",
       "description": "Contains the definition of the source of data when it changes."
     },
     "vocab": {
-      "$ref": "DatasetVocabulary.json",
+      "$ref": "/schemas/DatasetVocabulary",
       "description": "Vocabulary lets you change system column names to avoid conflicts."
     }
   }

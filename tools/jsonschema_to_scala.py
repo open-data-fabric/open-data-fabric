@@ -116,7 +116,7 @@ def render_oneof(name, sch):
     yield f'sealed trait {name}'
     yield ''
     yield f'object {name} {{'
-    for i, (ename, esch) in enumerate(sch.get('definitions', {}).items()):
+    for i, (ename, esch) in enumerate(sch.get('$defs', {}).items()):
         if i != 0:
             yield ''
         yield from indent(render_oneof_element(ename, esch, name))
@@ -187,7 +187,7 @@ def get_primitive_type(sch):
         if sch.get('partial') is True:
             return 'ConfigObject'
         else:
-            return sch['$ref'].split('.')[0]
+            return sch['$ref'].split('/')[-1]
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
 

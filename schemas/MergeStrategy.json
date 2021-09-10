@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/MergeStrategy.json",
+  "$id": "http://open-data-fabric.github.com/schemas/MergeStrategy",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Merge strategy determines how newly ingested data should be combined with the data that already exists in the dataset.",
-  "definitions": {
+  "$defs": {
     "Append": {
       "description": "Append merge strategy.\n\nUnder this strategy polled data will be appended in its original form to the already ingested data without modifications.",
       "type": "object",
@@ -70,13 +70,13 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Append"
+      "$ref": "#/$defs/Append"
     },
     {
-      "$ref": "#/definitions/Ledger"
+      "$ref": "#/$defs/Ledger"
     },
     {
-      "$ref": "#/definitions/Snapshot"
+      "$ref": "#/$defs/Snapshot"
     }
   ]
 }

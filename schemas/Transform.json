@@ -1,8 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Transform.json",
+  "$id": "http://open-data-fabric.github.com/schemas/Transform",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Engine-specific processing queries that shape the resulting data.",
-  "definitions": {
+  "$defs": {
     "Sql": {
       "description": "Transform using one of the SQL dialects.",
       "type": "object",
@@ -27,14 +27,14 @@
           "type": "array",
           "description": "Use this instead of query field for specifying multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`.",
           "items": {
-            "$ref": "SqlQueryStep.json"
+            "$ref": "/schemas/SqlQueryStep"
           }
         },
         "temporalTables": {
           "type": "array",
           "description": "Temporary Flink-specific extension for creating temporal tables from streams.",
           "items": {
-            "$ref": "TemporalTable.json"
+            "$ref": "/schemas/TemporalTable"
           }
         }
       }
@@ -42,7 +42,7 @@
   },
   "oneOf": [
     {
-      "$ref": "#/definitions/Sql"
+      "$ref": "#/$defs/Sql"
     }
   ]
 }
