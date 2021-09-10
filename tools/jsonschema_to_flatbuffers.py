@@ -105,11 +105,12 @@ def read_schemas(schemas_dir):
 def in_dependency_order(schemas):
     visited = set()
 
-    for name, schema in schemas.items():
+    for name in sorted(schemas.keys()):
         if name in visited:
             continue
 
         visited.add(name)
+        schema = schemas[name]
         yield from _in_dependency_order_rec(schema, visited, schemas)
         yield (name, schema)
 

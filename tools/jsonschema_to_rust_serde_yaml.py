@@ -4,20 +4,50 @@ import re
 import json
 
 
-PREAMBLE = [
-    '/' * 80,
-    '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
-    '// See: http://opendatafabric.org/',
-    '/' * 80,
-    '',
-    'use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};',
-    'use crate::*;',
-    'use ::chrono::{DateTime, Utc};',
-    'use ::serde::{Deserialize, Deserializer, Serialize, Serializer};',
-    'use ::serde_with::serde_as;',
-    'use ::serde_with::skip_serializing_none;',
-    '',
-]
+PREAMBLE = """
+////////////////////////////////////////////////////////////////////////////////
+// WARNING: This file is auto-generated from Open Data Fabric Schemas
+// See: http://opendatafabric.org/
+////////////////////////////////////////////////////////////////////////////////
+
+use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
+use crate::*;
+use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
+use chrono::{DateTime, Utc};
+use serde_with::serde_as;
+use serde_with::skip_serializing_none;
+
+////////////////////////////////////////////////////////////////////////////////
+
+macro_rules! implement_serde_as {
+    ($dto:ty, $impl:ty, $impl_name:literal) => {
+        impl ::serde_with::SerializeAs<$dto> for $impl {
+            fn serialize_as<S>(source: &$dto, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                #[derive(Serialize)]
+                struct Helper<'a>(#[serde(with = $impl_name)] &'a $dto);
+                Helper(source).serialize(serializer)
+            }
+        }
+
+        impl<'de> serde_with::DeserializeAs<'de, $dto> for $impl {
+            fn deserialize_as<D>(deserializer: D) -> Result<$dto, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                #[derive(Deserialize)]
+                struct Helper(#[serde(with = $impl_name)] $dto);
+                let helper = Helper::deserialize(deserializer)?;
+                let Helper(v) = helper;
+                Ok(v)
+            }
+        }
+    };
+}
+
+"""
 
 DEFAULT_INDENT = 2
 
@@ -30,10 +60,11 @@ extra_types = []
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
 
-    for l in PREAMBLE:
+    for l in PREAMBLE.split('\n'):
         print(l)
 
-    for name, sch in schemas.items():
+    for name in sorted(schemas.keys()):
+        sch = schemas[name]
         try:
             if name == 'Manifest':
                 continue
@@ -87,11 +118,11 @@ def render_schema(name, sch):
 
 
 def render_struct(name, sch):
-    yield f'#[serde(remote = "{name}")]'
     yield '#[serde_as]'
     yield '#[skip_serializing_none]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
+    yield f'#[serde(remote = "{name}")]'
+    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     yield f'pub struct {name}Def {{'
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
@@ -126,41 +157,14 @@ def render_field(pname, psch, required, modifier=None):
 
 
 def render_struct_as(name, sch):
-    tpl = f"""
-impl serde_with::SerializeAs<{name}> for {name}Def {{
-  fn serialize_as<S>(source: &{name}, serializer: S) -> Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {{
-    #[derive(Serialize)]
-    struct Helper<'a>(#[serde(with = "{name}Def")] &'a {name});
-    Helper(source).serialize(serializer)
-  }}
-}}
-
-impl<'de> serde_with::DeserializeAs<'de, {name}> for {name}Def {{
-  fn deserialize_as<D>(deserializer: D) -> Result<{name}, D::Error>
-  where
-    D: Deserializer<'de>,
-  {{
-    #[derive(Deserialize)]
-    struct Helper(#[serde(with = "{name}Def")] {name});
-    let helper = Helper::deserialize(deserializer)?;
-    let Helper(v) = helper;
-    Ok(v)
-  }}
-}}
-"""
-    for l in tpl.split('\n'):
-        yield l
+    yield f"implement_serde_as!({name}, {name}Def, \"{name}Def\");"
 
 
 def render_oneof(name, sch):
-    yield f'#[serde(remote = "{name}")]'
     yield '#[serde_as]'
-    yield '#[skip_serializing_none]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
+    yield f'#[serde(remote = "{name}")]'
+    yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
     yield f'pub enum {name}Def {{'
     for (ename, esch) in sch.get('definitions', {}).items():
         yield from indent(render_oneof_element(name, ename, esch))
@@ -187,10 +191,9 @@ def render_oneof_as(name, sch):
 
 
 def render_string_enum(name, sch):
-    yield f'#[serde(remote = "{name}")]'
-    yield '#[skip_serializing_none]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
+    yield f'#[serde(remote = "{name}")]'
+    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
     yield f'pub enum {name}Def {{'
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]

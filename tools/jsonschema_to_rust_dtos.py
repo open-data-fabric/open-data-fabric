@@ -30,7 +30,9 @@ def render(schemas_dir):
     for l in PREAMBLE:
         print(l)
 
-    for name, sch in schemas.items():
+    for name in sorted(schemas.keys()):
+        sch = schemas[name]
+
         try:
             if name == 'Manifest':
                 continue

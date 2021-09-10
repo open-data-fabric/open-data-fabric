@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import json
+import functools
 
 
 PREAMBLE = """
@@ -11,6 +12,7 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ////////////////////////////////////////////////////////////////////////////////
 
+#![allow(unused_variables)]
 use super::odf_generated as fb;
 mod odf {
     pub use crate::dataset_id::*;
@@ -21,7 +23,6 @@ mod odf {
 use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
 use chrono::prelude::*;
 use std::convert::{TryFrom, TryInto};
-use std::str::FromStr;
 
 pub trait FlatbuffersSerializable<'fb> {
     type OffsetT;
@@ -163,6 +164,7 @@ fn fb_to_interval(iv: &fb::TimeInterval) -> odf::TimeInterval {
         fb::TimeIntervalType::Singleton => odf::TimeInterval::singleton(fb_to_datetime(iv.left())),
         fb::TimeIntervalType::Unbounded => odf::TimeInterval::unbounded(),
         fb::TimeIntervalType::Empty => odf::TimeInterval::empty(),
+        _ => panic!("Invalid enum value: {}", iv.type_().0),
     }
 }
 
@@ -186,8 +188,10 @@ string_enum_types = set()
 extra_types = []
 
 
-def is_struct_type(typ):
-    return typ in struct_types
+def is_struct_type(typ_or_sch):
+    if isinstance(typ_or_sch, dict):
+        typ_or_sch = typ_or_sch.get('$ref', '')[:-5]
+    return typ_or_sch in struct_types
 
 
 def is_enum(typ_or_sch):
@@ -211,7 +215,8 @@ def render(schemas_dir):
 
     print(PREAMBLE)
 
-    for name, sch in schemas.items():
+    for name in sorted(schemas.keys()):
+        sch = schemas[name]
         try:
             if name == 'Manifest':
                 continue
@@ -270,6 +275,9 @@ def render_struct(name, sch):
     yield f"    fn serialize(&self, fb: &mut FlatBufferBuilder <'fb>) -> Self::OffsetT {{"
     preserialized = set()
     for pname, psch in sch.get('properties', {}).items():
+        if is_string_enum(psch):
+            extra_types.append(functools.partial(render_string_enum, psch))
+
         required = pname in sch.get('required', ())
         lines = list(indent(render_field_pre_ser(
             pname, psch, required), INDENT * 2))
@@ -297,6 +305,30 @@ def render_struct(name, sch):
             render_field_de(pname, psch, required),
             INDENT * 3
         )
+    yield "        }"
+    yield "    }"
+    yield "}"
+
+
+def render_string_enum(sch):
+    name = sch["enumName"]
+    yield f"impl From<odf::{name}> for fb::{name} {{"
+    yield f"    fn from(v: odf::{name}) -> Self {{"
+    yield  "        match v {"
+    for value in sch['enum']:
+        capitalized = value[0].upper() + value[1:]
+        yield ' ' * INDENT * 3 + f"odf::{name}::{capitalized} => fb::{name}::{capitalized},"
+    yield "        }"
+    yield "    }"
+    yield "}"
+    yield ""
+    yield f"impl Into<odf::{name}> for fb::{name} {{"
+    yield f"    fn into(self) -> odf::{name} {{"
+    yield  "        match self {"
+    for value in sch['enum']:
+        capitalized = value[0].upper() + value[1:]
+        yield ' ' * INDENT * 3 + f"fb::{name}::{capitalized} => odf::{name}::{capitalized},"
+    yield "            _ => panic!(\"Invalid enum value: {}\", self.0),"
     yield "        }"
     yield "    }"
     yield "}"
@@ -337,23 +369,26 @@ def render_field_ser(pname, psch, required, preserialized):
 
     else:
         if required:
-            yield f"builder.add_{name}({{"
+            yield f"builder.add_{name}("
             yield from ser_composite_type(f"self.{name}", psch)
-            yield "});"
+            yield ");"
         else:
-            yield f"self.{name}.as_ref().map(|v| {{"
+            yield f"self.{name}.map(|v| builder.add_{name}("
             yield from ser_composite_type("v", psch)
-            yield f"}}).map(|v| builder.add_{name}(&v));"
+            yield "));"
 
 
 def render_field_de(pname, psch, required):
     name = to_snake_case(pname)
     yield f"{name}:"
-    yield f"    proxy.{name}().map(|v| {{"
-    yield from indent(indent(de_composite_type("v", psch, f"proxy.{name}_type()")))
-    yield f"    }})"
-    if required:
-        yield "    .unwrap()"
+    if required and (is_string_enum(psch) or psch.get("type") in ("integer",)):
+        yield from indent(de_composite_type(f"proxy.{name}()", psch, f"proxy.{name}_type()"))
+    else:
+        yield f"    proxy.{name}().map(|v| {{"
+        yield from indent(indent(de_composite_type("v", psch, f"proxy.{name}_type()")))
+        yield f"    }})"
+        if required:
+            yield "    .unwrap()"
     yield ","
 
 
@@ -370,9 +405,9 @@ def render_oneof(name, sch):
     yield f"impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::{name}> for odf::{name} {{"
     yield f"    fn deserialize(table: flatbuffers::Table<'fb>, t: fb::{name}) -> Self {{"
     yield f"        match t {{"
-    yield f"            fb::{name}::NONE => panic!(\"Property is missing\"),"
     for (ename, esch) in sch.get('definitions', {}).items():
         yield from indent(render_oneof_element_de(name, ename, esch), INDENT * 3)
+    yield f"            _ => panic!(\"Invalid enum value: {{}}\", t.0),"
     yield "        }"
     yield "    }"
     yield "}"
@@ -399,24 +434,25 @@ def render_oneof_element_de(name, ename, esch):
         extra_types.append(lambda: render_struct(struct_name, esch))
 
 
-def render_string_enum(name, sch):
-    return
-    yield '#[derive(Clone, Copy, PartialEq, Eq, Debug)]'
-    yield f'pub enum {name} {{'
-    for value in sch['enum']:
-        capitalized = value[0].upper() + value[1:]
-        yield ' ' * INDENT + capitalized + ','
-    yield '}'
-
-
 def pre_ser_composite_type(name, sch):
     if sch.get('type') == 'array':
+        isch = sch['items']
         yield f"let offsets: Vec<_> = {name}.iter().map(|i| {{"
-        yield from pre_ser_primitive_type("i", sch['items'])
+        if is_enum(isch):
+            # TODO: This is a dirty hack
+            yield "let (value_type, value_offset) = i.serialize(fb);"
+            yield "let mut builder = fb::PrepStepWrapperBuilder::new(fb);"
+            yield "builder.add_value_type(value_type);"
+            yield "builder.add_value(value_offset);"
+            yield "builder.finish()"
+        else:
+            yield from pre_ser_composite_type("i", isch)
         yield "}).collect();"
         yield "fb.create_vector(&offsets)"
-    elif 'enum' in sch:
+    elif is_string_enum(sch):
         pass
+    elif is_enum(sch) or is_struct_type(sch):
+        yield f'{name}.serialize(fb)'
     else:
         yield from pre_ser_primitive_type(name, sch)
 
@@ -425,22 +461,28 @@ def ser_composite_type(name, sch):
     if sch.get('type') == 'array':
         pass
     elif 'enum' in sch:
-        pass
+        yield f"{name}.into()"
     else:
         yield from ser_primitive_type(name, sch)
 
 
 def de_composite_type(name, sch, enum_t_accessor):
     if sch.get('type') == 'array':
-        yield 'unimplemented!()'
-        # yield f'{name}.map(|i| {{'
-        # yield from indent(convert_primitive_type("i", sch['items']))
-        # yield '}).collect()'
+        isch = sch["items"]
+        yield f"{name}.iter().map(|i| "
+        if is_enum(isch):
+            yield from de_composite_type("i.value().unwrap()", isch, "i.value_type()")
+        else:
+            yield from de_composite_type("i", isch, None)
+        yield  ").collect()"
     elif 'enum' in sch:
-        yield 'unimplemented!()'
-        # assert sch['type'] == 'string'
-        # extra_types.append(lambda: render_string_enum(sch['enumName'], sch))
-        # return sch['enumName']
+        yield f"{name}.into()"
+    elif '$ref' in sch:
+        t = sch['$ref'].split('.')[0]
+        if is_struct_type(t):
+            yield f'odf::{t}::deserialize({name})'
+        else:
+            yield f'odf::{t}::deserialize({name}, {enum_t_accessor})'
     else:
         yield from de_primitive_type(name, sch, enum_t_accessor)
 
@@ -474,8 +516,6 @@ def pre_ser_primitive_type(name, sch):
         pass
     elif ptype == 'string':
         yield f'fb.create_string(&{name})'
-    elif '$ref' in sch:
-        yield f'{name}.serialize(fb)'
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
 
@@ -531,11 +571,11 @@ def de_primitive_type(name, sch, enum_t_accessor):
             assert ptype == 'string'
             yield f'{name}.to_owned()'
         elif fmt == 'date-time':
-            yield 'Utc.ymd(2121, 1, 1).and_hms(12, 0, 0)'
+            yield f'fb_to_datetime({name})'
         elif fmt == 'date-time-interval':
-            yield 'odf::TimeInterval::singleton(Utc.ymd(2121, 1, 1).and_hms(12, 0, 0))'
+            yield f'fb_to_interval({name})'
         elif fmt == 'dataset-id':
-            yield 'unimplemented!()'
+            yield f'odf::DatasetIDBuf::try_from({name}).unwrap()'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -544,12 +584,6 @@ def de_primitive_type(name, sch, enum_t_accessor):
         yield f'{name}'
     elif ptype == 'string':
         yield f'{name}.to_owned()'
-    elif '$ref' in sch:
-        t = sch['$ref'].split('.')[0]
-        if is_struct_type(t):
-            yield f'odf::{t}::deserialize({name})'
-        else:
-            yield f'odf::{t}::deserialize({name}, {enum_t_accessor})'
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
 

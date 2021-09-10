@@ -27,14 +27,14 @@
           "type": "array",
           "description": "Use this instead of query field for specifying multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`.",
           "items": {
-            "$ref": "SqlQueryStep"
+            "$ref": "SqlQueryStep.json"
           }
         },
         "temporalTables": {
           "type": "array",
           "description": "Temporary Flink-specific extension for creating temporal tables from streams.",
           "items": {
-            "$ref": "TemporalTable"
+            "$ref": "TemporalTable.json"
           }
         }
       }
