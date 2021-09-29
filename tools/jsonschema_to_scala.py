@@ -15,6 +15,7 @@ PREAMBLE = [
     'package dev.kamu.core.manifests',
     '',
     'import java.net.URI',
+    'import java.nio.file.Path',
     'import java.time.Instant',
     '',
     'import com.typesafe.config.ConfigObject',
@@ -45,7 +46,8 @@ def render(schemas_dir):
     for l in PREAMBLE:
         print(l)
 
-    for name, sch in schemas.items():
+    for name in sorted(schemas.keys()):
+        sch = schemas[name]
         try:
             if name == 'Manifest':
                 continue
@@ -163,6 +165,9 @@ def get_primitive_type(sch):
         elif fmt == 'url':
             assert ptype == 'string'
             return 'URI'
+        elif fmt == 'path':
+            assert ptype == 'string'
+            return 'Path'
         elif fmt == 'regex':
             assert ptype == 'string'
             return 'String'

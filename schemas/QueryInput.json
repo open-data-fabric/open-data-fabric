@@ -1,0 +1,49 @@
+{
+    "$id": "http://open-data-fabric.github.com/schemas/QueryInput",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Sent as part of the execute query requst to describe the input",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "datasetID",
+        "vocab",
+        "interval",
+        "dataPaths",
+        "schemaFile",
+        "explicitWatermarks"
+    ],
+    "properties": {
+        "datasetID": {
+            "type": "string",
+            "format": "dataset-id",
+            "description": "Unique identifier of the dataset"
+        },
+        "vocab": {
+            "$ref": "/schemas/DatasetVocabulary"
+        },
+        "interval": {
+            "type": "string",
+            "format": "date-time-interval",
+            "description": "Defines the system time boundaries of data in this slice"
+        },
+        "dataPaths": {
+            "type": "array",
+            "description": "TODO: This will be removed when coordinator will be slicing data for the engine",
+            "items": {
+                "type": "string",
+                "format": "path"
+            }
+        },
+        "schemaFile": {
+            "type": "string",
+            "format": "path",
+            "description": "TODO: replace with actual DDL or Parquet schema"
+        },
+        "explicitWatermarks": {
+            "type": "array",
+            "items": {
+                "$ref": "/schemas/Watermark"
+            }
+        }
+    }
+}

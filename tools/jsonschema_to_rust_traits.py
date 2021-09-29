@@ -11,6 +11,8 @@ PREAMBLE = [
     '// See: http://opendatafabric.org/',
     '/' * 80,
     '',
+    'use std::path::Path;',
+    '',
     'use super::{CompressionFormat, DatasetID, SourceOrdering, TimeInterval, Sha3_256};',
     'use chrono::{DateTime, Utc};',
     '',
@@ -21,16 +23,12 @@ DEFAULT_INDENT = 4
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
 
 
+struct_types = set()
 extra_types = []
 
 
 def is_struct_type(typ):
-    return typ in (
-        'DatasetVocabulary',
-        'DataSlice',
-        'SqlQueryStep',
-        'TemporalTable',
-    )
+    return typ in struct_types
 
 
 def is_string_enum(typ):
@@ -42,6 +40,10 @@ def is_string_enum(typ):
 
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
+
+    for name, sch in schemas.items():
+        if sch.get("type") == "object":
+            struct_types.add(name)
 
     for l in PREAMBLE:
         print(l)
@@ -263,6 +265,9 @@ def get_primitive_type(sch):
         elif fmt == 'url':
             assert ptype == 'string'
             return "&str"
+        elif fmt == 'path':
+            assert ptype == 'string'
+            return "&Path"
         elif fmt == 'regex':
             assert ptype == 'string'
             return "&str"
@@ -318,7 +323,7 @@ def render_accessor(name, sch, optional, in_ref=False):
             yield name if not in_ref else f'*{name}'
         elif fmt in ('date-time', 'date-time-interval'):
             yield name if not in_ref else f'*{name}'
-        elif fmt in ('dataset-id', 'url', 'regex'):
+        elif fmt in ('dataset-id', 'url', 'path', 'regex'):
             yield f'{name}.as_ref()'
         elif fmt == 'sha3-256':
             yield f'{name}' if in_ref else f'&{name}'
@@ -356,7 +361,7 @@ def render_clone(name, sch, optional):
             yield name
         elif fmt in ('date-time', 'date-time-interval'):
             yield name
-        elif fmt in ('dataset-id', 'url', 'regex'):
+        elif fmt in ('dataset-id', 'url', 'path', 'regex'):
             yield f'{name}.to_owned()'
         elif fmt == 'sha3-256':
             yield f'*{name}'

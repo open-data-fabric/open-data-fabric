@@ -10,6 +10,7 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ////////////////////////////////////////////////////////////////////////////////
 
+use std::path::PathBuf;
 use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
 use crate::*;
 use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -139,6 +140,9 @@ def render_field(pname, psch, required, modifier=None):
         else:
             yield '#[serde(default, with = "datetime_rfc3339_opt")]'
 
+    if pname == "datasetID":
+        yield '#[serde(rename = "datasetID")]'
+
     if not required:
         typ = to_optional_type(typ)
 
@@ -227,6 +231,9 @@ def get_primitive_type(sch):
         elif fmt == 'url':
             assert ptype == 'string'
             return 'String'
+        elif fmt == 'path':
+            assert ptype == 'string'
+            return 'PathBuf'
         elif fmt == 'regex':
             assert ptype == 'string'
             return 'String'

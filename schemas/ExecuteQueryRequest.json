@@ -1,0 +1,51 @@
+{
+    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryRequest",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "datasetID",
+        "vocab",
+        "transform",
+        "inputs",
+        "newCheckpointDir",
+        "outDataPath"
+    ],
+    "properties": {
+        "datasetID": {
+            "type": "string",
+            "format": "dataset-id",
+            "description": "Unique identifier of the dataset"
+        },
+        "vocab": {
+            "$ref": "/schemas/DatasetVocabulary"
+        },
+        "transform": {
+            "$ref": "/schemas/Transform",
+            "description": "Transformation that will be applied to produce new data"
+        },
+        "inputs": {
+            "type": "array",
+            "description": "Defines the input data",
+            "items": {
+                "$ref": "/schemas/QueryInput"
+            }
+        },
+        "prevCheckpointDir": {
+            "type": "string",
+            "format": "path",
+            "description": "TODO: This is temporary"
+        },
+        "newCheckpointDir": {
+            "type": "string",
+            "format": "path",
+            "description": "TODO: This is temporary"
+        },
+        "outDataPath": {
+            "type": "string",
+            "format": "path",
+            "description": "TODO: This is temporary"
+        }
+    }
+}

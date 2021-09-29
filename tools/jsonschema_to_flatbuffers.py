@@ -169,15 +169,23 @@ def render_field(pname, psch, required, modifier=None):
 
 def render_oneof(name, sch):
     yield f'union {name} {{'
-    for (ename, esch) in sch.get('$defs', {}).items():
-        yield from indent(render_oneof_element(name, ename, esch))
+    for option in sch["oneOf"]:
+        ename = option["$ref"].split("/")[-1]
+
+        if option["$ref"].startswith("#"):
+            struct_name = f"{name}{ename}"
+            extra_types.append(list(render_struct(struct_name, sch["$defs"][ename])))
+        else:
+            struct_name = ename
+
+        yield " " * DEFAULT_INDENT + f'{struct_name},'
     yield '}'
 
-
-def render_oneof_element(name, ename, esch):
-    struct_name = f'{name}{ename}'
-    yield f'{struct_name},'
-    extra_types.append(list(render_struct(struct_name, esch)))
+    if sch.get("root"):
+        yield ""
+        yield f"table {name}Root {{"
+        yield  " " * DEFAULT_INDENT + f"value : {name};"
+        yield  "}"
 
 
 def render_string_enum(name, sch):
@@ -222,6 +230,9 @@ def get_primitive_type(sch):
             assert ptype == 'integer'
             return 'int64'
         elif fmt == 'url':
+            assert ptype == 'string'
+            return 'string'
+        elif fmt == 'path':
             assert ptype == 'string'
             return 'string'
         elif fmt == 'regex':

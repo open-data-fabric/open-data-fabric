@@ -23,6 +23,7 @@ mod odf {
 use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
 use chrono::prelude::*;
 use std::convert::{TryFrom, TryInto};
+use std::path::PathBuf;
 
 pub trait FlatbuffersSerializable<'fb> {
     type OffsetT;
@@ -33,11 +34,11 @@ pub trait FlatbuffersDeserializable<T> {
     fn deserialize(fb: T) -> Self;
 }
 
-trait FlatbuffersEnumSerializable<'fb, E> {
+pub trait FlatbuffersEnumSerializable<'fb, E> {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (E, WIPOffset<UnionWIPOffset>);
 }
 
-trait FlatbuffersEnumDeserializable<'fb, E> {
+pub trait FlatbuffersEnumDeserializable<'fb, E> {
     fn deserialize(table: Table<'fb>, t: E) -> Self
     where
         Self: Sized;
@@ -446,7 +447,14 @@ def pre_ser_composite_type(name, sch):
             yield "builder.add_value(value_offset);"
             yield "builder.finish()"
         else:
-            yield from pre_ser_composite_type("i", isch)
+            pre_ser = list(pre_ser_composite_type("i", isch))
+            if pre_ser:
+                for l in pre_ser:
+                    yield l
+            else:
+                # TODO: Another dirty hack ... flatbuffer serialization is very hard to compose
+                for l in ser_composite_type("i", isch):
+                    yield l[1:]
         yield "}).collect();"
         yield "fb.create_vector(&offsets)"
     elif is_string_enum(sch):
@@ -499,6 +507,9 @@ def pre_ser_primitive_type(name, sch):
         elif fmt == 'url':
             assert ptype == 'string'
             yield f'fb.create_string(&{name})'
+        elif fmt == 'path':
+            assert ptype == 'string'
+            yield f'fb.create_string({name}.to_str().unwrap())'
         elif fmt == 'regex':
             assert ptype == 'string'
             yield f'fb.create_string(&{name})'
@@ -530,6 +541,8 @@ def ser_primitive_type(name, sch):
         elif fmt == 'sha3-256':
             assert ptype == 'string'
         elif fmt == 'url':
+            assert ptype == 'string'
+        elif fmt == 'path':
             assert ptype == 'string'
         elif fmt == 'regex':
             assert ptype == 'string'
@@ -567,6 +580,9 @@ def de_primitive_type(name, sch, enum_t_accessor):
         elif fmt == 'url':
             assert ptype == 'string'
             yield f'{name}.to_owned()'
+        elif fmt == 'path':
+            assert ptype == 'string'
+            yield f'PathBuf::from({name})'
         elif fmt == 'regex':
             assert ptype == 'string'
             yield f'{name}.to_owned()'

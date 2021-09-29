@@ -11,6 +11,8 @@ PREAMBLE = [
     '// See: http://opendatafabric.org/',
     '/' * 80,
     '',
+    'use std::path::PathBuf;',
+    '',
     'use super::{DatasetIDBuf, TimeInterval, Sha3_256};',
     'use chrono::{DateTime, Utc};',
     '',
@@ -155,6 +157,9 @@ def get_primitive_type(sch):
         elif fmt == 'url':
             assert ptype == 'string'
             return 'String'
+        elif fmt == 'path':
+            assert ptype == 'string'
+            return 'PathBuf'
         elif fmt == 'regex':
             assert ptype == 'string'
             return 'String'
