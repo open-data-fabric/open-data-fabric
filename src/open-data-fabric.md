@@ -435,7 +435,7 @@ Watermarks in the system are defined per every [Metadata Block](#metadata-chain)
 
 Watermarks can also be set based on the [System Time](#system-time) manually or semi-automatically. This is valuable for the slow moving [Datasets](#dataset) where it's normal not to see any events in days or even months. Setting the watermark explicitly allows all computations based on such stream to proceed, knowing that there were no events for that time period, where otherwise the output would be stalled assuming the [Dataset](#dataset) was not updated for a while and old data can still arrive.
 
-## repository
+## Repository
 Repositories let participants of the system exchange [Datasets](#dataset) with one another.
 
 Repository definition includes:
