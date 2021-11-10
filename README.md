@@ -37,11 +37,13 @@ The goal of this specification is to develop a method of data exchange that woul
 
 ### Introductory materials
 - [Kamu Blog: Introducing Open Data Fabric](https://www.kamu.dev/blog/introducing-odf/)
+- [Talk: Open Data Fabric for Research Data Management](https://www.youtube.com/watch?v=Ivh-YDDmRf8)
+- [PyData Global 2021 Talk: Time: The most misunderstood dimension in data modelling](https://www.youtube.com/watch?v=XxKnTusccUM)
 - [Data+AI Summit 2020 Talk: Building a Distributed Collaborative Data Pipeline](https://databricks.com/session_eu20/building-a-distributed-collaborative-data-pipeline-with-apache-spark)
 
-## Current State
+More tutorials and articles can be found in [kamu-cli documentation](https://docs.kamu.dev/cli/learn/learning-materials/).
 
-Latest version: [![Latest Version](https://img.shields.io/badge/open--data--fabric-0.17.0-green)](./open-data-fabric.md)
+## Current State
 
 The specification is currently in the **EXPERIMENTAL** stage and welcomes feedback.
 
