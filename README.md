@@ -5,6 +5,7 @@
 <p><strong><i>Open protocol for decentralized exchange and transformation of data</i></strong></p>
 
 [Website](https://docs.kamu.dev/odf/) |
+[Original Whitepaper](https://arxiv.org/abs/2111.06364) |
 [Reference Implementation](https://github.com/kamu-data/kamu-cli) |
 [Chat](https://discord.gg/nU6TXRQNXC)
 
@@ -36,6 +37,7 @@ The goal of this specification is to develop a method of data exchange that woul
 </p>
 
 ### Introductory materials
+- [Original Whitepaper (July 2020)](https://arxiv.org/abs/2111.06364)
 - [Kamu Blog: Introducing Open Data Fabric](https://www.kamu.dev/blog/introducing-odf/)
 - [Talk: Open Data Fabric for Research Data Management](https://www.youtube.com/watch?v=Ivh-YDDmRf8)
 - [PyData Global 2021 Talk: Time: The most misunderstood dimension in data modelling](https://www.youtube.com/watch?v=XxKnTusccUM)
