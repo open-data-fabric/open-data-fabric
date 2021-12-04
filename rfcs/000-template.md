@@ -2,9 +2,9 @@
 
 **Start Date**: (fill me in with today's date, YYYY-MM-DD)
 
-![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/11?label=RFC%20Status)
+[![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/11?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/11)
 
-![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/12?label=Spec%20PR)
+[![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/12?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/12)
 
 ## Summary
 [summary]: #summary
