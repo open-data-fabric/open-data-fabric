@@ -30,6 +30,7 @@ Develop a method of semi-structured data exchange that would:
   * [Event](#event)
   * [Data](#data)
   * [Schema](#schema)
+  * [Offset](#offset)
   * [Data Slice](#data-slice)
   * [Metadata Chain](#metadata-chain)
   * [Dataset](#dataset)
@@ -43,7 +44,7 @@ Develop a method of semi-structured data exchange that would:
   * [Provenance](#provenance)
   * [Time](#time)
   * [Watermark](#watermark)
-  * [repository](#repository)
+  * [Repository](#repository)
   * [Projection](#projection)
 - [Specification](#specification)
   * [Dataset Identity](#dataset-identity)
@@ -244,13 +245,17 @@ See also:
 - [Schema Format](#schema-format)
 - [Schema Evolution](#schema-evolution)
 
+## Offset
+
+Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset.
+
 ## Data Slice
 [Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
 
 More formally, a slice is a:
 - Continuous part of [Data](#data)
 - That has the same [Schema](#schema)
-- Defined by its `[start; end]` [System Time](#system-time) interval
+- Defined by its `[start; end]` [Offset](#offset) interval
 
 ![Diagram: Data Slices and Metadata](images/metadata.svg)
 
@@ -481,7 +486,7 @@ Watermarks in the system are defined per every [Metadata Block](#metadata-chain)
 
 Watermarks can also be set based on the [System Time](#system-time) manually or semi-automatically. This is valuable for the slow moving [Datasets](#dataset) where it's normal not to see any events in days or even months. Setting the watermark explicitly allows all computations based on such stream to proceed, knowing that there were no events for that time period, where otherwise the output would be stalled assuming the [Dataset](#dataset) was not updated for a while and old data can still arrive.
 
-## repository
+## Repository
 Repositories let participants of the system exchange [Datasets](#dataset) with one another.
 
 Repository definition includes:
@@ -611,6 +616,7 @@ All data in the system is guaranteed to have the following columns:
 
 |    Column     |            Type             | Description                                                                                                                                                                                                                             |
 | :-----------: | :-------------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   `offset`    |      `UNSIGNED BIGINT`      | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset                                                                                                                                              |
 | `system_time` |       `TIMESTAMP(6)`        | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset) |
 | `event_time`  | `TIMESTAMP(3..6)` or `DATE` | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. This time is used for most time-based windowed computations, aggregations, and joins                                               |
 
@@ -686,7 +692,7 @@ The exchange of raw data happens out-of-band of the `gRPC` API. Input and output
 Engine implementation should support the following operations:
 - [Validate query](#validate-query) - Validates the user-specified query for basic syntax and schema correctness.
 - [Execute query](#execute-query) - Performs the next iteration of the transformation.
-- [Migrate query](#validate-query) - Updates the transformation state from one query to another.
+- [Migrate query](#migrate-query) - Updates the transformation state from one query to another.
 - [Derive Provenance](#derive-provenance) - Explains the origin of some data produced in the past.
 
 See also:

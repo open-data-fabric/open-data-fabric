@@ -4,7 +4,7 @@
 
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/10?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/10)
 
-[![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/0?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/0)
+[![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/13?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/13)
 
 ## Summary
 [summary]: #summary
@@ -23,7 +23,9 @@ And in future should help with features like fine-grain provenance, corrections,
 ## Explanation
 [guide-level-explanation]: #guide-level-explanation
 
-An `offset` is a monotonically increasing sequential numeric identifier (`uint64` / `bigint`) that is assigned to every record and represents the record's position in the dataset relative to its beginning.
+Offset is a monotonically increasing sequential numeric identifie that is assigned to every record and represents its position relative to the beginning of the dataset.
+
+Data type: `uint64` (Parquet/Arrow), `UNSIGNED BIGINT` (DDL), non-null.
 
 Offsets are assigned by coordinator at the time of persisting data (after ingestion or transformation).
 
