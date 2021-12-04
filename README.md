@@ -9,7 +9,7 @@
 [Reference Implementation](https://github.com/kamu-data/kamu-cli) |
 [Chat](https://discord.gg/nU6TXRQNXC)
 
-[![Latest Version](https://img.shields.io/badge/Spec-0.18.0-green)](./open-data-fabric.md)
+[![Latest Version](https://img.shields.io/badge/Spec-0.19.0-green)](./open-data-fabric.md)
 [![Chat](https://shields.io/discord/898726370199359498?label=Discord)](https://discord.gg/nU6TXRQNXC)
 
 </p>
