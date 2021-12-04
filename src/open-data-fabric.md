@@ -640,7 +640,7 @@ The exchange of raw data happens out-of-band of the `gRPC` API. Input and output
 Engine implementation should support the following operations:
 - [Validate query](#validate-query) - Validates the user-specified query for basic syntax and schema correctness.
 - [Execute query](#execute-query) - Performs the next iteration of the transformation.
-- [Migrate query](#validate-query) - Updates the transformation state from one query to another.
+- [Migrate query](#migrate-query) - Updates the transformation state from one query to another.
 - [Derive Provenance](#derive-provenance) - Explains the origin of some data produced in the past.
 
 See also:
