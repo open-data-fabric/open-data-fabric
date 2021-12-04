@@ -1,4 +1,4 @@
-# RFC 000: RFC Template
+# RFC-000: RFC Template
 
 **Start Date**: (fill me in with today's date, YYYY-MM-DD)
 
