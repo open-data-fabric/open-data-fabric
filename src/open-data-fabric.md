@@ -198,13 +198,17 @@ See also:
 - [Schema Format](#schema-format)
 - [Schema Evolution](#schema-evolution)
 
+## Offset
+
+Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset.
+
 ## Data Slice
 [Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
 
 More formally, a slice is a:
 - Continuous part of [Data](#data)
 - That has the same [Schema](#schema)
-- Defined by its `[start; end]` [System Time](#system-time) interval
+- Defined by its `[start; end]` [Offset](#offset) interval
 
 ![Diagram: Data Slices and Metadata](images/metadata.svg)
 
@@ -565,6 +569,7 @@ All data in the system is guaranteed to have the following columns:
 
 |    Column     |            Type             | Description                                                                                                                                                                                                                             |
 | :-----------: | :-------------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   `offset`    |      `UNSIGNED BIGINT`      | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset                                                                                                                                              |
 | `system_time` |       `TIMESTAMP(6)`        | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset) |
 | `event_time`  | `TIMESTAMP(3..6)` or `DATE` | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. This time is used for most time-based windowed computations, aggregations, and joins                                               |
 
