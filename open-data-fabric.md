@@ -1244,9 +1244,9 @@ Lets you manipulate names of the system columns to avoid conflicts.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `offsetColumn` | `string` |  |  | Name of the offset column. |
 | `systemTimeColumn` | `string` |  |  | Name of the system time column. |
 | `eventTimeColumn` | `string` |  |  | Name of the event time column. |
+| `offsetColumn` | `string` |  |  | Name of the offset column. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DatasetVocabulary.json)
 [![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
