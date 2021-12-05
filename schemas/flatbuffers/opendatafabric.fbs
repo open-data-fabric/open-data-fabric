@@ -270,6 +270,7 @@ union DatasetSource {
 ////////////////////////////////////////////////////////////////////////////////
 
 table DatasetVocabulary {
+  offset_column: string;
   system_time_column: string;
   event_time_column: string;
 }

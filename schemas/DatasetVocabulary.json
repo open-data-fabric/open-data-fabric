@@ -6,6 +6,10 @@
   "additionalProperties": false,
   "required": [],
   "properties": {
+    "offsetColumn": {
+      "type": "string",
+      "description": "Name of the offset column."
+    },
     "systemTimeColumn": {
       "type": "string",
       "description": "Name of the system time column."
