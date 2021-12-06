@@ -6,6 +6,8 @@
     "additionalProperties": false,
     "required": [
         "datasetID",
+        "systemTime",
+        "offset",
         "vocab",
         "transform",
         "inputs",
@@ -17,6 +19,16 @@
             "type": "string",
             "format": "dataset-id",
             "description": "Unique identifier of the dataset"
+        },
+        "systemTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "System time to use for new records"
+        },
+        "offset": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Starting offset to use for new records"
         },
         "vocab": {
             "$ref": "/schemas/DatasetVocabulary"

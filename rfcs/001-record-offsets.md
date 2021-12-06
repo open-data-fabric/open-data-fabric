@@ -11,6 +11,8 @@
 
 This RFC introducess new system column `offset` that represents the sequential number of the row from the beginning of the dataset.
 
+This is a **backwards incompatible change**.
+
 ## Motivation
 [motivation]: #motivation
 
@@ -20,18 +22,32 @@ This should simplify referring to data slices (we currently use `system_time` in
 
 And in future should help with features like fine-grain provenance, corrections, and retractions.
 
-## Explanation
+## Guide-level explanation
 [guide-level-explanation]: #guide-level-explanation
 
-Offset is a monotonically increasing sequential numeric identifie that is assigned to every record and represents its position relative to the beginning of the dataset.
+Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset (first record's offset is `0`).
 
-Data type: `uint64` (Parquet/Arrow), `UNSIGNED BIGINT` (DDL), non-null.
+## Reference-level explanation
+[reference-level-explanation]: #reference-level-explanation
 
-Offsets are assigned by coordinator at the time of persisting data (after ingestion or transformation).
+Common schema will be extended with `offset` column, with data type: `int64` (Parquet/Arrow), `BIGINT` (DDL), non-null. Offset of the first record is `0`.
+
+`DataSclice` schema will be updated to use offsets instead of system time intervals.
+
+`InputSlice` schema will be introduced that contains data offsets and metadata blocks intervals. Previously we relied on system time interval to define both data and metadata slices, but this proved to be not flexible and complex.
+
+`ExecuteQueryRequest` will be extended with `offset` field telling the engine the starting offset to use for new data.
+
+`DatasetVocab` will be extended with `offsetColumn` field.
+
+All intervals (for offsets and metadata) will be closed/inclusive `[start; end]`. Empty intervals should be expressed by the absence of the interval field.
+
+`date-time-interval` format will be removed.
 
 ## Drawbacks
 [drawbacks]: #drawbacks
 
+- Backwards incompatible change
 - Increases the number of system columns the users are exposed to
 - Storage overhead
 - Sequential identifiers are bad for data-parallel systems

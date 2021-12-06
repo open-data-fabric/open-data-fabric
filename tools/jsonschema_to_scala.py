@@ -19,7 +19,6 @@ PREAMBLE = [
     'import java.time.Instant',
     '',
     'import com.typesafe.config.ConfigObject',
-    'import spire.math.Interval',
     '',
     '/' * 80,
     '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
@@ -176,8 +175,6 @@ def get_primitive_type(sch):
             return 'String'
         elif fmt == 'date-time':
             return 'Instant'
-        elif fmt == 'date-time-interval':
-            return 'Interval[Instant]'
         elif fmt == 'dataset-id':
             return 'DatasetID'
         else:

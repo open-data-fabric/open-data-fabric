@@ -200,7 +200,7 @@ See also:
 
 ## Offset
 
-Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset.
+Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset it `0`.
 
 ## Data Slice
 [Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
@@ -208,7 +208,7 @@ Offset is a monotonically increasing sequential numeric identifier that is assig
 More formally, a slice is a:
 - Continuous part of [Data](#data)
 - That has the same [Schema](#schema)
-- Defined by its `[start; end]` [Offset](#offset) interval
+- Defined by its `[start; end)` [Offset](#offset) interval
 
 ![Diagram: Data Slices and Metadata](images/metadata.svg)
 
@@ -735,10 +735,9 @@ This section describes the operations performed by the [Coordinator](#coordinato
 #### Data Hashing
 The procedure for calculating the stable [Hash](#hash) of a [Data Slice](#data-slice) is:
 
-1. Drop the `system_time` column
-2. Sort all rows based on the `event_time` column
-3. Convert rows to the canonical string representation
-4. Calculate [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest of the file
+1. Sort all rows based on the `event_time` column
+2. Convert rows to the canonical string representation
+3. Calculate [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest of the file
 
 > **TODO:** This is a stop-gap implementation. Release version of the hashing function should have a streaming nature while also be tolerant of row reordering, as many processing engine are concurrent and don't enforce ordering between outputs of independent calculations.
 

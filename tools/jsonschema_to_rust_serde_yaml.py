@@ -239,8 +239,6 @@ def get_primitive_type(sch):
             return 'String'
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
-        elif fmt == 'date-time-interval':
-            return 'TimeInterval'
         elif fmt == 'dataset-id':
             return 'DatasetIDBuf'
         else:

@@ -25,8 +25,8 @@
       "description": "System time when this block was written."
     },
     "outputSlice": {
-      "$ref": "/schemas/DataSlice",
-      "description": "Properties of output data written during this update, if any."
+      "$ref": "/schemas/OutputSlice",
+      "description": "Describes output data written during this transaction, if any."
     },
     "outputWatermark": {
       "type": "string",
@@ -36,7 +36,7 @@
     "inputSlices": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/DataSlice"
+        "$ref": "/schemas/InputSlice"
       },
       "description": "Defines input datasets and their data slices used in this block, if any."
     },

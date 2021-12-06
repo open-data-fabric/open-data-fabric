@@ -1,0 +1,26 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/InputSlice",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Describes a slice of input data used during a transformation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "datasetID",
+    "blockInterval"
+  ],
+  "properties": {
+    "datasetID": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "Input dataset identifier"
+    },
+    "blockInterval": {
+      "$ref": "/schemas/BlockInterval",
+      "description": "Blocks that went into this transaction"
+    },
+    "dataInterval": {
+      "$ref": "/schemas/OffsetInterval",
+      "description": "Data that went into this transaction"
+    }
+  }
+}

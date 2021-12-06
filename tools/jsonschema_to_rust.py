@@ -12,7 +12,6 @@ PREAMBLE = [
     '',
     'use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};',
     'use crate::domain::DatasetIDBuf;',
-    'use crate::domain::TimeInterval;',
     'use chrono::{DateTime, Utc};',
     'use serde::{Deserialize, Serialize};',
     'use serde_with::skip_serializing_none;',
@@ -174,8 +173,6 @@ def get_primitive_type(sch):
             return 'String'
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
-        elif fmt == 'date-time-interval':
-            return 'TimeInterval'
         elif fmt == 'dataset-id':
             return 'DatasetIDBuf'
         else:

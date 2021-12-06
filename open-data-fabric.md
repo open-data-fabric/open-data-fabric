@@ -247,7 +247,7 @@ See also:
 
 ## Offset
 
-Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset.
+Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset it `0`.
 
 ## Data Slice
 [Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
@@ -255,7 +255,7 @@ Offset is a monotonically increasing sequential numeric identifier that is assig
 More formally, a slice is a:
 - Continuous part of [Data](#data)
 - That has the same [Schema](#schema)
-- Defined by its `[start; end]` [Offset](#offset) interval
+- Defined by its `[start; end)` [Offset](#offset) interval
 
 ![Diagram: Data Slices and Metadata](images/metadata.svg)
 
@@ -782,10 +782,9 @@ This section describes the operations performed by the [Coordinator](#coordinato
 #### Data Hashing
 The procedure for calculating the stable [Hash](#hash) of a [Data Slice](#data-slice) is:
 
-1. Drop the `system_time` column
-2. Sort all rows based on the `event_time` column
-3. Convert rows to the canonical string representation
-4. Calculate [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest of the file
+1. Sort all rows based on the `event_time` column
+2. Convert rows to the canonical string representation
+3. Calculate [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest of the file
 
 > **TODO:** This is a stop-gap implementation. Release version of the hashing function should have a streaming nature while also be tolerant of row reordering, as many processing engine are concurrent and don't enforce ordering between outputs of independent calculations.
 
@@ -1259,12 +1258,12 @@ An individual block in the metadata chain that captures the history of modificat
 | `blockHash` | `string` | V | `sha3-256` | Hash sum of this metadata block's information. |
 | `prevBlockHash` | `string` |  | `sha3-256` | Hash sum of the preceding block. |
 | `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time when this block was written. |
-| `outputSlice` | [DataSlice](#dataslice-schema) |  |  | Properties of output data written during this update, if any. |
+| `outputSlice` | [OutputSlice](#outputslice-schema) |  |  | Describes output data written during this transaction, if any. |
 | `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream.
 Watermarks are usually derived from the event times in data based on the properties of the source,
 but sometimes they can also be assigned manually. Manual watermarks are useful in cases of slow-moving
 datasets in order to let the computations continue even when no new events were observed for a long time. |
-| `inputSlices` | array([DataSlice](#dataslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any. |
+| `inputSlices` | array([InputSlice](#inputslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any. |
 | `source` | [DatasetSource](#datasetsource-schema) |  |  | Contains the definition of the source of data when it changes. |
 | `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Vocabulary lets you change system column names to avoid conflicts. |
 
@@ -1277,8 +1276,8 @@ Defines a subset of data in a dataset
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `hash` | `string` | V | `sha3-256` | Hash sum of the data in this slice |
-| `interval` | `string` | V | `date-time-interval` | Defines the system time boundaries of data in this slice |
-| `numRecords` | `integer` | V | `int64` | Number of records in this slice |
+| `offsetStart` | `integer` | V | `int64` | Defines the start offset of the data slice [start; end) |
+| `offsetEnd` | `integer` | V | `int64` | Defines the end offset of the data slice [start; end) |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DataSlice.json)
 [![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)

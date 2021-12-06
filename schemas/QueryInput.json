@@ -7,7 +7,6 @@
     "required": [
         "datasetID",
         "vocab",
-        "interval",
         "dataPaths",
         "schemaFile",
         "explicitWatermarks"
@@ -21,10 +20,9 @@
         "vocab": {
             "$ref": "/schemas/DatasetVocabulary"
         },
-        "interval": {
-            "type": "string",
-            "format": "date-time-interval",
-            "description": "Defines the system time boundaries of data in this slice"
+        "dataInterval": {
+            "$ref": "/schemas/OffsetInterval",
+            "description": "Data that went into this transaction"
         },
         "dataPaths": {
             "type": "array",

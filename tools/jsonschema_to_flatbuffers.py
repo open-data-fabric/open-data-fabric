@@ -17,26 +17,6 @@ PREAMBLE = [
     '  nanoseconds: uint32;',
     '}',
     '',
-    'enum TimeIntervalType: uint8 {',
-    '  Closed,',
-    '  Open,',
-    '  LeftHalfOpen,',
-    '  RightHalfOpen,',
-    '  UnboundedClosedRight,',
-    '  UnboundedOpenRight,',
-    '  UnboundedClosedLeft,',
-    '  UnboundedOpenLeft,',
-    '  Singleton,',
-    '  Unbounded,',
-    '  Empty,',
-    '}',
-    '',
-    'struct TimeInterval {',
-    '  type: TimeIntervalType;',
-    '  left: Timestamp;',
-    '  right: Timestamp;',
-    '}',
-    '',
 ]
 
 DEFAULT_INDENT = 2
@@ -242,8 +222,6 @@ def get_primitive_type(sch):
             return '[ubyte]'
         elif fmt == 'date-time':
             return 'Timestamp'
-        elif fmt == 'date-time-interval':
-            return 'TimeInterval'
         elif fmt == 'dataset-id':
             return 'string'
         else:

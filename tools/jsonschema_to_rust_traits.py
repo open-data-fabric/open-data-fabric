@@ -13,7 +13,7 @@ PREAMBLE = [
     '',
     'use std::path::Path;',
     '',
-    'use super::{CompressionFormat, DatasetID, SourceOrdering, TimeInterval, Sha3_256};',
+    'use super::{CompressionFormat, DatasetID, SourceOrdering, Sha3_256};',
     'use chrono::{DateTime, Utc};',
     '',
 ]
@@ -273,8 +273,6 @@ def get_primitive_type(sch):
             return "&str"
         elif fmt == 'date-time':
             return "DateTime<Utc>"
-        elif fmt == 'date-time-interval':
-            return "TimeInterval"
         elif fmt == 'dataset-id':
             return "&DatasetID"
         else:
@@ -321,7 +319,7 @@ def render_accessor(name, sch, optional, in_ref=False):
     elif fmt:
         if fmt == 'int64':
             yield name if not in_ref else f'*{name}'
-        elif fmt in ('date-time', 'date-time-interval'):
+        elif fmt in ('date-time',):
             yield name if not in_ref else f'*{name}'
         elif fmt in ('dataset-id', 'url', 'path', 'regex'):
             yield f'{name}.as_ref()'
@@ -359,7 +357,7 @@ def render_clone(name, sch, optional):
     elif fmt:
         if fmt == 'int64':
             yield name
-        elif fmt in ('date-time', 'date-time-interval'):
+        elif fmt in ('date-time',):
             yield name
         elif fmt in ('dataset-id', 'url', 'path', 'regex'):
             yield f'{name}.to_owned()'

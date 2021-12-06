@@ -18,7 +18,6 @@ mod odf {
     pub use crate::dataset_id::*;
     pub use crate::dtos::*;
     pub use crate::sha::*;
-    pub use crate::time_interval::*;
 }
 use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
 use chrono::prelude::*;
@@ -69,104 +68,6 @@ fn fb_to_datetime(dt: &fb::Timestamp) -> DateTime<Utc> {
             .unwrap(),
         )
         .unwrap()
-}
-
-fn interval_to_fb(iv: &odf::TimeInterval) -> fb::TimeInterval {
-    use intervals_general::interval::Interval;
-    match iv.0 {
-        Interval::Closed { bound_pair: p } => fb::TimeInterval::new(
-            fb::TimeIntervalType::Closed,
-            &datetime_to_fb(p.left()),
-            &datetime_to_fb(p.right()),
-        ),
-        Interval::Open { bound_pair: p } => fb::TimeInterval::new(
-            fb::TimeIntervalType::Open,
-            &datetime_to_fb(p.left()),
-            &datetime_to_fb(p.right()),
-        ),
-        Interval::LeftHalfOpen { bound_pair: p } => fb::TimeInterval::new(
-            fb::TimeIntervalType::LeftHalfOpen,
-            &datetime_to_fb(p.left()),
-            &datetime_to_fb(p.right()),
-        ),
-        Interval::RightHalfOpen { bound_pair: p } => fb::TimeInterval::new(
-            fb::TimeIntervalType::RightHalfOpen,
-            &datetime_to_fb(p.left()),
-            &datetime_to_fb(p.right()),
-        ),
-        Interval::UnboundedClosedRight { right } => fb::TimeInterval::new(
-            fb::TimeIntervalType::UnboundedClosedRight,
-            &fb::Timestamp::default(),
-            &datetime_to_fb(&right),
-        ),
-        Interval::UnboundedOpenRight { right } => fb::TimeInterval::new(
-            fb::TimeIntervalType::UnboundedOpenRight,
-            &fb::Timestamp::default(),
-            &datetime_to_fb(&right),
-        ),
-        Interval::UnboundedClosedLeft { left } => fb::TimeInterval::new(
-            fb::TimeIntervalType::UnboundedClosedLeft,
-            &datetime_to_fb(&left),
-            &fb::Timestamp::default(),
-        ),
-        Interval::UnboundedOpenLeft { left } => fb::TimeInterval::new(
-            fb::TimeIntervalType::UnboundedOpenLeft,
-            &datetime_to_fb(&left),
-            &fb::Timestamp::default(),
-        ),
-        Interval::Singleton { at } => fb::TimeInterval::new(
-            fb::TimeIntervalType::Singleton,
-            &datetime_to_fb(&at),
-            &fb::Timestamp::default(),
-        ),
-        Interval::Unbounded => fb::TimeInterval::new(
-            fb::TimeIntervalType::Unbounded,
-            &fb::Timestamp::default(),
-            &fb::Timestamp::default(),
-        ),
-        Interval::Empty => fb::TimeInterval::new(
-            fb::TimeIntervalType::Empty,
-            &fb::Timestamp::default(),
-            &fb::Timestamp::default(),
-        ),
-    }
-}
-
-fn fb_to_interval(iv: &fb::TimeInterval) -> odf::TimeInterval {
-    match iv.type_() {
-        fb::TimeIntervalType::Closed => {
-            odf::TimeInterval::closed(fb_to_datetime(iv.left()), fb_to_datetime(iv.right()))
-                .unwrap()
-        }
-        fb::TimeIntervalType::Open => {
-            odf::TimeInterval::open(fb_to_datetime(iv.left()), fb_to_datetime(iv.right())).unwrap()
-        }
-        fb::TimeIntervalType::LeftHalfOpen => {
-            odf::TimeInterval::left_half_open(fb_to_datetime(iv.left()), fb_to_datetime(iv.right()))
-                .unwrap()
-        }
-        fb::TimeIntervalType::RightHalfOpen => odf::TimeInterval::right_half_open(
-            fb_to_datetime(iv.left()),
-            fb_to_datetime(iv.right()),
-        )
-        .unwrap(),
-        fb::TimeIntervalType::UnboundedClosedRight => {
-            odf::TimeInterval::unbounded_closed_right(fb_to_datetime(iv.right()))
-        }
-        fb::TimeIntervalType::UnboundedOpenRight => {
-            odf::TimeInterval::unbounded_open_right(fb_to_datetime(iv.right()))
-        }
-        fb::TimeIntervalType::UnboundedClosedLeft => {
-            odf::TimeInterval::unbounded_closed_left(fb_to_datetime(iv.left()))
-        }
-        fb::TimeIntervalType::UnboundedOpenLeft => {
-            odf::TimeInterval::unbounded_open_left(fb_to_datetime(iv.left()))
-        }
-        fb::TimeIntervalType::Singleton => odf::TimeInterval::singleton(fb_to_datetime(iv.left())),
-        fb::TimeIntervalType::Unbounded => odf::TimeInterval::unbounded(),
-        fb::TimeIntervalType::Empty => odf::TimeInterval::empty(),
-        _ => panic!("Invalid enum value: {}", iv.type_().0),
-    }
 }
 
 fn empty_table<'fb>(
@@ -515,8 +416,6 @@ def pre_ser_primitive_type(name, sch):
             yield f'fb.create_string(&{name})'
         elif fmt == 'date-time':
             pass
-        elif fmt == 'date-time-interval':
-            pass
         elif fmt == 'dataset-id':
             yield f'fb.create_string(&{name})'
         else:
@@ -548,8 +447,6 @@ def ser_primitive_type(name, sch):
             assert ptype == 'string'
         elif fmt == 'date-time':
             yield f'&datetime_to_fb(&{name})'
-        elif fmt == 'date-time-interval':
-            yield f'&interval_to_fb(&{name})'
         elif fmt == 'dataset-id':
             pass
         else:
@@ -588,8 +485,6 @@ def de_primitive_type(name, sch, enum_t_accessor):
             yield f'{name}.to_owned()'
         elif fmt == 'date-time':
             yield f'fb_to_datetime({name})'
-        elif fmt == 'date-time-interval':
-            yield f'fb_to_interval({name})'
         elif fmt == 'dataset-id':
             yield f'odf::DatasetIDBuf::try_from({name}).unwrap()'
         else:
