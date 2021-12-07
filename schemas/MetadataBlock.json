@@ -38,7 +38,7 @@
       "items": {
         "$ref": "/schemas/InputSlice"
       },
-      "description": "Defines input datasets and their data slices used in this block, if any."
+      "description": "Defines inputs used in this transaction, if any. Slices corresponding to every input must be present when any input was processed."
     },
     "source": {
       "$ref": "/schemas/DatasetSource",

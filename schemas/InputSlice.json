@@ -5,8 +5,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "datasetID",
-    "blockInterval"
+    "datasetID"
   ],
   "properties": {
     "datasetID": {

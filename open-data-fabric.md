@@ -1263,7 +1263,7 @@ An individual block in the metadata chain that captures the history of modificat
 Watermarks are usually derived from the event times in data based on the properties of the source,
 but sometimes they can also be assigned manually. Manual watermarks are useful in cases of slow-moving
 datasets in order to let the computations continue even when no new events were observed for a long time. |
-| `inputSlices` | array([InputSlice](#inputslice-schema)) |  |  | Defines input datasets and their data slices used in this block, if any. |
+| `inputSlices` | array([InputSlice](#inputslice-schema)) |  |  | Defines inputs used in this transaction, if any. Slices corresponding to every input must be present when any input was processed. |
 | `source` | [DatasetSource](#datasetsource-schema) |  |  | Contains the definition of the source of data when it changes. |
 | `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Vocabulary lets you change system column names to avoid conflicts. |
 
