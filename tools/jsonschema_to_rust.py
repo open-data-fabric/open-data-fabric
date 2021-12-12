@@ -164,8 +164,6 @@ def get_primitive_type(sch):
             return 'i64'
         elif fmt == 'sha3-256':
             assert ptype == 'string'
-        elif fmt == 'multihash':
-            assert ptype == 'string'
             return 'String'
         elif fmt == 'url':
             assert ptype == 'string'

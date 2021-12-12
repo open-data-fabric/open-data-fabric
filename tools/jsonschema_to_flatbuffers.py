@@ -164,7 +164,7 @@ def render_oneof(name, sch):
     if sch.get("root"):
         yield ""
         yield f"table {name}Root {{"
-        yield  " " * DEFAULT_INDENT + f"value: {name};"
+        yield  " " * DEFAULT_INDENT + f"value : {name};"
         yield  "}"
 
 
@@ -219,8 +219,6 @@ def get_primitive_type(sch):
             assert ptype == 'string'
             return 'string'
         elif fmt == 'sha3-256':
-            return '[ubyte]'
-        elif fmt == 'multihash':
             return '[ubyte]'
         elif fmt == 'date-time':
             return 'Timestamp'

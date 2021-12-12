@@ -13,7 +13,7 @@ PREAMBLE = [
     '',
     'use std::path::PathBuf;',
     '',
-    'use super::{DatasetIDBuf, Multihash, Sha3_256};',
+    'use super::{DatasetIDBuf, Sha3_256};',
     'use chrono::{DateTime, Utc};',
     '',
 ]
@@ -154,9 +154,6 @@ def get_primitive_type(sch):
         elif fmt == 'sha3-256':
             assert ptype == 'string'
             return 'Sha3_256'
-        elif fmt == 'multihash':
-            assert ptype == 'string'
-            return 'Multihash'
         elif fmt == 'url':
             assert ptype == 'string'
             return 'String'

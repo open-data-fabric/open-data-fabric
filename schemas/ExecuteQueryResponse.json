@@ -13,16 +13,13 @@
         "Success": {
             "type": "object",
             "additionalProperties": false,
-            "required": [],
+            "required": [
+                "metadataBlock"
+            ],
             "properties": {
-                "dataInterval": {
-                    "$ref": "/schemas/OffsetInterval",
-                    "description": "Data slice produced by the transaction (if any)"
-                },
-                "outputWatermark": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Watermark advanced by the transaction (uf any)."
+                "metadataBlock": {
+                    "$ref": "/schemas/MetadataBlock",
+                    "description": "TODO: This is temporary"
                 }
             }
         },
