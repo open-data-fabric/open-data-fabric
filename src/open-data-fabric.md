@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.19.0
+Version: 0.20.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -71,7 +71,7 @@ Properties:
 Such representation poses many additional challenges when working with data, but, as we will show further - the benefits by far outweigh the added complexity, and that complexity can in most cases be addressed by better tooling.
 
 ## Nature of Transformations
-The state-of-the-art approach to transforming data today is to version the source data (using a checksum or a stable reference) and version the code that transforms it (using a version control system). The result of transformations is then uploaded to some shared storage and made available to others. There are many tools that improve the reproducibility of such workflows, but all of them treat data as a mere binary blob, deprived of any of its intrinsic qualities.
+The state-of-the-art approach to transforming data today is to version the source data (using a hash sum or a stable reference) and version the code that transforms it (using a version control system). The result of transformations is then uploaded to some shared storage and made available to others. There are many tools that improve the reproducibility of such workflows, but all of them treat data as a mere binary blob, deprived of any of its intrinsic qualities.
 
 This leads to many problems:
 - Data is routinely copied
@@ -355,17 +355,18 @@ See also:
 - [Merge Strategies](#merge-strategies)
 
 ## Hash
-[Cryptographic hash functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function) are used by the system in these two scenarios:
-- For computing a checksum of a [Data Slice](#data-slice).
-- For computing a checksum of a [MetadataBlock](#metadata-chain).
+[Cryptographic hash functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function) are used by the system in these three scenarios:
+- Computing a logical hash sum of a [Data Slice](#data-slice).
+- Computing a physical hash sum of a [Data Slice](#data-slice).
+- Computing a hash sum of a [MetadataBlock](#metadata-chain).
 
-Whenever new events are appended to the [Data](#data) the [Metadata Chain](#metadata-chain) will also be extended with a block containing a checksum of the new data slice. The checksum provides a very quick and reliable way to later validate that the data matches the one that has been written earlier.
+Whenever new events are appended to the [Data](#data) the [Metadata Chain](#metadata-chain) will also be extended with a block containing a hash sum of the new data slice. The hash sum provides a very quick and reliable way to later validate that the data matches the one that has been written earlier.
 
 The new [MetadataBlock](#metadata-chain) will also be cryptographically signed to guarantee its integrity - this excludes any malicious or accidental alterations to the block.
 
 Usage examples:
 - If the [Metadata Chain](#metadata-chain) of a certain dataset is reliably known (e.g. available from many independent peers) a peer can then download the [Data](#data) from any untrusted source and use the hash function to validate the authenticity of every data slice that composes it.
-- The trustworthiness of any [Dataset](#dataset) can be established by reviewing the transformations it claims to be performing on data (contained in the [Metadata Chain](#metadata-chain)), re-applying those transformations in a trusted environment, and then comparing the checksums of the result slices.
+- The trustworthiness of any [Dataset](#dataset) can be established by reviewing the transformations it claims to be performing on data (contained in the [Metadata Chain](#metadata-chain)), re-applying those transformations in a trusted environment, and then comparing the hash sums of the result slices.
 
 See also:
 - [Data Hashing](#data-hashing)
@@ -733,13 +734,33 @@ The main functions of the [Coordinator](#coordinator) are:
 This section describes the operations performed by the [Coordinator](#coordinator) as part of the usual [Metadata Chain](#metadata-chain) maintenance.
 
 #### Data Hashing
-The procedure for calculating the stable [Hash](#hash) of a [Data Slice](#data-slice) is:
 
-1. Sort all rows based on the `event_time` column
-2. Convert rows to the canonical string representation
-3. Calculate [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest of the file
+##### Physical and Logical Hashes
+Because the on-disk Parquet data format is non-deterministic (serializing same logical data may result in different binary layouts depending on heuristics and implementation) two different hash sums are maintained by the coordinator:
+- **Physical hash** - a (non-reproducible) hash sum of an entire binary file as originally produced by the owner of the dataset
+- **Logical hash** - a stable (reproducible) hash sum computed on data records, resistant to encoding variations
 
-> **TODO:** This is a stop-gap implementation. Release version of the hashing function should have a streaming nature while also be tolerant of row reordering, as many processing engine are concurrent and don't enforce ordering between outputs of independent calculations.
+**Physical hash** is used only in the context of uploading and downloading data files to/from content-addressable systems, where hash sum acts as an identifier of the data file. Physical hash is calculated using [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) algorithm on entire data part file.
+
+**Logical hash** is used for integrity and equivalence checks. We use a specially-designed algorithm [arrow-digest](https://github.com/sergiimk/arrow-digest) that computes a hash sum over in-memory representation of data in Apache Arrow format. Refer to the repository for algorithm details.
+
+##### Hash Representation
+To be able to evolve hashing algorithms over time we encode the identity of the algorithm used along with the hash sum itself using the [multiformats](https://github.com/multiformats/multiformats) specification, specifically:
+- [multihash](https://github.com/multiformats/multihash) - describes how to encode algorithm ID alongside the hash value.
+- [multibase](https://github.com/multiformats/multibase) - describes how to represent binary value in a string (e.g. for YAML format) without ambiguity of which encoding was used.
+
+The recommended `multibase` encoding is `base58` as it produces short and readable hashes.
+
+For representing the identity of hashing algorithms the official [multicodec](https://github.com/multiformats/multicodec/) table is used.
+
+The `multicodec` table is extended with the following codes in the "private use area":
+
+| Codec             | Code       |
+| ----------------- | ---------- |
+| `arrow0-sha3-256` | `0x300016` |
+
+See also:
+- [RFC-002](/rfcs/002-logical-data-hashes.md)
 
 #### Metadata Block Hashing
 
@@ -838,7 +859,9 @@ For [Repositories](#repository) that do not support atomic file/object operation
 #### Dataset Validation
 The [Derivative Dataset](#derivative-dataset) validation confirms that the event data is in fact produced by applying all the transformations stored in the [Metadata](#metadata-chain) to the inputs and was not maliciously altered.
 
-The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](#coordinator) compares the output data hash of the local transform to the hash stored in the [Metadata](#metadata-chain).
+The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](#metadata-chain).
+
+Due to non-determinism of Parquet format the physical hash may not match the one in metadata so a fallback to logical hash is required to verify that the resulting records are logically the same.
 
 ### Engine Deprecation
 Pinning the exact [Engine](#engine) version used by every transformation guarantees the reproducibility and verifiability of the results (see [Components of Trust](#components-of-trust)). In the long run, however, this creates a problem where in order to [validate a dataset](#dataset-validation) the [Coordinator](#coordinator) will have to use a very large number of different versions of an [Engine](#engine) that might've accumulated over the years. This slows down the validation procedure and can result in a significant disk space required for storing these images.
