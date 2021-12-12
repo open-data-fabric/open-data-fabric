@@ -173,9 +173,6 @@ def get_primitive_type(sch):
         elif fmt == 'sha3-256':
             assert ptype == 'string'
             return 'String'
-        elif fmt == 'multihash':
-            assert ptype == 'string'
-            return 'String'
         elif fmt == 'date-time':
             return 'Instant'
         elif fmt == 'dataset-id':

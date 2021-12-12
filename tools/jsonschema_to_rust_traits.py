@@ -13,7 +13,7 @@ PREAMBLE = [
     '',
     'use std::path::Path;',
     '',
-    'use super::{CompressionFormat, DatasetID, Multihash, Sha3_256, SourceOrdering};',
+    'use super::{CompressionFormat, DatasetID, SourceOrdering, Sha3_256};',
     'use chrono::{DateTime, Utc};',
     '',
 ]
@@ -262,9 +262,6 @@ def get_primitive_type(sch):
         elif fmt == 'sha3-256':
             assert ptype == 'string'
             return "&Sha3_256"
-        elif fmt == 'multihash':
-            assert ptype == 'string'
-            return "&Multihash"
         elif fmt == 'url':
             assert ptype == 'string'
             return "&str"
@@ -328,8 +325,6 @@ def render_accessor(name, sch, optional, in_ref=False):
             yield f'{name}.as_ref()'
         elif fmt == 'sha3-256':
             yield f'{name}' if in_ref else f'&{name}'
-        elif fmt == 'multihash':
-            yield f'{name}' if in_ref else f'&{name}'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -367,8 +362,6 @@ def render_clone(name, sch, optional):
         elif fmt in ('dataset-id', 'url', 'path', 'regex'):
             yield f'{name}.to_owned()'
         elif fmt == 'sha3-256':
-            yield f'*{name}'
-        elif fmt == 'multihash':
             yield f'*{name}'
         else:
             raise Exception(f'Unsupported format: {sch}')

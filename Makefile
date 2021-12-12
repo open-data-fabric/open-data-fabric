@@ -29,7 +29,7 @@ $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 $(SCHEMAS): build/schemas/%.md: schemas/%.json
 	$(SCHEMAC) $^ $@
 
-$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) tools/jsonschema_to_flatbuffers.py
+$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC)
 	$(SCHEMA_FLATBUFFERSC) > $@
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMAS)
