@@ -6,12 +6,18 @@
   "additionalProperties": false,
   "required": [
     "dataLogicalHash",
+    "dataPhysicalHash",
     "dataInterval"
   ],
   "properties": {
     "dataLogicalHash": {
       "type": "string",
-      "format": "sha3-256",
+      "format": "multihash",
+      "description": "Logical hash sum of the data in this slice"
+    },
+    "dataPhysicalHash": {
+      "type": "string",
+      "format": "multihash",
       "description": "Logical hash sum of the data in this slice"
     },
     "dataInterval": {

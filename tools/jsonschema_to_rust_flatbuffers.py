@@ -17,6 +17,7 @@ use super::odf_generated as fb;
 mod odf {
     pub use crate::dataset_id::*;
     pub use crate::dtos::*;
+    pub use crate::multihash::*;
     pub use crate::sha::*;
 }
 use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
@@ -405,6 +406,9 @@ def pre_ser_primitive_type(name, sch):
         elif fmt == 'sha3-256':
             assert ptype == 'string'
             yield f'fb.create_vector(&{name})'
+        elif fmt == 'multihash':
+            assert ptype == 'string'
+            yield f'fb.create_vector(&{name}.to_bytes())'
         elif fmt == 'url':
             assert ptype == 'string'
             yield f'fb.create_string(&{name})'
@@ -438,6 +442,8 @@ def ser_primitive_type(name, sch):
             assert ptype == 'integer'
             yield name
         elif fmt == 'sha3-256':
+            assert ptype == 'string'
+        elif fmt == 'multihash':
             assert ptype == 'string'
         elif fmt == 'url':
             assert ptype == 'string'
@@ -474,6 +480,9 @@ def de_primitive_type(name, sch, enum_t_accessor):
         elif fmt == 'sha3-256':
             assert ptype == 'string'
             yield f'odf::Sha3_256::new({name}.try_into().unwrap())'
+        elif fmt == 'multihash':
+            assert ptype == 'string'
+            yield f'odf::Multihash::from_bytes({name}).unwrap()'
         elif fmt == 'url':
             assert ptype == 'string'
             yield f'{name}.to_owned()'
