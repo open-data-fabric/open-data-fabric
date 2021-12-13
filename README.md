@@ -47,7 +47,9 @@ More tutorials and articles can be found in [kamu-cli documentation](https://doc
 
 ## Current State
 
-The specification is currently in the **EXPERIMENTAL** stage and welcomes feedback.
+The specification is currently in actively evolving and welcomes feedback.
+
+See also our [Roadmap](https://github.com/kamu-data/open-data-fabric/projects/1) for future direction and [RFC archive](/rfcs) for the record of changes.
 
 ## Implementations
 
