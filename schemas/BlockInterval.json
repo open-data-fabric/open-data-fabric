@@ -11,12 +11,12 @@
   "properties": {
     "start": {
       "type": "string",
-      "format": "sha3-256",
+      "format": "multihash",
       "description": "Start of the closed interval [start; end]"
     },
     "end": {
       "type": "string",
-      "format": "sha3-256",
+      "format": "multihash",
       "description": "End of the closed interval [start; end]"
     }
   }

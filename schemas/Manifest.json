@@ -5,18 +5,19 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "apiVersion",
     "kind",
+    "version",
     "content"
   ],
   "properties": {
+    "kind": {
+      "type": "string",
+      "format": "multicodec",
+      "description": "Type of the resource."
+    },
     "version": {
       "type": "integer",
       "description": "Major version number of the resource contained in this manifest. It provides the mechanism for introducing compatibility breaking changes."
-    },
-    "kind": {
-      "type": "string",
-      "description": "Type name of the resource."
     },
     "content": {
       "type": "object",

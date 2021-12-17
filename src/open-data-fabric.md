@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.20.0
+Version: 0.21.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -474,39 +474,81 @@ See also:
 # Specification
 
 ## Dataset Identity
-Identity formats described below are used to unambiguously refer to a certain dataset. Depending on the context we differentiate the following formats of dataset identity:
+
+The identity of a dataset consists of:
+- [Unique identifiers](#unique-identitifiers) - used to unambiguously identify datasets on the network, e.g. when referencing one dataset as an input of another.
+- [Aliases and references](#aliases-and-references) - used for human-friendly naming.
+
+See also:
+- [RFC-003](/rfcs/002-content-addressability.md)
+
+### Unique Identitifiers
+ODF is designed to be compatible with content [content-addressable storage](https://en.wikipedia.org/wiki/Content-addressable_storage). When stored in such storage, all parts of a [Dataset](#dataset) can be accessed by having only a hash of the last [MetadataBlock](#metadata-chain).
+
+As [Dataset](#dataset) grows, however, a reference to a single [MetadataBlock](#metadata-chain) will only provide access to a subset of its history. To refer to a [Dataset](#dataset) as a whole a different identifier is needed that can always be resolved into a hash of the latest block.
+
+Unique dataset identifiers in ODF follow the [W3C DID Identity Scheme](https://w3c.github.io/did-core/) using a custom `odf` DID method. 
+
+Example:
+
+<pre>
+did:odf:z4k88e8oT6CUiFQSbmHPViLQGHoX8x5Fquj9WvvPdSCvzTRWGfJ
+</pre>
+
+The method-specific identifier is using the [CIDv1 Multiformat](https://github.com/multiformats/cid) as a self-describing and upgradeable way to store dataset identity.
+
+The identifier is formed by:
+- Deriving it during the dataset creation from a cryptographic key pair (e.g. using `ed25519` algorithm)
+- The public key is hashed (e.g. using `sha3-256`) and encoded into `CIDv1` format using appropriate codec code (e.g. `ed25519-pub`)
+- `CIDv1` is then encoded using [multibase](https://github.com/multiformats/multibase) encoding using `base58` scheme
+
+The resulting DID is stored in the first [MetadataBlock](#metadata-chain) in the chain of every [Dataset](#dataset), called "seed".
+
+Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used for proving ownership and control over a [Dataset](#dataset).
+
+### Aliases and References
+Formats described below provide human-friendly ways to refer to a certain dataset. Their ease of use comes, however, without any guarantees on collisions, mutability, and ambiguity.
+
+Depending on the context we differentiate the following types of aliases:
 - **Local Format** - used to refer to a dataset within a local workspace
 - **Remote Format** - used to refer to a dataset located in a known [Repository](#repository) provider.
 - **Remote Multi-Tenant Format** - used to refer to a dataset located in a known [Repository](#repository) and belonging to a particular tenant of that provider.
 
-As you will see in the examples below, we recommend (but not require) using the [reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) for [Dataset](#dataset) names - this style has proven to be easy to work with, carries an additional value in identifying the authoritative source of the information or the entity that maintains the [Derivative Dataset](#derivative-dataset), and it largely excludes the possibility of name collisions when working with similarly named datasets from different providers.
+As you will see in the examples below, we recommend (but not require) using the [reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) for [Dataset](#dataset) names.
 
 Examples:
 <pre>
-// Local Format - DatasetID is highlighted
-<b>ca.vancouver.opendata.property.parcel-polygons</b>
-<b>org.geonames.cities</b>
-<b>com.naturalearthdata.admin0.countries.10m</b>
+// Local Format - DatasetName is highlighted
+<b>property.parcel-polygons</b>
+<b>cities</b>
+<b>admin0.countries.10m</b>
 
-// Remote Format - Repository prefix is highlighted
-<b>statcan.gc.ca/</b>ca.gc.statcan.census.2016.population
-<b>nyc.gov/</b>us.cityofnewyork.public-safety.ems-incident-dispatch
+// Remote Format - RepositoryName prefix is highlighted
+<b>statcan.gc.ca/</b>census.2016.population
+<b>us.cityofnewyork/</b>public-safety.ems-incident-dispatch
 
-// Remote Multi-tenant Format - Username infix is highlighted
-opendata.ca/<b>statcan</b>/ca.gc.statcan.census.2016.population
-data.gov/<b>ny-newyork</b>/us.cityofnewyork.public-safety.ems-incident-dispatch
+// Remote Multi-tenant Format - AccountName infix is highlighted
+opendata.ca/<b>statcan</b>/census.2016.population
+data.gov/<b>ny-newyork</b>/public-safety.ems-incident-dispatch
 </pre>
 
 Full [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) grammar:
 ```
-DatasetRef = (Repository "/")? (Username "/")? DatasetID
-DatasetID = Hostname
+DatasetRefLocal = DatasetID / DatasetName
+DatasetRefRemote = DatasetID / RemoteDatasetName
+DatasetRefAny = DatasetRemoteRef / DatasetLocalRef
 
-Repository = Hostname
-Username = Subdomain
+RemoteDatasetName = RepositoryName "/" (AccountName "/")? DatasetName
+AccountName = Subdomain
+RepositoryName = Hostname
+
+DatasetName = Hostname
+DatasetID = "did:odf:" Multibase
 
 Hostname = Subdomain ("." Subdomain)*
 Subdomain = [a-zA-Z0-9]+ ("-" [a-zA-Z0-9]+)*
+
+Multibase = [a-zA-Z0-9+/=]+
 ```
 
 ## Data Format
@@ -764,14 +806,21 @@ See also:
 
 #### Metadata Block Hashing
 
-[MetadataBlocks](#metadata-chain) are cryptographically secured through the following procedure:
+Blocks of the [MetadataChain](#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
 
-1. The block is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) following a two-step process to ensure that all variable-size buffers are layed out in memory in a consistent order:
+1. The [MetadataBlock](#metadatablock-schema) is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) format following a two-step process to ensure that all variable-size buffers are layed out in memory in a consistent order:
    1. First, we iterate over all fields of the block in the same order they appear in the [schemas](#metadata-reference) serializing into buffers all vector-like and variable-size fields and recursing into nested data structures (tables) in the depth-first order.
    2. Second, we iterate over all fields again this time serializing all leftover fixed-size fields
-2. Since the `blockHash` field appears first in the [MetadataBlock schema](#metadata-reference) it will be the very first buffer to be added into the `flatbuffer`. Knowing that `flatbuffers` are serialized in the back-to-front order and that `Sha3-256` data always takes up 32 bytes - we can easily exclude the `blockHash` field contents when computing the hash.
-3. The resulting `flatbuffer` (excluding the last 32 bytes) is fed into [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest algorithm.
-4. The resulting digest can now be directly copied into the last 32 bytes of the `flatbuffer` to secure the block, or compared to the hash that is already stored there to validate it.
+2. Block content is then nested into a [Manifest](#manifest-schema) object using same serialization rules as above
+3. The resulting `flatbuffer` data is fed into [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest algorithm.
+
+For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` table is extended with the following codes in the "private use area":
+
+| Codec                | Code       |
+| -------------------- | ---------- |
+| `odf-metadata-block` | `0x400000` |
+
+The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).
 
 ### Data Ingestion
 It should be made clear that it's not the goal of this document to standardize the data ingestion techniques. Information here is given only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see as a result.

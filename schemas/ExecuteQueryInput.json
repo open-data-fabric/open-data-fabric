@@ -1,11 +1,12 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/QueryInput",
+    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryInput",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "description": "Sent as part of the execute query requst to describe the input",
     "type": "object",
     "additionalProperties": false,
     "required": [
         "datasetID",
+        "datasetName",
         "vocab",
         "dataPaths",
         "schemaFile",
@@ -15,14 +16,19 @@
         "datasetID": {
             "type": "string",
             "format": "dataset-id",
-            "description": "Unique identifier of the dataset"
+            "description": "Unique identifier of the dataset."
+        },
+        "datasetName": {
+            "type": "string",
+            "format": "dataset-name",
+            "description": "An alias of this input to be used in queries."
         },
         "vocab": {
             "$ref": "/schemas/DatasetVocabulary"
         },
         "dataInterval": {
             "$ref": "/schemas/OffsetInterval",
-            "description": "Data that went into this transaction"
+            "description": "Data that went into this transaction."
         },
         "dataPaths": {
             "type": "array",

@@ -5,18 +5,12 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "blockHash",
     "systemTime"
   ],
   "properties": {
-    "blockHash": {
-      "type": "string",
-      "format": "sha3-256",
-      "description": "Hash sum of this metadata block's information."
-    },
     "prevBlockHash": {
       "type": "string",
-      "format": "sha3-256",
+      "format": "multihash",
       "description": "Hash sum of the preceding block."
     },
     "systemTime": {
@@ -47,6 +41,11 @@
     "vocab": {
       "$ref": "/schemas/DatasetVocabulary",
       "description": "Vocabulary lets you change system column names to avoid conflicts."
+    },
+    "seed": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "Unique identity of the dataset."
     }
   }
 }

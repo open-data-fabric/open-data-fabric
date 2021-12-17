@@ -5,18 +5,17 @@ import sys
 import json
 
 
-PREAMBLE = [
-    '/' * 80,
-    '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
-    '// See: http://opendatafabric.org/',
-    '/' * 80,
-    '',
-    'use std::path::Path;',
-    '',
-    'use super::{CompressionFormat, DatasetID, Multihash, Sha3_256, SourceOrdering};',
-    'use chrono::{DateTime, Utc};',
-    '',
-]
+PREAMBLE = """
+///////////////////////////////////////////////////////////////////////////////
+// WARNING: This file is auto-generated from Open Data Fabric Schemas
+// See: http://opendatafabric.org/
+///////////////////////////////////////////////////////////////////////////////
+
+use std::path::Path;
+
+use super::{CompressionFormat, DatasetID, DatasetName, Multihash, SourceOrdering};
+use chrono::{DateTime, Utc};
+"""
 
 DEFAULT_INDENT = 4
 
@@ -45,8 +44,7 @@ def render(schemas_dir):
         if sch.get("type") == "object":
             struct_types.add(name)
 
-    for l in PREAMBLE:
-        print(l)
+    print(PREAMBLE)
 
     for name in sorted(schemas.keys()):
         sch = schemas[name]
@@ -259,9 +257,6 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
-            return "&Sha3_256"
         elif fmt == 'multihash':
             assert ptype == 'string'
             return "&Multihash"
@@ -278,6 +273,8 @@ def get_primitive_type(sch):
             return "DateTime<Utc>"
         elif fmt == 'dataset-id':
             return "&DatasetID"
+        elif fmt == 'dataset-name':
+            return "&DatasetName"
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':
@@ -324,11 +321,11 @@ def render_accessor(name, sch, optional, in_ref=False):
             yield name if not in_ref else f'*{name}'
         elif fmt in ('date-time',):
             yield name if not in_ref else f'*{name}'
-        elif fmt in ('dataset-id', 'url', 'path', 'regex'):
+        elif fmt in ('url', 'path', 'regex'):
             yield f'{name}.as_ref()'
-        elif fmt == 'sha3-256':
-            yield f'{name}' if in_ref else f'&{name}'
         elif fmt == 'multihash':
+            yield f'{name}' if in_ref else f'&{name}'
+        elif fmt in ('dataset-id', 'dataset-name'):
             yield f'{name}' if in_ref else f'&{name}'
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -364,12 +361,12 @@ def render_clone(name, sch, optional):
             yield name
         elif fmt in ('date-time',):
             yield name
-        elif fmt in ('dataset-id', 'url', 'path', 'regex'):
+        elif fmt in ('dataset-name', 'url', 'path', 'regex'):
             yield f'{name}.to_owned()'
-        elif fmt == 'sha3-256':
-            yield f'*{name}'
         elif fmt == 'multihash':
-            yield f'*{name}'
+            yield f'{name}.clone()'
+        elif fmt == 'dataset-id':
+            yield f'{name}.clone()'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':

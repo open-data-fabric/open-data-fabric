@@ -4,19 +4,17 @@ import re
 import json
 
 
-PREAMBLE = [
-    '/' * 80,
-    '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
-    '// See: http://opendatafabric.org/',
-    '/' * 80,
-    '',
-    'use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};',
-    'use crate::domain::DatasetIDBuf;',
-    'use chrono::{DateTime, Utc};',
-    'use serde::{Deserialize, Serialize};',
-    'use serde_with::skip_serializing_none;',
-    '',
-]
+PREAMBLE = """///////////////////////////////////////////////////////////////////////////////
+// WARNING: This file is auto-generated from Open Data Fabric Schemas
+// See: http://opendatafabric.org/
+///////////////////////////////////////////////////////////////////////////////
+
+use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
+use crate::domain::DatasetID;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+"""
 
 DEFAULT_INDENT = 2
 
@@ -29,8 +27,7 @@ extra_types = []
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
 
-    for l in PREAMBLE:
-        print(l)
+    print(PREAMBLE)
 
     for name, sch in schemas.items():
         try:
@@ -162,11 +159,9 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
         elif fmt == 'multihash':
             assert ptype == 'string'
-            return 'String'
+            return 'Multihash'
         elif fmt == 'url':
             assert ptype == 'string'
             return 'String'
@@ -176,7 +171,10 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetIDBuf'
+            return 'DatasetID'
+        elif fmt == 'dataset-name':
+            assert ptype == 'string'
+            return 'DatasetName'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

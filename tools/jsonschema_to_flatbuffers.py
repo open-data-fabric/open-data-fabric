@@ -42,8 +42,6 @@ def render(schemas_dir):
 
     for name, sch in in_dependency_order(schemas):
         try:
-            if name == 'Manifest':
-                continue
             print('/' * 80)
             print(f'// {name}')
             print('// ' + DOCS_URL.format(name.lower()))
@@ -218,13 +216,15 @@ def get_primitive_type(sch):
         elif fmt == 'regex':
             assert ptype == 'string'
             return 'string'
-        elif fmt == 'sha3-256':
-            return '[ubyte]'
+        elif fmt == 'multicodec':
+            return 'int64'
         elif fmt == 'multihash':
             return '[ubyte]'
         elif fmt == 'date-time':
             return 'Timestamp'
         elif fmt == 'dataset-id':
+            return '[ubyte]'
+        elif fmt == 'dataset-name':
             return 'string'
         else:
             raise Exception(f'Unsupported format: {sch}')

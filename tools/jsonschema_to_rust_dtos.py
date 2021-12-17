@@ -13,7 +13,7 @@ PREAMBLE = [
     '',
     'use std::path::PathBuf;',
     '',
-    'use super::{DatasetIDBuf, Multihash, Sha3_256};',
+    'use super::{DatasetID, DatasetName, Multihash};',
     'use chrono::{DateTime, Utc};',
     '',
 ]
@@ -151,9 +151,6 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
-            return 'Sha3_256'
         elif fmt == 'multihash':
             assert ptype == 'string'
             return 'Multihash'
@@ -169,7 +166,9 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetIDBuf'
+            return 'DatasetID'
+        elif fmt == 'dataset-name':
+            return 'DatasetName'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

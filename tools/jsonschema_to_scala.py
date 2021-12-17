@@ -3,33 +3,39 @@ import os
 import json
 
 
-PREAMBLE = [
-    '/*',
-    ' * Copyright (c) 2018 kamu.dev',
-    ' *',
-    ' * This Source Code Form is subject to the terms of the Mozilla Public',
-    ' * License, v. 2.0. If a copy of the MPL was not distributed with this',
-    ' * file, You can obtain one at http://mozilla.org/MPL/2.0/.',
-    ' */',
-    '',
-    'package dev.kamu.core.manifests',
-    '',
-    'import java.net.URI',
-    'import java.nio.file.Path',
-    'import java.time.Instant',
-    '',
-    'import com.typesafe.config.ConfigObject',
-    '',
-    '/' * 80,
-    '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
-    '// See: http://opendatafabric.org/',
-    '/' * 80,
-    '',
-    'case class DatasetID(s: String) extends AnyVal {',
-    '  override def toString: String = s',
-    '}',
-    '',
-]
+PREAMBLE = """/*
+ * Copyright (c) 2018 kamu.dev
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+package dev.kamu.core.manifests
+
+import java.net.URI
+import java.nio.file.Path
+import java.time.Instant
+
+import com.typesafe.config.ConfigObject
+
+///////////////////////////////////////////////////////////////////////////////
+// WARNING: This file is auto-generated from Open Data Fabric Schemas
+// See: http://opendatafabric.org/
+///////////////////////////////////////////////////////////////////////////////
+
+case class Multihash(s: String) extends AnyVal {
+  override def toString: String = s
+}
+
+case class DatasetID(s: String) extends AnyVal {
+  override def toString: String = s
+}
+
+case class DatasetName(s: String) extends AnyVal {
+  override def toString: String = s
+}
+"""
 
 DEFAULT_INDENT = 2
 
@@ -42,8 +48,7 @@ extra_types = []
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
 
-    for l in PREAMBLE:
-        print(l)
+    print(PREAMBLE)
 
     for name in sorted(schemas.keys()):
         sch = schemas[name]
@@ -170,16 +175,16 @@ def get_primitive_type(sch):
         elif fmt == 'regex':
             assert ptype == 'string'
             return 'String'
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
-            return 'String'
         elif fmt == 'multihash':
             assert ptype == 'string'
-            return 'String'
+            return 'Multihash'
         elif fmt == 'date-time':
             return 'Instant'
         elif fmt == 'dataset-id':
             return 'DatasetID'
+        elif fmt == 'dataset-name':
+            assert ptype == 'string'
+            return 'DatasetName'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

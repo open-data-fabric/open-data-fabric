@@ -9,7 +9,7 @@
 [Reference Implementation](https://github.com/kamu-data/kamu-cli) |
 [Chat](https://discord.gg/nU6TXRQNXC)
 
-[![Latest Version](https://img.shields.io/badge/Spec-0.20.0-green)](./open-data-fabric.md)
+[![Latest Version](https://img.shields.io/badge/Spec-0.21.0-green)](./open-data-fabric.md)
 [![Chat](https://shields.io/discord/898726370199359498?label=Discord)](https://discord.gg/nU6TXRQNXC)
 
 </p>
@@ -66,3 +66,9 @@ The specification was originally developed by [Kamu](https://kamu.dev) as part o
 
 ## Contributing
 See [Contribution Guidelines](./CONTRIBUTING.md)
+
+## RFC List
+- [RFC-000: RFC Template](rfcs/000-template.md)
+- [RFC-001: Record Offsets](rfcs/001-record-offsets.md)
+- [RFC-002: Logical Data Hashes](rfcs/002-logical-data-hashes.md)
+- [RFC-003: Content Addressability](rfcs/003-content-addressability.md)

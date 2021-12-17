@@ -50,14 +50,13 @@
         "inputs": {
           "type": "array",
           "items": {
-            "type": "string",
-            "format": "dataset-id"
+            "$ref": "/schemas/TransformInput"
           },
-          "description": "Identifiers of the datasets that will be used as sources."
+          "description": "Datasets that will be used as sources."
         },
         "transform": {
           "$ref": "/schemas/Transform",
-          "description": "Transformation that will be applied to produce new data"
+          "description": "Transformation that will be applied to produce new data."
         }
       }
     }
