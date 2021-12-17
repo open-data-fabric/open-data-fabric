@@ -15,14 +15,13 @@ PREAMBLE = """
 #![allow(unused_variables)]
 use super::odf_generated as fb;
 mod odf {
-    pub use crate::dataset_id::*;
+    pub use crate::dataset_identity::*;
     pub use crate::dtos::*;
     pub use crate::multihash::*;
-    pub use crate::sha::*;
 }
 use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
 use chrono::prelude::*;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use std::path::PathBuf;
 
 pub trait FlatbuffersSerializable<'fb> {
@@ -403,9 +402,6 @@ def pre_ser_primitive_type(name, sch):
     if fmt is not None:
         if fmt == 'int64':
             assert ptype == 'integer'
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
-            yield f'fb.create_vector(&{name})'
         elif fmt == 'multihash':
             assert ptype == 'string'
             yield f'fb.create_vector(&{name}.to_bytes())'
@@ -421,6 +417,9 @@ def pre_ser_primitive_type(name, sch):
         elif fmt == 'date-time':
             pass
         elif fmt == 'dataset-id':
+            assert ptype == 'string'
+            yield f'fb.create_vector(&{name}.to_bytes())'
+        elif fmt == 'dataset-name':
             yield f'fb.create_string(&{name})'
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -441,8 +440,6 @@ def ser_primitive_type(name, sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             yield name
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
         elif fmt == 'multihash':
             assert ptype == 'string'
         elif fmt == 'url':
@@ -454,7 +451,9 @@ def ser_primitive_type(name, sch):
         elif fmt == 'date-time':
             yield f'&datetime_to_fb(&{name})'
         elif fmt == 'dataset-id':
-            pass
+            assert ptype == 'string'
+        elif fmt == 'dataset-name':
+            assert ptype == 'string'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -477,9 +476,6 @@ def de_primitive_type(name, sch, enum_t_accessor):
         if fmt == 'int64':
             assert ptype == 'integer'
             yield f'{name}'
-        elif fmt == 'sha3-256':
-            assert ptype == 'string'
-            yield f'odf::Sha3_256::new({name}.try_into().unwrap())'
         elif fmt == 'multihash':
             assert ptype == 'string'
             yield f'odf::Multihash::from_bytes({name}).unwrap()'
@@ -495,7 +491,11 @@ def de_primitive_type(name, sch, enum_t_accessor):
         elif fmt == 'date-time':
             yield f'fb_to_datetime({name})'
         elif fmt == 'dataset-id':
-            yield f'odf::DatasetIDBuf::try_from({name}).unwrap()'
+            assert ptype == 'string'
+            yield f'odf::DatasetID::from_bytes({name}).unwrap()'
+        elif fmt == 'dataset-name':
+            assert ptype == 'string'
+            yield f'odf::DatasetName::try_from({name}).unwrap()'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':

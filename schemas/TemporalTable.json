@@ -5,13 +5,13 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "id",
+    "name",
     "primaryKey"
   ],
   "properties": {
-    "id": {
+    "name": {
       "type": "string",
-      "description": "ID of the dataset to be converted into a temporal table."
+      "description": "Name of the dataset to be converted into a temporal table."
     },
     "primaryKey": {
       "type": "array",

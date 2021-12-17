@@ -5,14 +5,14 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "id",
+    "name",
     "source"
   ],
   "properties": {
-    "id": {
+    "name": {
       "type": "string",
-      "format": "dataset-id",
-      "description": "Unique identifier of the dataset"
+      "format": "dataset-name",
+      "description": "Alias of the dataset."
     },
     "source": {
       "$ref": "/schemas/DatasetSource",

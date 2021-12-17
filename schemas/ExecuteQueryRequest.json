@@ -6,6 +6,7 @@
     "additionalProperties": false,
     "required": [
         "datasetID",
+        "datasetName",
         "systemTime",
         "offset",
         "vocab",
@@ -18,7 +19,12 @@
         "datasetID": {
             "type": "string",
             "format": "dataset-id",
-            "description": "Unique identifier of the dataset"
+            "description": "Unique identifier of the output dataset"
+        },
+        "datasetName": {
+            "type": "string",
+            "format": "dataset-name",
+            "description": "Alias of the output dataset"
         },
         "systemTime": {
             "type": "string",
@@ -41,7 +47,7 @@
             "type": "array",
             "description": "Defines the input data",
             "items": {
-                "$ref": "/schemas/QueryInput"
+                "$ref": "/schemas/ExecuteQueryInput"
             }
         },
         "prevCheckpointDir": {
