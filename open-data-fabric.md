@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.21.0
+Version: 0.22.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -983,60 +983,151 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 
 ## Metadata Reference
 
-- [Manifest](#manifest-schema)
-- [DatasetSnapshot](#datasetsnapshot-schema)
-- [DatasetSource](#datasetsource-schema)
+- [Manifests](#reference-manifests)
+  - [Manifest](#manifest-schema)
+  - [DatasetSnapshot](#datasetsnapshot-schema)
+  - [MetadataBlock](#metadatablock-schema)
+- [Metadata Events](#reference-metadata-events)
+  - [MetadataEvent](#metadataevent-schema)
+  - [AddData](#adddata-schema)
+  - [ExecuteQuery](#executequery-schema)
+  - [Seed](#seed-schema)
+  - [SetPollingSource](#setpollingsource-schema)
+  - [SetTransform](#settransform-schema)
+  - [SetVocab](#setvocab-schema)
+  - [SetWatermark](#setwatermark-schema)
+- [Engine Protocol](#reference-engine-protocol)
+  - [ExecuteQueryInput](#executequeryinput-schema)
+  - [ExecuteQueryRequest](#executequeryrequest-schema)
+  - [ExecuteQueryResponse](#executequeryresponse-schema)
+- [Fragments](#reference-fragments)
+  - [BlockInterval](#blockinterval-schema)
+  - [DataSlice](#dataslice-schema)
+  - [DatasetKind](#datasetkind-schema)
+  - [DatasetVocabulary](#datasetvocabulary-schema)
+  - [EventTimeSource](#eventtimesource-schema)
   - [FetchStep](#fetchstep-schema)
-    - [EventTimeSource](#eventtimesource-schema)
-    - [SourceCaching](#sourcecaching-schema)
+  - [InputSlice](#inputslice-schema)
+  - [MergeStrategy](#mergestrategy-schema)
+  - [OffsetInterval](#offsetinterval-schema)
   - [PrepStep](#prepstep-schema)
   - [ReadStep](#readstep-schema)
+  - [SourceCaching](#sourcecaching-schema)
+  - [SqlQueryStep](#sqlquerystep-schema)
+  - [TemporalTable](#temporaltable-schema)
   - [Transform](#transform-schema)
-  - [MergeStrategy](#mergestrategy-schema)
-  - [DatasetVocabulary](#datasetvocabulary-schema)
-- [MetadataBlock](#metadatablock-schema)
-  - [DataSlice](#dataslice-schema)
+  - [TransformInput](#transforminput-schema)
+  - [Watermark](#watermark-schema)
 
-### Manifest Schema
+<a name="reference-manifests"></a>
+#### Manifests
+<a name="manifest-schema"></a>
+##### Manifest
 An object that wraps the metadata resources providing versioning and type identification. All root-level resources are wrapped with a manifest when serialized to disk.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `kind` | `string` | V | `multicodec` | Type of the resource. |
+| `kind` | `string` | V | [multicodec](https://github.com/multiformats/multicodec) | Type of the resource. |
 | `version` | `integer` | V |  | Major version number of the resource contained in this manifest. It provides the mechanism for introducing compatibility breaking changes. |
 | `content` | `object` | V |  | Resource data. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/Manifest.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-### DatasetSnapshot Schema
+<a name="datasetsnapshot-schema"></a>
+##### DatasetSnapshot
 Represents a snapshot of the dataset definition in a single point in time.
 This type is typically used for defining new datasets and changing the existing ones.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `name` | `string` | V | `dataset-name` | Alias of the dataset. |
-| `source` | [DatasetSource](#datasetsource-schema) | V |  | Contains information about the source of the data and/or applied transformations. |
-| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Vocabulary lets you manipulate system column names to avoid conflicts. |
+| `name` | `string` | V | [dataset-name](#dataset-identity) | Alias of the dataset. |
+| `kind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
+| `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  |  |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DatasetSnapshot.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-### DatasetSource Schema
-Defines the source of data within a dataset.
+<a name="metadatablock-schema"></a>
+##### MetadataBlock
+An individual block in the metadata chain that captures the history of modifications of a dataset.
 
-Union type:
-- [DatasetSource::Root](#datasetsourceroot-schema)
-- [DatasetSource::Derivative](#datasetsourcederivative-schema)
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time when this block was written. |
+| `prevBlockHash` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash sum of the preceding block. |
+| `event` | [MetadataEvent](#metadataevent-schema) | V |  | Event data. |
 
-#### DatasetSource::Root Schema
-Root sources are the points of entry of external data into the system.
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MetadataBlock.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-Root source includes information like:
-- Where to fetch the data from - e.g. source URL, a protocol to use, cache control
-- How to prepare the binary data - e.g. decompression, file filtering, format conversions
-- How to interpret the data - e.g. data format, schema to apply, error handling
-- How to combine data ingested in the past with the new data - e.g. append as log or diff as a snapshot of the current state.
+<a name="reference-metadata-events"></a>
+#### Metadata Events
+<a name="metadataevent-schema"></a>
+##### MetadataEvent
+Defines the external source of data.
+
+| Union Type | Description |
+| :---: | --- |
+| [AddData](#adddata-schema) | Indicates that data has been ingested into a root dataset. |
+| [ExecuteQuery](#executequery-schema) | An individual block in the metadata chain that captures the history of modifications of a dataset. |
+| [Seed](#seed-schema) | Always the first metadata event that establishes identity of the dataset. |
+| [SetPollingSource](#setpollingsource-schema) | An individual block in the metadata chain that captures the history of modifications of a dataset. |
+| [SetTransform](#settransform-schema) | Derivative sources produce data by transforming and combining one or multiple existing datasets. |
+| [SetVocab](#setvocab-schema) | An individual block in the metadata chain that captures the history of modifications of a dataset. |
+| [SetWatermark](#setwatermark-schema) | Indicates that watermark has been advanced. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/MetadataEvent.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="adddata-schema"></a>
+##### AddData
+Indicates that data has been ingested into a root dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `outputData` | [DataSlice](#dataslice-schema) | V |  | Describes output data written during this transaction. |
+| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/AddData.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="executequery-schema"></a>
+##### ExecuteQuery
+An individual block in the metadata chain that captures the history of modifications of a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `inputSlices` | array([InputSlice](#inputslice-schema)) | V |  | Defines inputs used in this transaction. Slices corresponding to every input must be present. |
+| `outputData` | [DataSlice](#dataslice-schema) |  |  | Describes output data written during this transaction, if any. |
+| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/ExecuteQuery.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="seed-schema"></a>
+##### Seed
+Always the first metadata event that establishes identity of the dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `datasetID` | `string` | V | [dataset-id](#dataset-identity) | Unique identity of the dataset. |
+| `datasetKind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/Seed.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="setpollingsource-schema"></a>
+##### SetPollingSource
+An individual block in the metadata chain that captures the history of modifications of a dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1046,10 +1137,12 @@ Root source includes information like:
 | `preprocess` | [Transform](#transform-schema) |  |  | Pre-processing query that shapes the data. |
 | `merge` | [MergeStrategy](#mergestrategy-schema) | V |  | Determines how newly-ingested data should be merged with existing history. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DatasetSource.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetPollingSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-#### DatasetSource::Derivative Schema
+<a name="settransform-schema"></a>
+##### SetTransform
 Derivative sources produce data by transforming and combining one or multiple existing datasets.
 
 | Property | Type | Required | Format | Description |
@@ -1057,121 +1150,251 @@ Derivative sources produce data by transforming and combining one or multiple ex
 | `inputs` | array([TransformInput](#transforminput-schema)) | V |  | Datasets that will be used as sources. |
 | `transform` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DatasetSource.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetTransform.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-
-### ReadStep Schema
-Defines how raw data should be read into the structured form.
-
-Union type:
-- [ReadStep::Csv](#readstepcsv-schema)
-- [ReadStep::JsonLines](#readstepjsonlines-schema)
-- [ReadStep::GeoJson](#readstepgeojson-schema)
-- [ReadStep::EsriShapefile](#readstepesrishapefile-schema)
-
-#### ReadStep::Csv Schema
-Reader for comma-separated files.
+<a name="setvocab-schema"></a>
+##### SetVocab
+An individual block in the metadata chain that captures the history of modifications of a dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `separator` | `string` |  |  | Sets a single character as a separator for each field and value. |
-| `encoding` | `string` |  |  | Decodes the CSV files by the given encoding type. |
-| `quote` | `string` |  |  | Sets a single character used for escaping quoted values where the separator can be part of the value. Set an empty string to turn off quotations. |
-| `escape` | `string` |  |  | Sets a single character used for escaping quotes inside an already quoted value. |
-| `comment` | `string` |  |  | Sets a single character used for skipping lines beginning with this character. |
-| `header` | `boolean` |  |  | Use the first line as names of columns. |
-| `enforceSchema` | `boolean` |  |  | If it is set to true, the specified or inferred schema will be forcibly applied to datasource files, and headers in CSV files will be ignored. If the option is set to false, the schema will be validated against all headers in CSV files in the case when the header option is set to true. |
-| `inferSchema` | `boolean` |  |  | Infers the input schema automatically from data. It requires one extra pass over the data. |
-| `ignoreLeadingWhiteSpace` | `boolean` |  |  | A flag indicating whether or not leading whitespaces from values being read should be skipped. |
-| `ignoreTrailingWhiteSpace` | `boolean` |  |  | A flag indicating whether or not trailing whitespaces from values being read should be skipped. |
-| `nullValue` | `string` |  |  | Sets the string representation of a null value. |
-| `emptyValue` | `string` |  |  | Sets the string representation of an empty value. |
-| `nanValue` | `string` |  |  | Sets the string representation of a non-number value. |
-| `positiveInf` | `string` |  |  | Sets the string representation of a positive infinity value. |
-| `negativeInf` | `string` |  |  | Sets the string representation of a negative infinity value. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. |
-| `multiLine` | `boolean` |  |  | Parse one record, which may span multiple lines. |
+| `systemTimeColumn` | `string` |  |  | Name of the system time column. |
+| `eventTimeColumn` | `string` |  |  | Name of the event time column. |
+| `offsetColumn` | `string` |  |  | Name of the offset column. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/ReadStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetVocab.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-#### ReadStep::JsonLines Schema
-Reader for files containing concatenation of multiple JSON records with the same schema.
+<a name="setwatermark-schema"></a>
+##### SetWatermark
+Indicates that watermark has been advanced.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. |
-| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encoding. |
-| `multiLine` | `boolean` |  |  | Parse one record, which may span multiple lines, per file. |
-| `primitivesAsString` | `boolean` |  |  | Infers all primitive values as a string type. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. |
+| `outputWatermark` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/ReadStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetWatermark.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-#### ReadStep::GeoJson Schema
-Reader for GeoJSON files.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/ReadStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
-
-#### ReadStep::EsriShapefile Schema
-Reader for ESRI Shapefile format.
+<a name="reference-engine-protocol"></a>
+#### Engine Protocol
+<a name="executequeryinput-schema"></a>
+##### ExecuteQueryInput
+Sent as part of the execute query requst to describe the input
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
+| `datasetID` | `string` | V | [dataset-id](#dataset-identity) | Unique identifier of the dataset. |
+| `datasetName` | `string` | V | [dataset-name](#dataset-identity) | An alias of this input to be used in queries. |
+| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) | V |  |  |
+| `dataInterval` | [OffsetInterval](#offsetinterval-schema) |  |  | Data that went into this transaction. |
+| `dataPaths` | array(`string`) | V |  | TODO: This will be removed when coordinator will be slicing data for the engine |
+| `schemaFile` | `string` | V | `path` | TODO: replace with actual DDL or Parquet schema |
+| `explicitWatermarks` | array([Watermark](#watermark-schema)) | V |  |  |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/ReadStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-
-### PrepStep Schema
-Defines the steps to prepare raw data for ingestion.
-
-Union type:
-- [PrepStep::Decompress](#prepstepdecompress-schema)
-- [PrepStep::Pipe](#prepsteppipe-schema)
-
-#### PrepStep::Decompress Schema
-Pulls data from one of the supported sources by its URL.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `format` | `string` | V |  | Name of a compression algorithm used on data. |
-| `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/PrepStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
-
-#### PrepStep::Pipe Schema
-Executes external command to process the data using piped input/output.
+<a name="executequeryrequest-schema"></a>
+##### ExecuteQueryRequest
+Sent by the coordinator to an engine to perform the next step of data transformation
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `command` | array(`string`) | V |  | Command to execute and its arguments. |
+| `datasetID` | `string` | V | [dataset-id](#dataset-identity) | Unique identifier of the output dataset |
+| `datasetName` | `string` | V | [dataset-name](#dataset-identity) | Alias of the output dataset |
+| `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time to use for new records |
+| `offset` | `integer` | V | `int64` | Starting offset to use for new records |
+| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) | V |  |  |
+| `transform` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data |
+| `inputs` | array([ExecuteQueryInput](#executequeryinput-schema)) | V |  | Defines the input data |
+| `prevCheckpointDir` | `string` |  | `path` | TODO: This is temporary |
+| `newCheckpointDir` | `string` | V | `path` | TODO: This is temporary |
+| `outDataPath` | `string` | V | `path` | TODO: This is temporary |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/PrepStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryRequest.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="executequeryresponse-schema"></a>
+##### ExecuteQueryResponse
+Sent by an engine to coordinator when performing the data transformation
+
+| Union Type | Description |
+| :---: | --- |
+| [ExecuteQueryResponse::Progress](#executequeryresponse-progress-schema) |  |
+| [ExecuteQueryResponse::Success](#executequeryresponse-success-schema) |  |
+| [ExecuteQueryResponse::InvalidQuery](#executequeryresponse-invalidquery-schema) |  |
+| [ExecuteQueryResponse::InternalError](#executequeryresponse-internalerror-schema) |  |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryResponse.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="executequeryresponse-progress-schema"></a>
+##### ExecuteQueryResponse::Progress
 
 
-### FetchStep Schema
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryResponse.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="executequeryresponse-success-schema"></a>
+##### ExecuteQueryResponse::Success
+
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `dataInterval` | [OffsetInterval](#offsetinterval-schema) |  |  | Data slice produced by the transaction (if any) |
+| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Watermark advanced by the transaction (uf any). |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryResponse.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="executequeryresponse-invalidquery-schema"></a>
+##### ExecuteQueryResponse::InvalidQuery
+
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `message` | `string` | V |  | Explanation of an error |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryResponse.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="executequeryresponse-internalerror-schema"></a>
+##### ExecuteQueryResponse::InternalError
+
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `message` | `string` | V |  | Brief description of an error |
+| `backtrace` | `string` |  |  | Details of an error (e.g. a backtrace) |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/ExecuteQueryResponse.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="reference-fragments"></a>
+#### Fragments
+<a name="blockinterval-schema"></a>
+##### BlockInterval
+Describes a range of metadata blocks as an arithmetic interval of block hashes
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `start` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Start of the closed interval [start; end] |
+| `end` | `string` | V | [multihash](https://github.com/multiformats/multihash) | End of the closed interval [start; end] |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/BlockInterval.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="dataslice-schema"></a>
+##### DataSlice
+Describes a slice of data added to a dataset or produced via transformation
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `logicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Logical hash sum of the data in this slice |
+| `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Logical hash sum of the data in this slice |
+| `interval` | [OffsetInterval](#offsetinterval-schema) | V |  | Data slice produced by the transaction |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/DataSlice.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datasetkind-schema"></a>
+##### DatasetKind
+Represents type of the dataset.
+
+| Enum Value |
+| :---: |
+| root |
+| derivative |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/DatasetKind.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datasetvocabulary-schema"></a>
+##### DatasetVocabulary
+Lets you manipulate names of the system columns to avoid conflicts.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `systemTimeColumn` | `string` |  |  | Name of the system time column. |
+| `eventTimeColumn` | `string` |  |  | Name of the event time column. |
+| `offsetColumn` | `string` |  |  | Name of the offset column. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/DatasetVocabulary.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="eventtimesource-schema"></a>
+##### EventTimeSource
 Defines the external source of data.
 
-Union type:
-- [FetchStep::Url](#fetchstepurl-schema)
-- [FetchStep::FilesGlob](#fetchstepfilesglob-schema)
+| Union Type | Description |
+| :---: | --- |
+| [EventTimeSource::FromMetadata](#eventtimesource-frommetadata-schema) | Extracts event time from the source's metadata. |
+| [EventTimeSource::FromPath](#eventtimesource-frompath-schema) | Extracts event time from the path component of the source. |
 
-#### FetchStep::Url Schema
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="eventtimesource-frommetadata-schema"></a>
+##### EventTimeSource::FromMetadata
+Extracts event time from the source's metadata.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="eventtimesource-frompath-schema"></a>
+##### EventTimeSource::FromPath
+Extracts event time from the path component of the source.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `pattern` | `string` | V | `regex` | Regular expression where first group contains the timestamp string. |
+| `timestampFormat` | `string` |  |  | Format of the expected timestamp in java.text.SimpleDateFormat form. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="fetchstep-schema"></a>
+##### FetchStep
+Defines the external source of data.
+
+| Union Type | Description |
+| :---: | --- |
+| [FetchStep::Url](#fetchstep-url-schema) | Pulls data from one of the supported sources by its URL. |
+| [FetchStep::FilesGlob](#fetchstep-filesglob-schema) | Uses glob operator to match files on the local file system. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="fetchstep-url-schema"></a>
+##### FetchStep::Url
 Pulls data from one of the supported sources by its URL.
 
 | Property | Type | Required | Format | Description |
@@ -1180,10 +1403,12 @@ Pulls data from one of the supported sources by its URL.
 | `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/FetchStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-#### FetchStep::FilesGlob Schema
+<a name="fetchstep-filesglob-schema"></a>
+##### FetchStep::FilesGlob
 Uses glob operator to match files on the local file system.
 
 | Property | Type | Required | Format | Description |
@@ -1195,40 +1420,41 @@ Uses glob operator to match files on the local file system.
 Order is important as every file will be processed individually
 and will advance the dataset's watermark. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/FetchStep.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 
-### Transform Schema
-Engine-specific processing queries that shape the resulting data.
-
-Union type:
-- [Transform::Sql](#transformsql-schema)
-
-#### Transform::Sql Schema
-Transform using one of the SQL dialects.
+<a name="inputslice-schema"></a>
+##### InputSlice
+Describes a slice of input data used during a transformation
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `engine` | `string` | V |  | Identifier of the engine used for this transformation. |
-| `version` | `string` |  |  | Version of the engine to use. |
-| `query` | `string` |  |  | SQL query the result of which will be used as an output. |
-| `queries` | array([SqlQueryStep](#sqlquerystep-schema)) |  |  | Use this instead of query field for specifying multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`. |
-| `temporalTables` | array([TemporalTable](#temporaltable-schema)) |  |  | Temporary Flink-specific extension for creating temporal tables from streams. |
+| `datasetID` | `string` | V | [dataset-id](#dataset-identity) | Input dataset identifier |
+| `blockInterval` | [BlockInterval](#blockinterval-schema) |  |  | Blocks that went into this transaction |
+| `dataInterval` | [OffsetInterval](#offsetinterval-schema) |  |  | Data that went into this transaction |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/Transform.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/InputSlice.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-
-### MergeStrategy Schema
+<a name="mergestrategy-schema"></a>
+##### MergeStrategy
 Merge strategy determines how newly ingested data should be combined with the data that already exists in the dataset.
 
-Union type:
-- [MergeStrategy::Append](#mergestrategyappend-schema)
-- [MergeStrategy::Ledger](#mergestrategyledger-schema)
-- [MergeStrategy::Snapshot](#mergestrategysnapshot-schema)
+| Union Type | Description |
+| :---: | --- |
+| [MergeStrategy::Append](#mergestrategy-append-schema) | Append merge strategy. |
+| [MergeStrategy::Ledger](#mergestrategy-ledger-schema) | Ledger merge strategy. |
+| [MergeStrategy::Snapshot](#mergestrategy-snapshot-schema) | Snapshot merge strategy. |
 
-#### MergeStrategy::Append Schema
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="mergestrategy-append-schema"></a>
+##### MergeStrategy::Append
 Append merge strategy.
 
 Under this strategy polled data will be appended in its original form to the already ingested data without modifications.
@@ -1236,10 +1462,12 @@ Under this strategy polled data will be appended in its original form to the alr
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MergeStrategy.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-#### MergeStrategy::Ledger Schema
+<a name="mergestrategy-ledger-schema"></a>
+##### MergeStrategy::Ledger
 Ledger merge strategy.
 
 This strategy should be used for data sources containing append-only event
@@ -1259,10 +1487,12 @@ the set of columns can only grow.
 | :---: | :---: | :---: | :---: | --- |
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MergeStrategy.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-#### MergeStrategy::Snapshot Schema
+<a name="mergestrategy-snapshot-schema"></a>
+##### MergeStrategy::Snapshot
 Snapshot merge strategy.
 
 This strategy can be used for data dumps that are taken periodical
@@ -1306,96 +1536,255 @@ This strategy will always preserve all columns from the existing and new snapsho
 | `obsvChanged` | `string` |  |  | Name of the observation type when the data with certain primary key has changed compared to the last time it was seen. |
 | `obsvRemoved` | `string` |  |  | Name of the observation type when the data with certain primary key has been seen before but now is missing from the snapshot. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MergeStrategy.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 
-### DatasetVocabulary Schema
-Lets you manipulate names of the system columns to avoid conflicts.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `systemTimeColumn` | `string` |  |  | Name of the system time column. |
-| `eventTimeColumn` | `string` |  |  | Name of the event time column. |
-| `offsetColumn` | `string` |  |  | Name of the offset column. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DatasetVocabulary.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
-
-### MetadataBlock Schema
-An individual block in the metadata chain that captures the history of modifications of a dataset.
+<a name="offsetinterval-schema"></a>
+##### OffsetInterval
+Describes a range of data as an arithmetic interval of offsets
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `prevBlockHash` | `string` |  | `multihash` | Hash sum of the preceding block. |
-| `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time when this block was written. |
-| `outputSlice` | [OutputSlice](#outputslice-schema) |  |  | Describes output data written during this transaction, if any. |
-| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream.
-Watermarks are usually derived from the event times in data based on the properties of the source,
-but sometimes they can also be assigned manually. Manual watermarks are useful in cases of slow-moving
-datasets in order to let the computations continue even when no new events were observed for a long time. |
-| `inputSlices` | array([InputSlice](#inputslice-schema)) |  |  | Defines inputs used in this transaction, if any. Slices corresponding to every input must be present when any input was processed. |
-| `source` | [DatasetSource](#datasetsource-schema) |  |  | Contains the definition of the source of data when it changes. |
-| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Vocabulary lets you change system column names to avoid conflicts. |
-| `seed` | `string` |  | `dataset-id` | Unique identity of the dataset. |
+| `start` | `integer` | V | `int64` | Start of the closed interval [start; end] |
+| `end` | `integer` | V | `int64` | End of the closed interval [start; end] |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MetadataBlock.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/OffsetInterval.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-### DataSlice Schema
-Defines a subset of data in a dataset
+<a name="prepstep-schema"></a>
+##### PrepStep
+Defines the steps to prepare raw data for ingestion.
+
+| Union Type | Description |
+| :---: | --- |
+| [PrepStep::Decompress](#prepstep-decompress-schema) | Pulls data from one of the supported sources by its URL. |
+| [PrepStep::Pipe](#prepstep-pipe-schema) | Executes external command to process the data using piped input/output. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/PrepStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="prepstep-decompress-schema"></a>
+##### PrepStep::Decompress
+Pulls data from one of the supported sources by its URL.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `hash` | `string` | V | `sha3-256` | Hash sum of the data in this slice |
-| `offsetStart` | `integer` | V | `int64` | Defines the start offset of the data slice [start; end) |
-| `offsetEnd` | `integer` | V | `int64` | Defines the end offset of the data slice [start; end) |
+| `format` | `string` | V |  | Name of a compression algorithm used on data. |
+| `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/DataSlice.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/PrepStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-### EventTimeSource Schema
+<a name="prepstep-pipe-schema"></a>
+##### PrepStep::Pipe
+Executes external command to process the data using piped input/output.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `command` | array(`string`) | V |  | Command to execute and its arguments. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/PrepStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="readstep-schema"></a>
+##### ReadStep
+Defines how raw data should be read into the structured form.
+
+| Union Type | Description |
+| :---: | --- |
+| [ReadStep::Csv](#readstep-csv-schema) | Reader for comma-separated files. |
+| [ReadStep::JsonLines](#readstep-jsonlines-schema) | Reader for files containing concatenation of multiple JSON records with the same schema. |
+| [ReadStep::GeoJson](#readstep-geojson-schema) | Reader for GeoJSON files. |
+| [ReadStep::EsriShapefile](#readstep-esrishapefile-schema) | Reader for ESRI Shapefile format. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-csv-schema"></a>
+##### ReadStep::Csv
+Reader for comma-separated files.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `separator` | `string` |  |  | Sets a single character as a separator for each field and value. |
+| `encoding` | `string` |  |  | Decodes the CSV files by the given encoding type. |
+| `quote` | `string` |  |  | Sets a single character used for escaping quoted values where the separator can be part of the value. Set an empty string to turn off quotations. |
+| `escape` | `string` |  |  | Sets a single character used for escaping quotes inside an already quoted value. |
+| `comment` | `string` |  |  | Sets a single character used for skipping lines beginning with this character. |
+| `header` | `boolean` |  |  | Use the first line as names of columns. |
+| `enforceSchema` | `boolean` |  |  | If it is set to true, the specified or inferred schema will be forcibly applied to datasource files, and headers in CSV files will be ignored. If the option is set to false, the schema will be validated against all headers in CSV files in the case when the header option is set to true. |
+| `inferSchema` | `boolean` |  |  | Infers the input schema automatically from data. It requires one extra pass over the data. |
+| `ignoreLeadingWhiteSpace` | `boolean` |  |  | A flag indicating whether or not leading whitespaces from values being read should be skipped. |
+| `ignoreTrailingWhiteSpace` | `boolean` |  |  | A flag indicating whether or not trailing whitespaces from values being read should be skipped. |
+| `nullValue` | `string` |  |  | Sets the string representation of a null value. |
+| `emptyValue` | `string` |  |  | Sets the string representation of an empty value. |
+| `nanValue` | `string` |  |  | Sets the string representation of a non-number value. |
+| `positiveInf` | `string` |  |  | Sets the string representation of a positive infinity value. |
+| `negativeInf` | `string` |  |  | Sets the string representation of a negative infinity value. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. |
+| `multiLine` | `boolean` |  |  | Parse one record, which may span multiple lines. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-jsonlines-schema"></a>
+##### ReadStep::JsonLines
+Reader for files containing concatenation of multiple JSON records with the same schema.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. |
+| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encoding. |
+| `multiLine` | `boolean` |  |  | Parse one record, which may span multiple lines, per file. |
+| `primitivesAsString` | `boolean` |  |  | Infers all primitive values as a string type. |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-geojson-schema"></a>
+##### ReadStep::GeoJson
+Reader for GeoJSON files.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-esrishapefile-schema"></a>
+##### ReadStep::EsriShapefile
+Reader for ESRI Shapefile format.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="sourcecaching-schema"></a>
+##### SourceCaching
 Defines the external source of data.
 
-Union type:
-- [EventTimeSource::FromMetadata](#eventtimesourcefrommetadata-schema)
-- [EventTimeSource::FromPath](#eventtimesourcefrompath-schema)
+| Union Type | Description |
+| :---: | --- |
+| [SourceCaching::Forever](#sourcecaching-forever-schema) | After source was processed once it will never be ingested again. |
 
-#### EventTimeSource::FromMetadata Schema
-Extracts event time from the source's metadata.
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/SourceCaching.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/EventTimeSource.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
-
-#### EventTimeSource::FromPath Schema
-Extracts event time from the path component of the source.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `pattern` | `string` | V | `regex` | Regular expression where first group contains the timestamp string. |
-| `timestampFormat` | `string` |  |  | Format of the expected timestamp in java.text.SimpleDateFormat form. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/EventTimeSource.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
-
-
-### SourceCaching Schema
-Defines the external source of data.
-
-Union type:
-- [SourceCaching::Forever](#sourcecachingforever-schema)
-
-#### SourceCaching::Forever Schema
+<a name="sourcecaching-forever-schema"></a>
+##### SourceCaching::Forever
 After source was processed once it will never be ingested again.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/SourceCaching.json)
-[![JSON Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas/flatbuffers/opendatafabric.fbs)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/SourceCaching.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="sqlquerystep-schema"></a>
+##### SqlQueryStep
+Defines a query in a multi-step SQL transformation.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `alias` | `string` |  |  | Name of the temporary view that will be created from result of the query. |
+| `query` | `string` | V |  | SQL query the result of which will be exposed under the alias. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/SqlQueryStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="temporaltable-schema"></a>
+##### TemporalTable
+Temporary Flink-specific extension for creating temporal tables from streams.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Name of the dataset to be converted into a temporal table. |
+| `primaryKey` | array(`string`) | V |  | Column names used as the primary key for creating a table. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/TemporalTable.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="transform-schema"></a>
+##### Transform
+Engine-specific processing queries that shape the resulting data.
+
+| Union Type | Description |
+| :---: | --- |
+| [Transform::Sql](#transform-sql-schema) | Transform using one of the SQL dialects. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Transform.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="transform-sql-schema"></a>
+##### Transform::Sql
+Transform using one of the SQL dialects.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `engine` | `string` | V |  | Identifier of the engine used for this transformation. |
+| `version` | `string` |  |  | Version of the engine to use. |
+| `query` | `string` |  |  | SQL query the result of which will be used as an output. |
+| `queries` | array([SqlQueryStep](#sqlquerystep-schema)) |  |  | Use this instead of query field for specifying multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`. |
+| `temporalTables` | array([TemporalTable](#temporaltable-schema)) |  |  | Temporary Flink-specific extension for creating temporal tables from streams. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Transform.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
+<a name="transforminput-schema"></a>
+##### TransformInput
+Describes a derivative transformation input
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `id` | `string` |  | [dataset-id](#dataset-identity) | Unique dataset identifier. This field is required in metadata blocks and can be empty only in a DatasetSnapshot. |
+| `name` | `string` | V | [dataset-name](#dataset-identity) | An alias of this input to be used in queries. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/TransformInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="watermark-schema"></a>
+##### Watermark
+Represents a watermark in the event stream
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) |  |
+| `eventTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) |  |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Watermark.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 
 

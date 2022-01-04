@@ -6,7 +6,8 @@
   "additionalProperties": false,
   "required": [
     "name",
-    "source"
+    "kind",
+    "metadata"
   ],
   "properties": {
     "name": {
@@ -14,13 +15,15 @@
       "format": "dataset-name",
       "description": "Alias of the dataset."
     },
-    "source": {
-      "$ref": "/schemas/DatasetSource",
-      "description": "Contains information about the source of the data and/or applied transformations."
+    "kind": {
+      "$ref": "/schemas/DatasetKind",
+      "description": "Type of the dataset."
     },
-    "vocab": {
-      "$ref": "/schemas/DatasetVocabulary",
-      "description": "Vocabulary lets you manipulate system column names to avoid conflicts."
+    "metadata": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/MetadataEvent"
+      }
     }
   }
 }

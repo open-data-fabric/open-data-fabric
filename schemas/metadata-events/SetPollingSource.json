@@ -1,0 +1,37 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SetPollingSource",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fetch",
+    "read",
+    "merge"
+  ],
+  "properties": {
+    "fetch": {
+      "$ref": "/schemas/FetchStep",
+      "description": "Determines where data is sourced from."
+    },
+    "prepare": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/PrepStep"
+      },
+      "description": "Defines how raw data is prepared before reading."
+    },
+    "read": {
+      "$ref": "/schemas/ReadStep",
+      "description": "Defines how data is read into structured format."
+    },
+    "preprocess": {
+      "$ref": "/schemas/Transform",
+      "description": "Pre-processing query that shapes the data."
+    },
+    "merge": {
+      "$ref": "/schemas/MergeStrategy",
+      "description": "Determines how newly-ingested data should be merged with existing history."
+    }
+  }
+}

@@ -63,15 +63,23 @@ def render(schemas_dir):
 
 def read_schemas(schemas_dir):
     schemas = {}
-    for sch in os.listdir(schemas_dir):
-        path = os.path.join(schemas_dir, sch)
-        if not os.path.isfile(path):
+    read_schemas_rec(schemas_dir, schemas)
+    return schemas
+
+def read_schemas_rec(schemas_dir, schemas):
+    for fname in os.listdir(schemas_dir):
+        path = os.path.join(schemas_dir, fname)
+        
+        if os.path.isdir(path):
+            read_schemas_rec(path, schemas)
             continue
+
         with open(path) as f:
             s = json.load(f)
+            fname = os.path.splitext(os.path.split(path)[-1])[0]
             name = os.path.splitext(s['$id'].split('/')[-1])[0]
+            assert fname == name, f"{fname} != {name}"
             schemas[name] = s
-    return schemas
 
 
 def render_schema(name, sch):
@@ -79,6 +87,8 @@ def render_schema(name, sch):
         yield from render_struct(name, sch)
     elif 'oneOf' in sch:
         yield from render_oneof(name, sch)
+    elif "enum" in sch and sch.get("type") == "string":
+        yield from render_string_enum(name, sch)
     else:
         raise Exception(f'Unsupported schema: {sch}')
 
@@ -108,19 +118,27 @@ def render_field(pname, psch, required, modifier=None):
 def render_oneof(name, sch):
     yield '#[derive(Clone, PartialEq, Eq, Debug)]'
     yield f'pub enum {name} {{'
-    for (ename, esch) in sch.get('$defs', {}).items():
-        yield from indent(render_oneof_element(name, ename, esch))
+    for isch in sch["oneOf"]:
+        yield from indent(render_oneof_element(name, sch, isch))
     yield '}'
 
 
-def render_oneof_element(name, ename, esch):
-    if not esch.get('properties', ()):
-        yield f'{ename},'
+def render_oneof_element(name, sch, isch):
+    ref = isch["$ref"]
+    ename = ref.split('/')[-1]
+
+    if ref.startswith("#/$defs/"):
+        esch = sch["$defs"][ename]
+
+        if not esch.get('properties', ()):
+            yield f'{ename},'
+        else:
+            struct_name = f'{name}{ename}'
+            yield f'{ename}({struct_name}),'
+            # See: https://github.com/rust-lang/rfcs/pull/2593
+            extra_types.append(lambda: render_struct(struct_name, esch))
     else:
-        struct_name = f'{name}{ename}'
-        yield f'{ename}({struct_name}),'
-        # See: https://github.com/rust-lang/rfcs/pull/2593
-        extra_types.append(lambda: render_struct(struct_name, esch))
+        yield f'{ename}({ename}),'
 
 
 def render_string_enum(name, sch):

@@ -1,0 +1,28 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/ExecuteQuery",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "inputSlices"
+  ],
+  "properties": {
+    "inputSlices": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/InputSlice"
+      },
+      "description": "Defines inputs used in this transaction. Slices corresponding to every input must be present."
+    },
+    "outputData": {
+      "$ref": "/schemas/DataSlice",
+      "description": "Describes output data written during this transaction, if any."
+    },
+    "outputWatermark": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last watermark of the output data stream."
+    }
+  }
+}

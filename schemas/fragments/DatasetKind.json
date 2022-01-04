@@ -1,0 +1,10 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DatasetKind",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Represents type of the dataset.",
+  "type": "string",
+  "enum": [
+    "root",
+    "derivative"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/AddData",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Indicates that data has been ingested into a root dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outputData"
+  ],
+  "properties": {
+    "outputData": {
+      "$ref": "/schemas/DataSlice",
+      "description": "Describes output data written during this transaction."
+    },
+    "outputWatermark": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last watermark of the output data stream."
+    }
+  }
+}

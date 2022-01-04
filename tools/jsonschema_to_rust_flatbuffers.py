@@ -102,18 +102,28 @@ def is_enum(typ_or_sch):
     return typ_or_sch in enum_types
 
 
-def is_string_enum(sch):
-    return "enumName" in sch and sch.get("type") == "string"
+def is_string_enum(typ_or_sch):
+    if isinstance(typ_or_sch, dict):
+        if "$ref" in typ_or_sch:
+            typ_or_sch = typ_or_sch.get('$ref', '').split('/')[-1]
+        else:
+            return "enumName" in typ_or_sch and typ_or_sch.get("type") == "string"
+    return typ_or_sch in string_enum_types
 
 
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
+    
+    # Snapshots always appear in YAML and flatbuffers don't support arrays of unions in Rust yet
+    del schemas["DatasetSnapshot"]
 
     for name, sch in schemas.items():
         if sch.get("type") == "object":
             struct_types.add(name)
         elif 'oneOf' in sch:
             enum_types.add(name)
+        elif "enum" in sch and sch.get("type") == "string":
+            string_enum_types.add(name)
 
     print(PREAMBLE)
 
@@ -149,15 +159,23 @@ def render(schemas_dir):
 
 def read_schemas(schemas_dir):
     schemas = {}
-    for sch in os.listdir(schemas_dir):
-        path = os.path.join(schemas_dir, sch)
-        if not os.path.isfile(path):
+    read_schemas_rec(schemas_dir, schemas)
+    return schemas
+
+def read_schemas_rec(schemas_dir, schemas):
+    for fname in os.listdir(schemas_dir):
+        path = os.path.join(schemas_dir, fname)
+        
+        if os.path.isdir(path):
+            read_schemas_rec(path, schemas)
             continue
+
         with open(path) as f:
             s = json.load(f)
+            fname = os.path.splitext(os.path.split(path)[-1])[0]
             name = os.path.splitext(s['$id'].split('/')[-1])[0]
+            assert fname == name, f"{fname} != {name}"
             schemas[name] = s
-    return schemas
 
 
 def render_schema(name, sch):
@@ -165,6 +183,8 @@ def render_schema(name, sch):
         yield from render_struct(name, sch)
     elif 'oneOf' in sch:
         yield from render_oneof(name, sch)
+    elif "enum" in sch and sch.get("type") == "string":
+        yield from render_string_enum(name, sch)
     else:
         raise Exception(f'Unsupported schema: {sch}')
 
@@ -177,8 +197,8 @@ def render_struct(name, sch):
     yield f"    fn serialize(&self, fb: &mut FlatBufferBuilder <'fb>) -> Self::OffsetT {{"
     preserialized = set()
     for pname, psch in sch.get('properties', {}).items():
-        if is_string_enum(psch):
-            extra_types.append(functools.partial(render_string_enum, psch))
+        if is_string_enum(psch) and "$ref" not in psch:
+            extra_types.append(functools.partial(render_string_enum, psch["enumName"], psch))
 
         required = pname in sch.get('required', ())
         lines = list(indent(render_field_pre_ser(
@@ -212,8 +232,7 @@ def render_struct(name, sch):
     yield "}"
 
 
-def render_string_enum(sch):
-    name = sch["enumName"]
+def render_string_enum(name, sch):
     yield f"impl From<odf::{name}> for fb::{name} {{"
     yield f"    fn from(v: odf::{name}) -> Self {{"
     yield  "        match v {"
@@ -298,8 +317,8 @@ def render_oneof(name, sch):
     yield f"impl<'fb> FlatbuffersEnumSerializable<'fb, fb::{name}> for odf::{name} {{"
     yield f"    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (fb::{name}, WIPOffset<UnionWIPOffset>) {{"
     yield f"        match self {{"
-    for (ename, esch) in sch.get('$defs', {}).items():
-        yield from indent(render_oneof_element_ser(name, ename, esch), INDENT * 3)
+    for isch in sch["oneOf"]:
+        yield from indent(render_oneof_element_ser(name, sch, isch), INDENT * 3)
     yield "        }"
     yield "    }"
     yield "}"
@@ -307,33 +326,52 @@ def render_oneof(name, sch):
     yield f"impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::{name}> for odf::{name} {{"
     yield f"    fn deserialize(table: flatbuffers::Table<'fb>, t: fb::{name}) -> Self {{"
     yield f"        match t {{"
-    for (ename, esch) in sch.get('$defs', {}).items():
-        yield from indent(render_oneof_element_de(name, ename, esch), INDENT * 3)
+    for isch in sch["oneOf"]:
+        yield from indent(render_oneof_element_de(name, sch, isch), INDENT * 3)
     yield f"            _ => panic!(\"Invalid enum value: {{}}\", t.0),"
     yield "        }"
     yield "    }"
     yield "}"
 
 
-def render_oneof_element_ser(name, ename, esch):
-    struct_name = f'{name}{ename}'
-    if not esch.get('properties', ()):
-        yield f"odf::{name}::{ename} => (fb::{name}::{struct_name}, empty_table(fb).as_union_value()),"
+def render_oneof_element_ser(name, sch, isch):
+    ref = isch["$ref"]
+    ename = ref.split('/')[-1]
+
+    if ref.startswith("#/$defs/"):
+        esch = sch["$defs"][ename]
+        struct_name = f'{name}{ename}'
+        if not esch.get('properties', ()):
+            yield f"odf::{name}::{ename} => (fb::{name}::{struct_name}, empty_table(fb).as_union_value()),"
+        else:
+            yield f"odf::{name}::{ename}(v) => (fb::{name}::{struct_name}, v.serialize(fb).as_union_value()),"
     else:
-        yield f"odf::{name}::{ename}(v) => (fb::{name}::{struct_name}, v.serialize(fb).as_union_value()),"
+        yield f"odf::{name}::{ename}(v) => (fb::{name}::{ename}, v.serialize(fb).as_union_value()),"
 
 
-def render_oneof_element_de(name, ename, esch):
-    struct_name = f'{name}{ename}'
-    if not esch.get('properties', ()):
-        yield f"fb::{name}::{struct_name} => odf::{name}::{ename},"
+def render_oneof_element_de(name, sch, isch):
+    ref = isch["$ref"]
+    ename = ref.split('/')[-1]
+
+    if ref.startswith("#/$defs/"):
+        esch = sch["$defs"][ename]
+        struct_name = f'{name}{ename}'
+        if not esch.get('properties', ()):
+            yield f"fb::{name}::{struct_name} => odf::{name}::{ename},"
+        else:
+            yield f"fb::{name}::{struct_name} => odf::{name}::{ename}("
+            yield f"    odf::{struct_name}::deserialize("
+            yield f"        fb::{struct_name}::init_from_table(table)"
+            yield "    )"
+            yield "),"
+            extra_types.append(lambda: render_struct(struct_name, esch))
     else:
-        yield f"fb::{name}::{struct_name} => odf::{name}::{ename}("
-        yield f"    odf::{struct_name}::deserialize("
-        yield f"        fb::{struct_name}::init_from_table(table)"
+        yield f"fb::{name}::{ename} => odf::{name}::{ename}("
+        yield f"    odf::{ename}::deserialize("
+        yield f"        fb::{ename}::init_from_table(table)"
         yield "    )"
         yield "),"
-        extra_types.append(lambda: render_struct(struct_name, esch))
+
 
 
 def pre_ser_composite_type(name, sch):
@@ -369,7 +407,7 @@ def pre_ser_composite_type(name, sch):
 def ser_composite_type(name, sch):
     if sch.get('type') == 'array':
         pass
-    elif 'enum' in sch:
+    elif is_string_enum(sch):
         yield f"{name}.into()"
     else:
         yield from ser_primitive_type(name, sch)
@@ -384,7 +422,7 @@ def de_composite_type(name, sch, enum_t_accessor):
         else:
             yield from de_composite_type("i", isch, None)
         yield  ").collect()"
-    elif 'enum' in sch:
+    elif is_string_enum(sch):
         yield f"{name}.into()"
     elif '$ref' in sch:
         t = sch['$ref'].split('/')[-1]

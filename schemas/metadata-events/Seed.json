@@ -1,0 +1,22 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/Seed",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Always the first metadata event that establishes identity of the dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "datasetID",
+    "datasetKind"
+  ],
+  "properties": {
+    "datasetID": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "Unique identity of the dataset."
+    },
+    "datasetKind": {
+      "$ref": "/schemas/DatasetKind",
+      "description": "Type of the dataset."
+    }
+  }
+}

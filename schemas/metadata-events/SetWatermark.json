@@ -1,0 +1,17 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SetWatermark",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Indicates that watermark has been advanced.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outputWatermark"
+  ],
+  "properties": {
+    "outputWatermark": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last watermark of the output data stream."
+    }
+  }
+}

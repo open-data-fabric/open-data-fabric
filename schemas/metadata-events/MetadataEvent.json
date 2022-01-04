@@ -1,0 +1,28 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/MetadataEvent",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the external source of data.",
+  "oneOf": [
+    {
+      "$ref": "/schemas/AddData"
+    },
+    {
+      "$ref": "/schemas/ExecuteQuery"
+    },
+    {
+      "$ref": "/schemas/Seed"
+    },
+    {
+      "$ref": "/schemas/SetPollingSource"
+    },
+    {
+      "$ref": "/schemas/SetTransform"
+    },
+    {
+      "$ref": "/schemas/SetVocab"
+    },
+    {
+      "$ref": "/schemas/SetWatermark"
+    }
+  ]
+}

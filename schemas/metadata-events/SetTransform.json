@@ -1,0 +1,24 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SetTransform",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Derivative sources produce data by transforming and combining one or multiple existing datasets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "inputs",
+    "transform"
+  ],
+  "properties": {
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/TransformInput"
+      },
+      "description": "Datasets that will be used as sources."
+    },
+    "transform": {
+      "$ref": "/schemas/Transform",
+      "description": "Transformation that will be applied to produce new data."
+    }
+  }
+}

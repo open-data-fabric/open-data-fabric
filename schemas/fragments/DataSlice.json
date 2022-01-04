@@ -1,26 +1,26 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/OutputSlice",
+  "$id": "http://open-data-fabric.github.com/schemas/DataSlice",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Describes a slice of output data added to a dataset or produced via transformation",
+  "description": "Describes a slice of data added to a dataset or produced via transformation",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "dataLogicalHash",
-    "dataPhysicalHash",
-    "dataInterval"
+    "logicalHash",
+    "physicalHash",
+    "interval"
   ],
   "properties": {
-    "dataLogicalHash": {
+    "logicalHash": {
       "type": "string",
       "format": "multihash",
       "description": "Logical hash sum of the data in this slice"
     },
-    "dataPhysicalHash": {
+    "physicalHash": {
       "type": "string",
       "format": "multihash",
       "description": "Logical hash sum of the data in this slice"
     },
-    "dataInterval": {
+    "interval": {
       "$ref": "/schemas/OffsetInterval",
       "description": "Data slice produced by the transaction"
     }
