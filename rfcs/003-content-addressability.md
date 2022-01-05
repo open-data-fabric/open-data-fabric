@@ -7,13 +7,11 @@
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/17?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/17)
 
 ## Summary
-[summary]: #summary
 
 This RFC specifies how Datasets are uniquely identified across the ODF network, decoupling identity from the aliases.
 
 
 ## Motivation
-[motivation]: #motivation
 
 Datasets are currently identified using their symbolic names. These names are then used, for example, when defining inputs of a derivative dataset or when referring to a dataset in a repository.
 
@@ -23,7 +21,6 @@ There needs to be a **way to uniquely identify a dataset** on the network, with 
 
 
 ## Guide-level explanation
-[guide-level-explanation]: #guide-level-explanation
 
 Per [rationale](#rationale-and-alternatives), we have established that:
 - A hash of the last Metadata Block of the dataset can be sufficient to download an entire (subset of a) dataset from a content-addressable storage
@@ -41,7 +38,6 @@ Conforming to the `DID` specification will allow us in future to expand related 
 
 
 ## Reference-level explanation
-[reference-level-explanation]: #reference-level-explanation
 
 To make `MetadataBlock` content-addressable we will remove `blockHash` from it to avoid chicken-egg problem of hashing. The metadata hashing procedure will be updated accordingly.
 
@@ -89,14 +85,12 @@ Multibase = [a-zA-Z0-9+/=]+
 
 
 ## Drawbacks
-[drawbacks]: #drawbacks
 
 - We are adding more fields to `MetadataBlock` which is already anemic - this will be addressed separately in a follow-up RFC.
 - A seemingly unavoidable break in abstraction layers exists where a named reference (higher-level concept) is used from within derivative dataset inputs from metadata (lower-level concept). This is, however, similar to having a HTML page that contains a relative URL of another page. 
 
 
 ## Rationale and alternatives
-[rationale-and-alternatives]: #rationale-and-alternatives
 
 ### Identity of static data in content-addressable systems
 The most widespread form of resource identity in decentralized systems today is **content addressability**. Git, Docker & OCI image registries, DHTs, Blockchain, IPFS - resources in these systems are uniquely identifieds by (hashes of) their content.
@@ -143,7 +137,6 @@ Out of this commonality a [W3C Decentralized Identifiers (DIDs) specification](h
 
 
 ## Prior art
-[prior-art]: #prior-art
 
 - Content addressability in Git, Docker / OCI
 - [IPFS](https://ipfs.io/)
@@ -159,11 +152,9 @@ These are covered in [rationale](#rationale-and-alternatives) above for better f
 
 
 ## Unresolved questions
-[unresolved-questions]: #unresolved-questions
 
 
 ## Future possibilities
-[future-possibilities]: #future-possibilities
 
 - A key pair generated during creation of the dataset identity in future can be used to implement access control and proof of control schemes described in the [W3C DID-Core](https://w3c.github.io/did-core/) specification.
 

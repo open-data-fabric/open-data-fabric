@@ -7,12 +7,10 @@
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/19?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/19)
 
 ## Summary
-[summary]: #summary
 
 This RFC proposes a new `MetadataBlock` schema that makes metadata less ambiguous and easier to extend.
 
 ## Motivation
-[motivation]: #motivation
 
 `MetadataBlock` schema today consists of multiple optional fields that appear in metadata under different conditions. For example, the `outputSlice` field is present when a transformation resulted in some new data added to the datasets, the `outputWatermark` tells us that transformation had bumbed up the watermark of a dataset - it can be present even when no new output data was produced. So when you want to process only metadata blocks that correspond to transformations - you get into a position of wondering what's the "definitive sign" of transformation taking place, is it the presence of `outputWatermark`, `ouputSlice`, or `inputSclices`?
 
@@ -21,7 +19,6 @@ These are the clear signs of "anemic data" - the problem ODF was designed to pre
 This RFC will explore how to transition metadata into a descriptive event-based format that can be easily extended by different parties to implement higher-level features.
 
 ## Guide-level explanation
-[guide-level-explanation]: #guide-level-explanation
 
 This RFC proposes to replace the anemic fields of the `MetadataBlock` schema with a extensible set of `MetadataEvent`s, with every `MetadataBlock` containing a single `MetadataEvent` of a certain type. `MetadataEvent` will correspond to a certain transaction on the dataset (e.g. executing query, specifying polling source, updating transformation query). Every event will contain only fields that are relevant to the transaction.
 
@@ -53,7 +50,6 @@ will produce metadata chain with three blocks:
 ```
 
 ## Reference-level explanation
-[reference-level-explanation]: #reference-level-explanation
 
 Core events:
 
@@ -78,17 +74,14 @@ Extension events:
 - There will be some events that contain a similar set of fields (e.g. `AddData` and `ExecuteQuery` both contain data and watermark info) but will now need to be processed separately. This is a small price to pay for a robust domain model though.
 
 ## Rationale and alternatives
-[rationale-and-alternatives]: #rationale-and-alternatives
 
 - As in case of dataset creation, we can see that it's no longer possible to move dataset into desired state with just one metadata block. Does this hurt consistency?
   - One considered alternative was to allow multiple `MetadataEvent`s per `MetadataBlock` - this would ensure per-block consistency but at the expense of higher complexity
   - It was decided that this complexity is not warranted. Just like with `git`, code is not guaranteed to compile when looking at it on per-commit basis - as long as a group of commits that constitutes a consistent state is pushed atomically consistency overall can be achieved.
 
 ## Prior art
-[prior-art]: #prior-art
 
 ## Unresolved questions
-[unresolved-questions]: #unresolved-questions
 
 - **Forward-compatibility** requires a way to differentiate between events that coordinator has to understand and events that can be safely ignored if coordinator does not support them. 
   - Currently we don't have a good way to achieve this without running into too many issues with `flatbuffers`.
@@ -96,7 +89,6 @@ Extension events:
 
 
 ## Future possibilities
-[future-possibilities]: #future-possibilities
 
 - This RFC opens up the path for introducing many new `MetadataEvent` types such as for:
   - Storing description / readme

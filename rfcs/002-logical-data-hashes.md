@@ -7,12 +7,10 @@
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/16?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/16)
 
 ## Summary
-[summary]: #summary
 
 This RFC standardizes how equality, equivalence, and integrity checks are performed on data part files.
 
 ## Motivation
-[motivation]: #motivation
 
 Use cases we want to cover are:
 - **Integrity Checks** - ensuring that data is not tampered after downloading it from untrusted source
@@ -30,7 +28,6 @@ Things that contribute to this are: heuristics around encodings (e.g. RLE vs bit
 Therefore, if coordinators would use a hash sum of a Parquet file for integrity/equivalence checks they would be likely to break with any changes to Parquet libraries and produce different hashes between different coordinator implementations.
 
 ## Guide-level explanation
-[guide-level-explanation]: #guide-level-explanation
 
 ### Logical Hashes
 To isolate ourselves from non-determinism of Parquet storage format we will use a combination of two types of data hashes:
@@ -57,7 +54,6 @@ This problem is already addressed by the [multiformats](https://github.com/multi
 In future we will apply this scheme to all hashes, but for now only limiting them to data-related.
 
 ## Reference-level explanation
-[reference-level-explanation]: #reference-level-explanation
 
 New schema format `multihash` is introduced:
 - In binary form it is using [multihash](https://github.com/multiformats/multihash) specification
@@ -82,20 +78,17 @@ Because `multihash` format has a static prefix the short (8-character) hash repr
 `ExecuteQueryResponse` schema is updated not to carry hash information - this was a temporary solution before coordinator hashing support is available.
 
 ## Drawbacks
-[drawbacks]: #drawbacks
 
 - Logical hash equality doesn't guarantee that data file was not tampered with (see [unresolved questions](#unresolved-questions))
 - Maintaining two hashes add a lot of complexity - it would be much nicer to have just physical hash and a reproducible file format (see [future possibilities](#future-possibilities))
 
 ## Rationale and alternatives
-[rationale-and-alternatives]: #rationale-and-alternatives
 
 - Maintain separate logical and physical hashes?
 - Hash Arrow in-memory representation for stability and performance?
 - Achieve deterministic layout of Parquet and only have physical hash that is stable?
 
 ## Prior art
-[prior-art]: #prior-art
 
 Hashing of structured data is mostly used in the context of buckets for hash-based join operations etc. We haven't seen Arrow/Parquet hashing used in cryptographic context.
 
@@ -110,13 +103,11 @@ We did not consider any other formats as we have strong reasons to continue usin
   - https://issues.apache.org/jira/browse/ARROW-11266
 
 ## Unresolved questions
-[unresolved-questions]: #unresolved-questions
 
 - Checking only the logical hash to verify the part file may expose us to attacks that tamper non-data blocks like statistics. Tampering the Parquet statistics may result in exclusion of some records from query results that use predicate pushdown
   - To mitigate this we may in future incorporate statistics sanity checks into data validation process
 
 ## Future possibilities
-[future-possibilities]: #future-possibilities
 
 - To avoid maintaining two hashes we might want instead to implement a structured data format that is fully deterministic
   - It can be a complete subset of Parquet, to stick with a widespread format
