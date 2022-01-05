@@ -1,7 +1,7 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/SetPollingSource",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
+  "description": "Contains information on how extenrally-hosted data can be ingested into the root dataset.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -1,7 +1,7 @@
 {
     "$id": "http://open-data-fabric.github.com/schemas/Watermark",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "Represents a watermark in the event stream",
+    "description": "Represents a watermark in the event stream.",
     "type": "object",
     "additionalProperties": false,
     "required": [

@@ -1,7 +1,7 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/MetadataEvent",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Defines the external source of data.",
+  "description": "Represents a transaction that occured on a dataset.",
   "oneOf": [
     {
       "$ref": "/schemas/AddData"

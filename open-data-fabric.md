@@ -1068,17 +1068,17 @@ An individual block in the metadata chain that captures the history of modificat
 #### Metadata Events
 <a name="metadataevent-schema"></a>
 ##### MetadataEvent
-Defines the external source of data.
+Represents a transaction that occured on a dataset.
 
 | Union Type | Description |
 | :---: | --- |
 | [AddData](#adddata-schema) | Indicates that data has been ingested into a root dataset. |
-| [ExecuteQuery](#executequery-schema) | An individual block in the metadata chain that captures the history of modifications of a dataset. |
-| [Seed](#seed-schema) | Always the first metadata event that establishes identity of the dataset. |
-| [SetPollingSource](#setpollingsource-schema) | An individual block in the metadata chain that captures the history of modifications of a dataset. |
-| [SetTransform](#settransform-schema) | Derivative sources produce data by transforming and combining one or multiple existing datasets. |
-| [SetVocab](#setvocab-schema) | An individual block in the metadata chain that captures the history of modifications of a dataset. |
-| [SetWatermark](#setwatermark-schema) | Indicates that watermark has been advanced. |
+| [ExecuteQuery](#executequery-schema) | Indicates that derivative transformation has been performed. |
+| [Seed](#seed-schema) | Establishes the identity of the dataset. Always the first metadata event in the chain. |
+| [SetPollingSource](#setpollingsource-schema) | Contains information on how extenrally-hosted data can be ingested into the root dataset. |
+| [SetTransform](#settransform-schema) | Defines a transformation that produces data in a derivative dataset. |
+| [SetVocab](#setvocab-schema) | Specifies the mapping of system columns onto dataset schema. |
+| [SetWatermark](#setwatermark-schema) | Indicates the advancement of the dataset's watermark. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/MetadataEvent.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1100,7 +1100,7 @@ Indicates that data has been ingested into a root dataset.
 
 <a name="executequery-schema"></a>
 ##### ExecuteQuery
-An individual block in the metadata chain that captures the history of modifications of a dataset.
+Indicates that derivative transformation has been performed.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1114,7 +1114,7 @@ An individual block in the metadata chain that captures the history of modificat
 
 <a name="seed-schema"></a>
 ##### Seed
-Always the first metadata event that establishes identity of the dataset.
+Establishes the identity of the dataset. Always the first metadata event in the chain.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1127,7 +1127,7 @@ Always the first metadata event that establishes identity of the dataset.
 
 <a name="setpollingsource-schema"></a>
 ##### SetPollingSource
-An individual block in the metadata chain that captures the history of modifications of a dataset.
+Contains information on how extenrally-hosted data can be ingested into the root dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1143,7 +1143,7 @@ An individual block in the metadata chain that captures the history of modificat
 
 <a name="settransform-schema"></a>
 ##### SetTransform
-Derivative sources produce data by transforming and combining one or multiple existing datasets.
+Defines a transformation that produces data in a derivative dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1156,7 +1156,7 @@ Derivative sources produce data by transforming and combining one or multiple ex
 
 <a name="setvocab-schema"></a>
 ##### SetVocab
-An individual block in the metadata chain that captures the history of modifications of a dataset.
+Specifies the mapping of system columns onto dataset schema.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1170,7 +1170,7 @@ An individual block in the metadata chain that captures the history of modificat
 
 <a name="setwatermark-schema"></a>
 ##### SetWatermark
-Indicates that watermark has been advanced.
+Indicates the advancement of the dataset's watermark.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1683,7 +1683,7 @@ Reader for ESRI Shapefile format.
 
 <a name="sourcecaching-schema"></a>
 ##### SourceCaching
-Defines the external source of data.
+Defines how external data should be cached.
 
 | Union Type | Description |
 | :---: | --- |
@@ -1775,7 +1775,7 @@ Describes a derivative transformation input
 
 <a name="watermark-schema"></a>
 ##### Watermark
-Represents a watermark in the event stream
+Represents a watermark in the event stream.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
