@@ -135,7 +135,10 @@ def render_table(ctx, header, header_fmt, rows):
     ctx.out.write("| " + " | ".join(header_fmt) + " |\n")
 
     for values in rows:
-        ctx.out.write("| " + " | ".join(values) + " |\n")
+        ctx.out.write("| " + " | ".join([
+            v.replace("\n", "<br/>")
+            for v in values
+        ]) + " |\n")
 
 
 def render_schema_links(ctx, name):

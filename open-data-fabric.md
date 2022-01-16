@@ -585,7 +585,8 @@ DatasetRefLocal = DatasetID / DatasetName
 DatasetRefRemote = DatasetID / RemoteDatasetName
 DatasetRefAny = DatasetRemoteRef / DatasetLocalRef
 
-RemoteDatasetName = RepositoryName "/" (AccountName "/")? DatasetName
+RemoteDatasetName = RepositoryName "/" DatasetNameWithOwner
+DatasetNameWithOwner = (AccountName "/")? DatasetName
 AccountName = Subdomain
 RepositoryName = Hostname
 
@@ -1416,9 +1417,7 @@ Uses glob operator to match files on the local file system.
 | `path` | `string` | V |  | Path with a glob pattern. |
 | `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
-| `order` | `string` |  |  | Specifies how input files should be ordered before ingestion.
-Order is important as every file will be processed individually
-and will advance the dataset's watermark. |
+| `order` | `string` |  |  | Specifies how input files should be ordered before ingestion.<br/>Order is important as every file will be processed individually<br/>and will advance the dataset's watermark. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
