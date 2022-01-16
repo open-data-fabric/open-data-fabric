@@ -11,10 +11,12 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
-use std::path::Path;
-
-use super::{CompressionFormat, DatasetID, DatasetName, Multihash, SourceOrdering, DatasetKind};
+use crate::dtos;
+use crate::dtos::{CompressionFormat, DatasetKind, SourceOrdering};
+use crate::identity::{DatasetID, DatasetName};
+use crate::formats::*;
 use chrono::{DateTime, Utc};
+use std::path::Path;
 """
 
 DEFAULT_INDENT = 4
@@ -125,7 +127,7 @@ def render_struct(name, sch):
 
 
 def render_struct_impl(name, sch):
-    yield f"impl {name} for super::{name} {{"
+    yield f"impl {name} for dtos::{name} {{"
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
         yield from indent(render_field_impl(pname, psch, required, 'pub'))
@@ -133,9 +135,9 @@ def render_struct_impl(name, sch):
 
 
 def render_struct_convert(name, sch):
-    yield f"impl Into<super::{name}> for &dyn {name} {{"
-    yield ' ' * DEFAULT_INDENT + f"fn into(self) -> super::{name} {{"
-    yield ' ' * DEFAULT_INDENT * 2 + f"super::{name} {{"
+    yield f"impl Into<dtos::{name}> for &dyn {name} {{"
+    yield ' ' * DEFAULT_INDENT + f"fn into(self) -> dtos::{name} {{"
+    yield ' ' * DEFAULT_INDENT * 2 + f"dtos::{name} {{"
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
         yield from indent(indent(indent(render_field_convert(pname, psch, required))))
@@ -203,8 +205,8 @@ def render_oneof_element(name, sch, isch):
 
 
 def render_oneof_impl(name, sch):
-    yield f"impl<'a> From<&'a super::{name}> for {name}<'a> {{"
-    yield ' ' * DEFAULT_INDENT + f"fn from(other: &'a super::{name}) -> Self {{"
+    yield f"impl<'a> From<&'a dtos::{name}> for {name}<'a> {{"
+    yield ' ' * DEFAULT_INDENT + f"fn from(other: &'a dtos::{name}) -> Self {{"
     yield ' ' * DEFAULT_INDENT * 2 + f"match other {{"
     for isch in sch["oneOf"]:
         yield from indent(indent(indent(render_oneof_element_impl(name, sch, isch))))
@@ -221,12 +223,12 @@ def render_oneof_element_impl(name, sch, isch):
         esch = sch["$defs"][ename]
         if esch.get('properties', ()):
             struct_name = f'{name}{ename}'
-            yield f"super::{name}::{ename}(v) => {name}::{ename}(v),"
+            yield f"dtos::{name}::{ename}(v) => {name}::{ename}(v),"
             extra_types.append(lambda: render_struct_impl(struct_name, esch))
         else:
-            yield f"super::{name}::{ename} => {name}::{ename},"
+            yield f"dtos::{name}::{ename} => {name}::{ename},"
     else:
-        yield f"super::{name}::{ename}(v) => {name}::{ename}(v),"
+        yield f"dtos::{name}::{ename}(v) => {name}::{ename}(v),"
 
 
 def render_oneof_convert(name, sch):
@@ -234,8 +236,8 @@ def render_oneof_convert(name, sch):
         esch.get('properties')
         for esch in sch["$defs"].values()
     )
-    yield f"impl Into<super::{name}> for {name}<'_> {{"
-    yield ' ' * DEFAULT_INDENT + f"fn into(self) -> super::{name} {{"
+    yield f"impl Into<dtos::{name}> for {name}<'_> {{"
+    yield ' ' * DEFAULT_INDENT + f"fn into(self) -> dtos::{name} {{"
     yield ' ' * DEFAULT_INDENT * 2 + f"match self {{"
     for isch in sch["oneOf"]:
         yield from indent(render_oneof_element_convert(name, sch, isch), DEFAULT_INDENT * 3)
@@ -254,12 +256,12 @@ def render_oneof_element_convert(name, sch, isch):
         esch = sch["$defs"][ename]
         if esch.get('properties', ()):
             struct_name = f'{name}{ename}'
-            yield f"{name}::{ename}(v) => super::{name}::{ename}(v.into()),"
+            yield f"{name}::{ename}(v) => dtos::{name}::{ename}(v.into()),"
             extra_types.append(lambda: render_struct_convert(struct_name, esch))
         else:
-            yield f"{name}::{ename} => super::{name}::{ename},"
+            yield f"{name}::{ename} => dtos::{name}::{ename},"
     else:
-        yield f"{name}::{ename}(v) => super::{name}::{ename}(v.into()),"
+        yield f"{name}::{ename}(v) => dtos::{name}::{ename}(v.into()),"
 
 
 def render_string_enum(name, sch):

@@ -538,7 +538,8 @@ DatasetRefLocal = DatasetID / DatasetName
 DatasetRefRemote = DatasetID / RemoteDatasetName
 DatasetRefAny = DatasetRemoteRef / DatasetLocalRef
 
-RemoteDatasetName = RepositoryName "/" (AccountName "/")? DatasetName
+RemoteDatasetName = RepositoryName "/" DatasetNameWithOwner
+DatasetNameWithOwner = (AccountName "/")? DatasetName
 AccountName = Subdomain
 RepositoryName = Hostname
 

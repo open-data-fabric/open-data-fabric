@@ -5,18 +5,17 @@ import sys
 import json
 
 
-PREAMBLE = [
-    '/' * 80,
-    '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
-    '// See: http://opendatafabric.org/',
-    '/' * 80,
-    '',
-    'use std::path::PathBuf;',
-    '',
-    'use super::{DatasetID, DatasetName, Multihash};',
-    'use chrono::{DateTime, Utc};',
-    '',
-]
+PREAMBLE = """
+///////////////////////////////////////////////////////////////////////////////
+// WARNING: This file is auto-generated from Open Data Fabric Schemas
+// See: http://opendatafabric.org/
+///////////////////////////////////////////////////////////////////////////////
+
+use crate::identity::{DatasetID, DatasetName};
+use crate::formats::Multihash;
+use chrono::{DateTime, Utc};
+use std::path::PathBuf;
+"""
 
 DEFAULT_INDENT = 4
 
@@ -29,8 +28,7 @@ extra_types = []
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
 
-    for l in PREAMBLE:
-        print(l)
+    print(PREAMBLE)
 
     for name in sorted(schemas.keys()):
         sch = schemas[name]
@@ -169,6 +167,7 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
+        # TODO: Use separate formats (newtype) for data hashes and block hashes
         elif fmt == 'multihash':
             assert ptype == 'string'
             return 'Multihash'
