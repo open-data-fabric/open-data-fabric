@@ -1,0 +1,21 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SetInfo",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Provides basic human-readable information about a dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "description": {
+      "type": "string",
+      "description": "Brief single-sentence summary of a dataset."
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Keywords, search terms, or tags used to describe the dataset.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

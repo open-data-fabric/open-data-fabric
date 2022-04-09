@@ -1,0 +1,21 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/AttachmentEmbedded",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Embedded attachment item.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "path",
+    "content"
+  ],
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Path to an attachment if it was materialized into a file."
+    },
+    "content": {
+      "type": "string",
+      "description": "Content of the attachment."
+    }
+  }
+}

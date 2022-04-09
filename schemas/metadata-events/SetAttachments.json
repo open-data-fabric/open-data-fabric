@@ -1,0 +1,16 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SetAttachments",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Associates a set of files with this dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attachments"
+  ],
+  "properties": {
+    "attachments": {
+      "$ref": "/shcemas/Attachments",
+      "description": "One of the supported attachment sources."
+    }
+  }
+}

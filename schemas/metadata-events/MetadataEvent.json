@@ -23,6 +23,15 @@
     },
     {
       "$ref": "/schemas/SetWatermark"
+    },
+    {
+      "$ref": "/schemas/SetAttachments"
+    },
+    {
+      "$ref": "/schemas/SetInfo"
+    },
+    {
+      "$ref": "/schemas/SetLicense"
     }
   ]
 }

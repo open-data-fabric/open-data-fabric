@@ -9,7 +9,7 @@
 [Reference Implementation](https://github.com/kamu-data/kamu-cli) |
 [Chat](https://discord.gg/nU6TXRQNXC)
 
-[![Latest Version](https://img.shields.io/badge/Spec-0.22.0-green)](./open-data-fabric.md)
+[![Latest Version](https://img.shields.io/badge/Spec-0.23.0-green)](./open-data-fabric.md)
 [![Metadata Reference](https://img.shields.io/badge/Schemas-blue)](./open-data-fabric.md#reference-information)
 [![Chat](https://shields.io/discord/898726370199359498?label=Discord)](https://discord.gg/nU6TXRQNXC)
 
@@ -74,3 +74,4 @@ See [Contribution Guidelines](./CONTRIBUTING.md)
 - [RFC-002: Logical Data Hashes](rfcs/002-logical-data-hashes.md)
 - [RFC-003: Content Addressability](rfcs/003-content-addressability.md)
 - [RFC-004: Metadata Extensibility](rfcs/004-metadata-extensibility.md)
+- [RFC-005: New Annotation Metadata Events](rfcs/005-dataset-annotations.md)

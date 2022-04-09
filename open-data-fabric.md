@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.22.0
+Version: 0.23.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -993,6 +993,9 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
   - [AddData](#adddata-schema)
   - [ExecuteQuery](#executequery-schema)
   - [Seed](#seed-schema)
+  - [SetAttachments](#setattachments-schema)
+  - [SetInfo](#setinfo-schema)
+  - [SetLicense](#setlicense-schema)
   - [SetPollingSource](#setpollingsource-schema)
   - [SetTransform](#settransform-schema)
   - [SetVocab](#setvocab-schema)
@@ -1002,6 +1005,8 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
   - [ExecuteQueryRequest](#executequeryrequest-schema)
   - [ExecuteQueryResponse](#executequeryresponse-schema)
 - [Fragments](#reference-fragments)
+  - [AttachmentEmbedded](#attachmentembedded-schema)
+  - [Attachments](#attachments-schema)
   - [BlockInterval](#blockinterval-schema)
   - [DataSlice](#dataslice-schema)
   - [DatasetKind](#datasetkind-schema)
@@ -1080,6 +1085,9 @@ Represents a transaction that occured on a dataset.
 | [SetTransform](#settransform-schema) | Defines a transformation that produces data in a derivative dataset. |
 | [SetVocab](#setvocab-schema) | Specifies the mapping of system columns onto dataset schema. |
 | [SetWatermark](#setwatermark-schema) | Indicates the advancement of the dataset's watermark. |
+| [SetAttachments](#setattachments-schema) | Associates a set of files with this dataset. |
+| [SetInfo](#setinfo-schema) | Provides basic human-readable information about a dataset. |
+| [SetLicense](#setlicense-schema) | Defines a license that applies to this dataset. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/MetadataEvent.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1123,6 +1131,46 @@ Establishes the identity of the dataset. Always the first metadata event in the 
 | `datasetKind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/Seed.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="setattachments-schema"></a>
+##### SetAttachments
+Associates a set of files with this dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `attachments` | [Attachments](#attachments-schema) | V |  | One of the supported attachment sources. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetAttachments.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="setinfo-schema"></a>
+##### SetInfo
+Provides basic human-readable information about a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `description` | `string` |  |  | Brief single-sentence summary of a dataset. |
+| `keywords` | array(`string`) |  |  | Keywords, search terms, or tags used to describe the dataset. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetInfo.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="setlicense-schema"></a>
+##### SetLicense
+Defines a license that applies to this dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `shortName` | `string` | V |  | Abbriviated name of the license. |
+| `name` | `string` | V |  | Full name of the license. |
+| `spdxId` | `string` |  |  | License identifier from the SPDX License List. |
+| `websiteUrl` | `string` | V | `url` |  |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetLicense.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1289,6 +1337,44 @@ Sent by an engine to coordinator when performing the data transformation
 
 <a name="reference-fragments"></a>
 #### Fragments
+<a name="attachmentembedded-schema"></a>
+##### AttachmentEmbedded
+Embedded attachment item.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `path` | `string` | V |  | Path to an attachment if it was materialized into a file. |
+| `content` | `string` | V |  | Content of the attachment. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/AttachmentEmbedded.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="attachments-schema"></a>
+##### Attachments
+Defines the source of attachment files.
+
+| Union Type | Description |
+| :---: | --- |
+| [Attachments::Embedded](#attachments-embedded-schema) | For attachments that are specified inline and are embedded in the metadata. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Attachments.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="attachments-embedded-schema"></a>
+##### Attachments::Embedded
+For attachments that are specified inline and are embedded in the metadata.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `items` | array([AttachmentEmbedded](#attachmentembedded-schema)) | V |  |  |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Attachments.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+
 <a name="blockinterval-schema"></a>
 ##### BlockInterval
 Describes a range of metadata blocks as an arithmetic interval of block hashes

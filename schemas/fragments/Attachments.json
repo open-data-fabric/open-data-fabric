@@ -1,0 +1,28 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/Attachments",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the source of attachment files.",
+  "$defs": {
+    "Embedded": {
+      "description": "For attachments that are specified inline and are embedded in the metadata.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "/schemas/AttachmentEmbedded"
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Embedded"
+    }
+  ]
+}

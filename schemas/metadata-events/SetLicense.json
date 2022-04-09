@@ -1,0 +1,30 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SetLicense",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines a license that applies to this dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "shortName",
+    "name",
+    "websiteUrl"
+  ],
+  "properties": {
+    "shortName": {
+      "type": "string",
+      "description": "Abbriviated name of the license."
+    },
+    "name": {
+      "type": "string",
+      "description": "Full name of the license."
+    },
+    "spdxId": {
+      "type": "string",
+      "description": "License identifier from the SPDX License List."
+    },
+    "websiteUrl": {
+      "type": "string",
+      "format": "url"
+    }
+  }
+}
