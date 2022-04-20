@@ -1,0 +1,17 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/Checkpoint",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Describes a checkpoint produced by an engine",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "physicalHash"
+  ],
+  "properties": {
+    "physicalHash": {
+      "type": "string",
+      "format": "multihash",
+      "description": "Hash sum of the checkpoint file"
+    }
+  }
+}

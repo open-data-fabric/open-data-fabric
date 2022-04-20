@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.24.0
+Version: 0.25.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -417,6 +417,7 @@ Usage examples:
 
 See also:
 - [Data Hashing](#data-hashing)
+- [Checkpoint Hashing](#checkpoint-hashing)
 - [Metadata Block Hashing](#metadata-block-hashing)
 
 ## Provenance
@@ -845,8 +846,10 @@ The `multicodec` table is extended with the following codes in the "private use 
 See also:
 - [RFC-002](/rfcs/002-logical-data-hashes.md)
 
-#### Metadata Block Hashing
+#### Checkpoint Hashing
+[Checkpoints](#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Data Hashing](#data-hashing)).
 
+#### Metadata Block Hashing
 Blocks of the [MetadataChain](#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
 
 1. The [MetadataBlock](#metadatablock-schema) is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) format following a two-step process to ensure that all variable-size buffers are layed out in memory in a consistent order:
@@ -912,7 +915,7 @@ Here are the steps that the [Coordinator](#coordinator) performs during the tran
 - **Batch step** - Analyze the [Metadata Chains](#metadata-chain) of the [Dataset](#dataset) being transformed and all of the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
 - **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](#engine) [Migrate Query](#migrate-query) operation to make necessary adjustments for the new transformation parameters.
 - **Run query** - Pass the input [Data Slices](#data-slice) into the [Engine's](#engine) [Execute Query](#execute-query) operation
-- **Hash resulting data** - Obtain a stable [Hash](#hash) of the output [Data Slice](#data-slice) (see [Data Hashing](#data-hashing))
+- **Hash resulting data and checkpoint** - Obtain a stable [Hash](#hash) of the output [Data Slice](#data-slice) and [Checkpoint](#checkpoint) (see [Data Hashing](#data-hashing) and [Checkpoint Hashing](#checkpoint-hashing))
 - **Prepare commit** - Creates the next [Metadata Block](#metadata-chain) describing the output data
 - **Commit** - Atomically adds the new [Data Slice](#data-slice) and the [Metadata Block](#metadata-chain) to the [Dataset](#dataset)
 
@@ -967,11 +970,28 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 > - Supported protocols
 > - Querying data in advanced repository
 
+### Simple Transfer Protocol
+
+Simple Transfer Protocol specified here is a bare-minimum read-only protocol used for synchronizing [Datasets](#dataset) between [Repositories](#repository). It requires no ODF-specific logic on the server side and can be easily implemented, for example, by serving a dataset directory under an HTTP server. It's designed for maximal interoperability, not for efficiency.
+
+To describe the protocol we will use HTTP `GET {object-key}` notation below, but note that this protocol can be implemented on top of any block or file-based protocol that supports Unix path-like object keys.
+
+1) Process begins with `GET /meta/refs/head` to get the hash of the last [Metadata Block](#metadata-chain)
+2) The "metadata walking" process starts with `GET /meta/blocks/{blockHash}` and continues following the `prevBlockHash` links
+3) Data part files can be downloaded by using [`DataSlice::physicalHash`](#dataslice-schema) links with `GET /data/{physicalHash}`
+4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoint/{physicalHash}`
+5) The process continues until reching the first block of the dataset or other termination condition (e.g. reaching the block that has already been synced previously)
+
+See also:
+- [RFC-007: Simple Transfer Protocol](/rfcs/007-simple-transfer-protocol.md)
+
 ## Future Topics
 
 ### Anonymization
-- Portal Dataset
-  - Exposes any dataset as root without disclosing details
+
+> **TODO:**
+> - Query Gateways
+> - Portal Datasets that expose any dataset as root without disclosing details
 
 # Reference Information
 
@@ -1001,6 +1021,7 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
   - [AttachmentEmbedded](#attachmentembedded-schema)
   - [Attachments](#attachments-schema)
   - [BlockInterval](#blockinterval-schema)
+  - [Checkpoint](#checkpoint-schema)
   - [DataSlice](#dataslice-schema)
   - [DatasetKind](#datasetkind-schema)
   - [DatasetVocabulary](#datasetvocabulary-schema)
@@ -1093,7 +1114,9 @@ Indicates that data has been ingested into a root dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `inputCheckpoint` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash of the checkpoint file used to restore ingestion state, if any. |
 | `outputData` | [DataSlice](#dataslice-schema) | V |  | Describes output data written during this transaction. |
+| `outputCheckpoint` | [Checkpoint](#checkpoint-schema) |  |  | Describes checkpoint written during this transaction, if any. |
 | `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/AddData.json)
@@ -1107,7 +1130,9 @@ Indicates that derivative transformation has been performed.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `inputSlices` | array([InputSlice](#inputslice-schema)) | V |  | Defines inputs used in this transaction. Slices corresponding to every input must be present. |
+| `inputCheckpoint` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash of the checkpoint file used to restore transformation state, if any. |
 | `outputData` | [DataSlice](#dataslice-schema) |  |  | Describes output data written during this transaction, if any. |
+| `outputCheckpoint` | [Checkpoint](#checkpoint-schema) |  |  | Describes checkpoint written during this transaction, if any. |
 | `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/ExecuteQuery.json)
@@ -1381,6 +1406,18 @@ Describes a range of metadata blocks as an arithmetic interval of block hashes
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+<a name="checkpoint-schema"></a>
+##### Checkpoint
+Describes a checkpoint produced by an engine
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Hash sum of the checkpoint file |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Checkpoint.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="dataslice-schema"></a>
 ##### DataSlice
 Describes a slice of data added to a dataset or produced via transformation
@@ -1388,7 +1425,7 @@ Describes a slice of data added to a dataset or produced via transformation
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `logicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Logical hash sum of the data in this slice |
-| `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Logical hash sum of the data in this slice |
+| `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Hash sum of the data part file |
 | `interval` | [OffsetInterval](#offsetinterval-schema) | V |  | Data slice produced by the transaction |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/DataSlice.json)

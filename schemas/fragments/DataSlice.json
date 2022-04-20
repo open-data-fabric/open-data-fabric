@@ -18,7 +18,7 @@
     "physicalHash": {
       "type": "string",
       "format": "multihash",
-      "description": "Logical hash sum of the data in this slice"
+      "description": "Hash sum of the data part file"
     },
     "interval": {
       "$ref": "/schemas/OffsetInterval",

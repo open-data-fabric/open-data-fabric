@@ -15,9 +15,18 @@
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input must be present."
     },
+    "inputCheckpoint": {
+      "type": "string",
+      "format": "multihash",
+      "description": "Hash of the checkpoint file used to restore transformation state, if any."
+    },
     "outputData": {
       "$ref": "/schemas/DataSlice",
       "description": "Describes output data written during this transaction, if any."
+    },
+    "outputCheckpoint": {
+      "$ref": "/schemas/Checkpoint",
+      "description": "Describes checkpoint written during this transaction, if any."
     },
     "outputWatermark": {
       "type": "string",
