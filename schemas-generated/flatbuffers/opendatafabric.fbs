@@ -467,8 +467,8 @@ table ExecuteQueryRequest {
   vocab: DatasetVocabulary;
   transform: Transform;
   inputs: [ExecuteQueryInput];
-  prev_checkpoint_dir: string;
-  new_checkpoint_dir: string;
+  prev_checkpoint_path: string;
+  new_checkpoint_path: string;
   out_data_path: string;
 }
 

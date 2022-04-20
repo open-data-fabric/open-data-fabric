@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.23.0
+Version: 0.24.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -729,14 +729,7 @@ Outputs:
 
 This operation must be [idempotent](https://en.wikipedia.org/wiki/Idempotence) (see [Implementing Exactly-Once Semantics](#implementing-exactly-once-semantics)).
 
-When an operation is committed by the [Coordinator](#coordinator), the [Engine](#engine) will not see the same input data again. If due to the nature of the query (e.g. windowing or watermarking configuration) [Engine](#engine) cannot fully process and discard the input data - it should use the [Checkpoint](#checkpoint) directory to buffer it.
-
-##### Implementing Exactly-Once Semantics
-Because the [Engine](#engine) passes back the resulting data in memory (see [Data Exchange](#data-exchange)) it is possible that the [Coordinator](#coordinator) will crash before fully committing it. This may result in an inconsistent state where the [Engine](#engine) has already updated the persistent [Checkpoint](#checkpoint) data on disk, but the result was lost.
-
-To support the ["exactly-once" semantics](#transactional-semantics) the [Coordinator](#coordinator) includes the `Transaction ID` parameter that uniquely identifies the processing step being performed. The [Engine](#engine) should maintain its [Checkpoint](#checkpoint) data in a way that permits re-running the last transaction multiple times while producing the same result (i.e. recovery by rolling forward).
-
-Only the last processing step can be retried like this using the same exact input parameters. Upon seeing a different `Transaction ID` the [Engine](#engine) is free to clean up whatever [Checkpoint](#checkpoint) state it used to implement the idempotence.
+When an operation is committed by the [Coordinator](#coordinator), the [Engine](#engine) will not see the same input data again. If due to the nature of the query (e.g. windowing or watermarking configuration) [Engine](#engine) cannot fully process and discard the input data - it should use the [Checkpoint](#checkpoint) to buffer it.
 
 #### Migrate Query
 This operation is used by the [Coordinator](#coordinator) when data processing hits the point where one transformation [Query](#query) is being replaced by another one. It gives the [Engine](#engine) all information needed to handle the transition as gracefully as possible, e.g. by reconciling the existing [Checkpoints](#checkpoint) with the new [Query](#query), or, at the very least, finalizing the processing of the old [Query](#query) and clearing the [Checkpoints](#checkpoint) before the new one starts to execute.

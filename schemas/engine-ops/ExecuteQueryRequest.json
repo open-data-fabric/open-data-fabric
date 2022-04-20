@@ -12,7 +12,7 @@
         "vocab",
         "transform",
         "inputs",
-        "newCheckpointDir",
+        "newCheckpointPath",
         "outDataPath"
     ],
     "properties": {
@@ -50,12 +50,12 @@
                 "$ref": "/schemas/ExecuteQueryInput"
             }
         },
-        "prevCheckpointDir": {
+        "prevCheckpointPath": {
             "type": "string",
             "format": "path",
             "description": "TODO: This is temporary"
         },
-        "newCheckpointDir": {
+        "newCheckpointPath": {
             "type": "string",
             "format": "path",
             "description": "TODO: This is temporary"
