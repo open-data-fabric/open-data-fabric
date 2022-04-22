@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import os
+import sys
+sys.path.append(os.path.dirname(__file__))
+
 import json
+import utils.schemas
 
 
 PREAMBLE = """/*
@@ -43,10 +47,21 @@ DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-
 
 
 extra_types = []
+external_traits = {}
 
 
 def render(schemas_dir):
-    schemas = read_schemas(schemas_dir)
+    schemas = utils.schemas.read_schemas(schemas_dir)
+
+    # Populate traits (enums) that span across multiple schemas
+    for sch in schemas.values():
+        for isch in sch.schema.get('oneOf', []):
+            ref = isch['$ref']
+            if ref.startswith('/schemas/'):
+                iname = ref.split('/')[-1]
+                traits = external_traits.get(iname, [])
+                traits.append(sch.name)
+                external_traits[iname] = traits
 
     print(PREAMBLE)
 
@@ -61,7 +76,7 @@ def render(schemas_dir):
             print('/' * 80)
             print()
 
-            for l in render_schema(name, sch):
+            for l in render_schema(name, sch.schema):
                 print(l)
             print()
 
@@ -96,6 +111,9 @@ def render_schema(name, sch):
         yield from render_struct(name, sch)
     elif 'oneOf' in sch:
         yield from render_oneof(name, sch)
+    elif name == 'DatasetKind':
+        # TODO: Support string enums directly
+        pass
     else:
         raise Exception(f'Unsupported schema: {sch}')
 
@@ -106,6 +124,8 @@ def render_struct(name, sch):
         required = pname in sch.get('required', ())
         yield from indent(render_field(pname, psch, required))
     yield ')'
+    for trait in external_traits.get(name, []):
+        yield f'extends {trait}'
 
 
 def render_field(pname, psch, required):
