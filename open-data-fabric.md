@@ -578,13 +578,17 @@ Examples:
 // Remote Multi-tenant Format - AccountName infix is highlighted
 opendata.ca/<b>statcan</b>/census.2016.population
 data.gov/<b>ny-newyork</b>/public-safety.ems-incident-dispatch
+
+// Remote Url Format
+https://opendata.ca/odf/census-2016-population/
+ipfs://bafkreie3hfshd4ikinnbio3kewo2hvj6doh5jp3p23iwk2evgo2un5g7km/
 </pre>
 
 Full [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) grammar:
 ```
+DatasetRefAny = DatasetRefRemote / DatasetRefLocal
+DatasetRefRemote = DatasetID / RemoteDatasetName / Url
 DatasetRefLocal = DatasetID / DatasetName
-DatasetRefRemote = DatasetID / RemoteDatasetName
-DatasetRefAny = DatasetRemoteRef / DatasetLocalRef
 
 RemoteDatasetName = RepositoryName "/" DatasetNameWithOwner
 DatasetNameWithOwner = (AccountName "/")? DatasetName
@@ -598,6 +602,9 @@ Hostname = Subdomain ("." Subdomain)*
 Subdomain = [a-zA-Z0-9]+ ("-" [a-zA-Z0-9]+)*
 
 Multibase = [a-zA-Z0-9+/=]+
+
+Url = Scheme "://" [^\n]+
+Scheme = [a-z0-9]+ ("+" [a-z0-9]+)*
 ```
 
 ## Data Format
@@ -976,10 +983,10 @@ Simple Transfer Protocol specified here is a bare-minimum read-only protocol use
 
 To describe the protocol we will use HTTP `GET {object-key}` notation below, but note that this protocol can be implemented on top of any block or file-based protocol that supports Unix path-like object keys.
 
-1) Process begins with `GET /meta/refs/head` to get the hash of the last [Metadata Block](#metadata-chain)
-2) The "metadata walking" process starts with `GET /meta/blocks/{blockHash}` and continues following the `prevBlockHash` links
+1) Process begins with `GET /refs/head` to get the hash of the last [Metadata Block](#metadata-chain)
+2) The "metadata walking" process starts with `GET /blocks/{blockHash}` and continues following the `prevBlockHash` links
 3) Data part files can be downloaded by using [`DataSlice::physicalHash`](#dataslice-schema) links with `GET /data/{physicalHash}`
-4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoint/{physicalHash}`
+4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoints/{physicalHash}`
 5) The process continues until reching the first block of the dataset or other termination condition (e.g. reaching the block that has already been synced previously)
 
 See also:
@@ -1413,6 +1420,7 @@ Describes a checkpoint produced by an engine
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Hash sum of the checkpoint file |
+| `size` | `integer` | V | `int64` | Size of checkpoint file in bytes |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/Checkpoint.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1427,6 +1435,7 @@ Describes a slice of data added to a dataset or produced via transformation
 | `logicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Logical hash sum of the data in this slice |
 | `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Hash sum of the data part file |
 | `interval` | [OffsetInterval](#offsetinterval-schema) | V |  | Data slice produced by the transaction |
+| `size` | `integer` | V | `int64` | Size of data file in bytes |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/DataSlice.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

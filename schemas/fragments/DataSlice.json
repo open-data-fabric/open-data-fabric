@@ -7,7 +7,8 @@
   "required": [
     "logicalHash",
     "physicalHash",
-    "interval"
+    "interval",
+    "size"
   ],
   "properties": {
     "logicalHash": {
@@ -23,6 +24,11 @@
     "interval": {
       "$ref": "/schemas/OffsetInterval",
       "description": "Data slice produced by the transaction"
+    },
+    "size": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Size of data file in bytes"
     }
   }
 }

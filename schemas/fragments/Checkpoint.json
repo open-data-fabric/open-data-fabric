@@ -5,13 +5,19 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "physicalHash"
+    "physicalHash",
+    "size"
   ],
   "properties": {
     "physicalHash": {
       "type": "string",
       "format": "multihash",
       "description": "Hash sum of the checkpoint file"
+    },
+    "size": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Size of checkpoint file in bytes"
     }
   }
 }

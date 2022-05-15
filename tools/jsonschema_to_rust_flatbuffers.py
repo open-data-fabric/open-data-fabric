@@ -275,6 +275,12 @@ def render_field_pre_ser(pname, psch, required):
 
 def render_field_ser(pname, psch, required, preserialized):
     name = to_snake_case(pname)
+
+    if name in ("size",):
+        fname = name + "_"
+    else:
+        fname = name
+
     if preserialized:
         if required:
             if is_enum(psch):
@@ -290,22 +296,28 @@ def render_field_ser(pname, psch, required, preserialized):
 
     else:
         if required:
-            yield f"builder.add_{name}("
+            yield f"builder.add_{fname}("
             yield from ser_composite_type(f"self.{name}", psch)
             yield ");"
         else:
-            yield f"self.{name}.map(|v| builder.add_{name}("
+            yield f"self.{name}.map(|v| builder.add_{fname}("
             yield from ser_composite_type("v", psch)
             yield "));"
 
 
 def render_field_de(pname, psch, required):
     name = to_snake_case(pname)
+
+    if name in ("size",):
+        fname = name + "_"
+    else:
+        fname = name
+
     yield f"{name}:"
     if required and (is_string_enum(psch) or psch.get("type") in ("integer",)):
-        yield from indent(de_composite_type(f"proxy.{name}()", psch, f"proxy.{name}_type()"))
+        yield from indent(de_composite_type(f"proxy.{fname}()", psch, f"proxy.{name}_type()"))
     else:
-        yield f"    proxy.{name}().map(|v| {{"
+        yield f"    proxy.{fname}().map(|v| {{"
         yield from indent(indent(de_composite_type("v", psch, f"proxy.{name}_type()")))
         yield f"    }})"
         if required:
