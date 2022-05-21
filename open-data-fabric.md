@@ -267,11 +267,15 @@ Metadata chain captures all essential information about the [Dataset](#dataset),
 - Log of all modifications made to the data, including information used to verify the integrity of data
 - Current [Watermark](#watermark)
 
-Just like [Data](#data), the metadata chain also has a historical nature. It consists of individual **Metadata Blocks** that are linked together, forming a full timeline of how data was evolving. Much [Events](#event), all metadata blocks are immutable.
+Just like [Data](#data), the metadata chain also has a temporal nature. It consists of individual **Metadata Blocks** that refer to the previous block in the chain, forming a singly-linked list. Every block carries one of [Metadata Events](#reference-metadata-events) that describes how data evolved over time.
 
-![Diagram: Metadata Chain](images/metadata_chain.svg)
+![Diagram: Metadata Chain](images/metadata-chain.svg)
 
-Metadata can be extended to carry other kinds of information like:
+All Metadata Blocks are immutable and changes by appending new blocks. With blocks, data, and checkpoints named after and referenced by the [hash](#hash) of their content - a dataset forms a type of a [content-addressable](https://en.wikipedia.org/wiki/Content-addressable_storage) system, where having a reference to the last Metadata Block one can traverse the entire chain an discover all the components of the dataset.
+
+![Diagram: Dataset as a Content-Addressable Graph](images/metadata-chain-2.svg)
+
+In addition to core events like adding data, running a query, and change of schema the Metadata Chain is designed to be extended to carry other kinds of information like:
 - Extra meaning and structure of knowledge that data represents (glossary, semantics, ontology)
 - Relevant policies, terms, rules, compliance, and regulations (governance)
 - License, privacy and security concerns (stewardship)
@@ -281,7 +285,8 @@ Metadata can be extended to carry other kinds of information like:
 These extensions are out of scope of this document.
 
 See also:
-- [Metadata Chain Format](#metadata-chain-format)
+- [Metadata Format](#metadata-format)
+- [Metadata Events Reference](#reference-metadata-events)
 
 ## Dataset
 Dataset is the main unit of data exchange in the system. It's simply a combination of:
