@@ -80,6 +80,13 @@ def read_schemas_rec(schemas_dir, schemas):
             schemas[name] = s
 
 
+def render_comment(text):
+    if not text:
+        return
+    for line in text.split('\n'):
+        yield f"/// {line.strip()}"
+
+
 def render_schema(name, sch):
     if sch.get('type') == 'object':
         yield from render_struct(name, sch)
@@ -93,10 +100,12 @@ def render_schema(name, sch):
 
 def render_struct(name, sch):
     assert sch.get('additionalProperties', False) is False
+    yield from render_comment(sch.get("description"))
     yield '#[derive(Clone, PartialEq, Eq, Debug)]'
     yield f'pub struct {name} {{'
     for pname, psch in sch.get('properties', {}).items():
         required = pname in sch.get('required', ())
+        yield from render_comment(psch.get("description"))
         yield from indent(render_field(pname, psch, required, 'pub'))
     yield '}'
 

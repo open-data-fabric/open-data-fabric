@@ -1037,6 +1037,7 @@ See also:
   - [DataSlice](#dataslice-schema)
   - [DatasetKind](#datasetkind-schema)
   - [DatasetVocabulary](#datasetvocabulary-schema)
+  - [EnvVar](#envvar-schema)
   - [EventTimeSource](#eventtimesource-schema)
   - [FetchStep](#fetchstep-schema)
   - [InputSlice](#inputslice-schema)
@@ -1473,6 +1474,19 @@ Lets you manipulate names of the system columns to avoid conflicts.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+<a name="envvar-schema"></a>
+##### EnvVar
+Defines an environment variable passed into some job.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Name of the variable. |
+| `value` | `string` |  |  | Value of the variable. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EnvVar.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="eventtimesource-schema"></a>
 ##### EventTimeSource
 Defines the external source of data.
@@ -1519,6 +1533,7 @@ Defines the external source of data.
 | :---: | --- |
 | [FetchStep::Url](#fetchstep-url-schema) | Pulls data from one of the supported sources by its URL. |
 | [FetchStep::FilesGlob](#fetchstep-filesglob-schema) | Uses glob operator to match files on the local file system. |
+| [FetchStep::Container](#fetchstep-container-schema) | Runs the specified OCI container to fetch data from an arbitrary source. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1548,6 +1563,21 @@ Uses glob operator to match files on the local file system.
 | `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
 | `order` | `string` |  |  | Specifies how input files should be ordered before ingestion.<br/>Order is important as every file will be processed individually<br/>and will advance the dataset's watermark. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="fetchstep-container-schema"></a>
+##### FetchStep::Container
+Runs the specified OCI container to fetch data from an arbitrary source.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `image` | `string` | V |  | Image name and and an optional tag. |
+| `command` | array(`string`) |  |  | Specifies the entrypoint. Not executed within a shell. The default OCI image's ENTRYPOINT is used if this is not provided. |
+| `args` | array(`string`) |  |  | Arguments to the entrypoint. The OCI image's CMD is used if this is not provided. |
+| `env` | array([EnvVar](#envvar-schema)) |  |  | Environment variables to propagate into or set in the container. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

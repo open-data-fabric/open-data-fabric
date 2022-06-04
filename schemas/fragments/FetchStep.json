@@ -56,6 +56,41 @@
           "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark."
         }
       }
+    },
+    "Container": {
+      "description": "Runs the specified OCI container to fetch data from an arbitrary source.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image"
+      ],
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "Image name and and an optional tag."
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specifies the entrypoint. Not executed within a shell. The default OCI image's ENTRYPOINT is used if this is not provided."
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments to the entrypoint. The OCI image's CMD is used if this is not provided."
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "/schemas/EnvVar"
+          },
+          "description": "Environment variables to propagate into or set in the container."
+        }
+      }
     }
   },
   "oneOf": [
@@ -64,6 +99,9 @@
     },
     {
       "$ref": "#/$defs/FilesGlob"
+    },
+    {
+      "$ref": "#/$defs/Container"
     }
   ]
 }
