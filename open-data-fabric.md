@@ -1762,6 +1762,7 @@ Defines how raw data should be read into the structured form.
 | [ReadStep::JsonLines](#readstep-jsonlines-schema) | Reader for files containing concatenation of multiple JSON records with the same schema. |
 | [ReadStep::GeoJson](#readstep-geojson-schema) | Reader for GeoJSON files. |
 | [ReadStep::EsriShapefile](#readstep-esrishapefile-schema) | Reader for ESRI Shapefile format. |
+| [ReadStep::Parquet](#readstep-parquet-schema) | Reader for ESRI Shapefile format. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1834,6 +1835,18 @@ Reader for ESRI Shapefile format.
 | :---: | :---: | :---: | :---: | --- |
 | `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
 | `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-parquet-schema"></a>
+##### ReadStep::Parquet
+Reader for ESRI Shapefile format.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
