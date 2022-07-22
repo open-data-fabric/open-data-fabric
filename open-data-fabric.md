@@ -1762,7 +1762,7 @@ Defines how raw data should be read into the structured form.
 | [ReadStep::JsonLines](#readstep-jsonlines-schema) | Reader for files containing concatenation of multiple JSON records with the same schema. |
 | [ReadStep::GeoJson](#readstep-geojson-schema) | Reader for GeoJSON files. |
 | [ReadStep::EsriShapefile](#readstep-esrishapefile-schema) | Reader for ESRI Shapefile format. |
-| [ReadStep::Parquet](#readstep-parquet-schema) | Reader for ESRI Shapefile format. |
+| [ReadStep::Parquet](#readstep-parquet-schema) | Reader for Apache Parquet format. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1842,7 +1842,7 @@ Reader for ESRI Shapefile format.
 
 <a name="readstep-parquet-schema"></a>
 ##### ReadStep::Parquet
-Reader for ESRI Shapefile format.
+Reader for Apache Parquet format.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |

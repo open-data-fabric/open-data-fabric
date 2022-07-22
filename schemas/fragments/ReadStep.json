@@ -160,7 +160,7 @@
       }
     },
     "Parquet": {
-      "description": "Reader for ESRI Shapefile format.",
+      "description": "Reader for Apache Parquet format.",
       "type": "object",
       "additionalProperties": false,
       "required": [],
