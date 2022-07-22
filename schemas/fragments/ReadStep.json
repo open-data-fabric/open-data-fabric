@@ -158,6 +158,21 @@
           "description": "Path to a data file within a multi-file archive. Can contain glob patterns."
         }
       }
+    },
+    "Parquet": {
+      "description": "Reader for Apache Parquet format.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        }
+      }
     }
   },
   "oneOf": [
@@ -172,6 +187,9 @@
     },
     {
       "$ref": "#/$defs/EsriShapefile"
+    },
+    {
+      "$ref": "#/$defs/Parquet"
     }
   ]
 }
