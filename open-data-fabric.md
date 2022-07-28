@@ -1092,7 +1092,7 @@ An individual block in the metadata chain that captures the history of modificat
 | `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | System time when this block was written. |
 | `prevBlockHash` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash sum of the preceding block. |
 | `event` | [MetadataEvent](#metadataevent-schema) | V |  | Event data. |
-| `sequenceNumber` | `integer` |  |  | Block sequence number starting from tail to head. |
+| `sequenceNumber` | `integer` | V |  | Block sequence number starting from tail to head. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MetadataBlock.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
