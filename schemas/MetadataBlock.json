@@ -20,14 +20,14 @@
       "format": "multihash",
       "description": "Hash sum of the preceding block."
     },
-    "event": {
-      "$ref": "/schemas/MetadataEvent",
-      "description": "Event data."
-    },
     "sequenceNumber": {
       "type": "integer",
       "minimum": 0,
       "description": "Block sequence number starting from tail to head."
+    },
+    "event": {
+      "$ref": "/schemas/MetadataEvent",
+      "description": "Event data."
     }
   }
 }
