@@ -6,7 +6,8 @@
   "additionalProperties": false,
   "required": [
     "systemTime",
-    "event"
+    "event",
+    "sequenceNumber"
   ],
   "properties": {
     "systemTime": {
@@ -18,6 +19,11 @@
       "type": "string",
       "format": "multihash",
       "description": "Hash sum of the preceding block."
+    },
+    "sequenceNumber": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Block sequence number starting from tail to head."
     },
     "event": {
       "$ref": "/schemas/MetadataEvent",
