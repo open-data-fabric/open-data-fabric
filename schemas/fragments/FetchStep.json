@@ -23,6 +23,13 @@
         "cache": {
           "$ref": "/schemas/SourceCaching",
           "description": "Describes the caching settings used for this source."
+        },
+        "headers": {
+          "type": "array",
+          "items": {
+            "$ref": "/schemas/RequestHeader"
+          },
+          "description": "Headers to pass during the request (e.g. HTTP Authorization)"
         }
       }
     },

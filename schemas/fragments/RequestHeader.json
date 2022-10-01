@@ -1,0 +1,21 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/RequestHeader",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines a header (e.g. HTTP) to be passed into some request.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "value"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the header."
+    },
+    "value": {
+      "type": "string",
+      "description": "Value of the header."
+    }
+  }
+}
