@@ -63,12 +63,12 @@ components:
 
     ListOfBlocks:
       type: array
-      item:
+      items:
         $ref: '../schemas/MetadataBlock.json'
 
     ListOfCheckpointInfos:
       type: array
-      item:
+      items:
         $ref: '#/components/schemas/CheckpointInfo'
 
     CheckpointInfo:
@@ -76,14 +76,15 @@ components:
       required:
         - checkpoint
         - storage
-      checkpoint:
-        $ref: '../schemas/fragments/Checkpoint'
-      storage:
-        $ref: '#/components/schemas/StorageReference'
+      properties:
+        checkpoint:
+          $ref: '../schemas/fragments/Checkpoint'
+        storage:
+          $ref: '#/components/schemas/StorageReference'
 
     ListOfDataSliceInfos:
       type: array
-      item:
+      items:
         $ref: '#/components/schemas/DataSliceInfo'
 
     DataSliceInfo:
@@ -91,10 +92,11 @@ components:
       required:
         - slice
         - storage
-      slice:    
-        $ref: '../schemas/fragments/DataSlice'
-      storage:
-        $ref: '#/components/schemas/StorageReference'
+      properties:
+        slice:
+          $ref: '../schemas/fragments/DataSlice'
+        storage:
+          $ref: '#/components/schemas/StorageReference'
 
     StorageReference:
       type: object
