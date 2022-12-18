@@ -10,7 +10,7 @@
 [Chat](https://discord.gg/nU6TXRQNXC)
 
 
-[![Spec](https://img.shields.io/github/v/tag/open-data-fabric/open-data-fabric?include_prereleases&logo=gitbook&logoColor=white&label=Spec&style=for-the-badge)](https://github.com/kamu-data/kamu-cli/releases/latest)
+[![Spec](https://img.shields.io/github/v/tag/open-data-fabric/open-data-fabric?include_prereleases&logo=gitbook&logoColor=white&label=Spec&style=for-the-badge)](https://github.com/open-data-fabric/open-data-fabric/blob/master/open-data-fabric.md)
 [![Metadata Reference](https://img.shields.io/static/v1?label={}&message=Schemas&color=blue&style=for-the-badge)](./open-data-fabric.md#reference-information)
 [![Chat](https://shields.io/discord/898726370199359498?style=for-the-badge&logo=discord&label=Discord)](https://discord.gg/nU6TXRQNXC)
 
