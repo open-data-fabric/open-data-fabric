@@ -374,14 +374,14 @@ def render_oneof_element_de(name, sch, isch):
         else:
             yield f"fb::{name}::{struct_name} => odf::{name}::{ename}("
             yield f"    odf::{struct_name}::deserialize("
-            yield f"        fb::{struct_name}::init_from_table(table)"
+            yield f"        unsafe {{ fb::{struct_name}::init_from_table(table) }}"
             yield "    )"
             yield "),"
             extra_types.append(lambda: render_struct(struct_name, esch))
     else:
         yield f"fb::{name}::{ename} => odf::{name}::{ename}("
         yield f"    odf::{ename}::deserialize("
-        yield f"        fb::{ename}::init_from_table(table)"
+        yield f"        unsafe {{ fb::{ename}::init_from_table(table) }}"
         yield "    )"
         yield "),"
 
@@ -529,7 +529,7 @@ def de_primitive_type(name, sch, enum_t_accessor):
             yield f'{name}'
         elif fmt == 'multihash':
             assert ptype == 'string'
-            yield f'odf::Multihash::from_bytes({name}).unwrap()'
+            yield f'odf::Multihash::from_bytes({name}.bytes()).unwrap()'
         elif fmt == 'url':
             assert ptype == 'string'
             yield f'{name}.to_owned()'
@@ -543,7 +543,7 @@ def de_primitive_type(name, sch, enum_t_accessor):
             yield f'fb_to_datetime({name})'
         elif fmt == 'dataset-id':
             assert ptype == 'string'
-            yield f'odf::DatasetID::from_bytes({name}).unwrap()'
+            yield f'odf::DatasetID::from_bytes({name}.bytes()).unwrap()'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             yield f'odf::DatasetName::try_from({name}).unwrap()'
