@@ -9,7 +9,126 @@ info:
 
 channels:
 
-  datasets/push/request:
+  dataset/pull/request:
+    subscribe:
+      operationId: odf.dataset.pull.request
+      summary: Initiates dataset pull from the ODF server
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullRequest
+        name: DatasetPullRequest
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - knownHead          
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier
+            knownHead:
+              type: string
+              format: multihash
+              description: Hash of the metadata head block known to the consumer
+
+  dataset/pull/response:
+    publish:
+      operationId: odf.dataset.pull.response
+      summary: Indicates succesfull response to dataset pull request
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullResponse
+        name: DatasetPullResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - prevKnownHead
+            - newBlocks
+            - dataSlices
+            - checkpoints
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier
+            prevKnownHead:
+              type: string
+              format: multihash
+              description: Hash of the metadata head block that was previously known to consumer
+            newBlocks:
+              $ref: '#/components/schemas/TarOfBlocks'
+            dataSlices:
+              type: array
+              description: List of data slice file hashes referenced by the new blocks
+              items:
+                type: string
+                format: multihash
+            checkpoints:
+              type: array
+              description: List of checkpoint file hashes referenced by the new blocks
+              items:
+                type: string
+                format: multihash
+  
+  dataset/pull/data/negotiate:
+    subscribe:
+      operationId: odf.dataset.pull.data.negotiate
+      summary: Requests to negotiate data download protocol for 1 or more files
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullDataNegotiate
+        name: DatasetPullDataNegotiate
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - dataFiles
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier     
+            dataFiles:
+              type: array
+              description: List of data file references in this bulk
+              items:
+                $ref: '#/components/schemas/DataFileReference'
+      
+  dataset/pull/data/negotiate/response:
+    publish:
+      operationId: odf.dataset.pull.data.negotiate.response
+      summary: Response on negotiated status of data operations during pull
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullDataNegotiateResponse
+        name: DatasetPullDataNegotiateResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - negotiatedDownloads
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier        
+            negotiatedDownloads:
+              type: array
+              description: Negotiated download operations for requested bulk of files
+              items:
+                $ref: '#/components/schemas/NegotiatedDownload'
+
+  dataset/push/request:
     subscribe:
       operationId: odf.dataset.push.request
       summary: Initiates dataset push to the ODF server
@@ -18,36 +137,34 @@ channels:
       message:
         messageId: odf.dataset.DatasetPushRequest
         name: DatasetPushRequest
-        title: Dataset push request
         contentType: application/json
         payload:
           type: object
           required:
             - datasetId
-            - prevHead
+            - knownHead
             - newBlocks
           properties:
             datasetId:
               type: string
               format: did
-            prevHead:
+              description: Dataset identifier
+            knownHead:
               type: string
               format: multihash
+              description: Hash of the metadata head block known to the pusher
             newBlocks:
-              type: array
-              items:
-                $ref: '#/components/schemas/MetadataBlock'
+              $ref: '#/components/schemas/TarOfBlocks'
 
-  datasets/push/accepted:
+  dataset/push/request/accepted:
     publish:
-      operationId: odf.dataset.push.accepted
+      operationId: odf.dataset.push.request.accepted
       summary: Informs about succesfull acceptance of dataset push request
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPushAccepted
-        name: DatasetPushAccepted
-        title: Dataset push request accepted
+        messageId: odf.dataset.DatasetPushRequestAccepted
+        name: DatasetPushRequestAccepted
         contentType: application/json
         payload:
           type: object
@@ -57,21 +174,137 @@ channels:
           properties:
             datasetId:
               type: string
-              format: did           
+              format: did
+              description: Dataset identifier    
             pushRequestId:
               type: string
               format: uuid
-        
-  datasets/push/rejected:
-    publish:
-      operationId: odf.dataset.push.rejected
-      summary: Informs about failure to accept the dataset push request
+              description: Request identifier of the started push flow
+
+  dataset/push/data/negotiate:
+    subscribe:
+      operationId: odf.dataset.push.data.negotiate
+      summary: Requests to negotiate data upload protocol for 1 or more files
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPushRejected
-        name: DatasetPushRejected
-        title: Dataset push request rejected
+        messageId: odf.dataset.DatasetPushDataNegotiate
+        name: DatasetPushDataNegotiate
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - pushRequestId
+            - dataFiles
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier     
+            pushRequestId:
+              type: string
+              format: uuid
+              description: Request identifier of the started push flow
+            dataFiles:
+              type: array
+              description: List of data file references in this bulk
+              items:
+                $ref: '#/components/schemas/DataFileReference'
+      
+  dataset/push/data/negotiate/response:
+    publish:
+      operationId: odf.dataset.push.data.negotiate.response
+      summary: Response on negotiated status of data operations during push
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushDataNegotiateResponse
+        name: DatasetPushDataNegotiateResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - pushRequestId
+            - negotiatedUploads
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier        
+            pushRequestId:
+              type: string
+              format: uuid
+              description: Request identifier of the started push flow              
+            negotiatedUploads:
+              type: array
+              description: Negotiated upload operations for requested bulk of files
+              items:
+                $ref: '#/components/schemas/NegotiatedUpload'
+
+  dataset/push/complete:
+    subscribe:
+      operationId: odf.dataset.push.complete
+      summary: Informs ODF-server the push operation is complete
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushComplete
+        name: DatasetPushComplete
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - pushRequestId
+          datasetId:
+            type: string
+            format: did
+            description: Dataset identifier       
+          pushRequestId:
+            type: string
+            format: uuid
+            description: Request identifier of the started push flow            
+
+  dataset/push/complete/confirmed:
+    publish:
+      operationId: odf.dataset.push.complete.confirmed
+      summary: Informs consumer the push completion is confirmed
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushCompleteConfirmed
+        name: DatasetPushCompleteConfirmed
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - pushRequestId
+            - newHead
+          datasetId:
+            type: string
+            format: did
+            description: Dataset identifier          
+          pushRequestId:
+            type: string
+            format: uuid
+            description: Request identifier of the started push flow
+          newHead:
+            type: string
+            format: multihash
+            description: New dataset head block hash after completion of this push request
+
+  dataset/error:
+    publish:
+      operationId: odf.dataset.error
+      summary: Informs about error happened during one of API operations with the dataset
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetError
+        name: DatasetError
         contentType: application/json
         payload:
           type: object
@@ -82,48 +315,87 @@ channels:
             datasetId:
               type: string
               format: did
+              description: Dataset identifier
             errorDetails:
               $ref: '#/components/schemas/ErrorDetails'
 
-  datasets/push/block/negotiate:
-    subscribe:
-      operationId: odf.dataset.push.block.negotiate
-      summary: Requests to negotiate block data upload protocol
-      security:
-        - jwt: []
-      message:
-        messageId: odf.dataset.DatasetPushBlockNegotiate
-        name: DatasetPushBlockNegotiate
-        title: Dataset push block negotiate
-        contentType: application/json
-        payload:
-          type: object
-          required:
-            - pushRequestId
-            - blockHash
-          properties:
-            pushRequestId:
-              type: string
-              format: uuid
-            blockHash:
-              type: string
-              format: multihash
-      
-  datasets/push/block/negotiate/succeeded:
-    publish:
-      operationId: odf.dataset.push.block.negotiate.succeeded
-      summary: Reports succesfull negotiation about block data upload
-      security:
-        - jwt: []
-      message:
-        messageId: odf.dataset.DatasetPushBlockNegotiateSucceeded
-        name: DatasetPushBlockNegotiateSucceeded
-        title: Dataset push block negotiation success
-        
-
 components:
-
   schemas:
+    TarOfBlocks:
+      type: object
+      description: An archive of blocks segment being transferred
+      required:
+        - blockCount
+        - blockData
+      properties:
+        blockCount:
+          type: integer
+          minimum: 0
+        blockData:
+          type: string
+          contentEncoding: base64
+          contentMediaType: "application/tar"
+
+    NegotiatedDownload:
+      type: object
+      required:
+        - dataFile
+        - downloadNegotiationStatus
+      properties:
+        dataFile:
+          $ref: '#/components/schemas/DataFileReference'
+        downloadNegotiationStatus:
+          type: string
+          enum: [UnexpectedFile, ProceedWithDownload]
+        downloadFrom:
+          $ref: '#/components/schemas/StorageReference'    
+
+    NegotiatedUpload:
+      type: object
+      required:
+        - dataFile
+        - uploadNegotiationStatus
+      properties:
+        dataFile:
+          $ref: '#/components/schemas/DataFileReference'
+        uploadNegotiationStatus:
+          type: string
+          enum: [ExpectingUpload, SkipUpload]
+        uploadTo:
+          $ref: '#/components/schemas/StorageReference'    
+
+    DataFileReference:
+      type: object
+      required:
+        - fileKind
+        - physicalHash
+      properties:
+        fileKind:
+          $ref: '#/components/schemas/DataFileKind'
+        physicalHash:
+          type: string
+          format: multihash    
+
+    DataFileKind:
+      type: string
+      enum: [DataSlice, Checkpoint]
+
+    StorageReference:
+      type: object
+      required:
+        - provider
+        - url
+        - expiresAt
+      properties:
+        provider:
+          type: string
+          enum: [S3, GCS, ADLS]
+        url:
+          type: string
+          format: url
+        expiresAt:
+          type: string
+          format: date-time
 
     ErrorDetails:
       type: object
@@ -138,36 +410,9 @@ components:
         description:
           type: string
           description: Detailed description of the error happened
-          
-
-    # Note: this is to be embedded from existing JSON schema
-    MetadataBlock:
-      type: object
-      description: see '/schemas/MetadataBlock.json'
-      requred:
-        - systemTime
-        - event
-        - sequenceNumber
-      properties:
-        systemTime:
-          type: string
-          format: date-time
-          description: System time when this block was written.
-        prevBlockHash:
-          type: string
-          format: multihash
-          description: Hash sum of the preceding block.
-        sequenceNumber:
-          type: integer
-          minimum: 0
-          description: Block sequence number starting from tail to head.
-        event:
-          $ref: '#/components/schemas/Event'
-
-    # Note: this is to be embedded from existing JSON schema
-    Event:
-      type: object
-      description: see '/schemas/metadata-events/MetadataEvent.json'
+        extras:
+          type: object
+          description: Optional extra fields associated with an error
 
   securitySchemes:
     jwt:
