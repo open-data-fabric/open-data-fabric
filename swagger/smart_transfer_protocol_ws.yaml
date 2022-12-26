@@ -1,0 +1,176 @@
+asyncapi: 2.5.0
+info:
+  title: ODF Smart Transfer Protocol
+  version: '0.1.0'
+  description: Open Data Fabric (ODF) extended protocol for dataset exchange between remote parties.
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+
+channels:
+
+  datasets/push/request:
+    subscribe:
+      operationId: odf.dataset.push.request
+      summary: Initiates dataset push to the ODF server
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushRequest
+        name: DatasetPushRequest
+        title: Dataset push request
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - prevHead
+            - newBlocks
+          properties:
+            datasetId:
+              type: string
+              format: did
+            prevHead:
+              type: string
+              format: multihash
+            newBlocks:
+              type: array
+              items:
+                $ref: '#/components/schemas/MetadataBlock'
+
+  datasets/push/accepted:
+    publish:
+      operationId: odf.dataset.push.accepted
+      summary: Informs about succesfull acceptance of dataset push request
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushAccepted
+        name: DatasetPushAccepted
+        title: Dataset push request accepted
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - pushRequestId
+          properties:
+            datasetId:
+              type: string
+              format: did           
+            pushRequestId:
+              type: string
+              format: uuid
+        
+  datasets/push/rejected:
+    publish:
+      operationId: odf.dataset.push.rejected
+      summary: Informs about failure to accept the dataset push request
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushRejected
+        name: DatasetPushRejected
+        title: Dataset push request rejected
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - errorDetails
+          properties:
+            datasetId:
+              type: string
+              format: did
+            errorDetails:
+              $ref: '#/components/schemas/ErrorDetails'
+
+  datasets/push/block/negotiate:
+    subscribe:
+      operationId: odf.dataset.push.block.negotiate
+      summary: Requests to negotiate block data upload protocol
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushBlockNegotiate
+        name: DatasetPushBlockNegotiate
+        title: Dataset push block negotiate
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - pushRequestId
+            - blockHash
+          properties:
+            pushRequestId:
+              type: string
+              format: uuid
+            blockHash:
+              type: string
+              format: multihash
+      
+  datasets/push/block/negotiate/succeeded:
+    publish:
+      operationId: odf.dataset.push.block.negotiate.succeeded
+      summary: Reports succesfull negotiation about block data upload
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushBlockNegotiateSucceeded
+        name: DatasetPushBlockNegotiateSucceeded
+        title: Dataset push block negotiation success
+        
+
+components:
+
+  schemas:
+
+    ErrorDetails:
+      type: object
+      description: Describes error happened during message processing
+      required:
+        - errorCode
+        - description
+      properties:
+        errorCode:
+          type: string
+          description: Informative code of the error happened
+        description:
+          type: string
+          description: Detailed description of the error happened
+          
+
+    # Note: this is to be embedded from existing JSON schema
+    MetadataBlock:
+      type: object
+      description: see '/schemas/MetadataBlock.json'
+      requred:
+        - systemTime
+        - event
+        - sequenceNumber
+      properties:
+        systemTime:
+          type: string
+          format: date-time
+          description: System time when this block was written.
+        prevBlockHash:
+          type: string
+          format: multihash
+          description: Hash sum of the preceding block.
+        sequenceNumber:
+          type: integer
+          minimum: 0
+          description: Block sequence number starting from tail to head.
+        event:
+          $ref: '#/components/schemas/Event'
+
+    # Note: this is to be embedded from existing JSON schema
+    Event:
+      type: object
+      description: see '/schemas/metadata-events/MetadataEvent.json'
+
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
