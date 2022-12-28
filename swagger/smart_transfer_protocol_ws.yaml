@@ -50,18 +50,8 @@ channels:
         payload:
           type: object
           required:
-            - datasetId
-            - prevKnownHead
             - newBlocks
           properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier
-            prevKnownHead:
-              type: string
-              format: multihash
-              description: Hash of the metadata head block that was previously known to consumer
             newBlocks:
               $ref: '#/components/schemas/ObjectsBatch'
   
@@ -78,13 +68,8 @@ channels:
         payload:
           type: object
           required:
-            - datasetId
             - objectFiles
-          properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier     
+          properties:  
             objectFiles:
               type: array
               description: List of object file references in this bulk
@@ -104,13 +89,8 @@ channels:
         payload:
           type: object
           required:
-            - datasetId
             - negotiatedDownloads
-          properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier        
+          properties:   
             negotiatedDownloads:
               type: array
               description: Negotiated download operations for requested bulk of object files
@@ -237,13 +217,8 @@ channels:
         payload:
           type: object
           required:
-            - datasetId
             - errorDetails
           properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier
             errorDetails:
               $ref: '#/components/schemas/ErrorDetails'
 
