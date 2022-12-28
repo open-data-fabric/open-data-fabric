@@ -46,6 +46,13 @@ For a `push` operation:
 - Server verifies the required objects exist and attempts to commit the new metadata blocks
 - In case of success, the Server confirms the commit succeeded, and closes the operation
 
+The exchange of object files should be performed with delays and object sizes taken into account.
+As the expiration time of pre-signed URLs is limited, in case of large bulks have to be exchanged,
+the pre-signed URLs might expire before the actual transfer starts - in this case they need to be re-requested.
+
+The parallelism of the object download/upload operations to/from storage system is not limited by the protocol,
+neither is to be constrained by the server. It's considered to be an implementation detail of the Client.
+
 In case of errors, timeouts, the Client needs to re-initiate the operation with the Server by opening another session.
 New operation may skip the synchronization of the already processed object files from the previous sessions, 
 even if the changes have not been finally committed to the metadata. Cleaning orphan files that accumulate on transfer errors
