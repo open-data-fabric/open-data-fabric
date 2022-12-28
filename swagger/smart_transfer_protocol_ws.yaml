@@ -148,18 +148,7 @@ channels:
         contentType: application/json
         payload:
           type: object
-          required:
-            - datasetId
-            - pushRequestId
-          properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier    
-            pushRequestId:
-              type: string
-              format: uuid
-              description: Request identifier of the started push flow
+          description: Empty object indicating success
 
   dataset/push/objects/negotiate:
     subscribe:
@@ -174,18 +163,8 @@ channels:
         payload:
           type: object
           required:
-            - datasetId
-            - pushRequestId
             - objectFiles
           properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier     
-            pushRequestId:
-              type: string
-              format: uuid
-              description: Request identifier of the started push flow
             objectFiles:
               type: array
               description: List of object file references in this bulk
@@ -205,18 +184,8 @@ channels:
         payload:
           type: object
           required:
-            - datasetId
-            - pushRequestId
             - negotiatedUploads
-          properties:
-            datasetId:
-              type: string
-              format: did
-              description: Dataset identifier        
-            pushRequestId:
-              type: string
-              format: uuid
-              description: Request identifier of the started push flow              
+          properties:           
             negotiatedUploads:
               type: array
               description: Negotiated upload operations for requested bulk of object files
@@ -235,17 +204,7 @@ channels:
         contentType: application/json
         payload:
           type: object
-          required:
-            - datasetId
-            - pushRequestId
-          datasetId:
-            type: string
-            format: did
-            description: Dataset identifier       
-          pushRequestId:
-            type: string
-            format: uuid
-            description: Request identifier of the started push flow            
+          description: Empty object, indicating succesfull completion
 
   dataset/push/complete/confirmed:
     publish:
@@ -259,22 +218,7 @@ channels:
         contentType: application/json
         payload:
           type: object
-          required:
-            - datasetId
-            - pushRequestId
-            - newHead
-          datasetId:
-            type: string
-            format: did
-            description: Dataset identifier          
-          pushRequestId:
-            type: string
-            format: uuid
-            description: Request identifier of the started push flow
-          newHead:
-            type: string
-            format: multihash
-            description: New dataset head block hash after completion of this push request
+          description: Empty object, indicating succesfull completion confirmation
 
   dataset/error:
     publish:
