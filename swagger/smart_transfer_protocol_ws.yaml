@@ -28,10 +28,14 @@ channels:
               type: string
               format: did
               description: Dataset identifier
-            knownHead:
+            beginAfter:
               type: string
               format: multihash
-              description: Hash of the metadata head block known to the consumer, undefined initially
+              description: Hash of the last metadata block consumer already has (undefined for initial state)
+            stopAt:
+              type: string
+              format: multihash
+              description: Hash of the last metadata block consumer would like to pull (undefined for head)
 
   dataset/pull/response:
     publish:
