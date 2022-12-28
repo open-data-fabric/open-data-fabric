@@ -23,7 +23,6 @@ channels:
           type: object
           required:
             - datasetId
-            - knownHead          
           properties:
             datasetId:
               type: string
@@ -32,7 +31,7 @@ channels:
             knownHead:
               type: string
               format: multihash
-              description: Hash of the metadata head block known to the consumer
+              description: Hash of the metadata head block known to the consumer, undefined initially
 
   dataset/pull/response:
     publish:
@@ -50,8 +49,6 @@ channels:
             - datasetId
             - prevKnownHead
             - newBlocks
-            - dataSlices
-            - checkpoints
           properties:
             datasetId:
               type: string
@@ -62,55 +59,43 @@ channels:
               format: multihash
               description: Hash of the metadata head block that was previously known to consumer
             newBlocks:
-              $ref: '#/components/schemas/TarOfBlocks'
-            dataSlices:
-              type: array
-              description: List of data slice file hashes referenced by the new blocks
-              items:
-                type: string
-                format: multihash
-            checkpoints:
-              type: array
-              description: List of checkpoint file hashes referenced by the new blocks
-              items:
-                type: string
-                format: multihash
+              $ref: '#/components/schemas/ObjectsBatch'
   
-  dataset/pull/data/negotiate:
+  dataset/pull/objects/negotiate:
     subscribe:
-      operationId: odf.dataset.pull.data.negotiate
-      summary: Requests to negotiate data download protocol for 1 or more files
+      operationId: odf.dataset.pull.objects.negotiate
+      summary: Requests to negotiate the download protocol for 1 or more object files
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPullDataNegotiate
-        name: DatasetPullDataNegotiate
+        messageId: odf.dataset.DatasetPullObjectsNegotiate
+        name: DatasetPullObjectsNegotiate
         contentType: application/json
         payload:
           type: object
           required:
             - datasetId
-            - dataFiles
+            - objectFiles
           properties:
             datasetId:
               type: string
               format: did
               description: Dataset identifier     
-            dataFiles:
+            objectFiles:
               type: array
-              description: List of data file references in this bulk
+              description: List of object file references in this bulk
               items:
-                $ref: '#/components/schemas/DataFileReference'
+                $ref: '#/components/schemas/ObjectFileReference'
       
-  dataset/pull/data/negotiate/response:
+  dataset/pull/objects/negotiate/response:
     publish:
-      operationId: odf.dataset.pull.data.negotiate.response
-      summary: Response on negotiated status of data operations during pull
+      operationId: odf.dataset.pull.objects.negotiate.response
+      summary: Response on negotiated status of object download operations during pull
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPullDataNegotiateResponse
-        name: DatasetPullDataNegotiateResponse
+        messageId: odf.dataset.DatasetPullObjectsNegotiateResponse
+        name: DatasetPullObjectsNegotiateResponse
         contentType: application/json
         payload:
           type: object
@@ -124,7 +109,7 @@ channels:
               description: Dataset identifier        
             negotiatedDownloads:
               type: array
-              description: Negotiated download operations for requested bulk of files
+              description: Negotiated download operations for requested bulk of object files
               items:
                 $ref: '#/components/schemas/NegotiatedDownload'
 
@@ -142,19 +127,14 @@ channels:
           type: object
           required:
             - datasetId
-            - knownHead
             - newBlocks
           properties:
             datasetId:
               type: string
               format: did
               description: Dataset identifier
-            knownHead:
-              type: string
-              format: multihash
-              description: Hash of the metadata head block known to the pusher
             newBlocks:
-              $ref: '#/components/schemas/TarOfBlocks'
+              $ref: '#/components/schemas/ObjectsBatch'
 
   dataset/push/request/accepted:
     publish:
@@ -181,22 +161,22 @@ channels:
               format: uuid
               description: Request identifier of the started push flow
 
-  dataset/push/data/negotiate:
+  dataset/push/objects/negotiate:
     subscribe:
-      operationId: odf.dataset.push.data.negotiate
-      summary: Requests to negotiate data upload protocol for 1 or more files
+      operationId: odf.dataset.push.objects.negotiate
+      summary: Requests to negotiate the upload protocol for 1 or more object files
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPushDataNegotiate
-        name: DatasetPushDataNegotiate
+        messageId: odf.dataset.DatasetPushObjectsNegotiate
+        name: DatasetPushObjectsNegotiate
         contentType: application/json
         payload:
           type: object
           required:
             - datasetId
             - pushRequestId
-            - dataFiles
+            - objectFiles
           properties:
             datasetId:
               type: string
@@ -206,21 +186,21 @@ channels:
               type: string
               format: uuid
               description: Request identifier of the started push flow
-            dataFiles:
+            objectFiles:
               type: array
-              description: List of data file references in this bulk
+              description: List of object file references in this bulk
               items:
-                $ref: '#/components/schemas/DataFileReference'
+                $ref: '#/components/schemas/ObjectFileReference'
       
-  dataset/push/data/negotiate/response:
+  dataset/push/objects/negotiate/response:
     publish:
-      operationId: odf.dataset.push.data.negotiate.response
-      summary: Response on negotiated status of data operations during push
+      operationId: odf.dataset.push.objects.negotiate.response
+      summary: Response on negotiated status of object upload operations during push
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPushDataNegotiateResponse
-        name: DatasetPushDataNegotiateResponse
+        messageId: odf.dataset.DatasetPushObjectNegotiateResponse
+        name: DatasetPushObjectNegotiateResponse
         contentType: application/json
         payload:
           type: object
@@ -239,7 +219,7 @@ channels:
               description: Request identifier of the started push flow              
             negotiatedUploads:
               type: array
-              description: Negotiated upload operations for requested bulk of files
+              description: Negotiated upload operations for requested bulk of object files
               items:
                 $ref: '#/components/schemas/NegotiatedUpload'
 
@@ -321,75 +301,83 @@ channels:
 
 components:
   schemas:
-    TarOfBlocks:
+    ObjectsBatch:
       type: object
       description: An archive of blocks segment being transferred
       required:
-        - blockCount
-        - blockData
+        - objectsCount
+        - objectType
+        - mediaType
+        - encoding
+        - payload
       properties:
-        blockCount:
+        objectsCount:
           type: integer
           minimum: 0
-        blockData:
+          description: Number of objects included in the batch
+        objectType:
           type: string
-          contentEncoding: base64
-          contentMediaType: "application/tar"
+          example: "MetadataBlock"
+          description: Type of objects included in the batch
+        mediaType:
+          type: string
+          example: "application/tar"
+          description: Payload media type
+        encoding:
+          type: string
+          example: base64
+          description: Payload encoding within the protocol
+        payload:
+          type: string
+          description: Encoded payload data
 
     NegotiatedDownload:
       type: object
       required:
-        - dataFile
-        - downloadNegotiationStatus
+        - objectFile
+        - downloadFrom
       properties:
-        dataFile:
-          $ref: '#/components/schemas/DataFileReference'
-        downloadNegotiationStatus:
-          type: string
-          enum: [UnexpectedFile, ProceedWithDownload]
+        objectFile:
+          $ref: '#/components/schemas/ObjectFileReference'
         downloadFrom:
           $ref: '#/components/schemas/StorageReference'    
 
     NegotiatedUpload:
       type: object
       required:
-        - dataFile
+        - objectFile
         - uploadNegotiationStatus
       properties:
-        dataFile:
-          $ref: '#/components/schemas/DataFileReference'
+        objectFile:
+          $ref: '#/components/schemas/ObjectFileReference'
         uploadNegotiationStatus:
           type: string
           enum: [ExpectingUpload, SkipUpload]
         uploadTo:
           $ref: '#/components/schemas/StorageReference'    
 
-    DataFileReference:
+    ObjectFileReference:
       type: object
       required:
         - fileKind
         - physicalHash
       properties:
         fileKind:
-          $ref: '#/components/schemas/DataFileKind'
+          $ref: '#/components/schemas/ObjectFileKind'
         physicalHash:
           type: string
           format: multihash    
 
-    DataFileKind:
+    ObjectFileKind:
       type: string
       enum: [DataSlice, Checkpoint]
 
     StorageReference:
       type: object
       required:
-        - provider
         - url
         - expiresAt
       properties:
-        provider:
-          type: string
-          enum: [S3, GCS, ADLS]
         url:
           type: string
           format: url
