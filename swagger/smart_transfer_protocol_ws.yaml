@@ -378,7 +378,6 @@ components:
       type: object
       required:
         - url
-        - expiresAt
       properties:
         url:
           type: string
