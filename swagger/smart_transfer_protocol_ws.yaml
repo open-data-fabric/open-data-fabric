@@ -40,7 +40,7 @@ channels:
   dataset/pull/response:
     publish:
       operationId: odf.dataset.pull.response
-      summary: Indicates succesfull response to dataset pull request
+      summary: Indicates a succesful response to the initiated pull request and provides size estimation
       security:
         - jwt: []
       message:
@@ -50,20 +50,52 @@ channels:
         payload:
           type: object
           required:
-            - newBlocks
+            - sizeEstimation
           properties:
-            newBlocks:
-              $ref: '#/components/schemas/ObjectsBatch'
-  
-  dataset/pull/objects/negotiate:
+            sizeEstimation:
+              $ref: '#/components/schemas/TransferSizeEstimation'
+
+  dataset/pull/metadata/request:
     subscribe:
-      operationId: odf.dataset.pull.objects.negotiate
-      summary: Requests to negotiate the download protocol for 1 or more object files
+      operationId: odf.dataset.pull.metadata.request
+      summary: Requests download of the metadata from the ODF server
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPullObjectsNegotiate
-        name: DatasetPullObjectsNegotiate
+        messageId: odf.dataset.DatasetPullMetadataRequest
+        name: DatasetPullMetadataRequest
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object, no specific data here
+
+  dataset/pull/metadata/response:
+    publish:
+      operationId: odf.dataset.pull.metadata.response
+      summary: Response with the metadata for the requested pull range
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetMetadataPullResponse
+        name: DatasetMetadataPullResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - blocks
+          properties:
+            blocks:
+              $ref: '#/components/schemas/ObjectsBatch'
+  
+  dataset/pull/objects/transfer/request:
+    subscribe:
+      operationId: odf.dataset.pull.objects.transfer.request
+      summary: Requests to agree on the strategy for downloading 1 or more object files
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullObjectsTransferRequest
+        name: DatasetPullObjectsTransferRequest
         contentType: application/json
         payload:
           type: object
@@ -76,26 +108,26 @@ channels:
               items:
                 $ref: '#/components/schemas/ObjectFileReference'
       
-  dataset/pull/objects/negotiate/response:
+  dataset/pull/objects/transfer/response:
     publish:
-      operationId: odf.dataset.pull.objects.negotiate.response
-      summary: Response on negotiated status of object download operations during pull
+      operationId: odf.dataset.pull.objects.transfer.response
+      summary: Response on the agreed strategy for objects downloading during the pull
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPullObjectsNegotiateResponse
-        name: DatasetPullObjectsNegotiateResponse
+        messageId: odf.dataset.DatasetPullObjectsTransferResponse
+        name: DatasetPullObjectsTransferResponse
         contentType: application/json
         payload:
           type: object
           required:
-            - negotiatedDownloads
+            - objectTransferStrategies
           properties:   
-            negotiatedDownloads:
+            objectTransferStrategies:
               type: array
-              description: Negotiated download operations for requested bulk of object files
+              description: Agreed download operations for the requested bulk of object files
               items:
-                $ref: '#/components/schemas/NegotiatedDownload'
+                $ref: '#/components/schemas/PullObjectTransferStrategy'
 
   dataset/push/request:
     subscribe:
@@ -111,14 +143,19 @@ channels:
           type: object
           required:
             - datasetId
-            - newBlocks
+            - currentHead
           properties:
             datasetId:
               type: string
               format: did
               description: Dataset identifier
-            newBlocks:
-              $ref: '#/components/schemas/ObjectsBatch'
+            currentHead:
+              type: string
+              format: multihash
+              description: Hash of the head block that client assumes to be the current head on the server
+            sizeEstimation:
+              # Question: should it stay optional?
+              $ref: '#/components/schemas/TransferSizeEstimation'
 
   dataset/push/request/accepted:
     publish:
@@ -134,15 +171,30 @@ channels:
           type: object
           description: Empty object indicating success
 
-  dataset/push/objects/negotiate:
+  dataset/push/metadata:
     subscribe:
-      operationId: odf.dataset.push.objects.negotiate
-      summary: Requests to negotiate the upload protocol for 1 or more object files
+      operationId: odf.dataset.push.metadata
+      summary: Initiates upload of the metadata to the ODF server
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPushObjectsNegotiate
-        name: DatasetPushObjectsNegotiate
+        messageId: odf.dataset.DatasetPushMetadata
+        name: DatasetPushMetadata
+        contentType: application/json
+        payload:
+          type: object
+          newBlocks:
+              $ref: '#/components/schemas/ObjectsBatch'
+
+  dataset/push/objects/transfer/request:
+    subscribe:
+      operationId: odf.dataset.push.objects.transfer.request
+      summary: Requests to agree on the strategy for uploading 1 or more object files
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushObjectsTransferRequest
+        name: DatasetPushObjectsTransferRequest
         contentType: application/json
         payload:
           type: object
@@ -155,26 +207,26 @@ channels:
               items:
                 $ref: '#/components/schemas/ObjectFileReference'
       
-  dataset/push/objects/negotiate/response:
+  dataset/push/objects/objects/transfer/response:
     publish:
-      operationId: odf.dataset.push.objects.negotiate.response
-      summary: Response on negotiated status of object upload operations during push
+      operationId: odf.dataset.push.objects.transfer.response
+      summary: Response on the agreed strategy for objects uploading during the push
       security:
         - jwt: []
       message:
-        messageId: odf.dataset.DatasetPushObjectNegotiateResponse
-        name: DatasetPushObjectNegotiateResponse
+        messageId: odf.dataset.DatasetPushObjectsTransferResponse
+        name: DatasetPushObjectsTransferResponse
         contentType: application/json
         payload:
           type: object
           required:
-            - negotiatedUploads
+            - objectTransferStrategies
           properties:           
-            negotiatedUploads:
+            objectTransferStrategies:
               type: array
-              description: Negotiated upload operations for requested bulk of object files
+              description: Agreed upload operations for the requested bulk of object files
               items:
-                $ref: '#/components/schemas/NegotiatedUpload'
+                $ref: '#/components/schemas/PushObjectTransferStrategy'
 
   dataset/push/complete:
     subscribe:
@@ -252,30 +304,59 @@ components:
           type: string
           description: Encoded payload data
 
-    NegotiatedDownload:
+    PullObjectTransferStrategy:
       type: object
       required:
         - objectFile
+        - pullStrategy
         - downloadFrom
       properties:
         objectFile:
           $ref: '#/components/schemas/ObjectFileReference'
+        pullStrategy:
+          type: string
+          enum: [HttpDownload]  # Maybe other methods in future
         downloadFrom:
-          $ref: '#/components/schemas/StorageReference'    
+          $ref: '#/components/schemas/TransferUrl'    
 
-    NegotiatedUpload:
+    PushObjectTransferStrategy:
       type: object
       required:
         - objectFile
-        - uploadNegotiationStatus
+        - pushStrategy
       properties:
         objectFile:
           $ref: '#/components/schemas/ObjectFileReference'
-        uploadNegotiationStatus:
+        pushStrategy:
           type: string
-          enum: [ExpectingUpload, SkipUpload]
+          enum: [SkipUpload, HttpUpload]  # Maybe other methods in future
         uploadTo:
-          $ref: '#/components/schemas/StorageReference'    
+          $ref: '#/components/schemas/TransferUrl'
+
+    TransferSizeEstimation:
+      type: object
+      required:
+        - numBlocks
+        - numObjects
+        - bytesInRawBlocks
+        - bytesInRawObjects
+      properties:
+        numBlocks:
+          type: integer
+          minimum: 1
+          description: Number of blocks about to transfer
+        numObjects:
+          type: integer
+          minimum: 0
+          description: Number of objects about to transfer (can be 0 for pure declarative metadata)
+        bytesInRawBlocks:
+          type: integer
+          minimum: 1
+          description: Raw (without compression) size of the blocks about to transfer
+        bytesInRawObjects:
+          type: integer
+          minimum: 1
+          description: Raw (without compression) size of the object files about to transfer
 
     ObjectFileReference:
       type: object
@@ -293,7 +374,7 @@ components:
       type: string
       enum: [MetadataBlock, DataSlice, Checkpoint]
 
-    StorageReference:
+    TransferUrl:
       type: object
       required:
         - url
