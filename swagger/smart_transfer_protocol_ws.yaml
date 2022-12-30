@@ -186,6 +186,20 @@ channels:
           newBlocks:
               $ref: '#/components/schemas/ObjectsBatch'
 
+  dataset/push/metadata/accepted:
+    publish:
+      operationId: odf.dataset.push.metadata.accepted
+      summary: Informs about succesfull acceptance of dataset metadata during push
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushMetadataAccepted
+        name: DatasetPushMetadataAccepted
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object indicating success
+
   dataset/push/objects/transfer/request:
     subscribe:
       operationId: odf.dataset.push.objects.transfer.request
