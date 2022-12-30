@@ -239,9 +239,7 @@ components:
           minimum: 0
           description: Number of objects included in the batch
         objectType:
-          type: string
-          example: "MetadataBlock"
-          description: Type of objects included in the batch
+          $ref: '#/components/schemas/ObjectType'
         mediaType:
           type: string
           example: "application/tar"
@@ -282,18 +280,18 @@ components:
     ObjectFileReference:
       type: object
       required:
-        - fileKind
+        - objectType
         - physicalHash
       properties:
-        fileKind:
-          $ref: '#/components/schemas/ObjectFileKind'
+        objectType:
+          $ref: '#/components/schemas/ObjectType'
         physicalHash:
           type: string
           format: multihash    
 
-    ObjectFileKind:
+    ObjectType:
       type: string
-      enum: [DataSlice, Checkpoint]
+      enum: [MetadataBlock, DataSlice, Checkpoint]
 
     StorageReference:
       type: object
