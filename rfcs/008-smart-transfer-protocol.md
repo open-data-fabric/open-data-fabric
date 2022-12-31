@@ -65,6 +65,15 @@ alternative type of channel that supports bi-directional non-blocking message ex
 
 See `AsyncAPI` [description of the protocol messages](../swagger/smart_transfer_protocol_ws.yaml).
 
+### Push flow
+
+![Diagram: ODF Smart TransferProtocol Push](../images/smart_transfer_protocol_push.svg)
+
+### Pull flow
+
+![Diagram: ODF Smart TransferProtocol Pull](../images/smart_transfer_protocol_pull.svg)
+
+
 ## Drawbacks
 
 
