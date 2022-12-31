@@ -1,0 +1,93 @@
+@startuml smart_transfer_protocol_push
+
+title ODF Smart Transfer Protocol: Push
+skinparam sequenceMessageAlign right
+skinparam responseMessageBelowArrow true
+skinparam lifelineStrategy solid
+
+== Initiating Push ==
+client ->> server: ""DatasetPushRequest""
+note over client
+    I'd like to push  **N blocks**
+     after //currentHead//
+     with  //xx// Kb of metadata
+     and  //yy// Mb of data in  //M// files
+end note
+note over server
+    OK
+end note
+server ->> client: ""DatasetPushRequestAccepted""
+
+== Transfer Metadata ==
+client ->> server: ""DatasetPushMetadata""
+note over client
+    Here is a tarball of metadata:
+        ""new-blocks.tar.gz""
+end note
+par N times
+    server -> storage: PUT file
+    activate storage
+    note over server
+       Upload untarred metadata block
+    end note
+    storage -> server: [201 Accepted]
+    deactivate storage
+end
+note over server
+    Received
+end note
+server ->> client: ""DatasetPushMetadataAccepted""
+
+== Transfer Objects ==
+loop
+    client ->> server: ""DatasetPushObjectsTransferRequest""
+    note over client
+       I'd like to upload the following objects:
+        - object 1
+        - ...
+        - object X
+       Where do I upload it to?
+    end note
+    par X times
+        server -> storage: POST GeneratePresignedURL
+        activate storage
+        note over server
+           Create pre-signed URL
+           to upload this file
+           to storage system
+        end note
+        storage -> server: [200 OK]
+        deactivate storage
+    end
+    note over server
+      I've generated these upload URLs for the objects:
+       - object 1: put it //here//
+       - ...
+       - object X: skip uploading this one, I already have it
+      The URLs are valid until //expiryTime//
+    end note
+    server ->> client: ""DatasetPushObjectsTransferResponse""
+    par X times
+        client -> storage: PUT ""pre-signed URL""
+        activate storage
+        note over client
+          Uploading file to storage
+        end note
+        storage -> client: [201 Accepted]
+        deactivate storage
+    end
+end
+
+== Commit ==
+client ->> server: ""DatasetPushComplete""
+note over client
+   I'm done uploading content.
+   Let's commit my dataset changes!
+end note
+note over server
+   Commit confirmed.
+   New head is //newHead//
+end note
+server ->> client: ""DatasetPushCompleteConfirmed""
+
+@enduml
