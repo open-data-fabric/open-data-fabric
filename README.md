@@ -39,6 +39,15 @@ The goal of this specification is to develop a method of data exchange that woul
 <img src="./src/images/distributed_world.png" alt="Web 3.0" width="350">
 </p>
 
+### Protocol Map
+
+<p align="center">
+<img src="images/odf-dataset.svg" alt="Dataset" width="400">
+</p>
+<p align="center">
+<img src="images/odf-protocols.svg" alt="Dataset" width="700">
+</p>
+
 ### Introductory materials
 - [Original Whitepaper (July 2020)](https://arxiv.org/abs/2111.06364)
 - [Kamu Blog: Introducing Open Data Fabric](https://www.kamu.dev/blog/introducing-odf/)
@@ -62,6 +71,7 @@ See also our [Roadmap](https://github.com/kamu-data/open-data-fabric/projects/1)
 `Engine` implementations:
 - [kamu-engine-spark](https://github.com/kamu-data/kamu-engine-spark) - engine based on Apache Spark.
 - [kamu-engine-flink](https://github.com/kamu-data/kamu-engine-flink) - engine based on Apache Flink.
+
 
 ## History
 

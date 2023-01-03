@@ -1045,6 +1045,7 @@ See also:
   - [OffsetInterval](#offsetinterval-schema)
   - [PrepStep](#prepstep-schema)
   - [ReadStep](#readstep-schema)
+  - [RequestHeader](#requestheader-schema)
   - [SourceCaching](#sourcecaching-schema)
   - [SqlQueryStep](#sqlquerystep-schema)
   - [TemporalTable](#temporaltable-schema)
@@ -1549,6 +1550,7 @@ Pulls data from one of the supported sources by its URL.
 | `url` | `string` | V | `url` | URL of the data source |
 | `eventTime` | [EventTimeSource](#eventtimesource-schema) |  |  | Describes how event time is extracted from the source metadata. |
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
+| `headers` | array([RequestHeader](#requestheader-schema)) |  |  | Headers to pass during the request (e.g. HTTP Authorization) |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1853,6 +1855,19 @@ Reader for Apache Parquet format.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+
+<a name="requestheader-schema"></a>
+##### RequestHeader
+Defines a header (e.g. HTTP) to be passed into some request.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Name of the header. |
+| `value` | `string` | V |  | Value of the header. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/RequestHeader.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 <a name="sourcecaching-schema"></a>
 ##### SourceCaching
