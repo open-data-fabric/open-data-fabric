@@ -67,7 +67,7 @@ loop
       I've generated these download URLs for the objects:
        - object 1: take it from //here//
        - ...
-       - object X: take it from //thhere//
+       - object X: take it from //there//
       The URLs are valid until //expiryTime//
     end note
     server ->> client: ""DatasetPullObjectsTransferResponse""
