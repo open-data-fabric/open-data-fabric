@@ -1,0 +1,87 @@
+@startuml smart_transfer_protocol_pull
+
+title ODF Smart Transfer Protocol: Pull
+skinparam sequenceMessageAlign right
+skinparam responseMessageBelowArrow true
+skinparam lifelineStrategy solid
+
+== Initiating Pull ==
+client ->> server: ""DatasetPullRequest""
+note over client
+    I'd like to pull everything
+     after //beginAfter// block
+     [at most to //stopAt// block]
+end note
+note over server
+    OK.
+    The package would consist of:
+     - **N blocks**
+     - //xx// Kb of metadata
+     - //yy// Mb of data in //M// files
+    Go ahead, if this is what you expected.
+end note
+server ->> client: ""DatasetPullResponse""
+
+== Transfer Metadata ==
+client ->> server: ""DatasetPullMetadataRequest""
+note over client
+    Please send the metadata
+end note
+par N times
+    server -> storage: GET file
+    activate storage
+    note over server
+       Download message block
+    end note
+    storage -> server: [200 Accepted]
+    deactivate storage
+end
+note over server
+    Here is the metadata for you:
+     ""requested-blocks.tar.gz""
+end note
+server ->> client: ""DatasetMetadataPullResponse""
+
+== Transfer Objects ==
+loop
+    client ->> server: ""DatasetPullObjectsTransferRequest""
+    note over client
+       I'd like to download the following objects:
+        - object 1
+        - ...
+        - object X
+       Where do I get them from?
+    end note
+    par X times
+        server -> storage: POST GeneratePresignedURL
+        activate storage
+        note over server
+           Create pre-signed URL
+           to download this file
+           from storage system
+        end note
+        storage -> server: [200 OK]
+        deactivate storage
+    end
+    note over server
+      I've generated these download URLs for the objects:
+       - object 1: take it from //here//
+       - ...
+       - object X: take it from //there//
+      The URLs are valid until //expiryTime//
+    end note
+    server ->> client: ""DatasetPullObjectsTransferResponse""
+    par X times
+        client -> storage: GET ""pre-signed URL""
+        activate storage
+        note over client
+          Downloading file from storage
+        end note
+        storage -> client: [200 OK]
+        deactivate storage
+    end
+end
+
+== Pull Done ==
+
+@enduml

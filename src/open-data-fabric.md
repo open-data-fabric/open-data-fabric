@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.27.0
+Version: 0.28.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -949,6 +949,29 @@ To describe the protocol we will use HTTP `GET {object-key}` notation below, but
 
 See also:
 - [RFC-007: Simple Transfer Protocol](/rfcs/007-simple-transfer-protocol.md)
+
+### Smart Transfer Protocol
+
+Smart Transfer Protocol is a superset of Simple Transfer Protocol, which allows both read and writes
+and solves performance issues to allow efficient synchronization between remote dataset repositories.
+
+The detailed format of endpoints is described here: [Smart Transfer Protocol: OpenAPI](/protocols/smart-transfer-protocol.openapi.yaml).
+
+Smart Transfer Protocol extends the HTTP operations of the Simple Transfer Protocol with 2 more endpoints:
+1) `GET /pull` - to start the smart pull flow on the dataset
+2) `GET /push` - to start the smart push flow on the dataset
+
+Both extensions switch from HTTP to a more advanced asynchronous bi-directional message-based protocol,
+like [WebSockets](https://websockets.spec.whatwg.org/). Parties first exchange the intent of synchronization,
+then switch to transfer of metadata blocks and associated object files. Metadata is transferred as an
+archive of the block files, while object files are transferred separately with unrestricted degree of parallelism.
+The protocol assumes, but does not require, the use of 3rd-party cloud data storage service to exchange object files. 
+
+The details of the individual asynchronous messages are specified here: [Smart Transfer Protocol: AsyncAPI](/protocols/smart-transfer-protocol.asyncapi.yaml).
+
+See also:
+- [RFC-008: Smart Transfer Protocol](/rfcs/008-smart-transfer-protocol.md)
+
 
 ## Future Topics
 

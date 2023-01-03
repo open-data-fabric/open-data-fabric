@@ -1,0 +1,424 @@
+asyncapi: 2.5.0
+info:
+  title: ODF Smart Transfer Protocol (asynchronous messages part)
+  version: '0.1.0'
+  description: Open Data Fabric (ODF) extended protocol for dataset exchange between remote parties.
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+
+channels:
+
+  dataset/pull/request:
+    subscribe:
+      operationId: odf.dataset.pull.request
+      summary: Initiates dataset pull from the ODF server
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullRequest
+        name: DatasetPullRequest
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier
+            beginAfter:
+              type: string
+              format: multihash
+              description: Hash of the last metadata block consumer already has (undefined for initial state)
+            stopAt:
+              type: string
+              format: multihash
+              description: Hash of the last metadata block consumer would like to pull (undefined for head)
+
+  dataset/pull/response:
+    publish:
+      operationId: odf.dataset.pull.response
+      summary: Indicates a succesful response to the initiated pull request and provides size estimation
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullResponse
+        name: DatasetPullResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - sizeEstimation
+          properties:
+            sizeEstimation:
+              $ref: '#/components/schemas/TransferSizeEstimation'
+
+  dataset/pull/metadata/request:
+    subscribe:
+      operationId: odf.dataset.pull.metadata.request
+      summary: Requests download of the metadata from the ODF server
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullMetadataRequest
+        name: DatasetPullMetadataRequest
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object, no specific data here
+
+  dataset/pull/metadata/response:
+    publish:
+      operationId: odf.dataset.pull.metadata.response
+      summary: Response with the metadata for the requested pull range
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetMetadataPullResponse
+        name: DatasetMetadataPullResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - blocks
+          properties:
+            blocks:
+              $ref: '#/components/schemas/ObjectsBatch'
+  
+  dataset/pull/objects/transfer/request:
+    subscribe:
+      operationId: odf.dataset.pull.objects.transfer.request
+      summary: Requests to agree on the strategy for downloading 1 or more object files
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullObjectsTransferRequest
+        name: DatasetPullObjectsTransferRequest
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - objectFiles
+          properties:  
+            objectFiles:
+              type: array
+              description: List of object file references in this bulk
+              items:
+                $ref: '#/components/schemas/ObjectFileReference'
+      
+  dataset/pull/objects/transfer/response:
+    publish:
+      operationId: odf.dataset.pull.objects.transfer.response
+      summary: Response on the agreed strategy for objects downloading during the pull
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPullObjectsTransferResponse
+        name: DatasetPullObjectsTransferResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - objectTransferStrategies
+          properties:   
+            objectTransferStrategies:
+              type: array
+              description: Agreed download operations for the requested bulk of object files
+              items:
+                $ref: '#/components/schemas/PullObjectTransferStrategy'
+
+  dataset/push/request:
+    subscribe:
+      operationId: odf.dataset.push.request
+      summary: Initiates dataset push to the ODF server
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushRequest
+        name: DatasetPushRequest
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - datasetId
+            - currentHead
+            - sizeEstimation
+          properties:
+            datasetId:
+              type: string
+              format: did
+              description: Dataset identifier
+            currentHead:
+              type: string
+              format: multihash
+              description: Hash of the head block that client assumes to be the current head on the server
+            sizeEstimation:
+              $ref: '#/components/schemas/TransferSizeEstimation'
+
+  dataset/push/request/accepted:
+    publish:
+      operationId: odf.dataset.push.request.accepted
+      summary: Informs about succesfull acceptance of dataset push request
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushRequestAccepted
+        name: DatasetPushRequestAccepted
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object indicating success
+
+  dataset/push/metadata:
+    subscribe:
+      operationId: odf.dataset.push.metadata
+      summary: Initiates upload of the metadata to the ODF server
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushMetadata
+        name: DatasetPushMetadata
+        contentType: application/json
+        payload:
+          type: object
+          newBlocks:
+              $ref: '#/components/schemas/ObjectsBatch'
+
+  dataset/push/metadata/accepted:
+    publish:
+      operationId: odf.dataset.push.metadata.accepted
+      summary: Informs about succesfull acceptance of dataset metadata during push
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushMetadataAccepted
+        name: DatasetPushMetadataAccepted
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object indicating success
+
+  dataset/push/objects/transfer/request:
+    subscribe:
+      operationId: odf.dataset.push.objects.transfer.request
+      summary: Requests to agree on the strategy for uploading 1 or more object files
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushObjectsTransferRequest
+        name: DatasetPushObjectsTransferRequest
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - objectFiles
+          properties:
+            objectFiles:
+              type: array
+              description: List of object file references in this bulk
+              items:
+                $ref: '#/components/schemas/ObjectFileReference'
+      
+  dataset/push/objects/objects/transfer/response:
+    publish:
+      operationId: odf.dataset.push.objects.transfer.response
+      summary: Response on the agreed strategy for objects uploading during the push
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushObjectsTransferResponse
+        name: DatasetPushObjectsTransferResponse
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - objectTransferStrategies
+          properties:           
+            objectTransferStrategies:
+              type: array
+              description: Agreed upload operations for the requested bulk of object files
+              items:
+                $ref: '#/components/schemas/PushObjectTransferStrategy'
+
+  dataset/push/complete:
+    subscribe:
+      operationId: odf.dataset.push.complete
+      summary: Informs ODF-server the push operation is complete
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushComplete
+        name: DatasetPushComplete
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object, indicating succesfull completion
+
+  dataset/push/complete/confirmed:
+    publish:
+      operationId: odf.dataset.push.complete.confirmed
+      summary: Informs consumer the push completion is confirmed
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetPushCompleteConfirmed
+        name: DatasetPushCompleteConfirmed
+        contentType: application/json
+        payload:
+          type: object
+          description: Empty object, indicating succesfull completion confirmation
+
+  dataset/error:
+    publish:
+      operationId: odf.dataset.error
+      summary: Informs about error happened during one of API operations with the dataset
+      security:
+        - jwt: []
+      message:
+        messageId: odf.dataset.DatasetError
+        name: DatasetError
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - errorDetails
+          properties:
+            errorDetails:
+              $ref: '#/components/schemas/ErrorDetails'
+
+components:
+  schemas:
+    ObjectsBatch:
+      type: object
+      description: An archive of blocks segment being transferred
+      required:
+        - objectsCount
+        - objectType
+        - mediaType
+        - encoding
+        - payload
+      properties:
+        objectsCount:
+          type: integer
+          minimum: 0
+          description: Number of objects included in the batch
+        objectType:
+          $ref: '#/components/schemas/ObjectType'
+        mediaType:
+          type: string
+          example: "application/tar"
+          description: Payload media type
+        encoding:
+          type: string
+          example: base64
+          description: Payload encoding within the protocol
+        payload:
+          type: string
+          description: Encoded payload data
+
+    PullObjectTransferStrategy:
+      type: object
+      required:
+        - objectFile
+        - pullStrategy
+        - downloadFrom
+      properties:
+        objectFile:
+          $ref: '#/components/schemas/ObjectFileReference'
+        pullStrategy:
+          type: string
+          enum: [HttpDownload]  # Maybe other methods in future
+        downloadFrom:
+          $ref: '#/components/schemas/TransferUrl'    
+
+    PushObjectTransferStrategy:
+      type: object
+      required:
+        - objectFile
+        - pushStrategy
+      properties:
+        objectFile:
+          $ref: '#/components/schemas/ObjectFileReference'
+        pushStrategy:
+          type: string
+          enum: [SkipUpload, HttpUpload]  # Maybe other methods in future
+        uploadTo:
+          $ref: '#/components/schemas/TransferUrl'
+
+    TransferSizeEstimation:
+      type: object
+      required:
+        - numBlocks
+        - numObjects
+        - bytesInRawBlocks
+        - bytesInRawObjects
+      properties:
+        numBlocks:
+          type: integer
+          minimum: 1
+          description: Number of blocks about to transfer
+        numObjects:
+          type: integer
+          minimum: 0
+          description: Number of objects about to transfer (can be 0 for pure declarative metadata)
+        bytesInRawBlocks:
+          type: integer
+          minimum: 1
+          description: Raw (without compression) size of the blocks about to transfer
+        bytesInRawObjects:
+          type: integer
+          minimum: 1
+          description: Raw (without compression) size of the object files about to transfer
+
+    ObjectFileReference:
+      type: object
+      required:
+        - objectType
+        - physicalHash
+      properties:
+        objectType:
+          $ref: '#/components/schemas/ObjectType'
+        physicalHash:
+          type: string
+          format: multihash    
+
+    ObjectType:
+      type: string
+      enum: [MetadataBlock, DataSlice, Checkpoint]
+
+    TransferUrl:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: url
+        expiresAt:
+          type: string
+          format: date-time
+
+    ErrorDetails:
+      type: object
+      description: Describes error happened during message processing
+      required:
+        - errorCode
+        - description
+      properties:
+        errorCode:
+          type: string
+          description: Informative code of the error happened
+        description:
+          type: string
+          description: Detailed description of the error happened
+        extras:
+          type: object
+          description: Optional extra fields associated with an error
+
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
