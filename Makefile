@@ -1,3 +1,12 @@
+ifeq (, $(shell which podman 2>/dev/null))
+RUNTIME = docker
+else
+RUNTIME = podman
+endif
+
+PLANTUML_IMG = "docker.io/plantuml/plantuml:1.2022.14"
+PLANTUML = $(RUNTIME) run --rm -v $(PWD):/opt/workdir --workdir /opt/workdir $(PLANTUML_IMG)
+
 MDTPL = tools/template_markdown.py
 
 DIAGRAMS_SRC = $(wildcard src/images/*.puml)
@@ -20,7 +29,7 @@ build/:
 	mkdir -p build/
 
 $(DIAGRAMS): images/%.svg: src/images/%.puml
-	plantuml -o ../../images -tsvg $^
+	$(PLANTUML) -o ../../images -tsvg $^
 
 $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 	cp $^ $@
