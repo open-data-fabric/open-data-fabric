@@ -1,0 +1,228 @@
+openapi: 3.0.3
+
+info:
+  title: ODF Smart Transfer Protocol (HTTP endpoints part)
+  description:
+    Open Data Fabric (ODF) extended protocol for dataset exchange between remote parties.
+    Defines REST API endpoints that enable simple operation and upgrading to asynchronous API protocol.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.1.0
+
+components:
+
+  parameters:
+
+    Reference:
+      in: path
+      name: reference
+      description: Name of the reference
+      example: head
+      required: true
+      schema:
+        type: string
+        enum: [head]
+
+    BlockHash:
+      in: path
+      name: blockHash
+      description: Hash of the requested block
+      example: zW1qJPmDvBxGS9GeC7PFseSCy7koHjvurUmisf1VWscY3AX
+      required: true
+      schema:
+        type: string
+        format: multihash
+
+    ObjectPhysicalHash:
+      in: path
+      name: physicalHash
+      description: Physical hash of the requested object file
+      example: zW1diFMSn97sDG4WMMKZ7pvM7vVenC5ytAesQK7V3qqALPv
+      required: true
+      schema:
+        type: string
+        format: multihash
+
+    UpgradeToWebSocket:
+      in: header
+      name: Upgrade
+      schema:
+        type: string
+        enum: [websocket]
+      required: true
+
+    ConnectionUpgrade:
+      in: header
+      name: Connection
+      schema:
+        type: string
+        enum: [Upgrade]
+      required: true
+
+    WebSocketProtocol:
+      in: header
+      name: Sec-WebSocket-Protocol
+      schema:
+        type: string
+        enum: [open-data-fabric]
+      required: true
+
+    WebSocketProtocolVersion:
+      in: header
+      name: Sec-WebSocket-Version
+      schema:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+      required: false
+
+  responses:
+
+    SwitchedToWebSocketResponse:
+      description: Confirms accepted switching to the WebSocket protocol
+      headers:
+        Upgrade:
+          schema:
+            type: string
+            enum: [websocket]
+          required: true
+        Connection:
+          schema:
+            type: string
+            enum: [Upgrade]
+          required: true
+        Sec-WebSocket-Protocol:
+          schema:
+            type: string
+            enum: [open-data-fabric]
+          required: true
+        Sec-WebSocket-Version:
+          schema:
+            type: string
+            pattern: '^(\d+\.\d+\.\d+)(,(\d+\.\d+\.\d+))*$'
+          required: false
+
+    Error:
+      description: Request error
+      content:
+        application/json:
+          schema:
+            type: object
+
+  securitySchemes:
+    odf_access_token:
+      type: http
+      scheme: bearer
+      bearerFormat: org.odf.access_token
+
+paths:
+  /refs/{reference}:
+    get:
+      operationId: rest.dataset.get_ref
+      description: Fetch the hash of specified reference related to the current dataset
+      security:
+        - odf_access_token: []
+      parameters:
+        - $ref: '#/components/parameters/Reference'
+      responses:
+        200:
+          description: Successfully fetched hash of the dataset reference
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: multihash
+                example: zW1qJPmDvBxGS9GeC7PFseSCy7koHjvurUmisf1VWscY3AX
+        default:
+          $ref: '#/components/responses/Error'
+
+  /blocks/{blockHash}:
+    get:
+      operationId: rest.dataset.get_block
+      description: Fetch the content of the block with the specified hash
+      security:
+        - odf_access_token: []
+      parameters:
+        - $ref: '#/components/parameters/BlockHash'     
+      responses:
+        200:
+          description: Successfully fetched block contents
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/Error'
+
+  /data/{physicalHash}:
+    get:
+      operationId: rest.dataset.get_data
+      description: Fetch the content of the data object with the given physical hash
+      security:
+        - odf_access_token: []
+      parameters:
+        - $ref: '#/components/parameters/ObjectPhysicalHash'     
+      responses:
+        200:
+          description: Successfully fetched data object contents
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/Error'
+
+  /checkpoints/{physicalHash}:
+    get:
+      operationId: rest.dataset.get_checkpoint
+      description: Fetch the content of the checkpoint object with the given physical hash
+      security:
+        - odf_access_token: []
+      parameters:
+        - $ref: '#/components/parameters/ObjectPhysicalHash'     
+      responses:
+        200:
+          description: Successfully fetched checkpoinnt object contents
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/Error'
+
+  /pull:
+    get:
+      operationId: rest.dataset.pull
+      description: Requests upgrading to Websocket protocol to implement smart pull flow
+      security:
+        - odf_access_token: []
+      parameters:
+        - $ref: '#/components/parameters/UpgradeToWebSocket'
+        - $ref: '#/components/parameters/ConnectionUpgrade'
+        - $ref: '#/components/parameters/WebSocketProtocol'
+        - $ref: '#/components/parameters/WebSocketProtocolVersion'
+      responses:
+        101:
+          $ref: '#/components/responses/SwitchedToWebSocketResponse'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /push:
+    get:
+      operationId: rest.dataset.push
+      description: Requests upgrading to Websocket protocol to implement smart push flow
+      security:
+        - odf_access_token: []
+      parameters:
+        - $ref: '#/components/parameters/UpgradeToWebSocket'
+        - $ref: '#/components/parameters/ConnectionUpgrade'
+        - $ref: '#/components/parameters/WebSocketProtocol'
+        - $ref: '#/components/parameters/WebSocketProtocolVersion'
+      responses:
+        101:
+          $ref: '#/components/responses/SwitchedToWebSocketResponse'
+        default:
+          $ref: '#/components/responses/Error'

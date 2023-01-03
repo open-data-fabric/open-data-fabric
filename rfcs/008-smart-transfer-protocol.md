@@ -67,7 +67,13 @@ alternative type of channel that supports bi-directional non-blocking message ex
 
 ## Reference-level explanation
 
-See `AsyncAPI` [description of the protocol messages](../protocols/smart-transfer-protocol.asyncapi.yaml).
+Smart Transfer Protocol defines 2 kinds of APIs:
+ - `OpenAPI` [description of the initial REST endpoints](../protocols/smart-transfer-protocol.openapi.yaml).
+ - `AsyncAPI` [description of the protocol messages](../protocols/smart-transfer-protocol.asyncapi.yaml).
+
+`OpenAPI` is a superset of REST API endpoints as defined in the 
+[Simple Transfer Protocol](./007-simple-transfer-protocol.md), with extensions to establish 
+asynchronous duplex messaging channel as defined by `AsyncAPI`.
 
 ### Push flow
 
