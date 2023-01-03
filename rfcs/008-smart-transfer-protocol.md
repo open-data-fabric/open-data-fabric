@@ -67,7 +67,7 @@ alternative type of channel that supports bi-directional non-blocking message ex
 
 ## Reference-level explanation
 
-See `AsyncAPI` [description of the protocol messages](../swagger/smart_transfer_protocol_ws.yaml).
+See `AsyncAPI` [description of the protocol messages](../protocols/smart-transfer-protocol.asyncapi.yaml).
 
 ### Push flow
 
