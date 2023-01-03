@@ -12,39 +12,45 @@ info:
 
 components:
 
+  schemas:
+
+    MultiHash:
+      type: string
+      format: multihash
+      example: zW1qJPmDvBxGS9GeC7PFseSCy7koHjvurUmisf1VWscY3AX
+
+    OdfWebSocketProtocol:
+      type: string
+      enum: [odf/smart-transfer-protocol/v1]
+
   parameters:
 
-    Reference:
+    reference:
       in: path
       name: reference
       description: Name of the reference
-      example: head
       required: true
       schema:
         type: string
         enum: [head]
 
-    BlockHash:
+    blockHash:
       in: path
       name: blockHash
       description: Hash of the requested block
-      example: zW1qJPmDvBxGS9GeC7PFseSCy7koHjvurUmisf1VWscY3AX
       required: true
       schema:
-        type: string
-        format: multihash
+        $ref: '#/components/schemas/MultiHash'
 
-    ObjectPhysicalHash:
+    physicalHash:
       in: path
       name: physicalHash
       description: Physical hash of the requested object file
-      example: zW1diFMSn97sDG4WMMKZ7pvM7vVenC5ytAesQK7V3qqALPv
       required: true
       schema:
-        type: string
-        format: multihash
+        $ref: '#/components/schemas/MultiHash'
 
-    UpgradeToWebSocket:
+    upgradeToWebSocket:
       in: header
       name: Upgrade
       schema:
@@ -52,7 +58,7 @@ components:
         enum: [websocket]
       required: true
 
-    ConnectionUpgrade:
+    connectionUpgrade:
       in: header
       name: Connection
       schema:
@@ -60,21 +66,20 @@ components:
         enum: [Upgrade]
       required: true
 
-    WebSocketProtocol:
+    webSocketProtocol:
       in: header
       name: Sec-WebSocket-Protocol
       schema:
-        type: string
-        enum: [open-data-fabric]
+        $ref: '#/components/schemas/OdfWebSocketProtocol'
       required: true
 
-    WebSocketProtocolVersion:
+    webSocketProtocolVersion:
       in: header
       name: Sec-WebSocket-Version
       schema:
         type: string
-        pattern: '^\d+\.\d+\.\d+$'
       required: false
+      example: 13
 
   responses:
 
@@ -93,13 +98,11 @@ components:
           required: true
         Sec-WebSocket-Protocol:
           schema:
-            type: string
-            enum: [open-data-fabric]
+            $ref: '#/components/schemas/OdfWebSocketProtocol'
           required: true
         Sec-WebSocket-Version:
           schema:
             type: string
-            pattern: '^(\d+\.\d+\.\d+)(,(\d+\.\d+\.\d+))*$'
           required: false
 
     Error:
@@ -123,7 +126,7 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/Reference'
+        - $ref: '#/components/parameters/reference'
       responses:
         200:
           description: Successfully fetched hash of the dataset reference
@@ -143,7 +146,7 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/BlockHash'     
+        - $ref: '#/components/parameters/blockHash'     
       responses:
         200:
           description: Successfully fetched block contents
@@ -162,7 +165,7 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/ObjectPhysicalHash'     
+        - $ref: '#/components/parameters/physicalHash'     
       responses:
         200:
           description: Successfully fetched data object contents
@@ -181,7 +184,7 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/ObjectPhysicalHash'     
+        - $ref: '#/components/parameters/physicalHash'     
       responses:
         200:
           description: Successfully fetched checkpoinnt object contents
@@ -200,10 +203,10 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/UpgradeToWebSocket'
-        - $ref: '#/components/parameters/ConnectionUpgrade'
-        - $ref: '#/components/parameters/WebSocketProtocol'
-        - $ref: '#/components/parameters/WebSocketProtocolVersion'
+        - $ref: '#/components/parameters/upgradeToWebSocket'
+        - $ref: '#/components/parameters/connectionUpgrade'
+        - $ref: '#/components/parameters/webSocketProtocol'
+        - $ref: '#/components/parameters/webSocketProtocolVersion'
       responses:
         101:
           $ref: '#/components/responses/SwitchedToWebSocketResponse'
@@ -217,10 +220,10 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/UpgradeToWebSocket'
-        - $ref: '#/components/parameters/ConnectionUpgrade'
-        - $ref: '#/components/parameters/WebSocketProtocol'
-        - $ref: '#/components/parameters/WebSocketProtocolVersion'
+        - $ref: '#/components/parameters/upgradeToWebSocket'
+        - $ref: '#/components/parameters/connectionUpgrade'
+        - $ref: '#/components/parameters/webSocketProtocol'
+        - $ref: '#/components/parameters/webSocketProtocolVersion'
       responses:
         101:
           $ref: '#/components/responses/SwitchedToWebSocketResponse'

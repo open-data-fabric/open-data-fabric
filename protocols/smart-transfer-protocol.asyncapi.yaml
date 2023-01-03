@@ -144,6 +144,7 @@ channels:
           required:
             - datasetId
             - currentHead
+            - sizeEstimation
           properties:
             datasetId:
               type: string
@@ -154,7 +155,6 @@ channels:
               format: multihash
               description: Hash of the head block that client assumes to be the current head on the server
             sizeEstimation:
-              # Question: should it stay optional?
               $ref: '#/components/schemas/TransferSizeEstimation'
 
   dataset/push/request/accepted:
