@@ -263,6 +263,16 @@ def render_string_enum(name, sch):
     yield '}'
     yield '}'
     yield '}'
+    yield ''
+    yield f'impl Into<odf::{name}> for {name} {{'
+    yield f'fn into(self) -> odf::{name} {{'
+    yield 'match self {'
+    for value in sch['enum']:
+        capitalized = value[0].upper() + value[1:]
+        yield f'Self::{capitalized} => odf::{name}::{capitalized},'
+    yield '}'
+    yield '}'
+    yield '}'
 
 
 def get_composite_type(sch):
