@@ -513,29 +513,32 @@ The resulting DID is stored in the first [MetadataBlock](#metadata-chain) in the
 Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used for proving ownership and control over a [Dataset](#dataset).
 
 ### Aliases and References
-Formats described below provide human-friendly ways to refer to a certain dataset. Their ease of use comes, however, without any guarantees on collisions, mutability, and ambiguity.
+Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](#repository). Unlike [Dataset IDs](#unique-identitifiers) they are are not collision-free and mutable.
 
-Depending on the context we differentiate the following types of aliases:
-- **Local Format** - used to refer to a dataset within a local workspace
+Depending on the context we differentiate the following types of references:
+- **Local Format** - used to refer to a dataset within a local workspace (can be single- and multi-tenant)
 - **Remote Format** - used to refer to a dataset located in a known [Repository](#repository) provider.
-- **Remote Multi-Tenant Format** - used to refer to a dataset located in a known [Repository](#repository) and belonging to a particular tenant of that provider.
 
 As you will see in the examples below, we recommend (but not require) using the [reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) for [Dataset](#dataset) names.
 
 Examples:
 <pre>
+// Dataset ID
+did:odf:z4k88e8oT6CUiFQSbmHPViLQGHoX8x5Fquj9WvvPdSCvzTRWGfJ
+
 // Local Format - DatasetName is highlighted
 <b>property.parcel-polygons</b>
 <b>cities</b>
 <b>admin0.countries.10m</b>
 
-// Remote Format - RepositoryName prefix is highlighted
-<b>statcan.gc.ca/</b>census.2016.population
-<b>us.cityofnewyork/</b>public-safety.ems-incident-dispatch
+// Local Multi-tenant Format - AccountName is highlighted
+<b>statcan.gc.ca</b>/census.2016.population
+<b>ny-newyork</b>/public-safety.ems-incident-dispatch
 
-// Remote Multi-tenant Format - AccountName infix is highlighted
-opendata.ca/<b>statcan</b>/census.2016.population
-data.gov/<b>ny-newyork</b>/public-safety.ems-incident-dispatch
+// Remote Format - RepoName is highlighted
+<b>statcan.gc.ca</b>/census.2016.population
+<b>us.cityofnewyork</b>/public-safety.ems-incident-dispatch
+<b>data.gov</b>/ny-newyork/public-safety.ems-incident-dispatch
 
 // Remote Url Format
 https://opendata.ca/odf/census-2016-population/
@@ -544,25 +547,36 @@ ipfs://bafkreie3hfshd4ikinnbio3kewo2hvj6doh5jp3p23iwk2evgo2un5g7km/
 
 Full [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) grammar:
 ```
-DatasetRefAny = DatasetRefRemote / DatasetRefLocal
-DatasetRefRemote = DatasetID / RemoteDatasetName / Url
-DatasetRefLocal = DatasetID / DatasetName
+DatasetRefAny = 
+  DatasetRefRemote /
+  DatasetRef
 
-RemoteDatasetName = RepositoryName "/" DatasetNameWithOwner
-DatasetNameWithOwner = (AccountName "/")? DatasetName
-AccountName = Subdomain
-RepositoryName = Hostname
+DatasetRef = 
+  DatasetID /
+  DatasetAlias
 
-DatasetName = Hostname
+DatasetRefRemote =
+  (RepoName "/")? DatasetID /
+  DatasetAliasRemote /
+  Url
+
+DatasetAlias = 
+  (AccountName "/")? DatasetName
+
+DatasetAliasRemote = 
+  RepoName "/" (AccountName "/")? DatasetName
+
 DatasetID = "did:odf:" Multibase
+DatasetName = Hostname
+AccountName = Hostname
+RepoName = Hostname
 
 Hostname = Subdomain ("." Subdomain)*
 Subdomain = [a-zA-Z0-9]+ ("-" [a-zA-Z0-9]+)*
 
 Multibase = [a-zA-Z0-9+/=]+
-
 Url = Scheme "://" [^\n]+
-Scheme = [a-z0-9]+ ("+" [a-z0-9]+)*
+Scheme = [a-zA-Z0-9]+ ("+" [a-zA-Z0-9]+)*
 ```
 
 ## Data Format
