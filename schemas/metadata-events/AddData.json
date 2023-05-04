@@ -4,9 +4,7 @@
   "description": "Indicates that data has been ingested into a root dataset.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "outputData"
-  ],
+  "required": [],
   "properties": {
     "inputCheckpoint": {
       "type": "string",
@@ -15,7 +13,7 @@
     },
     "outputData": {
       "$ref": "/schemas/DataSlice",
-      "description": "Describes output data written during this transaction."
+      "description": "Describes output data written during this transaction, if any."
     },
     "outputCheckpoint": {
       "$ref": "/schemas/Checkpoint",
@@ -24,7 +22,11 @@
     "outputWatermark": {
       "type": "string",
       "format": "date-time",
-      "description": "Last watermark of the output data stream."
+      "description": "Last watermark of the output data stream, if changed."
+    },
+    "sourceState": {
+      "$ref": "/schemas/SourceState",
+      "description": "The state of the source the data was added from to allow fast resuming."
     }
   }
 }

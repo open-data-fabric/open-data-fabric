@@ -1,0 +1,26 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SourceState",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "The state of the source the data was added from to allow fast resuming.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "source",
+    "value"
+  ],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "description": "Identifies the type of the state. Standard types include: `odf/etag`, `odf/last-modified`."
+    },
+    "source": {
+      "type": "string",
+      "description": "Identifies the source data was ingested from. Standard sources include: `odf/poll`"
+    },
+    "value": {
+      "type": "string",
+      "description": "Opaque value representing the state."
+    }
+  }
+}

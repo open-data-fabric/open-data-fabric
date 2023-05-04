@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.28.0
+Version: 0.30.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1084,6 +1084,7 @@ See also:
   - [ReadStep](#readstep-schema)
   - [RequestHeader](#requestheader-schema)
   - [SourceCaching](#sourcecaching-schema)
+  - [SourceState](#sourcestate-schema)
   - [SqlQueryStep](#sqlquerystep-schema)
   - [TemporalTable](#temporaltable-schema)
   - [Transform](#transform-schema)
@@ -1167,9 +1168,10 @@ Indicates that data has been ingested into a root dataset.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `inputCheckpoint` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash of the checkpoint file used to restore ingestion state, if any. |
-| `outputData` | [DataSlice](#dataslice-schema) | V |  | Describes output data written during this transaction. |
+| `outputData` | [DataSlice](#dataslice-schema) |  |  | Describes output data written during this transaction, if any. |
 | `outputCheckpoint` | [Checkpoint](#checkpoint-schema) |  |  | Describes checkpoint written during this transaction, if any. |
-| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream. |
+| `outputWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream, if changed. |
+| `sourceState` | [SourceState](#sourcestate-schema) |  |  | The state of the source the data was added from to allow fast resuming. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/AddData.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1929,6 +1931,20 @@ After source was processed once it will never be ingested again.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+
+<a name="sourcestate-schema"></a>
+##### SourceState
+The state of the source the data was added from to allow fast resuming.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `kind` | `string` | V |  | Identifies the type of the state. Standard types include: `odf/etag`, `odf/last-modified`. |
+| `source` | `string` | V |  | Identifies the source data was ingested from. Standard sources include: `odf/poll` |
+| `value` | `string` | V |  | Opaque value representing the state. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/SourceState.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 <a name="sqlquerystep-schema"></a>
 ##### SqlQueryStep

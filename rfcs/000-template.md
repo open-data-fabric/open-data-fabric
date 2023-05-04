@@ -2,20 +2,25 @@
 
 **Start Date**: (fill me in with today's date, YYYY-MM-DD)
 
-[![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/11?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/11)
+[![RFC](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/11?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/11)
 
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/12?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/12)
 
-## Summary
+**Compatibility**: Specify in format: `Backwards-compatible, forwards-incompatible`
+- Backwards-compatible means
+  - whether software updated to this RFC will be able to operate on old data
+  - in case of protocol updates - whether older clients will be able to communicate with newer servers
+- Forwards-compatibile means
+  - whether data written by new software still can be used by older software
+  - if newer clients will be able to communicate with older servers
 
+## Summary
 One paragraph explanation of the feature.
 
 ## Motivation
-
 Why are we doing this? What use cases does it support? What is the expected outcome?
 
 ## Guide-level explanation
-
 Explain the proposal as if it was already included in the spec and you were teaching it to another ODF user. That generally means:
 
 - Introducing new named concepts.
@@ -27,7 +32,6 @@ Explain the proposal as if it was already included in the spec and you were teac
 For implementation-oriented RFCs (e.g. for coordinator internals), this section should focus on how coordinator programmers should think about the change, and give examples of its concrete impact. For policy RFCs, this section should provide an example-driven introduction to the policy, and explain its impact in concrete terms.
 
 ## Reference-level explanation
-
 This is the technical portion of the RFC. Explain the design in sufficient detail that:
 
 - Its interaction with other features is clear.
@@ -36,18 +40,18 @@ This is the technical portion of the RFC. Explain the design in sufficient detai
 
 The section should return to the examples given in the previous section, and explain more fully how the detailed proposal makes those examples work.
 
-## Drawbacks
+## Compatibility
+Details on compatibility of these changes.
 
+## Drawbacks
 Why should we *not* do this?
 
 ## Rationale and alternatives
-
 - Why is this design the best in the space of possible designs?
 - What other designs have been considered and what is the rationale for not choosing them?
 - What is the impact of not doing this?
 
 ## Prior art
-
 Discuss prior art, both the good and the bad, in relation to this proposal.
 A few examples of what this can include are:
 
@@ -60,13 +64,11 @@ This section is intended to encourage you as an author to think about the lesson
 If there is no prior art, that is fine - your ideas are interesting to us whether they are brand new or if it is an adaptation from other technologies.
 
 ## Unresolved questions
-
 - What parts of the design do you expect to resolve through the RFC process before this gets merged?
 - What parts of the design do you expect to resolve through the implementation of this feature before stabilization?
 - What related issues do you consider out of scope for this RFC that could be addressed in the future independently of the solution that comes out of this RFC?
 
 ## Future possibilities
-
 Think about what the natural extension and evolution of your proposal would be and how it would affect ODF as a whole. Try to use this section as a tool to more fully consider all possible interactions with the ODF in your proposal.
 
 This is also a good place to "dump ideas", if they are out of scope for the RFC you are writing but otherwise related.
