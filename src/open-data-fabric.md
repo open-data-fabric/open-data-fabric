@@ -627,7 +627,7 @@ Supported types:
 |    `STRING`    |                                      `binary (UTF8)`                                       |
 | `TIMESTAMP(p)` | see [spec](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#timestamp) |
 |     `DATE`     |                                       `int32 (DATE)`                                       |
-|     `TIME`     |   see [spec](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#time)    |
+|   `TIME(p)`    |   see [spec](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#time)    |
 
 > **TODO:**
 > - Standardize DDL for nested data structures (nested data support highly varies between vendors)
@@ -638,11 +638,14 @@ Supported types:
 ## Common Data Schema
 All data in the system is guaranteed to have the following columns:
 
-|    Column     |            Type             | Description                                                                                                                                                                                                                             |
-| :-----------: | :-------------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   `offset`    |      `UNSIGNED BIGINT`      | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset                                                                                                                                              |
-| `system_time` |       `TIMESTAMP(6)`        | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset) |
-| `event_time`  | `TIMESTAMP(3..6)` or `DATE` | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. This time is used for most time-based windowed computations, aggregations, and joins                                               |
+|    Column     |                      Parquet Type                       | Description                                                                                                                                                                                                                                                                                                                                      |
+| :-----------: | :-----------------------------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|   `offset`    |                         `int64`                         | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                      |
+| `system_time` |     `Timestamp(unit=MILLIS, isAdjustedToUTC=true)`      | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                          |
+| `event_time`  | `Timestamp(unit=_, isAdjustedToUTC=true)`<br/>or `DATE` | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
+
+> **TODO:**
+> - We are not allowing non-UTC-adjusted timestamps yet as Parquet does not offer a way to encode the timezone, meaning we need a reliable way to pass timezone information between different engines through some other means (e.g. Parquet metadata). Having naive/local timestamps without enforcing that they are accompanied by the specific timezone would be too error prone.
 
 ## Metadata Format
 The requirements we put towards the metadata format are:
