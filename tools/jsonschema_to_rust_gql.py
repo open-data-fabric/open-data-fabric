@@ -12,7 +12,7 @@ PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 
 use crate::queries::Dataset;
-use crate::scalars::{DatasetID, DatasetName, Multihash, OSPath};
+use crate::scalars::{DatasetAlias, DatasetID, DatasetName, Multihash, OSPath};
 
 use opendatafabric as odf;
 use async_graphql::*;
