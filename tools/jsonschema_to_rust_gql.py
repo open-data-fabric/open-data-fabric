@@ -29,7 +29,7 @@ CUSTOM_TYPES = {
 #[graphql(complex)]
 pub struct TransformInput {
     pub id: Option<DatasetID>,
-    pub name: DatasetName,
+    pub alias: DatasetAlias,
 }
 
 #[ComplexObject]
@@ -44,7 +44,7 @@ impl From<odf::TransformInput> for TransformInput {
     fn from(v: odf::TransformInput) -> Self {
         Self {
             id: v.id.map(Into::into),
-            name: v.name.into(),
+            alias: v.alias.into(),
         }
     }
 }
@@ -313,6 +313,8 @@ def get_primitive_type(sch):
             return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
+        elif fmt == 'dataset-alias':
+            return 'DatasetAlias'            
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

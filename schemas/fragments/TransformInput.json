@@ -5,7 +5,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "name"
+    "alias"
   ],
   "properties": {
     "id": {
@@ -13,9 +13,9 @@
       "format": "dataset-id",
       "description": "Unique dataset identifier. This field is required in metadata blocks and can be empty only in a DatasetSnapshot."
     },
-    "name": {
+    "alias": {
       "type": "string",
-      "format": "dataset-name",
+      "format": "dataset-alias",
       "description": "An alias of this input to be used in queries."
     }
   }

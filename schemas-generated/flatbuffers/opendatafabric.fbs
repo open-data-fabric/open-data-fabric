@@ -397,7 +397,7 @@ table SetPollingSource {
 
 table TransformInput {
   id: [ubyte];
-  name: string;
+  alias: string;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -205,6 +205,9 @@ def get_primitive_type(sch):
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             return 'DatasetName'
+        elif fmt == 'dataset-alias':
+            assert ptype == 'string'
+            return 'DatasetAlias'            
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':
