@@ -13,7 +13,7 @@ PREAMBLE = """
 
 use crate::dtos;
 use crate::dtos::{CompressionFormat, DatasetKind, SourceOrdering};
-use crate::identity::{DatasetAlias, DatasetID, DatasetName};
+use crate::identity::{DatasetID, DatasetName, DatasetRefAny};
 use crate::formats::*;
 use chrono::{DateTime, Utc};
 use std::path::Path;
@@ -309,8 +309,8 @@ def get_primitive_type(sch):
             return "&DatasetID"
         elif fmt == 'dataset-name':
             return "&DatasetName"
-        elif fmt == 'dataset-alias':
-            return "&DatasetAlias"            
+        elif fmt == 'dataset-ref-any':
+            return "&DatasetRefAny"
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':
@@ -361,7 +361,7 @@ def render_accessor(name, sch, optional, in_ref=False):
             yield f'{name}.as_ref()'
         elif fmt == 'multihash':
             yield f'{name}' if in_ref else f'&{name}'
-        elif fmt in ('dataset-id', 'dataset-name', 'dataset-alias'):
+        elif fmt in ('dataset-id', 'dataset-name', 'dataset-ref-any'):
             yield f'{name}' if in_ref else f'&{name}'
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -397,7 +397,7 @@ def render_clone(name, sch, optional):
             yield name
         elif fmt in ('date-time',):
             yield name
-        elif fmt in ('dataset-name', 'dataset-alias', 'url', 'path', 'regex'):
+        elif fmt in ('dataset-name', 'dataset-ref-any', 'url', 'path', 'regex'):
             yield f'{name}.to_owned()'
         elif fmt == 'multihash':
             yield f'{name}.clone()'

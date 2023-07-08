@@ -472,8 +472,8 @@ def pre_ser_primitive_type(name, sch):
             yield f'fb.create_vector(&{name}.to_bytes())'
         elif fmt == 'dataset-name':
             yield f'fb.create_string(&{name})'
-        elif fmt == 'dataset-alias':
-            yield f'fb.create_string({name}.to_string().as_str())'            
+        elif fmt == 'dataset-ref-any':
+            yield f'fb.create_string({name}.to_string().as_str())'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -507,8 +507,8 @@ def ser_primitive_type(name, sch):
             assert ptype == 'string'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
-        elif fmt == 'dataset-alias':
-            assert ptype == 'string'            
+        elif fmt == 'dataset-ref-any':
+            assert ptype == 'string'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -551,9 +551,9 @@ def de_primitive_type(name, sch, enum_t_accessor):
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             yield f'odf::DatasetName::try_from({name}).unwrap()'
-        elif fmt == 'dataset-alias':
+        elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
-            yield f'odf::DatasetAlias::try_from({name}).unwrap()'            
+            yield f'odf::DatasetRefAny::try_from({name}).unwrap()'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':

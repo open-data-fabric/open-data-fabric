@@ -11,7 +11,7 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
-use crate::identity::{DatasetAlias, DatasetID, DatasetName};
+use crate::identity::{DatasetID, DatasetName, DatasetRefAny};
 use crate::formats::Multihash;
 use chrono::{DateTime, Utc};
 use std::path::PathBuf;
@@ -195,8 +195,8 @@ def get_primitive_type(sch):
             return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
-        elif fmt == 'dataset-alias':
-            return 'DatasetAlias'            
+        elif fmt == 'dataset-ref-any':
+            return 'DatasetRefAny'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

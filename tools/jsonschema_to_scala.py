@@ -39,6 +39,10 @@ case class DatasetID(s: String) extends AnyVal {
 case class DatasetName(s: String) extends AnyVal {
   override def toString: String = s
 }
+
+case class DatasetRefAny(s: String) extends AnyVal {
+  override def toString: String = s
+}
 """
 
 DEFAULT_INDENT = 2
@@ -205,9 +209,9 @@ def get_primitive_type(sch):
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             return 'DatasetName'
-        elif fmt == 'dataset-alias':
+        elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
-            return 'DatasetAlias'            
+            return 'DatasetRefAny'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

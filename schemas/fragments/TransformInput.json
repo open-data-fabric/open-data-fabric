@@ -5,7 +5,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "alias"
+    "name"
   ],
   "properties": {
     "id": {
@@ -13,10 +13,15 @@
       "format": "dataset-id",
       "description": "Unique dataset identifier. This field is required in metadata blocks and can be empty only in a DatasetSnapshot."
     },
-    "alias": {
+    "name": {
       "type": "string",
-      "format": "dataset-alias",
-      "description": "An alias of this input to be used in queries."
+      "format": "dataset-name",
+      "description": "A name of this input's table to be used in queries."
+    },
+    "dataset_ref": {
+      "type": "string",
+      "format": "dataset-ref-any",
+      "description": "A local or remote dataset reference to use in dataset resolutions."
     }
   }
 }
