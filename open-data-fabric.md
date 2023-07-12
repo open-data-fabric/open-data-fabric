@@ -2012,7 +2012,7 @@ Describes a derivative transformation input
 | :---: | :---: | :---: | :---: | --- |
 | `id` | `string` |  | [dataset-id](#dataset-identity) | Unique dataset identifier. This field is required in metadata blocks and can be empty only in a DatasetSnapshot. |
 | `name` | `string` | V | [dataset-name](#dataset-identity) | A name of this input's table to be used in queries. |
-| `dataset_ref` | `string` |  | [dataset-ref-any](#dataset-identity) | A local or remote dataset reference to use in dataset resolutions. |
+| `datasetRef` | `string` |  | [dataset-ref-any](#dataset-identity) | A local or remote dataset reference to use in dataset resolutions. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/TransformInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

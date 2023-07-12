@@ -18,7 +18,7 @@
       "format": "dataset-name",
       "description": "A name of this input's table to be used in queries."
     },
-    "dataset_ref": {
+    "datasetRef": {
       "type": "string",
       "format": "dataset-ref-any",
       "description": "A local or remote dataset reference to use in dataset resolutions."
