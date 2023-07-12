@@ -256,6 +256,8 @@ def get_primitive_type(sch):
             return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
+        elif fmt == 'dataset-ref-any':
+            return 'DatasetRefAny'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

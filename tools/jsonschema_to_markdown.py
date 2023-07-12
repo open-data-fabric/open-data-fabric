@@ -66,6 +66,8 @@ def render_format(sch):
         return "[dataset-id](#dataset-identity)"
     elif fmt == "dataset-name":
         return "[dataset-name](#dataset-identity)"
+    elif fmt == "dataset-ref-any":
+        return "[dataset-ref-any](#dataset-identity)"
     elif fmt in ("path", "int64", "regex", "url"):
         return f"`{fmt}`"
     else:

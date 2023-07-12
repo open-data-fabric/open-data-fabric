@@ -12,7 +12,7 @@ PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 
 use crate::queries::Dataset;
-use crate::scalars::{DatasetID, DatasetName, Multihash, OSPath};
+use crate::scalars::{DatasetID, DatasetName, DatasetRefAny, Multihash, OSPath};
 
 use opendatafabric as odf;
 use async_graphql::*;
@@ -30,6 +30,7 @@ CUSTOM_TYPES = {
 pub struct TransformInput {
     pub id: Option<DatasetID>,
     pub name: DatasetName,
+    pub dataset_ref: Option<DatasetRefAny>,
 }
 
 #[ComplexObject]
@@ -45,6 +46,7 @@ impl From<odf::TransformInput> for TransformInput {
         Self {
             id: v.id.map(Into::into),
             name: v.name.into(),
+            dataset_ref: v.dataset_ref.map(Into::into),
         }
     }
 }
@@ -313,6 +315,8 @@ def get_primitive_type(sch):
             return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
+        elif fmt == 'dataset-ref-any':
+            return 'DatasetRefAny'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

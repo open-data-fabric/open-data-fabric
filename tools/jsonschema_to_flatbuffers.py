@@ -240,6 +240,8 @@ def get_primitive_type(sch):
             return '[ubyte]'
         elif fmt == 'dataset-name':
             return 'string'
+        elif fmt == 'dataset-ref-any':
+            return 'string'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

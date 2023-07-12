@@ -16,7 +16,12 @@
     "name": {
       "type": "string",
       "format": "dataset-name",
-      "description": "An alias of this input to be used in queries."
+      "description": "A name of this input's table to be used in queries."
+    },
+    "datasetRef": {
+      "type": "string",
+      "format": "dataset-ref-any",
+      "description": "A local or remote dataset reference to use in dataset resolutions."
     }
   }
 }
