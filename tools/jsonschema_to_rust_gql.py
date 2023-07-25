@@ -11,12 +11,12 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
-use crate::queries::Dataset;
-use crate::scalars::{DatasetID, DatasetName, DatasetRefAny, Multihash, OSPath};
-
-use opendatafabric as odf;
-use async_graphql::*;
 use chrono::{DateTime, Utc};
+use opendatafabric as odf;
+
+use crate::prelude::*;
+use crate::queries::Dataset;
+use crate::scalars::{DatasetID, DatasetName, Multihash, OSPath};
 """
 
 DEFAULT_INDENT = 4

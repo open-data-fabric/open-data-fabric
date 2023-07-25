@@ -15,6 +15,7 @@ use crate::identity::{DatasetID, DatasetName, DatasetRefAny};
 use crate::formats::Multihash;
 use chrono::{DateTime, Utc};
 use std::path::PathBuf;
+use enum_variants::*;
 """
 
 DEFAULT_INDENT = 4
@@ -128,24 +129,32 @@ def render_oneof(name, sch):
     for isch in sch["oneOf"]:
         yield from indent(render_oneof_element(name, sch, isch))
     yield '}'
+    yield ''
+    yield f'impl_enum_with_variants!({name});'
 
 
 def render_oneof_element(name, sch, isch):
     ref = isch["$ref"]
     ename = ref.split('/')[-1]
+    struct_name = None
 
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
-
-        if not esch.get('properties', ()):
-            yield f'{ename},'
-        else:
+        if esch.get('properties', ()):
             struct_name = f'{name}{ename}'
-            yield f'{ename}({struct_name}),'
-            # See: https://github.com/rust-lang/rfcs/pull/2593
             extra_types.append(lambda: render_struct(struct_name, esch))
     else:
-        yield f'{ename}({ename}),'
+        struct_name = ename
+
+    if struct_name:
+        yield f'{ename}({struct_name}),'
+        extra_types.append(lambda: render_oneof_element_conversion(name, ename, struct_name))
+    else:
+        yield f'{ename},'
+
+
+def render_oneof_element_conversion(enum_name, enum_variant, type_name):
+    yield f'impl_enum_variant!({enum_name}::{enum_variant}({type_name}));'
 
 
 def render_string_enum(name, sch):
