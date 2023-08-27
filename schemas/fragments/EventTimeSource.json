@@ -10,6 +10,13 @@
       "required": [],
       "properties": {}
     },
+    "FromSystemTime": {
+      "description": "Assigns event time from the system time source.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
     "FromPath": {
       "description": "Extracts event time from the path component of the source.",
       "type": "object",
@@ -36,6 +43,9 @@
     },
     {
       "$ref": "#/$defs/FromPath"
+    },
+    {
+      "$ref": "#/$defs/FromSystemTime"
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.30.0
+Version: 0.32.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1539,6 +1539,7 @@ Defines the external source of data.
 | :---: | --- |
 | [EventTimeSource::FromMetadata](#eventtimesource-frommetadata-schema) | Extracts event time from the source's metadata. |
 | [EventTimeSource::FromPath](#eventtimesource-frompath-schema) | Extracts event time from the path component of the source. |
+| [EventTimeSource::FromSystemTime](#eventtimesource-fromsystemtime-schema) | Assigns event time from the system time source. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1547,6 +1548,17 @@ Defines the external source of data.
 <a name="eventtimesource-frommetadata-schema"></a>
 ##### EventTimeSource::FromMetadata
 Extracts event time from the source's metadata.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="eventtimesource-fromsystemtime-schema"></a>
+##### EventTimeSource::FromSystemTime
+Assigns event time from the system time source.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1805,9 +1817,12 @@ Defines how raw data should be read into the structured form.
 | :---: | --- |
 | [ReadStep::Csv](#readstep-csv-schema) | Reader for comma-separated files. |
 | [ReadStep::JsonLines](#readstep-jsonlines-schema) | Reader for files containing concatenation of multiple JSON records with the same schema. |
-| [ReadStep::GeoJson](#readstep-geojson-schema) | Reader for GeoJSON files. |
+| [ReadStep::GeoJson](#readstep-geojson-schema) | Reader for GeoJSON files. It expects one `FeatureCollection` object in the root and will create a record per each `Feature` inside it extracting the properties into individual columns and leaving the feature geometry in its own column. |
 | [ReadStep::EsriShapefile](#readstep-esrishapefile-schema) | Reader for ESRI Shapefile format. |
 | [ReadStep::Parquet](#readstep-parquet-schema) | Reader for Apache Parquet format. |
+| [ReadStep::Json](#readstep-json-schema) | Reader for JSON files that contain an array of objects within them. |
+| [ReadStep::NdJson](#readstep-ndjson-schema) | Reader for files containing multiple newline-delimited JSON objects with the same schema. |
+| [ReadStep::NdGeoJson](#readstep-ndgeojson-schema) | Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format but instead of `FeatureCollection` object in the root it expects every individual feature object to appear on its own line. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1835,8 +1850,8 @@ Reader for comma-separated files.
 | `nanValue` | `string` |  |  | Sets the string representation of a non-number value. |
 | `positiveInf` | `string` |  |  | Sets the string representation of a positive infinity value. |
 | `negativeInf` | `string` |  |  | Sets the string representation of a negative infinity value. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
 | `multiLine` | `boolean` |  |  | Parse one record, which may span multiple lines. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
@@ -1850,11 +1865,42 @@ Reader for files containing concatenation of multiple JSON records with the same
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
 | `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encoding. |
 | `multiLine` | `boolean` |  |  | Parse one record, which may span multiple lines, per file. |
 | `primitivesAsString` | `boolean` |  |  | Infers all primitive values as a string type. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-json-schema"></a>
+##### ReadStep::Json
+Reader for JSON files that contain an array of objects within them.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `subPath` | `string` |  |  | Path in the form of `a.b.c` to a sub-element of the root JSON object that is an array or objects. If not specified it is assumed that the root element is an array. |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encodings. |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-ndjson-schema"></a>
+##### ReadStep::NdJson
+Reader for files containing multiple newline-delimited JSON objects with the same schema.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encodings. |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1862,7 +1908,19 @@ Reader for files containing concatenation of multiple JSON records with the same
 
 <a name="readstep-geojson-schema"></a>
 ##### ReadStep::GeoJson
-Reader for GeoJSON files.
+Reader for GeoJSON files. It expects one `FeatureCollection` object in the root and will create a record per each `Feature` inside it extracting the properties into individual columns and leaving the feature geometry in its own column.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="readstep-ndgeojson-schema"></a>
+##### ReadStep::NdGeoJson
+Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format but instead of `FeatureCollection` object in the root it expects every individual feature object to appear on its own line.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1879,7 +1937,7 @@ Reader for ESRI Shapefile format.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
+| `subPath` | `string` |  |  | If the ZIP archive contains multiple shapefiles use this field to specify a sub-path to the desired `.shp` file. Can contain glob patterns to act as a filter. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

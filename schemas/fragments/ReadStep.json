@@ -14,83 +14,116 @@
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types.",
+          "examples": [
+            [
+              "date TIMESTAMP",
+              "city STRING",
+              "population INT"
+            ]
+          ]
         },
         "separator": {
           "type": "string",
-          "description": "Sets a single character as a separator for each field and value."
+          "description": "Sets a single character as a separator for each field and value.",
+          "default": ","
         },
         "encoding": {
           "type": "string",
-          "description": "Decodes the CSV files by the given encoding type."
+          "description": "Decodes the CSV files by the given encoding type.",
+          "default": "utf8"
         },
         "quote": {
           "type": "string",
-          "description": "Sets a single character used for escaping quoted values where the separator can be part of the value. Set an empty string to turn off quotations."
+          "description": "Sets a single character used for escaping quoted values where the separator can be part of the value. Set an empty string to turn off quotations.",
+          "default": "\""
         },
         "escape": {
           "type": "string",
-          "description": "Sets a single character used for escaping quotes inside an already quoted value."
+          "description": "Sets a single character used for escaping quotes inside an already quoted value.",
+          "default": "\\"
         },
         "comment": {
+          "deprecated": {
+            "since": "0.32.0",
+            "description": "Will be removed to avoid additional implementation burden as very few CSV readers support this and same effect can be easily achieved via `PrepStep`."
+          },
           "type": "string",
-          "description": "Sets a single character used for skipping lines beginning with this character."
+          "description": "Sets a single character used for skipping lines beginning with this character.",
+          "default": ""
         },
         "header": {
           "type": "boolean",
-          "description": "Use the first line as names of columns."
+          "description": "Use the first line as names of columns.",
+          "default": false
         },
         "enforceSchema": {
           "type": "boolean",
-          "description": "If it is set to true, the specified or inferred schema will be forcibly applied to datasource files, and headers in CSV files will be ignored. If the option is set to false, the schema will be validated against all headers in CSV files in the case when the header option is set to true."
+          "description": "If it is set to true, the specified or inferred schema will be forcibly applied to datasource files, and headers in CSV files will be ignored. If the option is set to false, the schema will be validated against all headers in CSV files in the case when the header option is set to true.",
+          "default": true
         },
         "inferSchema": {
           "type": "boolean",
-          "description": "Infers the input schema automatically from data. It requires one extra pass over the data."
+          "description": "Infers the input schema automatically from data. It requires one extra pass over the data.",
+          "default": false
         },
         "ignoreLeadingWhiteSpace": {
           "type": "boolean",
-          "description": "A flag indicating whether or not leading whitespaces from values being read should be skipped."
+          "description": "A flag indicating whether or not leading whitespaces from values being read should be skipped.",
+          "default": false
         },
         "ignoreTrailingWhiteSpace": {
           "type": "boolean",
-          "description": "A flag indicating whether or not trailing whitespaces from values being read should be skipped."
+          "description": "A flag indicating whether or not trailing whitespaces from values being read should be skipped.",
+          "default": false
         },
         "nullValue": {
           "type": "string",
-          "description": "Sets the string representation of a null value."
+          "description": "Sets the string representation of a null value.",
+          "default": ""
         },
         "emptyValue": {
           "type": "string",
-          "description": "Sets the string representation of an empty value."
+          "description": "Sets the string representation of an empty value.",
+          "default": ""
         },
         "nanValue": {
           "type": "string",
-          "description": "Sets the string representation of a non-number value."
+          "description": "Sets the string representation of a non-number value.",
+          "default": "NaN"
         },
         "positiveInf": {
           "type": "string",
-          "description": "Sets the string representation of a positive infinity value."
+          "description": "Sets the string representation of a positive infinity value.",
+          "default": "Inf"
         },
         "negativeInf": {
           "type": "string",
-          "description": "Sets the string representation of a negative infinity value."
+          "description": "Sets the string representation of a negative infinity value.",
+          "default": "-Inf"
         },
         "dateFormat": {
           "type": "string",
-          "description": "Sets the string that indicates a date format."
+          "description": "Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
         },
         "timestampFormat": {
           "type": "string",
-          "description": "Sets the string that indicates a timestamp format."
+          "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
         },
         "multiLine": {
           "type": "boolean",
-          "description": "Parse one record, which may span multiple lines."
+          "description": "Parse one record, which may span multiple lines.",
+          "default": false
         }
       }
     },
     "JsonLines": {
+      "deprecated": {
+        "since": "0.32.0",
+        "description": "This type was renamed to `NdJson`, please use it instead."
+      },
       "description": "Reader for files containing concatenation of multiple JSON records with the same schema.",
       "type": "object",
       "additionalProperties": false,
@@ -105,28 +138,112 @@
         },
         "dateFormat": {
           "type": "string",
-          "description": "Sets the string that indicates a date format."
+          "description": "Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
         },
         "encoding": {
           "type": "string",
-          "description": "Allows to forcibly set one of standard basic or extended encoding."
+          "description": "Allows to forcibly set one of standard basic or extended encoding.",
+          "default": "utf8"
         },
         "multiLine": {
           "type": "boolean",
-          "description": "Parse one record, which may span multiple lines, per file."
+          "description": "Parse one record, which may span multiple lines, per file.",
+          "default": false
         },
         "primitivesAsString": {
           "type": "boolean",
-          "description": "Infers all primitive values as a string type."
+          "description": "Infers all primitive values as a string type.",
+          "default": false
         },
         "timestampFormat": {
           "type": "string",
-          "description": "Sets the string that indicates a timestamp format."
+          "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
+        }
+      }
+    },
+    "Json": {
+      "description": "Reader for JSON files that contain an array of objects within them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "subPath": {
+          "type": "string",
+          "description": "Path in the form of `a.b.c` to a sub-element of the root JSON object that is an array or objects. If not specified it is assumed that the root element is an array."
+        },
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        },
+        "dateFormat": {
+          "type": "string",
+          "description": "Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
+        },
+        "encoding": {
+          "type": "string",
+          "description": "Allows to forcibly set one of standard basic or extended encodings.",
+          "default": "utf8"
+        },
+        "timestampFormat": {
+          "type": "string",
+          "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
+        }
+      }
+    },
+    "NdJson": {
+      "description": "Reader for files containing multiple newline-delimited JSON objects with the same schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        },
+        "dateFormat": {
+          "type": "string",
+          "description": "Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
+        },
+        "encoding": {
+          "type": "string",
+          "description": "Allows to forcibly set one of standard basic or extended encodings.",
+          "default": "utf8"
+        },
+        "timestampFormat": {
+          "type": "string",
+          "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
+          "default": "rfc3339"
         }
       }
     },
     "GeoJson": {
-      "description": "Reader for GeoJSON files.",
+      "description": "Reader for GeoJSON files. It expects one `FeatureCollection` object in the root and will create a record per each `Feature` inside it extracting the properties into individual columns and leaving the feature geometry in its own column.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        }
+      }
+    },
+    "NdGeoJson": {
+      "description": "Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format but instead of `FeatureCollection` object in the root it expects every individual feature object to appear on its own line.",
       "type": "object",
       "additionalProperties": false,
       "required": [],
@@ -155,7 +272,7 @@
         },
         "subPath": {
           "type": "string",
-          "description": "Path to a data file within a multi-file archive. Can contain glob patterns."
+          "description": "If the ZIP archive contains multiple shapefiles use this field to specify a sub-path to the desired `.shp` file. Can contain glob patterns to act as a filter."
         }
       }
     },
@@ -190,6 +307,15 @@
     },
     {
       "$ref": "#/$defs/Parquet"
+    },
+    {
+      "$ref": "#/$defs/Json"
+    },
+    {
+      "$ref": "#/$defs/NdJson"
+    },
+    {
+      "$ref": "#/$defs/NdGeoJson"
     }
   ]
 }

@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.0] - 2023-08-20
+### Changed
+- `JsonLines` renamed to `NdJson` for consistency with [ndjson.org](http://ndjson.org). Old name is considered deprecated and will be removed in future versions
+- `JsonLines.multiline` is deprecated and removed in `NdJson` type as it contradicts `ndjson` format
+### Added
+- `Json` format was introduced that can read Array-of-Structures style JSON files
+- `NdGeoJson` format was introduced that is similar to `NdJson` and will expect one GeoJSON `Feature` object per line
+- `EventTimeSource::FromSystemTime` that assigns event time from the system time and can be used when source metadata cannot be trusted or is invalid.
+
 ## [0.31.0] - 2023-07-12
 ### Changed
 - TransformInput extended with optional source dataset reference, potentially multi-tenant.
