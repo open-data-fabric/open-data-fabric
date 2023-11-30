@@ -47,15 +47,20 @@ Multiple `SetDataSchema` events can appear in the metadata chain, allowing for s
   "description": "Specifies the complete schema of Data Slices added to the Dataset following this event.",
   "type": "object",
   "additionalProperties": false,
-  "required": [],
+  "required": [
+    "schema"
+  ],
   "properties": {
     "schema": {
       "type": "object",
+      "format": "flatbuffers",
       "description": "Apache Arrow schema encoded in its native flatbuffers representation."
     }
   }
 }
 ```
+
+Note the introduction of new format `flatbuffers`. It will handle the data as a plain byte array. Libraries will be able to add special accessors that provide typed access to the underlying object - in this case Arrow Schema type. Due to the nature of flatbuffers this can be done without extra allocations.
 
 ## Compatibility
 This change is **backwards-compatible**, as existing implementations can continue to fall back to reading schema from Data Slice files if `SetDataSchema` event is not found. 

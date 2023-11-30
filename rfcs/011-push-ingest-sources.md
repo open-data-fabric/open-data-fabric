@@ -14,7 +14,7 @@
 - [ ] Forwards-compatible
 
 ## Summary
-Introduces a set of new metadata events (`AddPushSource`, `DeletePushSource`) for defining "push"-style data ingestion sources for root datasets.
+Introduces a set of new metadata events (`AddPushSource`, `DisablePushSource`) for defining "push"-style data ingestion sources for root datasets.
 
 ## Motivation
 Using `SetPollingSource` event users of ODF can already define "poll"-style data ingestion sources that describe how to read and historize external data to bring it into a root dataset.
@@ -27,11 +27,11 @@ Similarly to polling sources, push sources also will require defining:
 - Merge strategy
 
 ## Guide-level explanation
-Users can define push sources on root datasets using `AddPushSource`, `DeletePushSource` events.
+Users can define push sources on root datasets using `AddPushSource`, `DisablePushSource` events.
 
 Multiple push sources can be active simultaneously per one dataset for cases where multiple actors are writing to the same dataset simultaneously in slightly varying formats.
 
-Push and polling sources are mutually exclusive.
+Push and polling sources are mutually exclusive. However it must be possible to switch dataset from "push" to "pull" ingest and vice versa - thus we also introduce `DisablePollingSource` event that allows to turn off the polling source before swithcing to push model.
 
 The state of push sources can be stored in existing `sourceState` section of `AddData` event.
 
@@ -92,6 +92,20 @@ The implementations will verify that all push sources result in the same final d
       "description": "Identifier of the source to be disabled."
     }
   }
+}
+```
+
+`DisablePollingSource` event schema:
+
+```json
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DisablePollingSource",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Disables the previously defined polling source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {}
 }
 ```
 

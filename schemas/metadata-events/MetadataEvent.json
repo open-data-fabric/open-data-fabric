@@ -41,6 +41,9 @@
     },
     {
       "$ref": "/schemas/DisablePushSource"
+    },
+    {
+      "$ref": "/schemas/DisablePollingSource"
     }
   ]
 }

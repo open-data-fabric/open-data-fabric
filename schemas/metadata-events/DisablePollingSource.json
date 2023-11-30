@@ -1,0 +1,9 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DisablePollingSource",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Disables the previously defined polling source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {}
+}

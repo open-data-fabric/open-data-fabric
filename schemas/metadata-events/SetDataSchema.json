@@ -4,10 +4,13 @@
   "description": "Specifies the complete schema of Data Slices added to the Dataset following this event.",
   "type": "object",
   "additionalProperties": false,
-  "required": [],
+  "required": [
+    "schema"
+  ],
   "properties": {
     "schema": {
       "type": "object",
+      "format": "flatbuffers",
       "description": "Apache Arrow schema encoded in its native flatbuffers representation."
     }
   }
