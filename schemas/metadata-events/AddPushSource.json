@@ -1,0 +1,30 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/AddPushSource",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Describes how to ingest data into a root dataset from a certain logical source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source",
+    "read",
+    "merge"
+  ],
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Name that identifies this source within this dataset."
+    },
+    "read": {
+      "$ref": "/schemas/ReadStep",
+      "description": "Defines how data is read into structured format."
+    },
+    "preprocess": {
+      "$ref": "/schemas/Transform",
+      "description": "Pre-processing query that shapes the data."
+    },
+    "merge": {
+      "$ref": "/schemas/MergeStrategy",
+      "description": "Determines how newly-ingested data should be merged with existing history."
+    }
+  }
+}

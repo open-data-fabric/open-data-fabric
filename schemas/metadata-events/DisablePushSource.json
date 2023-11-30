@@ -1,0 +1,16 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DisablePushSource",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Disables the previously defined source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source"
+  ],
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Identifier of the source to be disabled."
+    }
+  }
+}

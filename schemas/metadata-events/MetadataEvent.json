@@ -1,7 +1,7 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/MetadataEvent",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Represents a transaction that occured on a dataset.",
+  "description": "Represents a transaction that occurred on a dataset.",
   "oneOf": [
     {
       "$ref": "/schemas/AddData"
@@ -32,6 +32,15 @@
     },
     {
       "$ref": "/schemas/SetLicense"
+    },
+    {
+      "$ref": "/schemas/SetDataSchema"
+    },
+    {
+      "$ref": "/schemas/AddPushSource"
+    },
+    {
+      "$ref": "/schemas/DisablePushSource"
     }
   ]
 }

@@ -1,12 +1,18 @@
 # RFC-000: RFC Template
 
+[![Issue](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/1?label=Issue)](https://github.com/kamu-data/open-data-fabric/issues/1)
+[![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/12?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/12)
+
 **Start Date**: (fill me in with today's date, YYYY-MM-DD)
 
-[![RFC](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/11?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/11)
+**Authors**:
+- [First Last](mailto:first.last@example.com), [Company](example.com)
 
-[![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/12?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/12)
 
-**Compatibility**: Specify in format: `Backwards-compatible, forwards-incompatible`
+**Compatibility**:
+- [X] Backwards-compatible
+- [ ] Forwards-compatible
+
 - Backwards-compatible means
   - whether software updated to this RFC will be able to operate on old data
   - in case of protocol updates - whether older clients will be able to communicate with newer servers
