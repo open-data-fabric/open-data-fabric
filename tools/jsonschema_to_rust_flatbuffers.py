@@ -13,6 +13,8 @@ PREAMBLE = """
 ////////////////////////////////////////////////////////////////////////////////
 
 #![allow(unused_variables)]
+#![allow(unused_mut)]
+
 use super::proxies_generated as fb;
 mod odf {
     pub use crate::dtos::*;
@@ -69,13 +71,6 @@ fn fb_to_datetime(dt: &fb::Timestamp) -> DateTime<Utc> {
             .unwrap(),
         );
     Utc.from_local_datetime(&naive_date_time).unwrap()
-}
-
-fn empty_table<'fb>(
-    fb: &mut FlatBufferBuilder<'fb>,
-) -> WIPOffset<flatbuffers::TableFinishedWIPOffset> {
-    let wip = fb.start_table();
-    fb.end_table(wip)
 }
 """
 
@@ -354,10 +349,7 @@ def render_oneof_element_ser(name, sch, isch):
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
         struct_name = f'{name}{ename}'
-        if not esch.get('properties', ()):
-            yield f"odf::{name}::{ename} => (fb::{name}::{struct_name}, empty_table(fb).as_union_value()),"
-        else:
-            yield f"odf::{name}::{ename}(v) => (fb::{name}::{struct_name}, v.serialize(fb).as_union_value()),"
+        yield f"odf::{name}::{ename}(v) => (fb::{name}::{struct_name}, v.serialize(fb).as_union_value()),"
     else:
         yield f"odf::{name}::{ename}(v) => (fb::{name}::{ename}, v.serialize(fb).as_union_value()),"
 
@@ -369,15 +361,12 @@ def render_oneof_element_de(name, sch, isch):
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
         struct_name = f'{name}{ename}'
-        if not esch.get('properties', ()):
-            yield f"fb::{name}::{struct_name} => odf::{name}::{ename},"
-        else:
-            yield f"fb::{name}::{struct_name} => odf::{name}::{ename}("
-            yield f"    odf::{struct_name}::deserialize("
-            yield f"        unsafe {{ fb::{struct_name}::init_from_table(table) }}"
-            yield "    )"
-            yield "),"
-            extra_types.append(lambda: render_struct(struct_name, esch))
+        yield f"fb::{name}::{struct_name} => odf::{name}::{ename}("
+        yield f"    odf::{struct_name}::deserialize("
+        yield f"        unsafe {{ fb::{struct_name}::init_from_table(table) }}"
+        yield "    )"
+        yield "),"
+        extra_types.append(lambda: render_struct(struct_name, esch))
     else:
         yield f"fb::{name}::{ename} => odf::{name}::{ename}("
         yield f"    odf::{ename}::deserialize("
@@ -474,6 +463,9 @@ def pre_ser_primitive_type(name, sch):
             yield f'fb.create_string(&{name})'
         elif fmt == 'dataset-ref-any':
             yield f'fb.create_string({name}.to_string().as_str())'
+        elif fmt == 'flatbuffers':
+            assert ptype == 'object'
+            yield f'fb.create_vector(&{name}[..])'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -509,6 +501,8 @@ def ser_primitive_type(name, sch):
             assert ptype == 'string'
         elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
+        elif fmt == 'flatbuffers':
+            assert ptype == 'object'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -554,6 +548,9 @@ def de_primitive_type(name, sch, enum_t_accessor):
         elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
             yield f'odf::DatasetRefAny::try_from({name}).unwrap()'
+        elif fmt == 'flatbuffers':
+            assert ptype == 'object'
+            yield f'{name}.bytes().to_vec()'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':

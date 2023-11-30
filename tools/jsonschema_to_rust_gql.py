@@ -11,6 +11,8 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
+#![allow(unused_variables)]
+
 use chrono::{DateTime, Utc};
 use opendatafabric as odf;
 
@@ -79,7 +81,23 @@ impl From<odf::TransformSql> for TransformSql {
         }
     }
 }
-"""
+""",
+    "SetDataSchema": """
+#[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
+pub struct SetDataSchema {
+    pub schema: DataSchema,
+}
+
+impl From<odf::SetDataSchema> for SetDataSchema {
+    fn from(v: odf::SetDataSchema) -> Self {
+        // TODO: Error handling?
+        // TODO: Externalize format decision?
+        let arrow_schema = v.schema_as_arrow().unwrap();
+        let schema = DataSchema::from_arrow_schema(&arrow_schema, DataSchemaFormat::ParquetJson).unwrap();
+        Self { schema }
+    }
+}
+""",
 }
 
 
@@ -170,28 +188,30 @@ def render_struct(name, sch):
     else:
         yield from indent(render_field("_dummy", {"type": "string"}, False, 'pub'))
     yield '}'
-    if props:
-        yield ''
-        yield f'impl From<odf::{name}> for {name} {{'
-        yield f'fn from(v: odf::{name}) -> Self {{'
-        yield 'Self {'
-        for pname, psch in props.items():
-            required = pname in sch.get('required', ())
-            array = psch.get('type') == 'array'
-            field = to_snake_case(pname)
-            if array:
-                if required:
-                    yield f'{field}: v.{field}.into_iter().map(Into::into).collect(),'
-                else:
-                    yield f'{field}: v.{field}.map(|v| v.into_iter().map(Into::into).collect()),'
+
+    yield ''
+    yield f'impl From<odf::{name}> for {name} {{'
+    yield f'fn from(v: odf::{name}) -> Self {{'
+    yield 'Self {'
+    if not props:
+        yield "_dummy: None"
+    for pname, psch in props.items():
+        required = pname in sch.get('required', ())
+        array = psch.get('type') == 'array'
+        field = to_snake_case(pname)
+        if array:
+            if required:
+                yield f'{field}: v.{field}.into_iter().map(Into::into).collect(),'
             else:
-                if required:
-                    yield f'{field}: v.{field}.into(),'
-                else:
-                    yield f'{field}: v.{field}.map(Into::into),'
-        yield '}'
-        yield '}'
-        yield '}'
+                yield f'{field}: v.{field}.map(|v| v.into_iter().map(Into::into).collect()),'
+        else:
+            if required:
+                yield f'{field}: v.{field}.into(),'
+            else:
+                yield f'{field}: v.{field}.map(Into::into),'
+    yield '}'
+    yield '}'
+    yield '}'
 
 
 def render_field(pname, psch, required, modifier=None):
@@ -219,15 +239,7 @@ def render_oneof(name, sch):
     for isch in sch['oneOf']:
         ref = isch["$ref"]
         ename = ref.split('/')[-1]
-        if ref.startswith("#/$defs/"):
-            esch = sch["$defs"][ename]
-            struct_name = f'{name}{ename}'
-            if not esch.get("properties"):
-                yield f'odf::{name}::{ename} => Self::{ename}({struct_name} {{ _dummy: None }}),'
-            else:
-                yield f'odf::{name}::{ename}(v) => Self::{ename}(v.into()),'
-        else:
-            yield f'odf::{name}::{ename}(v) => Self::{ename}(v.into()),'
+        yield f'odf::{name}::{ename}(v) => Self::{ename}(v.into()),'
     yield '}'
     yield '}'
     yield '}'

@@ -11,7 +11,7 @@ PREAMBLE = """
 ////////////////////////////////////////////////////////////////////////////////
 
 use std::path::PathBuf;
-use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
+use super::formats::{base64, datetime_rfc3339, datetime_rfc3339_opt};
 use crate::*;
 use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
 use chrono::{DateTime, Utc};
@@ -145,6 +145,8 @@ def render_field(pname, psch, required, modifier=None):
             yield '#[serde(with = "datetime_rfc3339")]'
         else:
             yield '#[serde(default, with = "datetime_rfc3339_opt")]'
+    elif psch.get("format") == "flatbuffers":
+        yield '#[serde(with = "base64")]'
 
     if pname == "datasetID":
         yield '#[serde(rename = "datasetID")]'
@@ -188,13 +190,10 @@ def render_oneof_element(name, sch, isch):
     yield '#[serde(rename_all = "camelCase")]'
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
-        if not esch.get('properties', ()):
-            yield f'{ename},'
-        else:
-            struct_name = f'{name}{ename}'
-            yield f'{ename}(#[serde_as(as = "{struct_name}Def")] {struct_name}),'
-            # See: https://github.com/rust-lang/rfcs/pull/2593
-            extra_types.append(lambda: render_struct(struct_name, esch))
+        struct_name = f'{name}{ename}'
+        yield f'{ename}(#[serde_as(as = "{struct_name}Def")] {struct_name}),'
+        # See: https://github.com/rust-lang/rfcs/pull/2593
+        extra_types.append(lambda: render_struct(struct_name, esch))
     else:
         yield f'{ename}(#[serde_as(as = "{ename}Def")] {ename}),'
 
@@ -202,9 +201,8 @@ def render_oneof_element(name, sch, isch):
 def render_oneof_as(name, sch):
     yield from render_struct_as(name, sch)
     for (ename, esch) in sch.get('$defs', {}).items():
-        if esch.get('properties', ()):
-            struct_name = f'{name}{ename}'
-            yield from render_struct_as(struct_name, esch)
+        struct_name = f'{name}{ename}'
+        yield from render_struct_as(struct_name, esch)
 
 
 def render_string_enum(name, sch):
@@ -258,6 +256,8 @@ def get_primitive_type(sch):
             return 'DatasetName'
         elif fmt == 'dataset-ref-any':
             return 'DatasetRefAny'
+        elif fmt == 'flatbuffers':
+            return 'Vec<u8>'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

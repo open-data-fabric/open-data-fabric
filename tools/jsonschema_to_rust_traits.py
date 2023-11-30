@@ -175,15 +175,9 @@ def render_field_convert(pname, psch, required):
 
 
 def render_oneof(name, sch):
-    has_struct_members = "$defs" not in sch or any(
-        esch.get('properties')
-        for esch in sch["$defs"].values()
-    )
     yield f"pub enum {name}<'a> {{"
     for isch in sch["oneOf"]:
         yield from indent(render_oneof_element(name, sch, isch))
-    if not has_struct_members:
-        yield ' ' * DEFAULT_INDENT + "_Phantom(std::marker::PhantomData<&'a ()>),"
     yield '}'
 
 
@@ -193,13 +187,10 @@ def render_oneof_element(name, sch, isch):
 
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
-        if not esch.get('properties', ()):
-            yield f'{ename},'
-        else:
-            struct_name = f'{name}{ename}'
-            yield f"{ename}(&'a dyn {struct_name}),"
-            # See: https://github.com/rust-lang/rfcs/pull/2593
-            extra_types.append(lambda: render_struct(struct_name, esch))
+        struct_name = f'{name}{ename}'
+        yield f"{ename}(&'a dyn {struct_name}),"
+        # See: https://github.com/rust-lang/rfcs/pull/2593
+        extra_types.append(lambda: render_struct(struct_name, esch))
     else:
         yield f"{ename}(&'a dyn {ename}),"
 
@@ -221,28 +212,19 @@ def render_oneof_element_impl(name, sch, isch):
 
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
-        if esch.get('properties', ()):
-            struct_name = f'{name}{ename}'
-            yield f"dtos::{name}::{ename}(v) => {name}::{ename}(v),"
-            extra_types.append(lambda: render_struct_impl(struct_name, esch))
-        else:
-            yield f"dtos::{name}::{ename} => {name}::{ename},"
+        struct_name = f'{name}{ename}'
+        yield f"dtos::{name}::{ename}(v) => {name}::{ename}(v),"
+        extra_types.append(lambda: render_struct_impl(struct_name, esch))
     else:
         yield f"dtos::{name}::{ename}(v) => {name}::{ename}(v),"
 
 
 def render_oneof_convert(name, sch):
-    has_struct_members = "$defs" not in sch or any(
-        esch.get('properties')
-        for esch in sch["$defs"].values()
-    )
     yield f"impl Into<dtos::{name}> for {name}<'_> {{"
     yield ' ' * DEFAULT_INDENT + f"fn into(self) -> dtos::{name} {{"
     yield ' ' * DEFAULT_INDENT * 2 + f"match self {{"
     for isch in sch["oneOf"]:
         yield from indent(render_oneof_element_convert(name, sch, isch), DEFAULT_INDENT * 3)
-    if not has_struct_members:
-        yield ' ' * DEFAULT_INDENT * 3 + f"{name}::_Phantom(_) => unreachable!(),"
     yield ' ' * DEFAULT_INDENT * 2 + '}'
     yield ' ' * DEFAULT_INDENT + '}'
     yield '}'
@@ -254,12 +236,9 @@ def render_oneof_element_convert(name, sch, isch):
 
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
-        if esch.get('properties', ()):
-            struct_name = f'{name}{ename}'
-            yield f"{name}::{ename}(v) => dtos::{name}::{ename}(v.into()),"
-            extra_types.append(lambda: render_struct_convert(struct_name, esch))
-        else:
-            yield f"{name}::{ename} => dtos::{name}::{ename},"
+        struct_name = f'{name}{ename}'
+        yield f"{name}::{ename}(v) => dtos::{name}::{ename}(v.into()),"
+        extra_types.append(lambda: render_struct_convert(struct_name, esch))
     else:
         yield f"{name}::{ename}(v) => dtos::{name}::{ename}(v.into()),"
 
@@ -311,6 +290,8 @@ def get_primitive_type(sch):
             return "&DatasetName"
         elif fmt == 'dataset-ref-any':
             return "&DatasetRefAny"
+        elif fmt == 'flatbuffers':
+            return "&[u8]"
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':
@@ -361,7 +342,7 @@ def render_accessor(name, sch, optional, in_ref=False):
             yield f'{name}.as_ref()'
         elif fmt == 'multihash':
             yield f'{name}' if in_ref else f'&{name}'
-        elif fmt in ('dataset-id', 'dataset-name', 'dataset-ref-any'):
+        elif fmt in ('dataset-id', 'dataset-name', 'dataset-ref-any', 'flatbuffers'):
             yield f'{name}' if in_ref else f'&{name}'
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -403,6 +384,8 @@ def render_clone(name, sch, optional):
             yield f'{name}.clone()'
         elif fmt == 'dataset-id':
             yield f'{name}.clone()'
+        elif fmt == 'flatbuffers':
+            yield f'{name}.to_vec()'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':

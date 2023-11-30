@@ -140,17 +140,13 @@ def render_oneof_element(name, sch, isch):
 
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
-        if esch.get('properties', ()):
-            struct_name = f'{name}{ename}'
-            extra_types.append(lambda: render_struct(struct_name, esch))
+        struct_name = f'{name}{ename}'
+        extra_types.append(lambda: render_struct(struct_name, esch))
     else:
         struct_name = ename
 
-    if struct_name:
-        yield f'{ename}({struct_name}),'
-        extra_types.append(lambda: render_oneof_element_conversion(name, ename, struct_name))
-    else:
-        yield f'{ename},'
+    yield f'{ename}({struct_name}),'
+    extra_types.append(lambda: render_oneof_element_conversion(name, ename, struct_name))
 
 
 def render_oneof_element_conversion(enum_name, enum_variant, type_name):
@@ -206,6 +202,8 @@ def get_primitive_type(sch):
             return 'DatasetName'
         elif fmt == 'dataset-ref-any':
             return 'DatasetRefAny'
+        elif fmt == 'flatbuffers':
+            return 'Vec<u8>'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

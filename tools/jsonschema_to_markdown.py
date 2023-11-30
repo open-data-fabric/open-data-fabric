@@ -68,7 +68,7 @@ def render_format(sch):
         return "[dataset-name](#dataset-identity)"
     elif fmt == "dataset-ref-any":
         return "[dataset-ref-any](#dataset-identity)"
-    elif fmt in ("path", "int64", "regex", "url"):
+    elif fmt in ("path", "int64", "regex", "url", "flatbuffers"):
         return f"`{fmt}`"
     else:
         raise Exception(f"Unknown format: {fmt}")
