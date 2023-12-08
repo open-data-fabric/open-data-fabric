@@ -896,21 +896,28 @@ For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` tabl
 The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).
 
 ### Data Ingestion
-It should be made clear that it's not the goal of this document to standardize the data ingestion techniques. Information here is given only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see as a result.
+It is not the goal of this document to standardize the data ingestion techniques. This section exists only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see in [Root Datasets](#root-dataset).
 
-The process of ingestion itself plays a very limited role in the system. When interacting with external data we cannot make any assumptions about the guarantees that the external source provides - we cannot rely on the external data being immutable, on being highly-available, we can't even be sure the domain that hosts it will still be there the next day. So the ingestion step is all about getting the data into the system as fast as possible, where all its properties can be preserved.
+When interacting with data on the web we cannot make any assumptions about the guarantees the external source provides - we cannot tell if data is immutable, or if it's replicated for availability, we can't even be sure the domain that hosts it will still exist the next day. The ingestion step is about getting the data into the system as efficiently as possible, where all such properties can be guaranteed and made explicit by [Root Datasets](#root-dataset).
 
-The reason we include the ingest configuration in this document at all is that we see it as an important part of the data [Provenance](#provenance).
+#### Source Types
 
-#### Pull vs. Push
-Although we aspire to reach a state where all authoritative data publishers **push** new events into the system as soon as those occur, we realize that this level of integration is hard to achieve. We believe that for a long time the vast majority of data will be ingested via the **pull** model, where the system periodically scans a remote data source and ingests the latest updates.
+##### Push Source
+In the simplest scenario a [Root Dataset](#root-dataset) is created and periodically written to, i.e. data being "pushed" into it. This can happen in variety of forms like exporting data from external system as a CDC stream, or IoT device reporting measurements, or recording domain events that occur in a business process.
 
-#### Ingestion Phases
-Ingestion is composed of the following phases:
+Push ingestion may support the following phases:
+- **Read phase** - Reads the data in some format into a structured form.
+- **Preprocess phase** (optional) - Reshapes data into another form. This can include renaming columns, type conversions, nesting, etc.
+- **Merge phase** - Combines the new data with the history of previously seen data. This can include deduplication, CDC etc.
+
+##### Polling Sources
+Although we aspire to reach a state where all authoritative data publishers **push** new events into the datasets as soon as those occur, we realize that this level of integration will take time to achieve. We believe that for a long time the vast majority of data will be ingested via the **polling** model, where the system periodically scans a remote data source and ingests the latest updates.
+
+Polling ingestion may support the following phases:
 - **Fetch phase** - Obtains the data from some external source (e.g. HTTP/FTP) in its original raw form.
 - **Prepare phase** (optional) - Transforms the raw data into one of the supported formats. This can include extracting an archive, filtering and rearranging files, using external tools to convert between formats.
-- **Read phase** - Reads the data into a structured form.
-- **Preprocess phase** (optional) - Shapes the data into the presentable form. This can include renaming columns, type conversions, nesting, etc.
+- **Read phase** - Reads the data in some format into a structured form.
+- **Preprocess phase** (optional) - Reshapes data into another form. This can include renaming columns, type conversions, nesting, etc.
 - **Merge phase** - Combines the new data from the source with the history of previously seen data.
 
 #### Merge Strategies
@@ -1056,9 +1063,13 @@ See also:
 - [Metadata Events](#reference-metadata-events)
   - [MetadataEvent](#metadataevent-schema)
   - [AddData](#adddata-schema)
+  - [AddPushSource](#addpushsource-schema)
+  - [DisablePollingSource](#disablepollingsource-schema)
+  - [DisablePushSource](#disablepushsource-schema)
   - [ExecuteQuery](#executequery-schema)
   - [Seed](#seed-schema)
   - [SetAttachments](#setattachments-schema)
+  - [SetDataSchema](#setdataschema-schema)
   - [SetInfo](#setinfo-schema)
   - [SetLicense](#setlicense-schema)
   - [SetPollingSource](#setpollingsource-schema)
@@ -1144,7 +1155,7 @@ An individual block in the metadata chain that captures the history of modificat
 #### Metadata Events
 <a name="metadataevent-schema"></a>
 ##### MetadataEvent
-Represents a transaction that occured on a dataset.
+Represents a transaction that occurred on a dataset.
 
 | Union Type | Description |
 | :---: | --- |
@@ -1158,6 +1169,10 @@ Represents a transaction that occured on a dataset.
 | [SetAttachments](#setattachments-schema) | Associates a set of files with this dataset. |
 | [SetInfo](#setinfo-schema) | Provides basic human-readable information about a dataset. |
 | [SetLicense](#setlicense-schema) | Defines a license that applies to this dataset. |
+| [SetDataSchema](#setdataschema-schema) | Specifies the complete schema of Data Slices added to the Dataset following this event. |
+| [AddPushSource](#addpushsource-schema) | Describes how to ingest data into a root dataset from a certain logical source. |
+| [DisablePushSource](#disablepushsource-schema) | Disables the previously defined source. |
+| [DisablePollingSource](#disablepollingsource-schema) | Disables the previously defined polling source. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/MetadataEvent.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1177,6 +1192,44 @@ Indicates that data has been ingested into a root dataset.
 | `sourceState` | [SourceState](#sourcestate-schema) |  |  | The state of the source the data was added from to allow fast resuming. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/AddData.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="addpushsource-schema"></a>
+##### AddPushSource
+Describes how to ingest data into a root dataset from a certain logical source.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `source` | `string` | V |  | Name that identifies this source within this dataset. |
+| `read` | [ReadStep](#readstep-schema) | V |  | Defines how data is read into structured format. |
+| `preprocess` | [Transform](#transform-schema) |  |  | Pre-processing query that shapes the data. |
+| `merge` | [MergeStrategy](#mergestrategy-schema) | V |  | Determines how newly-ingested data should be merged with existing history. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/AddPushSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="disablepollingsource-schema"></a>
+##### DisablePollingSource
+Disables the previously defined polling source.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/DisablePollingSource.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="disablepushsource-schema"></a>
+##### DisablePushSource
+Disables the previously defined source.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `source` | `string` | V |  | Identifier of the source to be disabled. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/DisablePushSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1218,6 +1271,18 @@ Associates a set of files with this dataset.
 | `attachments` | [Attachments](#attachments-schema) | V |  | One of the supported attachment sources. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetAttachments.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="setdataschema-schema"></a>
+##### SetDataSchema
+Specifies the complete schema of Data Slices added to the Dataset following this event.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `schema` | `object` | V | `flatbuffers` | Apache Arrow schema encoded in its native flatbuffers representation. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetDataSchema.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
