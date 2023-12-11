@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.33.0
+Version: 0.33.1
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1201,7 +1201,7 @@ Describes how to ingest data into a root dataset from a certain logical source.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `source` | `string` | V |  | Name that identifies this source within this dataset. |
+| `sourceName` | `string` |  |  | Identifies the source within this dataset. |
 | `read` | [ReadStep](#readstep-schema) | V |  | Defines how data is read into structured format. |
 | `preprocess` | [Transform](#transform-schema) |  |  | Pre-processing query that shapes the data. |
 | `merge` | [MergeStrategy](#mergestrategy-schema) | V |  | Determines how newly-ingested data should be merged with existing history. |
@@ -1227,7 +1227,7 @@ Disables the previously defined source.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `source` | `string` | V |  | Identifier of the source to be disabled. |
+| `sourceName` | `string` |  |  | Identifies the source to be disabled. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/DisablePushSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

@@ -4,13 +4,11 @@
   "description": "Disables the previously defined source.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "source"
-  ],
+  "required": [],
   "properties": {
-    "source": {
+    "sourceName": {
       "type": "string",
-      "description": "Identifier of the source to be disabled."
+      "description": "Identifies the source to be disabled."
     }
   }
 }

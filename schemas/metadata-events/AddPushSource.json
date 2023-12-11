@@ -5,14 +5,13 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "source",
     "read",
     "merge"
   ],
   "properties": {
-    "source": {
+    "sourceName": {
       "type": "string",
-      "description": "Name that identifies this source within this dataset."
+      "description": "Identifies the source within this dataset."
     },
     "read": {
       "$ref": "/schemas/ReadStep",
