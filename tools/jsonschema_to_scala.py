@@ -32,7 +32,7 @@ case class Multihash(s: String) extends AnyVal {
   override def toString: String = s
 }
 
-case class DatasetID(s: String) extends AnyVal {
+case class DatasetId(s: String) extends AnyVal {
   override def toString: String = s
 }
 
@@ -205,7 +205,7 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'Instant'
         elif fmt == 'dataset-id':
-            return 'DatasetID'
+            return 'DatasetId'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             return 'DatasetName'

@@ -26,12 +26,12 @@
     },
     "outputCheckpoint": {
       "$ref": "/schemas/Checkpoint",
-      "description": "Describes checkpoint written during this transaction, if any."
+      "description": "Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified."
     },
     "outputWatermark": {
       "type": "string",
       "format": "date-time",
-      "description": "Last watermark of the output data stream."
+      "description": "Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one."
     }
   }
 }

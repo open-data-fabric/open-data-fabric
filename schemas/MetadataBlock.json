@@ -22,8 +22,9 @@
     },
     "sequenceNumber": {
       "type": "integer",
+      "format": "uint64",
       "minimum": 0,
-      "description": "Block sequence number starting from tail to head."
+      "description": "Block sequence number, starting from zero at the seed block."
     },
     "event": {
       "$ref": "/schemas/MetadataEvent",

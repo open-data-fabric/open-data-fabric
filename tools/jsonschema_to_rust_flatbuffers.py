@@ -541,7 +541,7 @@ def de_primitive_type(name, sch, enum_t_accessor):
             yield f'fb_to_datetime({name})'
         elif fmt == 'dataset-id':
             assert ptype == 'string'
-            yield f'odf::DatasetID::from_bytes({name}.bytes()).unwrap()'
+            yield f'odf::DatasetId::from_bytes({name}.bytes()).unwrap()'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             yield f'odf::DatasetName::try_from({name}).unwrap()'

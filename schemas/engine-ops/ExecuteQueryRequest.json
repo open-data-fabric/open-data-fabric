@@ -5,10 +5,10 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-        "datasetID",
-        "datasetName",
+        "datasetId",
+        "datasetAlias",
         "systemTime",
-        "offset",
+        "nextOffset",
         "vocab",
         "transform",
         "inputs",
@@ -16,36 +16,36 @@
         "outDataPath"
     ],
     "properties": {
-        "datasetID": {
+        "datasetId": {
             "type": "string",
             "format": "dataset-id",
-            "description": "Unique identifier of the output dataset"
+            "description": "Unique identifier of the output dataset."
         },
-        "datasetName": {
+        "datasetAlias": {
             "type": "string",
-            "format": "dataset-name",
-            "description": "Alias of the output dataset"
+            "format": "dataset-alias",
+            "description": "Alias of the output dataset, for logging purposes only."
         },
         "systemTime": {
             "type": "string",
             "format": "date-time",
-            "description": "System time to use for new records"
+            "description": "System time to use for new records."
         },
-        "offset": {
+        "nextOffset": {
             "type": "integer",
-            "format": "int64",
-            "description": "Starting offset to use for new records"
+            "format": "uint64",
+            "description": "Starting offset to use for new records."
         },
         "vocab": {
             "$ref": "/schemas/DatasetVocabulary"
         },
         "transform": {
             "$ref": "/schemas/Transform",
-            "description": "Transformation that will be applied to produce new data"
+            "description": "Transformation that will be applied to produce new data."
         },
         "inputs": {
             "type": "array",
-            "description": "Defines the input data",
+            "description": "Defines the input data.",
             "items": {
                 "$ref": "/schemas/ExecuteQueryInput"
             }
@@ -53,17 +53,17 @@
         "prevCheckpointPath": {
             "type": "string",
             "format": "path",
-            "description": "TODO: This is temporary"
+            "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
         },
         "newCheckpointPath": {
             "type": "string",
             "format": "path",
-            "description": "TODO: This is temporary"
+            "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
         },
         "outDataPath": {
             "type": "string",
             "format": "path",
-            "description": "TODO: This is temporary"
+            "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
         }
     }
 }

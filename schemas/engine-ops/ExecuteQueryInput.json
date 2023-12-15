@@ -5,34 +5,39 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-        "datasetID",
-        "datasetName",
+        "datasetId",
+        "datasetAlias",
+        "queryAlias",
         "vocab",
         "dataPaths",
         "schemaFile",
         "explicitWatermarks"
     ],
     "properties": {
-        "datasetID": {
+        "datasetId": {
             "type": "string",
             "format": "dataset-id",
             "description": "Unique identifier of the dataset."
         },
-        "datasetName": {
+        "datasetAlias": {
             "type": "string",
-            "format": "dataset-name",
+            "format": "dataset-alias",
+            "description": "Alias of the output dataset, for logging purposes only."
+        },
+        "queryAlias": {
+            "type": "string",
             "description": "An alias of this input to be used in queries."
         },
         "vocab": {
             "$ref": "/schemas/DatasetVocabulary"
         },
-        "dataInterval": {
+        "offsetInterval": {
             "$ref": "/schemas/OffsetInterval",
-            "description": "Data that went into this transaction."
+            "description": "Subset of data that goes into this transaction."
         },
         "dataPaths": {
             "type": "array",
-            "description": "TODO: This will be removed when coordinator will be slicing data for the engine",
+            "description": "TODO: This will be removed when coordinator will be slicing data for the engine.",
             "items": {
                 "type": "string",
                 "format": "path"
@@ -41,7 +46,7 @@
         "schemaFile": {
             "type": "string",
             "format": "path",
-            "description": "TODO: replace with actual DDL or Parquet schema"
+            "description": "TODO: replace with actual DDL or Parquet schema."
         },
         "explicitWatermarks": {
             "type": "array",

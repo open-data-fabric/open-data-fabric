@@ -18,7 +18,7 @@ use opendatafabric as odf;
 
 use crate::prelude::*;
 use crate::queries::Dataset;
-use crate::scalars::{DatasetID, DatasetName, Multihash, OSPath};
+use crate::scalars::{DatasetId, DatasetName, Multihash, OSPath};
 """
 
 DEFAULT_INDENT = 4
@@ -30,7 +30,7 @@ CUSTOM_TYPES = {
 #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
 #[graphql(complex)]
 pub struct TransformInput {
-    pub id: Option<DatasetID>,
+    pub id: Option<DatasetId>,
     pub name: DatasetName,
     pub dataset_ref: Option<DatasetRefAny>,
 }
@@ -324,7 +324,7 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetID'
+            return 'DatasetId'
         elif fmt == 'dataset-name':
             return 'DatasetName'
         elif fmt == 'dataset-ref-any':

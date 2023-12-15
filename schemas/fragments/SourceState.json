@@ -6,7 +6,6 @@
   "additionalProperties": false,
   "required": [
     "kind",
-    "source",
     "value"
   ],
   "properties": {
@@ -14,9 +13,9 @@
       "type": "string",
       "description": "Identifies the type of the state. Standard types include: `odf/etag`, `odf/last-modified`."
     },
-    "source": {
+    "sourceName": {
       "type": "string",
-      "description": "Identifies the source data was ingested from. Standard sources include: `odf/poll`"
+      "description": "Identifies the source that the state corresponds to. It is empty for a polling source, as there can be only one. For push sources an empty name also uniquely identifies the source know as 'default'."
     },
     "value": {
       "type": "string",

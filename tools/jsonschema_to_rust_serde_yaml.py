@@ -148,9 +148,6 @@ def render_field(pname, psch, required, modifier=None):
     elif psch.get("format") == "flatbuffers":
         yield '#[serde(with = "base64")]'
 
-    if pname == "datasetID":
-        yield '#[serde(rename = "datasetID")]'
-
     if not required:
         typ = to_optional_type(typ)
 
@@ -251,7 +248,7 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetID'
+            return 'DatasetId'
         elif fmt == 'dataset-name':
             return 'DatasetName'
         elif fmt == 'dataset-ref-any':

@@ -12,12 +12,12 @@
     "physicalHash": {
       "type": "string",
       "format": "multihash",
-      "description": "Hash sum of the checkpoint file"
+      "description": "Hash sum of the checkpoint file."
     },
     "size": {
       "type": "integer",
       "format": "int64",
-      "description": "Size of checkpoint file in bytes"
+      "description": "Size of checkpoint file in bytes."
     }
   }
 }

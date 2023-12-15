@@ -10,7 +10,7 @@ PREAMBLE = """//////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
-use crate::domain::DatasetID;
+use crate::domain::DatasetId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
@@ -181,7 +181,7 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetID'
+            return 'DatasetId'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             return 'DatasetName'

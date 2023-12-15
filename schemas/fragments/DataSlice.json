@@ -7,28 +7,28 @@
   "required": [
     "logicalHash",
     "physicalHash",
-    "interval",
+    "offsetInterval",
     "size"
   ],
   "properties": {
     "logicalHash": {
       "type": "string",
       "format": "multihash",
-      "description": "Logical hash sum of the data in this slice"
+      "description": "Logical hash sum of the data in this slice."
     },
     "physicalHash": {
       "type": "string",
       "format": "multihash",
-      "description": "Hash sum of the data part file"
+      "description": "Hash sum of the data part file."
     },
-    "interval": {
+    "offsetInterval": {
       "$ref": "/schemas/OffsetInterval",
-      "description": "Data slice produced by the transaction"
+      "description": "Data slice produced by the transaction."
     },
     "size": {
       "type": "integer",
       "format": "int64",
-      "description": "Size of data file in bytes"
+      "description": "Size of data file in bytes."
     }
   }
 }

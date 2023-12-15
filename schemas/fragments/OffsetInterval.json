@@ -1,7 +1,7 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/OffsetInterval",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Describes a range of data as an arithmetic interval of offsets",
+  "description": "Describes a range of data as a closed arithmetic interval of offsets",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,13 +11,13 @@
   "properties": {
     "start": {
       "type": "integer",
-      "format": "int64",
-      "description": "Start of the closed interval [start; end]"
+      "format": "uint64",
+      "description": "Start of the closed interval [start; end]."
     },
     "end": {
       "type": "integer",
-      "format": "int64",
-      "description": "End of the closed interval [start; end]"
+      "format": "uint64",
+      "description": "End of the closed interval [start; end]."
     }
   }
 }

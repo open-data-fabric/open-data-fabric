@@ -5,11 +5,11 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "datasetID",
+    "datasetId",
     "datasetKind"
   ],
   "properties": {
-    "datasetID": {
+    "datasetId": {
       "type": "string",
       "format": "dataset-id",
       "description": "Unique identity of the dataset."

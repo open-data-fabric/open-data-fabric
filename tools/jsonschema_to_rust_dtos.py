@@ -11,7 +11,7 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
-use crate::identity::{DatasetID, DatasetName, DatasetRefAny};
+use crate::identity::{DatasetId, DatasetName, DatasetRefAny};
 use crate::formats::Multihash;
 use chrono::{DateTime, Utc};
 use std::path::PathBuf;
@@ -197,7 +197,7 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetID'
+            return 'DatasetId'
         elif fmt == 'dataset-name':
             return 'DatasetName'
         elif fmt == 'dataset-ref-any':

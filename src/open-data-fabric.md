@@ -552,11 +552,11 @@ DatasetRefAny =
   DatasetRef
 
 DatasetRef = 
-  DatasetID /
+  DatasetId /
   DatasetAlias
 
 DatasetRefRemote =
-  (RepoName "/")? DatasetID /
+  (RepoName "/")? DatasetId /
   DatasetAliasRemote /
   Url
 
@@ -566,7 +566,7 @@ DatasetAlias =
 DatasetAliasRemote = 
   RepoName "/" (AccountName "/")? DatasetName
 
-DatasetID = "did:odf:" Multibase
+DatasetId = "did:odf:" Multibase
 DatasetName = Hostname
 AccountName = Hostname
 RepoName = Hostname

@@ -15,14 +15,14 @@
             "additionalProperties": false,
             "required": [],
             "properties": {
-                "dataInterval": {
+                "offsetInterval": {
                     "$ref": "/schemas/OffsetInterval",
-                    "description": "Data slice produced by the transaction (if any)"
+                    "description": "Data slice produced by the transaction, if any."
                 },
                 "outputWatermark": {
                     "type": "string",
                     "format": "date-time",
-                    "description": "Watermark advanced by the transaction (uf any)."
+                    "description": "Watermark advanced by the transaction, if any."
                 }
             }
         },
