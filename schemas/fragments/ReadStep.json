@@ -204,9 +204,6 @@
       "$ref": "#/$defs/Csv"
     },
     {
-      "$ref": "#/$defs/JsonLines"
-    },
-    {
       "$ref": "#/$defs/GeoJson"
     },
     {

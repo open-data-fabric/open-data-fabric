@@ -19,7 +19,7 @@
                     "$ref": "/schemas/OffsetInterval",
                     "description": "Data slice produced by the transaction, if any."
                 },
-                "outputWatermark": {
+                "newWatermark": {
                     "type": "string",
                     "format": "date-time",
                     "description": "Watermark advanced by the transaction, if any."

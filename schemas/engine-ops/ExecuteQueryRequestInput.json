@@ -1,5 +1,5 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryInput",
+    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryRequestInput",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "description": "Sent as part of the execute query requst to describe the input",
     "type": "object",

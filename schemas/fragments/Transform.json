@@ -21,7 +21,7 @@
         },
         "query": {
           "type": "string",
-          "description": "SQL query the result of which will be used as an output."
+          "description": "SQL query the result of which will be used as an output. This is a convenience property meant only for defining queries by hand. When stored in the metadata this property will never be set and instead will be converted into a single-iter `queries` array."
         },
         "queries": {
           "type": "array",

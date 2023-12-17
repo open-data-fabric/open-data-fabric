@@ -27,7 +27,7 @@
     },
     "size": {
       "type": "integer",
-      "format": "int64",
+      "format": "uint64",
       "description": "Size of data file in bytes."
     }
   }

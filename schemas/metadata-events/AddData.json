@@ -6,23 +6,28 @@
   "additionalProperties": false,
   "required": [],
   "properties": {
-    "inputCheckpoint": {
+    "prevCheckpoint": {
       "type": "string",
       "format": "multihash",
       "description": "Hash of the checkpoint file used to restore ingestion state, if any."
     },
-    "outputData": {
+    "prevOffset": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Last offset of the previous data slice, if any. Must be equal to the last non-empty `newData.offsetInterval.end`."
+    },
+    "newData": {
       "$ref": "/schemas/DataSlice",
       "description": "Describes output data written during this transaction, if any."
     },
-    "outputCheckpoint": {
+    "newCheckpoint": {
       "$ref": "/schemas/Checkpoint",
       "description": "Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified."
     },
-    "outputWatermark": {
+    "newWatermark": {
       "type": "string",
       "format": "date-time",
-      "description": "Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one."
+      "description": "Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one. Thus, watermarks are monotonically non-decreasing."
     },
     "sourceState": {
       "$ref": "/schemas/SourceState",

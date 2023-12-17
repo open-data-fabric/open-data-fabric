@@ -8,12 +8,12 @@
         "datasetId",
         "datasetAlias",
         "systemTime",
-        "nextOffset",
         "vocab",
         "transform",
-        "inputs",
+        "queryInputs",
+        "nextOffset",
         "newCheckpointPath",
-        "outDataPath"
+        "newDataPath"
     ],
     "properties": {
         "datasetId": {
@@ -31,11 +31,6 @@
             "format": "date-time",
             "description": "System time to use for new records."
         },
-        "nextOffset": {
-            "type": "integer",
-            "format": "uint64",
-            "description": "Starting offset to use for new records."
-        },
         "vocab": {
             "$ref": "/schemas/DatasetVocabulary"
         },
@@ -43,12 +38,17 @@
             "$ref": "/schemas/Transform",
             "description": "Transformation that will be applied to produce new data."
         },
-        "inputs": {
+        "queryInputs": {
             "type": "array",
-            "description": "Defines the input data.",
             "items": {
                 "$ref": "/schemas/ExecuteQueryRequestInput"
-            }
+            },
+            "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
+        },
+        "nextOffset": {
+            "type": "integer",
+            "format": "uint64",
+            "description": "Starting offset to use for new data records."
         },
         "prevCheckpointPath": {
             "type": "string",
@@ -60,7 +60,7 @@
             "format": "path",
             "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
         },
-        "outDataPath": {
+        "newDataPath": {
             "type": "string",
             "format": "path",
             "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."

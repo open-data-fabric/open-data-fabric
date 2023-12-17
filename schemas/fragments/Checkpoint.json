@@ -16,7 +16,7 @@
     },
     "size": {
       "type": "integer",
-      "format": "int64",
+      "format": "uint64",
       "description": "Size of checkpoint file in bytes."
     }
   }
