@@ -5,13 +5,13 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "inputSlices"
+    "queryInputs"
   ],
   "properties": {
-    "inputSlices": {
+    "queryInputs": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/InputSlice"
+        "$ref": "/schemas/ExecuteQueryInput"
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input must be present."
     },

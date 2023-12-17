@@ -47,7 +47,7 @@
             "type": "array",
             "description": "Defines the input data.",
             "items": {
-                "$ref": "/schemas/ExecuteQueryInput"
+                "$ref": "/schemas/ExecuteQueryRequestInput"
             }
         },
         "prevCheckpointPath": {

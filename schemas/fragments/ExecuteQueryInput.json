@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/InputSlice",
+  "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryInput",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Describes a slice of input data used during a transformation",
   "type": "object",
