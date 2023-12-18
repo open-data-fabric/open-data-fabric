@@ -480,20 +480,19 @@ See also:
 # Specification
 
 ## Dataset Identity
-
 The identity of a dataset consists of:
 - [Unique identifiers](#unique-identitifiers) - used to unambiguously identify datasets on the network, e.g. when referencing one dataset as an input of another.
 - [Aliases and references](#aliases-and-references) - used for human-friendly naming.
 
 See also:
-- [RFC-003](/rfcs/002-content-addressability.md)
+- [RFC-003](/rfcs/003-content-addressability.md)
 
 ### Unique Identitifiers
-ODF is designed to be compatible with content [content-addressable storage](https://en.wikipedia.org/wiki/Content-addressable_storage). When stored in such storage, all parts of a [Dataset](#dataset) can be accessed by having only a hash of the last [MetadataBlock](#metadata-chain).
+ODF is designed to be compatible with [content-addressable storage](https://en.wikipedia.org/wiki/Content-addressable_storage). When stored in such storage, all parts of a [Dataset](#dataset) can be accessed by having only a hash of the last [MetadataBlock](#metadata-chain).
 
-As [Dataset](#dataset) grows, however, a reference to a single [MetadataBlock](#metadata-chain) will only provide access to a subset of its history. To refer to a [Dataset](#dataset) as a whole a different identifier is needed that can always be resolved into a hash of the latest block.
+As [Dataset](#dataset) grows, however, a reference to a single [MetadataBlock](#metadata-chain) will only provide access to a subset of its history. To refer to a [Dataset](#dataset) as a whole a different identifier is needed that can be resolved into a hash of the latest block.
 
-Unique dataset identifiers in ODF follow the [W3C DID Identity Scheme](https://w3c.github.io/did-core/) using a custom `odf` DID method. 
+Unique dataset identifiers in ODF follow the [W3C DID Identity Scheme](https://w3c.github.io/did-core/) using a custom `did:odf` method. This method is based closely on [`did:key` method](https://w3c-ccg.github.io/did-method-key/) that derives the unique identity from a public key of a cryptographic key pair.
 
 Example:
 
@@ -501,16 +500,29 @@ Example:
 did:odf:z4k88e8oT6CUiFQSbmHPViLQGHoX8x5Fquj9WvvPdSCvzTRWGfJ
 </pre>
 
-The method-specific identifier is using the [CIDv1 Multiformat](https://github.com/multiformats/cid) as a self-describing and upgradeable way to store dataset identity.
-
 The identifier is formed by:
-- Deriving it during the dataset creation from a cryptographic key pair (e.g. using `ed25519` algorithm)
-- The public key is hashed (e.g. using `sha3-256`) and encoded into `CIDv1` format using appropriate codec code (e.g. `ed25519-pub`)
-- `CIDv1` is then encoded using [multibase](https://github.com/multiformats/multibase) encoding using `base58` scheme
+- Generating a cryptographic key pair (e.g. using `ed25519` algorithm)
+- Taking the public key part
+- Prepending an appropriate [multicodec](https://github.com/multiformats/multicodec) value to identify the algorithm (e.g. `ed25519-pub`)
+- Encoding data with [multibase](https://github.com/multiformats/multibase) encoding using `base58-btc` scheme
+
+Or in pseudocode:
+
+<pre>
+did-odf-format := 'did:odf:' + MULTIBASE(
+  base58-btc,
+  MULTICODEC(
+    public_key_type,
+    public_key_bytes,
+  )
+)
+</pre>
 
 The resulting DID is stored in the first [MetadataBlock](#metadata-chain) in the chain of every [Dataset](#dataset), called "seed".
 
-Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used for proving ownership and control over a [Dataset](#dataset).
+Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used to prove ownership and control over a [Dataset](#dataset) and to delegate access.
+
+Modeling the identity after the `did:key` method allows us to easily convert between the two representations and make ODF compatible with authorization frameworks that work with `did:key` method.
 
 ### Aliases and References
 Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](#repository). Unlike [Dataset IDs](#unique-identitifiers) they are are not collision-free and mutable.
@@ -669,6 +681,12 @@ We use the following combination of formats to satisfy these requirements:
 
 The `JSON Schemas` and `FlatBuffers Schemas` for all metadata objects are provided as part of this specification (see [Metadata Reference](#metadata-reference)).
 
+See Also:
+- [Metadata Block Hashing](#metadata-block-hashing)
+
+> **TODO:*
+> - Add a separate section specifying the serialization rules or point to codegen as the reference implementation
+
 ## Dataset Layout
 The recommended layout of the dataset on disk is:
 
@@ -813,9 +831,16 @@ Because the on-disk Parquet data format is non-deterministic (serializing same l
 ##### Hash Representation
 To be able to evolve hashing algorithms over time we encode the identity of the algorithm used along with the hash sum itself using the [multiformats](https://github.com/multiformats/multiformats) specification, specifically:
 - [multihash](https://github.com/multiformats/multihash) - describes how to encode algorithm ID alongside the hash value.
-- [multibase](https://github.com/multiformats/multibase) - describes how to represent binary value in a string (e.g. for YAML format) without ambiguity of which encoding was used.
+- [multibase](https://github.com/multiformats/multibase) - describes encoding used to represent a binary value as text (e.g. in YAML format or as a file name) without ambiguity of which encoding was used.
 
-The recommended `multibase` encoding is `base58` as it produces short and readable hashes.
+It is expected that the specific `multibase` encoding is largely a presentation-layer concern that can varry between implementations. For protocol compatibility all implementations must support all encodings in the `final` state of approval in the [`multibase` specification](https://github.com/multiformats/multibase), transcoding the representations when needed.
+
+For consistency, we recommended implementations to prefer the `base16` encoding. Although it produces longer hashes than other encodings, it:
+- Is case-insensitive and can appear in sub-domains
+- Does not contain symbols that can be easily confused
+- Does not have a risk of forming an accidental obscenity
+- Does not require padding
+- Is easier to use for partitioning by prefix
 
 For representing the identity of hashing algorithms the official [multicodec](https://github.com/multiformats/multicodec/) table is used.
 
@@ -827,6 +852,9 @@ The `multicodec` table is extended with the following codes in the "private use 
 
 See also:
 - [RFC-002](/rfcs/002-logical-data-hashes.md)
+
+> **TODO:*
+> - Ideally we would want to use `base16` encoding in `did:odf:` identity too, however the `did:key:` spec doesn't currently support other encodings than `base58-btc`. We are expecting this to change, since `base58` is widely considered deprecated.
 
 #### Checkpoint Hashing
 [Checkpoints](#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Data Hashing](#data-hashing)).

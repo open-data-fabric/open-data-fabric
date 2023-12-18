@@ -9,7 +9,7 @@
   ],
   "properties": {
     "schema": {
-      "type": "object",
+      "type": "string",
       "format": "flatbuffers",
       "description": "Apache Arrow schema encoded in its native flatbuffers representation."
     }

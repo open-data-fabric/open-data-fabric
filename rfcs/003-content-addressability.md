@@ -46,18 +46,17 @@ We will laso expand the use of `multihash` format proposed in [RFC-002](./002-lo
 New `dataset-name` format will be introduced for dataset names (symbolic aliases) in the same manner as the existing `dataset-id` format.
 
 Existing `dataset-id` schema format will be changed to expect a DID, following these rules:
-- ODF datasets will use own DID method: `did:odf:...`
-- The method-specific identifier will be using the [CIDv1 Multiformat](https://github.com/multiformats/cid) as a self-describing and upgradeable way to store dataset identity.
+- ODF datasets will use a custom DID method: `did:odf:...`
+- The method-specific identifier will replicate the structure of [`did:key` method](https://w3c-ccg.github.io/did-method-key/) as a self-describing and upgradeable way to store dataset identity represented by a public key.
 
-Dataset identity will be stored in the new `seed` fields in the `MetadataBlock` schema. Seed will be present in the first block (only) of every dataset.
+Dataset identity will be stored in the new `seed` fields in the `MetadataBlock` schema. Seed will be present (only) in the first block of every dataset.
 
 Dataset creation procedure will involve:
 - Generating a new cryptographic key pair (defaulting to `ed25519` algorithm)
-- Computing a hash of the public key (defaulting to `sha3-256`)
-- Encoding it into `CIDv1` format (using appropriate codec code like `ed25519-pub`)
-- Storing this CID in the first Metadata Block's `seed` field.
+- Prefixing it with and appropriate `multicodec` identifier (like `ed25519-pub`)
+- Storing this data in the first Metadata Block's `seed` field.
 
-When representing dataset ID as a string the DID format `did:odf:<cid>` will be used, where CID uses mulitibase encoding.
+When representing dataset ID as a string the DID format `did:odf:<multibase>` will be used, where the binary data will use mulitibase format and `base58-btc` encoding just like in `did:key` method.
 
 The `DatasetSource::Derivative` schema will be updated so that inputs specify:
 - `id` - unique identity of a dataset
