@@ -199,8 +199,14 @@ See also:
 - [Schema Evolution](#schema-evolution)
 
 ## Offset
+Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset is `0`.
 
-Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset it `0`.
+## Operation Type
+Since past [Events](#event) are immutable, if some event is deemed incorrect later on it can only be rectified by issuing an explicit [retraction or correction](#retractions-and-corrections). Retraction and corrections are also represented as [Events](#event) in the same stream of [Data](#data) and differentiated by a special "operation type" field.
+
+See also:
+- [Common data schema](#common-data-schema)
+- [Representation of retractions and corrections](#representation-of-retractions-and-corrections)
 
 ## Data Slice
 [Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
@@ -208,7 +214,7 @@ Offset is a monotonically increasing sequential numeric identifier that is assig
 More formally, a slice is a:
 - Continuous part of [Data](#data)
 - That has the same [Schema](#schema)
-- Defined by its `[start; end)` [Offset](#offset) interval
+- Defined by its `[start; end]` [Offset](#offset) interval
 
 ![Diagram: Data Slices and Metadata](images/metadata.svg)
 
@@ -402,7 +408,7 @@ Depending on the language used by an [Engine](#engine) one approach may work bet
 
 See also:
 - [Provenance in Databases: Why, How, and Where](http://homepages.inf.ed.ac.uk/jcheney/publications/provdbsurvey.pdf)
-- [Engine Contract: Provenance Query](#provenance-query)
+- [Engine Contract: Derive Provenance](#derive-provenance)
 
 ## Time
 The system applies the idea of [bitemporal data modelling](https://en.wikipedia.org/wiki/Bitemporal_Modeling) to the event streams. It differentiates two kinds of time:
@@ -447,6 +453,19 @@ Watermarks in the system are defined per every [Metadata Block](#metadata-chain)
 ![Diagram: Watermarks in Time Domains](images/watermarks_vs_time.svg)
 
 Watermarks can also be set based on the [System Time](#system-time) manually or semi-automatically. This is valuable for the slow moving [Datasets](#dataset) where it's normal not to see any events in days or even months. Setting the watermark explicitly allows all computations based on such stream to proceed, knowing that there were no events for that time period, where otherwise the output would be stalled assuming the [Dataset](#dataset) was not updated for a while and old data can still arrive.
+
+## Retractions and Corrections
+Errors in source data are inevitable and require a mechanism for correcting them. Unlike databases, where one could issue `DELETE` or `UPDATE` queries, ODF's core data model is an immutable append-only stream, and thus requires a different mechanism.
+
+Retractions and corrections are explicit events that can appear in [Root](#root-dataset) datasets to signify that some previous event was published in error, or to correct some of its fields. They are differentiated from regular events by the special [Operation Type](#operation-type) field.
+
+Retractions and corrections can also naturally occur in [Derivative](#derivative-dataset) datasets in cases when a stream processing operation encounters late data (data arriving past the current [Watermark](#watermark)). In such cases streaming transformation may publish corrections or retractions for previously produced result records that were influenced by the late events.
+
+Retractions and corrections model is fundamental to making data processing **maximally autonomous**.
+
+See also:
+- [Common data schema](#common-data-schema)
+- [Representation of retractions and corrections](#representation-of-retractions-and-corrections)
 
 ## Repository
 Repositories let participants of the system exchange [Datasets](#dataset) with one another.
@@ -524,8 +543,8 @@ Tying the identity of a dataset to a cryptographic key pair provides a way to cr
 > Note that the only difference between `did:odf` and `did:key` method is the encoding scheme. ODF uses `base16` instead of `base58btc` for reasons explained in the [Hash Representation](#hash-representation) section. Because conversion between the two encodings is trivial, ODF is compatible with authorization frameworks that work with `did:key` method. We expect that in future the `did:key` spec will be extended to allow `base16` encoding too, further minimizing the difference.
 
 See also:
-- [RFC-003](/rfcs/003-content-addressability.md)
-- [RFC-012](/rfcs/012-recommend-base16-encoding.md)
+- [RFC-003: Content Addressability](/rfcs/003-content-addressability.md)
+- [RFC-012: Recommend base16 encoding](/rfcs/012-recommend-base16-encoding.md)
 
 ### Aliases and References
 Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](#repository). Unlike [Dataset IDs](#unique-identitifiers) they are are not collision-free and mutable.
@@ -653,14 +672,44 @@ Supported types:
 ## Common Data Schema
 All data in the system is guaranteed to have the following columns:
 
-|    Column     |                      Parquet Type                       | Description                                                                                                                                                                                                                                                                                                                                      |
-| :-----------: | :-----------------------------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-|   `offset`    |                         `int64`                         | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                      |
-| `system_time` |     `Timestamp(unit=MILLIS, isAdjustedToUTC=true)`      | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                          |
-| `event_time`  | `Timestamp(unit=_, isAdjustedToUTC=true)`<br/>or `DATE` | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
+|    Column     | Description                                                                                                                                                                                                                                                                                                                                      |
+| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                      |
+|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                |
+| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                          |
+| `event_time`  | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
+
+Representation:
+
+|    Column     |      Arrow Type      |                            Parquet Type                             | Recommended Parquet Encoding |
+| :-----------: | :------------------: | :-----------------------------------------------------------------: | :--------------------------: |
+|   `offset`    |       `uint64`       |                               `INT64`                               |    `DELTA_BINARY_PACKED`     |
+|     `op`      |       `uint8`        |                               `INT32`                               |       `RLE_DICTIONARY`       |
+| `system_time` | `timestamp(ms, UTC)` |           `INT64, TIMESTAMP(MILLIS, AdjustedToUTC=true)`            |      `PLAIN_DICTIONARY`      |
+| `event_time`  | `timestamp(ms, UTC)` | `INT64, TIMESTAMP(MILLIS, AdjustedToUTC=true)`<br/>or `int32, DATE` |                              |
+
 
 > **TODO:**
 > - We are not allowing non-UTC-adjusted timestamps yet as Parquet does not offer a way to encode the timezone, meaning we need a reliable way to pass timezone information between different engines through some other means (e.g. Parquet metadata). Having naive/local timestamps without enforcing that they are accompanied by the specific timezone would be too error prone.
+
+## Representation of Retractions and Corrections
+[Retractions and corrections](#retractions-and-corrections) are differentiated from regular [Events](#event) in the [Data Slice](#data-slice) via special `op` column, carrying an [Operation Type](#operation-type).
+
+Valid operation types are:
+
+| Value | Operation name | Operation short code |
+| :---: | :------------: | :------------------: |
+|   0   |    `append`    |         `+A`         |
+|   1   |   `retract`    |         `-R`         |
+|   2   | `correct-from` |         `-C`         |
+|   3   |  `correct-to`  |         `+C`         |
+
+The `retract` and `correct-from` events must carry the same exact data fields (all fields excluding `offset`, `op`, and `system_time`) as the event that is being retracted.
+
+The `correct-to` event carries the new values for the event being corrected. This event must immediately follow the `correct-from` event. This model allows data engines that operate on changelog / diff events that simultaneously carry both old and new values for event during a correction to reconstruct such events easily by sequentially reading the [Data Slice](#data-slice).
+
+See also:
+- [RFC-015: Unified Changelog Stream Schema](/rfcs/015-unified-changelog-stream-schema.md)
 
 ## Metadata Format
 The requirements we put towards the metadata format are:
