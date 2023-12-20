@@ -36,7 +36,7 @@ The proposed change avoids this by always carrying enough information in the eve
 ## Reference-level explanation
 The `AddData` and `ExecuteQuery` events will add a new `prevOffset` property to represent last offset of the previous data slice. It Must be equal to the last non-empty `outputData.offsetInterval.end`.
 
-The `InputSlice` will no longer use closed `[start, end]` intervals for `blockInterval` and `offsetInterval`. The new schema will use what are essentially half-open intervals where starting point will always be carried across all transaction, even if the interval itself is empy.
+The `InputSlice` will no longer use closed `[start, end]` intervals for `blockInterval` and `offsetInterval`. The new schema will use what are essentially half-open intervals where starting point will always be carried across all transaction, even if the interval itself is empty.
 
 Proposed schema:
 ```json

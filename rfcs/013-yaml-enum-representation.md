@@ -13,7 +13,7 @@
 - [ ] Forwards-compatible
 
 ## Summary
-Prpoposes to use `kind: PascalCaseVariantName` convention to standardize how enum variants are differentiated in YAML / JSON serialization format.
+Proposes to use `kind: PascalCaseVariantName` convention to standardize how enum variants are differentiated in YAML / JSON serialization format.
 
 ## Motivation
 Currently the spec does not specify how enum variants must be differentiated between when ODF structures are serialized in YAML / JSON form.

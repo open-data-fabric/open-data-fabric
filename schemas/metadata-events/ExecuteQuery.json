@@ -15,7 +15,7 @@
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
     },
-    "pevCheckpoint": {
+    "prevCheckpoint": {
       "type": "string",
       "format": "multihash",
       "description": "Hash of the checkpoint file used to restore transformation state, if any."

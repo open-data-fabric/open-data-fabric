@@ -15,7 +15,7 @@ This RFC specifies how Datasets are uniquely identified across the ODF network, 
 
 Datasets are currently identified using their symbolic names. These names are then used, for example, when defining inputs of a derivative dataset or when referring to a dataset in a repository.
 
-Two parties, however, can independently create datasets with conflicting names resulting in high likelihood of name collisions. Allowing users to rename datasets to resolve collisions will inevitably result in breaking the link between derivative dataest and its inputs.
+Two parties, however, can independently create datasets with conflicting names resulting in high likelihood of name collisions. Allowing users to rename datasets to resolve collisions will inevitably result in breaking the link between derivative dataset and its inputs.
 
 There needs to be a **way to uniquely identify a dataset** on the network, with this identifier being immutable throughout dataset's lifetime and resolvable to find the location(s) of data.
 
@@ -41,7 +41,7 @@ Conforming to the `DID` specification will allow us in future to expand related 
 
 To make `MetadataBlock` content-addressable we will remove `blockHash` from it to avoid chicken-egg problem of hashing. The metadata hashing procedure will be updated accordingly.
 
-We will laso expand the use of `multihash` format proposed in [RFC-002](./002-logical-data-hashes.md) to all hashes, removing the use of `sha3-256` schema format.
+We will also expand the use of `multihash` format proposed in [RFC-002](./002-logical-data-hashes.md) to all hashes, removing the use of `sha3-256` schema format.
 
 New `dataset-name` format will be introduced for dataset names (symbolic aliases) in the same manner as the existing `dataset-id` format.
 
@@ -56,7 +56,7 @@ Dataset creation procedure will involve:
 - Prefixing it with and appropriate `multicodec` identifier (like `ed25519-pub`)
 - Storing this data in the first Metadata Block's `seed` field.
 
-When representing dataset ID as a string the DID format `did:odf:<multibase>` will be used, where the binary data will use mulitibase format and `base58-btc` encoding just like in `did:key` method.
+When representing dataset ID as a string the DID format `did:odf:<multibase>` will be used, where the binary data will use `multibase` format and `base58-btc` encoding just like in `did:key` method.
 
 The `DatasetSource::Derivative` schema will be updated so that inputs specify:
 - `id` - unique identity of a dataset
@@ -92,9 +92,9 @@ Multibase = [a-zA-Z0-9+/=]+
 ## Rationale and alternatives
 
 ### Identity of static data in content-addressable systems
-The most widespread form of resource identity in decentralized systems today is **content addressability**. Git, Docker & OCI image registries, DHTs, Blockchain, IPFS - resources in these systems are uniquely identifieds by (hashes of) their content.
+The most widespread form of resource identity in decentralized systems today is **content addressability**. Git, Docker & OCI image registries, DHTs, Blockchain, IPFS - resources in these systems are uniquely identifies by (hashes of) their content.
 
-Assuming no hash collisions, this approach allows creating an identity for a resource without any central authority and a risk of collisions. If hashes collide this means reasources are in fact identical, leading to a very natural de-duplication of data in the system.
+Assuming no hash collisions, this approach allows creating an identity for a resource without any central authority and a risk of collisions. If hashes collide this means resources are in fact identical, leading to a very natural de-duplication of data in the system.
 
 This form of identity, however, is applicable only to static data. When you share a file via IPFS - it's identity is a hash of file's contents. When you modify and share the file again - you get a new identity.
 
@@ -104,7 +104,7 @@ Such form of identity is already perfectly suited for many components of ODF:
 - Metadata blocks
 
 If we align ODF's hashing with the content-addressable system like IPFS we can get a cool effect:
-- A hash of data part file stored in a Metada Block could be directly used to find and download that data file from IPFS.
+- A hash of data part file stored in a Metadata Block could be directly used to find and download that data file from IPFS.
 - Same goes for the previous metadata block identified by its hash - you could "walk" the metadata chain stored in IPFS in the same way you do on the local drive.
 
 Entire ODF dataset can be stored inside IPFS as its structure maps onto content-addressable storage seamlessly.
