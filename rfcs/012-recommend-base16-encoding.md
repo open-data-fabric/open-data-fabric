@@ -1,4 +1,4 @@
-# RFC-012: Recommend `base16` encoding for textual representation of hashes
+# RFC-012: Recommend `base16` encoding for textual representation of hashes and DIDs
 
 [![Issue](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/62?label=Issue)](https://github.com/kamu-data/open-data-fabric/issues/23)
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/63?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/63)
@@ -13,10 +13,10 @@
 - [ ] Forwards-compatible
 
 ## Summary
-Proposes to expand the spec's support to all `multibase` encodings but recommend `base16` as default choice.
+Proposes to expand the spec's support to all `multibase` encodings but recommend `base16` as default choice for representing hashes and DIDs.
 
 ## Motivation
-Very early on ODF adopted `base58-btc` encoding, simply mimicking other projects like Bitcoin, IPFS, and `did:key` W3C spec. But this encoding is problematic:
+Very early on ODF adopted `base58btc` encoding, simply mimicking other projects like Bitcoin, IPFS, and `did:key` W3C spec. But this encoding is problematic:
 - It can result in text that resembles words, potentially resulting in swear words in hashes and DIDs
 - It's hard to write down or read out as many letters and numbers can look similar
 - Its lexicographic order does not match the sort order of binary data
@@ -31,20 +31,26 @@ The proposal is to:
 
 2) Recommend new implementations to use `base16` encoding ([RFC4648](https://datatracker.ietf.org/doc/html/rfc4648)) where possible to avoid the pitfalls described in motivation section.
 
-3) For now, continue using `base58-btc` for DID encoding to maintain compatibility with `did:key` spec
+3) Update `did:odf` method specification to use `base16` encoding too, while allowing to transcode to `base58btc` for compatibility with `did:key` method.
 
 ## Compatibility
 This change will be executed as part of the backwards compatibility breaking changes.
 
 ## Drawbacks
-Declaring that we support multiple `multibase` encodings instead of just one may slightly complicate compatibility between implementations, but since multibase is a self-describing format these issues should be easily addressable. This approach also has additional benefit of upgradeability.
+1) **Compatibility**: Declaring that we support multiple `multibase` encodings instead of just one may slightly complicate compatibility between implementations, but since `multibase` is a self-describing format these issues should be easily addressable. This approach also has additional benefit of upgradeability.
 
-For an implementation choosing to stick with `base16` recommendation the main drawback is the **increase of length** of hashes in:
+2) **Increase of length**: For an implementation choosing to stick with `base16` recommendation the main drawback is the increase of length of hashes in:
 - file and directory names
 - human-readable formats
 - presentation layer
 
 Because the binary representation is unaffected we don't see this as an issue.
+
+3) **`did:key` compatibility**: `did:key` spec currently only allows `base58btc` encoding. By using `base16` in `did:odf`, we will have to transcode the DIDs when passing them to frameworks that work with `did:key`. The main drawback is that developers will not be able to visually compare or search by a `did:key` that, for example, appears in an auth token, without performing conversion first.
+
+We believe accept this issue while expecting that:
+- Most places that accept `did:odf` (e.g. API endpoints) can perform transcoding automatically
+- The choice of `base58btc` in `did:key` method will be reconsidered as per this [open issue](https://github.com/w3c-ccg/did-method-key/issues/21), potentially opening `did:key` up to supporting multiple `multibase` encodings.
 
 ## Alternatives
 - `base32hex` encoding is case-insensitive and maintains sort order - dismissed as it can still form obscene words
@@ -56,7 +62,7 @@ Because the binary representation is unaffected we don't see this as an issue.
   - https://github.com/ipfs/specs/issues/247
 
 ## Unresolved questions
-We continue using `base58-btc` for DIDs to maintain full compatibility with `did:key` spec. The spec, however, has an [open issue](https://github.com/w3c-ccg/did-method-key/issues/21) to reconsider the choice of `base58-btc` and potentially open up it up to support other `multibase` encodings.
+N/A
 
 ## Future possibilities
 N/A

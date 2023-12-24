@@ -56,7 +56,7 @@ Dataset creation procedure will involve:
 - Prefixing it with and appropriate `multicodec` identifier (like `ed25519-pub`)
 - Storing this data in the first Metadata Block's `seed` field.
 
-When representing dataset ID as a string the DID format `did:odf:<multibase>` will be used, where the binary data will use `multibase` format and `base58-btc` encoding just like in `did:key` method.
+When representing dataset ID as a string the DID format `did:odf:<multibase>` will be used, where the binary data will use `multibase` format and `base58btc` encoding just like in `did:key` method.
 
 The `DatasetSource::Derivative` schema will be updated so that inputs specify:
 - `id` - unique identity of a dataset
