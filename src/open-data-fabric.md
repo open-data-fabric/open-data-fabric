@@ -228,7 +228,7 @@ All Metadata Blocks are immutable and changes by appending new blocks. With bloc
 
 ![Diagram: Dataset as a Content-Addressable Graph](images/metadata-chain-2.svg)
 
-Metadata Chain also supports **Block References** that assign a certan symbolic name to a block hash, effectively acting as a named pointer. At the minimum all datasets have a `tail` reference that indicates the current last block in the Metadata Chain. Using multiple references the metadata chain can be organized into a directed acyclic graph that can form branches, allowing for example to stage some subset of events for review or an automated QA process before they are accepted into the main chain.
+Metadata Chain also supports **Block References** that assign a certan symbolic name to a block hash, effectively acting as a named pointer. At the minimum all datasets have a `head` reference that indicates the current last block in the Metadata Chain. Using multiple references the metadata chain can be organized into a directed acyclic graph that can form branches, allowing for example to stage some subset of events for review or an automated QA process before they are accepted into the main chain.
 
 In addition to core events like adding data, running a query, and change of schema the Metadata Chain is designed to be extended to carry other kinds of information like:
 - Extra meaning and structure of knowledge that data represents (glossary, semantics, ontology)
@@ -994,7 +994,7 @@ Simple Transfer Protocol specified here is a bare-minimum read-only protocol use
 
 To describe the protocol we will use HTTP `GET {object-key}` notation below, but note that this protocol can be implemented on top of any block or file-based protocol that supports Unix path-like object keys.
 
-1) Process begins with `GET /refs/tail` to get the hash of the last [Metadata Block](#metadata-chain)
+1) Process begins with `GET /refs/head` to get the hash of the last [Metadata Block](#metadata-chain)
 2) The "metadata walking" process starts with `GET /blocks/{blockHash}` and continues following the `prevBlockHash` links
 3) Data part files can be downloaded by using [`DataSlice::physicalHash`](#dataslice-schema) links with `GET /data/{physicalHash}`
 4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoints/{physicalHash}`
