@@ -13,14 +13,14 @@
 - [ ] Forwards-compatible
 
 ## Summary
-Modifies `AddData`, `ExecuteQuery` to make sure that last even carries enough information about the output offset and offsets of all inputs to prepare next transaction without excessive scanning of the metadata.
+Modifies `AddData`, `ExecuteQuery` to make sure that the last event always carries enough information about the output offset and offsets of the inputs to prepare the next transaction without deep scanning of the metadata.
 
 ## Motivation
-We currently the `AddData` and `ExecuteQuery` events carry  `[start, end]` intervals for blocks and offsets to describe inputs and outputs of a transaction. To represent empty input/output they are made optional.
+Currently, `AddData` and `ExecuteQuery` events carry  `[start, end]` intervals for blocks and offsets to describe inputs and outputs of a transaction. To represent empty input/output they are made optional.
 
 This is problematic, because to understand what offsets or blocks need to be used used for inputs / output of the next transaction it's sometimes required to scan metadata chain deeply until a non-empty interval is encountered.
 
-Extending metadata to carry this information regardless of whether any input data was used or any output data was written would allow us to always be able to prepare next transaction based on last `AddData` or `ExecuteQuery` block, avoiding the deep traversing of the chain.
+Extending metadata to carry this information regardless of whether any input data was used or any output data was written would allow us to be able to prepare the next transaction using the last `AddData` or `ExecuteQuery` block, avoiding deep scanning of the chain.
 
 ## Guide-level explanation
 Imagine a derivative dataset that is aggregating data from an IoT source:
@@ -34,11 +34,11 @@ The proposed change avoids this by always carrying enough information in the eve
 
 
 ## Reference-level explanation
-The `AddData` and `ExecuteQuery` events will add a new `prevOffset` property to represent last offset of the previous data slice. It Must be equal to the last non-empty `outputData.offsetInterval.end`.
+The `AddData` and `ExecuteQuery` events will be extended with a new `prevOffset` property to represent last offset of the previous data slice. It must be equal to the last non-empty `outputData.offsetInterval.end`.
 
 The `InputSlice` will no longer use closed `[start, end]` intervals for `blockInterval` and `offsetInterval`. The new schema will use what are essentially half-open intervals where starting point will always be carried across all transaction, even if the interval itself is empty.
 
-Proposed schema:
+Proposed `InputSlice` schema:
 ```json
 {
   "description": "Describes a slice of the input dataset used during a transformation",
@@ -85,7 +85,7 @@ This change will be executed as part of the backwards compatibility breaking cha
 - Will require more strict validation in implementations
 
 ## Alternatives
-- We could rely on skip list data structure to find blocks with non-empty intervals
+- We could rely on "skip list" data structure to find blocks with non-empty intervals
   - While this may work for output data, it would bring too much complexity in case of input datasets
 
 ## Prior art
@@ -95,4 +95,4 @@ N/A
 N/A
 
 ## Future possibilities
-N/A
+We are still considering to implement the "skip list" data structure, but primarily to allow skipping all *"routine"* data processing events like `AddData` and `ExecuteQuery` (high-volume) and let us quickly iterate over the *"out-of-ordinary"* (low-volume) metadata events.
