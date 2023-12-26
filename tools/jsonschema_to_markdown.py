@@ -64,7 +64,7 @@ def render_format(sch):
         return "[multicodec](https://github.com/multiformats/multicodec)"
     elif fmt in ("dataset-id", "dataset-name", "dataset-alias", "dataset-ref", "dataset-ref-any"):
         return f"[{fmt}](#dataset-identity)"
-    elif fmt in ("path", "int64", "regex", "url", "flatbuffers"):
+    elif fmt in ("int64", "uint64", "path", "regex", "url", "flatbuffers"):
         return f"`{fmt}`"
     else:
         raise Exception(f"Unknown format: {fmt}")

@@ -13,14 +13,14 @@
 - [ ] Forwards-compatible
 
 ## Summary
-Modifies `AddData`, `ExecuteQuery` to make sure that the last event always carries enough information about the output offset and offsets of the inputs to prepare the next transaction without deep scanning of the metadata.
+Removes `SetWatermark` and modifies `AddData` and `ExecuteQuery` events so that they always carried enough information about the output offset and offsets of the inputs to prepare the next transaction without deep scanning of the metadata.
 
 ## Motivation
-Currently, `AddData` and `ExecuteQuery` events carry  `[start, end]` intervals for blocks and offsets to describe inputs and outputs of a transaction. To represent empty input/output they are made optional.
+Currently, `AddData` and `ExecuteQuery` events carry  `[start, end]` intervals for blocks and offsets to describe inputs and outputs of a transaction. To represent empty input/output they are **made optional**.
 
-This is problematic, because to understand what offsets or blocks need to be used used for inputs / output of the next transaction it's sometimes required to scan metadata chain deeply until a non-empty interval is encountered.
+This is problematic, because to understand what offsets or blocks need to be used used for inputs / output of the next transaction it's sometimes required to scan metadata chain until a **non-empty interval** is encountered.
 
-Extending metadata to carry this information regardless of whether any input data was used or any output data was written would allow us to be able to prepare the next transaction using the last `AddData` or `ExecuteQuery` block, avoiding deep scanning of the chain.
+Extending metadata to carry this information regardless of whether any input data was used or any output data was written would allow us to prepare the next transaction using the last `AddData` or `ExecuteQuery` block, avoiding deep scanning of the chain.
 
 ## Guide-level explanation
 Imagine a derivative dataset that is aggregating data from an IoT source:
@@ -32,11 +32,59 @@ Similar problem exists in multi-input derivative datasets where one input update
 
 The proposed change avoids this by always carrying enough information in the events to understand which offsets and blocks were already processed.
 
+It is also proposed to remove the `SetWatermark` event, treating the advancement of the watermark the same as in the case when `AddData` / `ExecuteQuery` blocks don't contain any state change except for the watermark, reducing the complexity and interplay of events that implementations have to deal with.
 
 ## Reference-level explanation
-The `AddData` and `ExecuteQuery` events will be extended with a new `prevOffset` property to represent last offset of the previous data slice. It must be equal to the last non-empty `outputData.offsetInterval.end`.
+The `AddData` and `ExecuteQuery` events will be extended with the new `prevOffset` property to represent last offset of the previous data slice. It must be equal to the last non-empty `outputData.offsetInterval.end`.
 
-The `InputSlice` will no longer use closed `[start, end]` intervals for `blockInterval` and `offsetInterval`. The new schema will use what are essentially half-open intervals where starting point will always be carried across all transaction, even if the interval itself is empty.
+For example, if the first `AddData` event of a Root dataset looks like this (using `null` to represent the missing properties explicitly):
+
+```yaml
+prevCheckpoint: null
+prevOffset: null
+newData:
+  logicalHash: <hash>
+  physicalHash: <hash>
+  offsetInterval:
+    start: 0
+    end: 9
+  size: 100
+newCheckpoint: null
+newWatermark: "2023-12-31T00:00:00"
+newSourceState: null
+```
+
+A correctly chained `AddData` event with data will look like so:
+
+```yaml
+prevCheckpoint: null
+prevOffset: 9
+newData:
+  logicalHash: <hash>
+  physicalHash: <hash>
+  offsetInterval:
+    start: 10
+    end: 19
+  size: 100
+newCheckpoint: null
+newWatermark: "2023-12-31T01:00:00"
+newSourceState: null
+```
+
+While the next chained `AddData` that only advances the watermark will look like so:
+
+```yaml
+prevCheckpoint: null
+prevOffset: 19
+newData: null
+newCheckpoint: null
+newWatermark: "2023-12-31T03:00:00"
+newSourceState: null
+```
+
+The `SetWatermark` event, while advancing the watermark, does not carry over any other things like previous offset, checkpoint, or source state, which unnecessarily complicates the processing. We, therefore, propose removing this event in favor of "no-data" variant of `AddData` and `ExecuteQuery` events, as shown in the example above.
+
+Similarly, the `InputSlice` will no longer use closed `[start, end]` intervals for `blockInterval` and `offsetInterval`. The new schema will use what are essentially half-open intervals where starting point will always be carried across all transaction, even if the interval itself is empty.
 
 Proposed `InputSlice` schema:
 ```json
@@ -82,7 +130,8 @@ This change will be executed as part of the backwards compatibility breaking cha
 
 ## Drawbacks
 - Half-open intervals are slightly harder to understand
-- Will require more strict validation in implementations
+- Will require stricter validation in implementations to catch propagation errors
+- Replacing `SetWatermark` with "no-data" version of `AddData` event makes the event slightly bigger, but with an added bonus of minimizing the chain scanning and simplifying resuming the processing 
 
 ## Alternatives
 - We could rely on "skip list" data structure to find blocks with non-empty intervals

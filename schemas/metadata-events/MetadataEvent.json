@@ -22,9 +22,6 @@
       "$ref": "/schemas/SetVocab"
     },
     {
-      "$ref": "/schemas/SetWatermark"
-    },
-    {
       "$ref": "/schemas/SetAttachments"
     },
     {
