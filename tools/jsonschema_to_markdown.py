@@ -62,12 +62,8 @@ def render_format(sch):
         return "[multihash](https://github.com/multiformats/multihash)"
     elif fmt == "multicodec":
         return "[multicodec](https://github.com/multiformats/multicodec)"
-    elif fmt == "dataset-id":
-        return "[dataset-id](#dataset-identity)"
-    elif fmt == "dataset-name":
-        return "[dataset-name](#dataset-identity)"
-    elif fmt == "dataset-ref-any":
-        return "[dataset-ref-any](#dataset-identity)"
+    elif fmt in ("dataset-id", "dataset-name", "dataset-alias", "dataset-ref", "dataset-ref-any"):
+        return f"[{fmt}](#dataset-identity)"
     elif fmt in ("path", "int64", "regex", "url", "flatbuffers"):
         return f"`{fmt}`"
     else:

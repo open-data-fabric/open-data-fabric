@@ -13,7 +13,7 @@ PREAMBLE = """
 
 use crate::dtos;
 use crate::dtos::{CompressionFormat, DatasetKind, SourceOrdering};
-use crate::identity::{DatasetId, DatasetName, DatasetRefAny};
+use crate::identity::*;
 use crate::formats::*;
 use chrono::{DateTime, Utc};
 use std::path::Path;
@@ -270,6 +270,9 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
+        if fmt == 'uint64':
+            assert ptype == 'integer'
+            return 'u64'
         elif fmt == 'multihash':
             assert ptype == 'string'
             return "&Multihash"
@@ -285,12 +288,17 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return "DateTime<Utc>"
         elif fmt == 'dataset-id':
-            return "&DatasetId"
+            return "&DatasetID"
         elif fmt == 'dataset-name':
             return "&DatasetName"
+        elif fmt == 'dataset-alias':
+            return "&DatasetAlias"
+        elif fmt == 'dataset-ref':
+            return "&DatasetRef"
         elif fmt == 'dataset-ref-any':
             return "&DatasetRefAny"
         elif fmt == 'flatbuffers':
+            assert ptype == 'string'
             return "&[u8]"
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -334,7 +342,7 @@ def render_accessor(name, sch, optional, in_ref=False):
         else:
             yield f'*{name}' if in_ref else name
     elif fmt:
-        if fmt == 'int64':
+        if fmt in ('int64', 'uint64'):
             yield name if not in_ref else f'*{name}'
         elif fmt in ('date-time',):
             yield name if not in_ref else f'*{name}'
@@ -342,7 +350,7 @@ def render_accessor(name, sch, optional, in_ref=False):
             yield f'{name}.as_ref()'
         elif fmt == 'multihash':
             yield f'{name}' if in_ref else f'&{name}'
-        elif fmt in ('dataset-id', 'dataset-name', 'dataset-ref-any', 'flatbuffers'):
+        elif fmt in ('dataset-id', 'dataset-name', 'dataset-alias', 'dataset-ref', 'dataset-ref-any', 'flatbuffers'):
             yield f'{name}' if in_ref else f'&{name}'
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -374,11 +382,11 @@ def render_clone(name, sch, optional):
     elif '$ref' in sch:
         yield f'{name}.into()'
     elif fmt:
-        if fmt == 'int64':
+        if fmt in ('int64', 'uint64'):
             yield name
         elif fmt in ('date-time',):
             yield name
-        elif fmt in ('dataset-name', 'dataset-ref-any', 'url', 'path', 'regex'):
+        elif fmt in ('dataset-name', 'dataset-alias', 'dataset-ref', 'dataset-ref-any', 'url', 'path', 'regex'):
             yield f'{name}.to_owned()'
         elif fmt == 'multihash':
             yield f'{name}.clone()'

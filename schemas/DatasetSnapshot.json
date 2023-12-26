@@ -12,7 +12,7 @@
   "properties": {
     "name": {
       "type": "string",
-      "format": "dataset-name",
+      "format": "dataset-alias",
       "description": "Alias of the dataset."
     },
     "kind": {

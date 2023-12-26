@@ -203,8 +203,6 @@ def get_composite_type(sch, required):
         if not required:
             ptyp += " = null"
         return ptyp
-    elif sch.get('type') == 'object' and 'properties' not in sch:
-        return '[ubyte]'
     elif '$ref' in sch:
         return sch['$ref'].split('/')[-1]
     else:
@@ -218,9 +216,9 @@ def get_primitive_type(sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt == 'int64':
+        if fmt in ('int64', 'uint64'):
             assert ptype == 'integer'
-            return 'int64'
+            return fmt
         elif fmt == 'url':
             assert ptype == 'string'
             return 'string'
@@ -238,10 +236,11 @@ def get_primitive_type(sch):
             return 'Timestamp'
         elif fmt == 'dataset-id':
             return '[ubyte]'
-        elif fmt == 'dataset-name':
+        elif fmt in ("dataset-name", "dataset-alias", "dataset-ref", "dataset-ref-any"):
             return 'string'
-        elif fmt == 'dataset-ref-any':
-            return 'string'
+        elif fmt == 'flatbuffers':
+            assert ptype == 'string'
+            return '[ubyte]'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':

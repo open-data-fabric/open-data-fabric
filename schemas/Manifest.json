@@ -20,7 +20,8 @@
       "description": "Major version number of the resource contained in this manifest. It provides the mechanism for introducing compatibility breaking changes."
     },
     "content": {
-      "type": "object",
+      "type": "string",
+      "format": "flatbuffers",
       "description": "Resource data."
     }
   }

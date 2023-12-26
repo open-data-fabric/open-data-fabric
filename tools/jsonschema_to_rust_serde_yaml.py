@@ -173,7 +173,7 @@ def render_oneof(name, sch):
     yield '#[serde_as]'
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
     yield f'#[serde(remote = "{name}")]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase", tag = "kind")]'
+    yield '#[serde(deny_unknown_fields, tag = "kind")]'
     yield f'pub enum {name}Def {{'
     for isch in sch["oneOf"]:
         yield from indent(render_oneof_element(name, sch, isch))
@@ -184,7 +184,10 @@ def render_oneof_element(name, sch, isch):
     ref = isch["$ref"]
     ename = ref.split('/')[-1]
 
-    yield '#[serde(rename_all = "camelCase")]'
+    # Allow lowercase and camelCase names
+    aliases = {ename.lower(), ename[0].lower() + ename[1:]}
+    yield '#[serde({})]'.format(', '.join(f'alias = "{a}"' for a in sorted(aliases)))
+
     if ref.startswith("#/$defs/"):
         esch = sch["$defs"][ename]
         struct_name = f'{name}{ename}'
@@ -205,11 +208,14 @@ def render_oneof_as(name, sch):
 def render_string_enum(name, sch):
     yield '#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]'
     yield f'#[serde(remote = "{name}")]'
-    yield '#[serde(deny_unknown_fields, rename_all = "camelCase")]'
+    yield '#[serde(deny_unknown_fields)]'
     yield f'pub enum {name}Def {{'
+    indent = ' ' * DEFAULT_INDENT
     for value in sch['enum']:
-        capitalized = value[0].upper() + value[1:]
-        yield ' ' * DEFAULT_INDENT + capitalized + ','
+        # Allow lowercase and camelCase names
+        aliases = {value.lower(), value[0].lower() + value[1:]}
+        yield indent + '#[serde({})]'.format(', '.join(f'alias = "{a}"' for a in sorted(aliases)))
+        yield indent + value + ','
     yield '}'
 
 
@@ -233,6 +239,9 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
+        if fmt == 'uint64':
+            assert ptype == 'integer'
+            return 'u64'
         elif fmt == 'multihash':
             assert ptype == 'string'
             return 'Multihash'
@@ -248,12 +257,17 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetId'
+            return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
+        elif fmt == 'dataset-alias':
+            return 'DatasetAlias'
+        elif fmt == 'dataset-ref':
+            return 'DatasetRef'
         elif fmt == 'dataset-ref-any':
             return 'DatasetRefAny'
         elif fmt == 'flatbuffers':
+            assert ptype == 'string'
             return 'Vec<u8>'
         else:
             raise Exception(f'Unsupported format: {sch}')

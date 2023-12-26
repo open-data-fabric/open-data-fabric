@@ -11,7 +11,7 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
-use crate::identity::{DatasetId, DatasetName, DatasetRefAny};
+use crate::identity::*;
 use crate::formats::Multihash;
 use chrono::{DateTime, Utc};
 use std::path::PathBuf;
@@ -181,6 +181,9 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
+        if fmt == 'uint64':
+            assert ptype == 'integer'
+            return 'u64'
         # TODO: Use separate formats (newtype) for data hashes and block hashes
         elif fmt == 'multihash':
             assert ptype == 'string'
@@ -197,12 +200,17 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetId'
+            return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
+        elif fmt == 'dataset-alias':
+            return 'DatasetAlias'
+        elif fmt == 'dataset-ref':
+            return 'DatasetRef'
         elif fmt == 'dataset-ref-any':
             return 'DatasetRefAny'
         elif fmt == 'flatbuffers':
+            assert ptype == 'string'
             return 'Vec<u8>'
         else:
             raise Exception(f'Unsupported format: {sch}')

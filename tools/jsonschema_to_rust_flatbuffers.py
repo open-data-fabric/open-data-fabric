@@ -440,11 +440,11 @@ def pre_ser_primitive_type(name, sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt == 'int64':
+        if fmt in ('int64', 'uint64'):
             assert ptype == 'integer'
         elif fmt == 'multihash':
             assert ptype == 'string'
-            yield f'fb.create_vector(&{name}.to_bytes())'
+            yield f'fb.create_vector(&{name}.as_bytes().as_slice())'
         elif fmt == 'url':
             assert ptype == 'string'
             yield f'fb.create_string(&{name})'
@@ -458,13 +458,13 @@ def pre_ser_primitive_type(name, sch):
             pass
         elif fmt == 'dataset-id':
             assert ptype == 'string'
-            yield f'fb.create_vector(&{name}.to_bytes())'
+            yield f'fb.create_vector(&{name}.as_bytes().as_slice())'
         elif fmt == 'dataset-name':
             yield f'fb.create_string(&{name})'
-        elif fmt == 'dataset-ref-any':
-            yield f'fb.create_string({name}.to_string().as_str())'
+        elif fmt in ("dataset-alias", "dataset-ref", "dataset-ref-any"):
+            yield f'fb.create_string(&{name}.to_string())'
         elif fmt == 'flatbuffers':
-            assert ptype == 'object'
+            assert ptype == 'string'
             yield f'fb.create_vector(&{name}[..])'
         else:
             raise Exception(f'Unsupported format: {sch}')
@@ -482,27 +482,24 @@ def ser_primitive_type(name, sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt == 'int64':
+        if fmt in ('int64', 'uint64'):
             assert ptype == 'integer'
             yield name
-        elif fmt == 'multihash':
-            assert ptype == 'string'
-        elif fmt == 'url':
-            assert ptype == 'string'
-        elif fmt == 'path':
-            assert ptype == 'string'
-        elif fmt == 'regex':
+        elif fmt in (
+            'multihash',
+            'url',
+            'path',
+            'regex',
+            'dataset-id',
+            'dataset-name',
+            'dataset-alias',
+            'dataset-ref',
+            'dataset-ref-any',
+            'flatbuffers',
+        ):
             assert ptype == 'string'
         elif fmt == 'date-time':
             yield f'&datetime_to_fb(&{name})'
-        elif fmt == 'dataset-id':
-            assert ptype == 'string'
-        elif fmt == 'dataset-name':
-            assert ptype == 'string'
-        elif fmt == 'dataset-ref-any':
-            assert ptype == 'string'
-        elif fmt == 'flatbuffers':
-            assert ptype == 'object'
         else:
             raise Exception(f'Unsupported format: {sch}')
     elif ptype == 'boolean':
@@ -522,7 +519,7 @@ def de_primitive_type(name, sch, enum_t_accessor):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt == 'int64':
+        if fmt in ('int64', 'uint64'):
             assert ptype == 'integer'
             yield f'{name}'
         elif fmt == 'multihash':
@@ -541,15 +538,21 @@ def de_primitive_type(name, sch, enum_t_accessor):
             yield f'fb_to_datetime({name})'
         elif fmt == 'dataset-id':
             assert ptype == 'string'
-            yield f'odf::DatasetId::from_bytes({name}.bytes()).unwrap()'
+            yield f'odf::DatasetID::from_bytes({name}.bytes()).unwrap()'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             yield f'odf::DatasetName::try_from({name}).unwrap()'
+        elif fmt == 'dataset-alias':
+            assert ptype == 'string'
+            yield f'odf::DatasetAlias::try_from({name}).unwrap()'
+        elif fmt == 'dataset-ref':
+            assert ptype == 'string'
+            yield f'odf::DatasetRef::try_from({name}).unwrap()'
         elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
             yield f'odf::DatasetRefAny::try_from({name}).unwrap()'
         elif fmt == 'flatbuffers':
-            assert ptype == 'object'
+            assert ptype == 'string'
             yield f'{name}.bytes().to_vec()'
         else:
             raise Exception(f'Unsupported format: {sch}')

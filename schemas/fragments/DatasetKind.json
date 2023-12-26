@@ -4,7 +4,7 @@
   "description": "Represents type of the dataset.",
   "type": "string",
   "enum": [
-    "root",
-    "derivative"
+    "Root",
+    "Derivative"
   ]
 }

@@ -29,7 +29,7 @@
       "format": "date-time",
       "description": "Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one. Thus, watermarks are monotonically non-decreasing."
     },
-    "sourceState": {
+    "newSourceState": {
       "$ref": "/schemas/SourceState",
       "description": "The state of the source the data was added from to allow fast resuming. If the state did not change but is still relevant for subsequent runs it should be carried, i.e. only the last state per source is considered when resuming."
     }

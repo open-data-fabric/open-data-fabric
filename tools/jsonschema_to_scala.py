@@ -209,6 +209,12 @@ def get_primitive_type(sch):
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             return 'DatasetName'
+        elif fmt == 'dataset-alias':
+            assert ptype == 'string'
+            return 'DatasetAlias'
+        elif fmt == 'dataset-ref':
+            assert ptype == 'string'
+            return 'DatasetRef'
         elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
             return 'DatasetRefAny'

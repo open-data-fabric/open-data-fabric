@@ -14,8 +14,8 @@
         "format": {
           "type": "string",
           "enum": [
-            "gzip",
-            "zip"
+            "Gzip",
+            "Zip"
           ],
           "enumName": "CompressionFormat",
           "description": "Name of a compression algorithm used on data."

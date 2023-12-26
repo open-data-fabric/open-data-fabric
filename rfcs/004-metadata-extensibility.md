@@ -53,13 +53,13 @@ will produce metadata chain with three blocks:
 
 Core events:
 
-| Event Type     | Description                                                                                 |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| `Seed`         | Contains identity information of a dataset and allways appears as the first metadata block. |
-| `AddData`      | Signifies that data was added into the `root` dataset.                                      |
-| `SetWatermark` | Signigies that watermar of the dataset has been advanced.                                   |
-| `SetTransform` | Defines transformation of the `derivative` dataset.                                         |
-| `ExecuteQuery` | Signifies data processing step on the `derivative` dataset.                                 |
+| Event Type     | Description                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| `Seed`         | Contains identity information of a dataset and always appears as the first metadata block. |
+| `AddData`      | Signifies that data was added into the `root` dataset.                                     |
+| `SetWatermark` | Signifies that watermark of the dataset has been advanced.                                 |
+| `SetTransform` | Defines transformation of the `derivative` dataset.                                        |
+| `ExecuteQuery` | Signifies data processing step on the `derivative` dataset.                                |
 
 Extension events:
 

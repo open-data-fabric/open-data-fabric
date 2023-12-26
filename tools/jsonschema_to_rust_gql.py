@@ -18,7 +18,6 @@ use opendatafabric as odf;
 
 use crate::prelude::*;
 use crate::queries::Dataset;
-use crate::scalars::{DatasetId, DatasetName, Multihash, OSPath};
 """
 
 DEFAULT_INDENT = 4
@@ -30,25 +29,22 @@ CUSTOM_TYPES = {
 #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
 #[graphql(complex)]
 pub struct TransformInput {
-    pub id: Option<DatasetId>,
-    pub name: DatasetName,
-    pub dataset_ref: Option<DatasetRefAny>,
+    pub dataset_ref: DatasetRef,
+    pub alias: String,
 }
 
 #[ComplexObject]
 impl TransformInput {
     async fn dataset(&self, ctx: &Context<'_>) -> Result<Dataset> {
-        let dref = self.id.clone().unwrap();
-        Dataset::from_ref(ctx, &dref.as_local_ref()).await
+        Dataset::from_ref(ctx, &self.dataset_ref).await
     }
 }
 
 impl From<odf::TransformInput> for TransformInput {
     fn from(v: odf::TransformInput) -> Self {
         Self {
-            id: v.id.map(Into::into),
-            name: v.name.into(),
-            dataset_ref: v.dataset_ref.map(Into::into),
+            dataset_ref: v.dataset_ref.into(),
+            alias: v.alias.unwrap(),
         }
     }
 }
@@ -308,6 +304,9 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
+        if fmt == 'uint64':
+            assert ptype == 'integer'
+            return 'u64'
         # TODO: Use separate formats (newtype) for data hashes and block hashes
         elif fmt == 'multihash':
             assert ptype == 'string'
@@ -324,9 +323,13 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetId'
+            return 'DatasetID'
         elif fmt == 'dataset-name':
             return 'DatasetName'
+        elif fmt == 'dataset-alias':
+            return 'DatasetAlias'
+        elif fmt == 'dataset-ref':
+            return 'DatasetRef'
         elif fmt == 'dataset-ref-any':
             return 'DatasetRefAny'
         else:

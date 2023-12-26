@@ -10,7 +10,7 @@
   "properties": {
     "datasetRef": {
       "type": "string",
-      "format": "dataset-ref-any",
+      "format": "dataset-ref",
       "description": "A local or remote dataset reference. When block is accepted this MUST be in the form of a DatasetId to guarantee reproducibility, as aliases can change over time."
     },
     "alias": {

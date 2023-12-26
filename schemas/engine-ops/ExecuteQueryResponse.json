@@ -15,7 +15,7 @@
             "additionalProperties": false,
             "required": [],
             "properties": {
-                "offsetInterval": {
+                "newOffsetInterval": {
                     "$ref": "/schemas/OffsetInterval",
                     "description": "Data slice produced by the transaction, if any."
                 },

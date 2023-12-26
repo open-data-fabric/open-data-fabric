@@ -10,7 +10,7 @@ PREAMBLE = """//////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
-use crate::domain::DatasetId;
+use crate::domain::DatasetID;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
@@ -181,12 +181,15 @@ def get_primitive_type(sch):
         elif fmt == 'date-time':
             return 'DateTime<Utc>'
         elif fmt == 'dataset-id':
-            return 'DatasetId'
+            return 'DatasetID'
         elif fmt == 'dataset-name':
             assert ptype == 'string'
             return 'DatasetName'
+        elif fmt == 'dataset-ref':
+            assert ptype == 'string'
+            return 'DatasetRef'
         elif fmt == 'dataset-ref-any':
-            assert ptyoe == 'string'
+            assert ptype == 'string'
             return 'DatasetRefAny'
         else:
             raise Exception(f'Unsupported format: {sch}')
