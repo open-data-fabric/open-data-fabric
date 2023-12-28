@@ -25,7 +25,7 @@
         },
         "queries": {
           "type": "array",
-          "description": "Use this instead of query field for specifying multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`.",
+          "description": "Specifies multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`. Last query in the array should have no alias and will be treated as an output.",
           "items": {
             "$ref": "/schemas/SqlQueryStep"
           }

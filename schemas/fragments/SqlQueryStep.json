@@ -10,7 +10,7 @@
   "properties": {
     "alias": {
       "type": "string",
-      "description": "Name of the temporary view that will be created from result of the query."
+      "description": "Name of the temporary view that will be created from result of the query. Step without this alias will be treated as an output of the transformation."
     },
     "query": {
       "type": "string",

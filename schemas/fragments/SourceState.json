@@ -5,13 +5,14 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "sourceName",
     "kind",
     "value"
   ],
   "properties": {
     "sourceName": {
       "type": "string",
-      "description": "Identifies the source that the state corresponds to. It is empty for a polling source, as there can be only one. For push sources an empty name also uniquely identifies the source know as 'default'."
+      "description": "Identifies the source that the state corresponds to."
     },
     "kind": {
       "type": "string",

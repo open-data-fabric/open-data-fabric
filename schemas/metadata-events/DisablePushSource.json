@@ -4,7 +4,9 @@
   "description": "Disables the previously defined source.",
   "type": "object",
   "additionalProperties": false,
-  "required": [],
+  "required": [
+    "sourceName"
+  ],
   "properties": {
     "sourceName": {
       "type": "string",
