@@ -34,9 +34,21 @@ case class Multihash(s: String) extends AnyVal {
 
 case class DatasetId(s: String) extends AnyVal {
   override def toString: String = s
+  def toMultibase(): String = {
+    assert(s.startsWith("did:odf:"))
+    s.substring(8, s.length)
+  }
 }
 
 case class DatasetName(s: String) extends AnyVal {
+  override def toString: String = s
+}
+
+case class DatasetAlias(s: String) extends AnyVal {
+  override def toString: String = s
+}
+
+case class DatasetRef(s: String) extends AnyVal {
   override def toString: String = s
 }
 
@@ -117,7 +129,12 @@ def render_schema(name, sch):
         yield from render_oneof(name, sch)
     elif name == 'DatasetKind':
         # TODO: Support string enums directly
-        pass
+        yield 'sealed trait DatasetKind'
+        yield 'object DatasetKind {'
+        yield '  case object Root extends DatasetKind'
+        yield '  case object Derivative extends DatasetKind'
+        yield '  case object Remote extends DatasetKind'
+        yield '}'
     else:
         raise Exception(f'Unsupported schema: {sch}')
 
@@ -190,6 +207,9 @@ def get_primitive_type(sch):
         if fmt == 'int64':
             assert ptype == 'integer'
             return 'Long'
+        if fmt == 'uint64':
+            assert ptype == 'integer'
+            return 'Long'
         elif fmt == 'url':
             assert ptype == 'string'
             return 'URI'
@@ -218,6 +238,9 @@ def get_primitive_type(sch):
         elif fmt == 'dataset-ref-any':
             assert ptype == 'string'
             return 'DatasetRefAny'
+        elif fmt == 'flatbuffers':
+            assert ptype == 'string'
+            return 'Array[Byte]'
         else:
             raise Exception(f'Unsupported format: {sch}')
     if ptype == 'boolean':
