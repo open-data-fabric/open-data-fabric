@@ -1,5 +1,5 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryRequest",
+    "$id": "http://open-data-fabric.github.com/schemas/TransformRequest",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
     "type": "object",
@@ -41,7 +41,7 @@
         "queryInputs": {
             "type": "array",
             "items": {
-                "$ref": "/schemas/ExecuteQueryRequestInput"
+                "$ref": "/schemas/TransformRequestInput"
             },
             "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
         },

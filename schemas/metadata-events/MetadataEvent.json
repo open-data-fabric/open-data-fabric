@@ -7,7 +7,7 @@
       "$ref": "/schemas/AddData"
     },
     {
-      "$ref": "/schemas/ExecuteQuery"
+      "$ref": "/schemas/ExecuteTransform"
     },
     {
       "$ref": "/schemas/Seed"

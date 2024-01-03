@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ExecuteQuery",
+  "$id": "http://open-data-fabric.github.com/schemas/ExecuteTransform",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Indicates that derivative transformation has been performed.",
   "type": "object",
@@ -11,7 +11,7 @@
     "queryInputs": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/ExecuteQueryInput"
+        "$ref": "/schemas/ExecuteTransformInput"
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
     },

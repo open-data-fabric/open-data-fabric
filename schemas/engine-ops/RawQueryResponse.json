@@ -1,7 +1,7 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryResponse",
+    "$id": "http://open-data-fabric.github.com/schemas/RawQueryResponse",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "Sent by an engine to coordinator when performing the data transformation",
+    "description": "Sent by an engine to coordinator when performing the raw query operation",
     "root": true,
     "$defs": {
         "Progress": {
@@ -13,16 +13,14 @@
         "Success": {
             "type": "object",
             "additionalProperties": false,
-            "required": [],
+            "required": [
+                "numRecords"
+            ],
             "properties": {
-                "newOffsetInterval": {
-                    "$ref": "/schemas/OffsetInterval",
-                    "description": "Data slice produced by the transaction, if any."
-                },
-                "newWatermark": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Watermark advanced by the transaction, if any."
+                "numRecords": {
+                    "type": "integer",
+                    "format": "uint64",
+                    "description": "Number of records produced by the query"
                 }
             }
         },

@@ -1,7 +1,7 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/ExecuteQueryRequestInput",
+    "$id": "http://open-data-fabric.github.com/schemas/TransformRequestInput",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "Sent as part of the execute query requst to describe the input",
+    "description": "Sent as part of the engine transform request operation to describe the input",
     "type": "object",
     "additionalProperties": false,
     "required": [
