@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.34.0] - 2024-01-11
+### Changed
+- [RFC-012: Recommend `base16` encoding for textual representation of hashes and DIDs](rfcs/012-recommend-base16-encoding.md) (#71)
+- [RFC-013: Enum representation in YAML encoding](rfcs/013-yaml-enum-representation.md) (#71)
+- [RFC-014: Minimizing scanning for last offset and block ](rfcs/014-minimize-offset-scanning.md) (#71)
+- [RFC-015: Unified changelog stream schema](rfcs/015-unified-changelog-stream-schema.md) (#72)
+
 ## [0.33.1] - 2023-12-11
 ### Changed
 - Renamed `source` field to `sourceName` in `AddPushSource` / `DisablePushSource` events and make it optional
