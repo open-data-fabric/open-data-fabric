@@ -10,6 +10,8 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ////////////////////////////////////////////////////////////////////////////////
 
+#![allow(clippy::all)]
+
 use std::path::PathBuf;
 use super::formats::{base64, datetime_rfc3339, datetime_rfc3339_opt};
 use crate::*;
@@ -94,7 +96,7 @@ def read_schemas(schemas_dir):
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
-        
+
         if os.path.isdir(path):
             read_schemas_rec(path, schemas)
             continue

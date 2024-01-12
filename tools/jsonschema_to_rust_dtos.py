@@ -11,6 +11,8 @@ PREAMBLE = """
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
+#![allow(clippy::all)]
+
 use crate::identity::*;
 use crate::formats::Multihash;
 use chrono::{DateTime, Utc};
@@ -68,7 +70,7 @@ def read_schemas(schemas_dir):
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
-        
+
         if os.path.isdir(path):
             read_schemas_rec(path, schemas)
             continue

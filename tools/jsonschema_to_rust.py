@@ -9,6 +9,8 @@ PREAMBLE = """//////////////////////////////////////////////////////////////////
 // See: http://opendatafabric.org/
 ///////////////////////////////////////////////////////////////////////////////
 
+#![allow(clippy::all)]
+
 use super::formats::{datetime_rfc3339, datetime_rfc3339_opt};
 use crate::domain::DatasetID;
 use chrono::{DateTime, Utc};
@@ -64,7 +66,7 @@ def read_schemas(schemas_dir):
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
-        
+
         if os.path.isdir(path):
             read_schemas_rec(path, schemas)
             continue
