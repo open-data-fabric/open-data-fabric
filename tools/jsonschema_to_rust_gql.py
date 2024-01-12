@@ -12,6 +12,7 @@ PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 
 #![allow(unused_variables)]
+#![allow(clippy::all)]
 
 use chrono::{DateTime, Utc};
 use opendatafabric as odf;
@@ -142,7 +143,7 @@ def read_schemas(schemas_dir):
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
-        
+
         if os.path.isdir(path):
             read_schemas_rec(path, schemas)
             continue

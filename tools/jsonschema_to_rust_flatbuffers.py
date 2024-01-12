@@ -14,6 +14,7 @@ PREAMBLE = """
 
 #![allow(unused_variables)]
 #![allow(unused_mut)]
+#![allow(clippy::all)]
 
 use super::proxies_generated as fb;
 mod odf {
@@ -109,7 +110,7 @@ def is_string_enum(typ_or_sch):
 
 def render(schemas_dir):
     schemas = read_schemas(schemas_dir)
-    
+
     # Snapshots always appear in YAML and flatbuffers don't support arrays of unions in Rust yet
     del schemas["DatasetSnapshot"]
 
@@ -161,7 +162,7 @@ def read_schemas(schemas_dir):
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
-        
+
         if os.path.isdir(path):
             read_schemas_rec(path, schemas)
             continue
