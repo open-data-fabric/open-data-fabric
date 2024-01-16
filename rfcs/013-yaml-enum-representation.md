@@ -16,7 +16,7 @@
 Proposes to use `kind: PascalCaseVariantName` convention to standardize how enum variants are differentiated in YAML / JSON serialization format.
 
 ## Motivation
-Currently the spec does not specify how enum variants must be differentiated between when ODF structures are serialized in YAML / JSON form.
+Currently, the spec does not specify how enum variants must be differentiated between when ODF structures are serialized in YAML / JSON form.
 
 This part was left to implementations and Kamu just ended up using `kind: camelCaseVariantName`.
 
@@ -29,9 +29,9 @@ enumProperty:
   foo: bar
 ```
 
-The internal tagging provides the most concise representation, while remaining non-ambiguous. The slight drawback is that it gives `kind` property a special function and we should be mindful of name conflicts.
+The internal tagging provides the most concise representation, while remaining non-ambiguous. The slight drawback is that it gives `kind` property a special function, and we should be mindful of name conflicts.
 
-Using the `PascalCase` for variant names makes names appear identical in YAML / JSON to how they appears in ODF schemas.
+Using the `PascalCase` for variant names makes names appear identical in YAML / JSON to how they appear in ODF schemas.
 
 While `PascalCase` is the representation that should be used by all implementations when outputting YAML/JSON, in the interest of being more forgiving to human input implementations should also tolerate `camelCase` and `lowercase` names when reading YAML/JSON metadata.
 
@@ -57,7 +57,7 @@ This change is backwards compatible as all existing `DatasetSnapshot`s that exis
 N/A
 
 ## Alternatives
-- [Supported enum representations in `serde`](https://serde.rs/enum-representations.html) (a defacto Rust's standard serialization library)
+- [Supported enum representations in `serde`](https://serde.rs/enum-representations.html) (a de facto Rust's standard serialization library)
 
 ## Prior art
 N/A

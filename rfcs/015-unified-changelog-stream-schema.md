@@ -28,7 +28,7 @@ We consider the correction/retraction model fundamental and essential to making 
 Consider a video game that writes a `match_scores` dataset as players complete the matches:
 
 | match_time | match_id | player_name | score |
-| ---------: | -------: | ----------: | ----: |
+|-----------:|---------:|------------:|------:|
 |         t1 |        1 |       Alice |   100 |
 |         t1 |        1 |         Bob |    80 |
 |         t2 |        2 |       Alice |    70 |
@@ -59,29 +59,29 @@ There are several ways to represent how this query behaves when applied to the a
 #### Retract Stream
 The most generic way is a "retract stream" that only uses append `+A` and retract `-R` operations (note the new `op` column):
 
-|   op | place | match_time | player_name | score |
-| ---: | ----: | ---------: | ----------: | ----: |
-|   +A |     1 |         t1 |       Alice |   100 |
-|   +A |     2 |         t1 |         Bob |    80 |
-|   -R |     2 |         t1 |         Bob |    80 |
-|   +A |     2 |         t2 |     Charlie |    90 |
-|   -R |     1 |         t1 |       Alice |   100 |
-|   -R |     2 |         t2 |     Charlie |    90 |
-|   +A |     1 |         t3 |     Charlie |   110 |
-|   +A |     2 |         t3 |       Alice |   100 |
+| op | place | match_time | player_name | score |
+|---:|------:|-----------:|------------:|------:|
+| +A |     1 |         t1 |       Alice |   100 |
+| +A |     2 |         t1 |         Bob |    80 |
+| -R |     2 |         t1 |         Bob |    80 |
+| +A |     2 |         t2 |     Charlie |    90 |
+| -R |     1 |         t1 |       Alice |   100 |
+| -R |     2 |         t2 |     Charlie |    90 |
+| +A |     1 |         t3 |     Charlie |   110 |
+| +A |     2 |         t3 |       Alice |   100 |
 
 In this model the updated state of the leader board is compared with the previous state after each new event, and necessary records first get retracted before being replaced with appends.
 
 #### Upsert Stream
 Using the knowledge that the `place` column plays the role of a unique key of the resulting state we could also represent the above as an "upsert stream" using only upsert `+A` and retract `-R` operations:
 
-|   op | place | match_time | player_name | score |
-| ---: | ----: | ---------: | ----------: | ----: |
-|   +A |     1 |         t1 |       Alice |   100 |
-|   +A |     2 |         t1 |         Bob |    80 |
-|   +A |     2 |         t2 |     Charlie |    90 |
-|   +A |     1 |         t3 |     Charlie |   110 |
-|   +A |     2 |         t3 |       Alice |   100 |
+| op | place | match_time | player_name | score |
+|---:|------:|-----------:|------------:|------:|
+| +A |     1 |         t1 |       Alice |   100 |
+| +A |     2 |         t1 |         Bob |    80 |
+| +A |     2 |         t2 |     Charlie |    90 |
+| +A |     1 |         t3 |     Charlie |   110 |
+| +A |     2 |         t3 |       Alice |   100 |
 
 This additional knowledge allows us to significantly compact the stream. 
 
@@ -90,13 +90,13 @@ Although the retract operation does not appear in our example, it is needed for 
 #### Changelog Stream (single event)
 Some systems produce "changelog streams" containing append `+A`, retract `-R`, and update `+U` operations with update carrying both the new values and the old values of the record being changed:
 
-|   op | place | match_time | player_name | score | match_time_old | old_player_name | old_score |
-| ---: | ----: | ---------: | ----------: | ----: | -------------: | --------------: | --------: |
-|   +A |     1 |         t1 |       Alice |   100 |                |                 |           |
-|   +A |     2 |         t1 |         Bob |    80 |                |                 |           |
-|   +U |     2 |         t2 |     Charlie |    90 |             t1 |             Bob |        80 |
-|   +U |     1 |         t3 |     Charlie |   110 |             t1 |           Alice |       100 |
-|   +U |     2 |         t1 |       Alice |   100 |             t2 |         Charlie |        90 |
+| op | place | match_time | player_name | score | match_time_old | old_player_name | old_score |
+|---:|------:|-----------:|------------:|------:|---------------:|----------------:|----------:|
+| +A |     1 |         t1 |       Alice |   100 |                |                 |           |
+| +A |     2 |         t1 |         Bob |    80 |                |                 |           |
+| +U |     2 |         t2 |     Charlie |    90 |             t1 |             Bob |        80 |
+| +U |     1 |         t3 |     Charlie |   110 |             t1 |           Alice |       100 |
+| +U |     2 |         t1 |       Alice |   100 |             t2 |         Charlie |        90 |
 
 This format is also used by CDC systems like [Debezium](https://debezium.io/) and as an internal data representation in [Arroyo](https://github.com/ArroyoSystems/arroyo).
 
@@ -105,16 +105,16 @@ This format is the most "informative" one, as it differentiates retractions from
 #### Changelog Stream (two events)
 The Apache Flink's "changelog streams" variant is using append `+A`, retract `-R`, update-before `-U`, and update-after `+U` operations. Here, the "update-before" events carry the previous values of the record about to be updated and "update-after" events carry the new values, with the restriction that these events must always appear side by side and in order.
 
-|   op | place | match_time | player_name | score |
-| ---: | ----: | ---------: | ----------: | ----: |
-|   +A |     1 |         t1 |       Alice |   100 |
-|   +A |     2 |         t1 |         Bob |    80 |
-|   -U |     2 |         t1 |         Bob |    80 |
-|   +U |     2 |         t2 |     Charlie |    90 |
-|   -U |     1 |         t1 |       Alice |   100 |
-|   +U |     1 |         t3 |     Charlie |   110 |
-|   -U |     2 |         t2 |     Charlie |    90 |
-|   +U |     2 |         t1 |       Alice |   100 |
+| op | place | match_time | player_name | score |
+|---:|------:|-----------:|------------:|------:|
+| +A |     1 |         t1 |       Alice |   100 |
+| +A |     2 |         t1 |         Bob |    80 |
+| -U |     2 |         t1 |         Bob |    80 |
+| +U |     2 |         t2 |     Charlie |    90 |
+| -U |     1 |         t1 |       Alice |   100 |
+| +U |     1 |         t3 |     Charlie |   110 |
+| -U |     2 |         t2 |     Charlie |    90 |
+| +U |     2 |         t1 |       Alice |   100 |
 
 By splitting the update operation in two events this format does not require extending the schema with multiple columns.
 
@@ -125,7 +125,7 @@ Considering all the above we decide to:
 - Use **Two-event Changelog Stream format** as the most complete and the least intrusive format for representing corrections and retractions
   - Retract and Upsert streams can still be supported as subsets of the Changelog Stream model
 - Extend the set of standard columns with `op` column to define the operation
-- Avoid the use of the word `update` and favor the word `correction` to further distantiate ourselves from the CDC and CRUD mentality
+- Avoid the use of the word `update` and favor the word `correction` to further distant ourselves from the CDC and CRUD mentality
 - Generalize `MergeSchema::Snapshot` to use this column.
 
 ## Reference-level explanation
@@ -134,12 +134,12 @@ The set of system columns will be extended with `op` column:
 - Parquet type: `INT32`
 - Recommended Parquet encoding: `RLE_DICTIONARY`
 
-| value |   operation    | code  |
-| :---: | :------------: | :---: |
-|   0   |    `append`    | `+A`  |
-|   1   |   `retract`    | `-R`  |
-|   2   | `correct-from` | `-C`  |
-|   3   |  `correct-to`  | `+C`  |
+| value |   operation    | code |
+|:-----:|:--------------:|:----:|
+|   0   |    `append`    | `+A` |
+|   1   |   `retract`    | `-R` |
+|   2   | `correct-from` | `-C` |
+|   3   |  `correct-to`  | `+C` |
 
 `DatasetVocabulary` schema will be updated to include `operationTypeColumn`.
 
@@ -162,7 +162,7 @@ Previously `MergeStrategy::Snapshot` produced an [upsert stream](#upsert-stream)
 Migration to [changelog stream](#changelog-stream-two-events) format will produce more records and slow down the CDC operation, but make stream more versatile, as it will be possible to feed it directly into engines without propagating the knowledge of primary keys. We therefore decide to accept the associated costs.
 
 ### Affect on current batch engines
-Some ODF engine implementations, like Kamu Spark and DataFusion engines, are operating in batch mode. This is a transitional measure and they explicitly warn users that they are not complete ODF engine implementations and should be used only for `map` / `filter` style queries. Those engines often reorder rows due to their parallel nature and resort to re-sorting records by `event_time` after processing. While this was mostly fine before, with these changes the event order becomes very important, and in the presence of corrections and retractions order cannot be easily restored by re-sorting, as that would require some kind of primary key which not every dataset has.
+Some ODF engine implementations, like Kamu Spark and DataFusion engines, are operating in batch mode. This is a transitional measure, and they explicitly warn users that they are not complete ODF engine implementations and should be used only for `map` / `filter` style queries. Those engines often reorder rows due to their parallel nature and resort to re-sorting records by `event_time` after processing. While this was mostly fine before, with these changes the event order becomes very important, and in the presence of corrections and retractions order cannot be easily restored by re-sorting, as that would require some kind of primary key which not every dataset has.
 
 We accept this added complexity and recommend that transitional batch-mode engines:
 - preserve the order of records during processing (e.g. by coalescing inputs into one partition)
@@ -213,7 +213,7 @@ Such association would allow:
 
 In practice this may be hard to implement. A record identifier such as `offset` would need to be propagated through all streaming queries. We wouldn't want to leave such a delicate and error-prone detail to the user, so we would need to analyze and dynamically rewrite queries to add offset propagation. And since the only thing that knows how to interpret engine's dialect is the engine itself - this rewrite would need to be implemented individually by each engine. 
 
-At this stage of ODF development we decided that introducing query rewrite would be too costly, but we will consider it in future.
+At this stage of ODF development we decided that introducing query rewrite would be too costly, but we will consider it in the future.
 
 Additionally, query rewrites and associations between records are already a part of the vision for ODF's **fine-grain provenance**, and must be designed together, holistically.
 

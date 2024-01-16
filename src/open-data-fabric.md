@@ -19,8 +19,8 @@ Develop a method of semi-structured data exchange that would:
 
 # Requirements
 Functional:
-- **Complete historical account** - when data is used to gain insight and to drive decision making discarding or modifying data is akin to rewriting history. The history of all data observed by the system must be preserved.
-- **Reproducibility** - the ability to reproduce the results is a cornerstone of the scientific method without which the process and findings of one party cannot be verified by others. Therefore we require that all the transformations performed within the system must be fully reproducible, and it must be possible to get a reference to data that is frozen in time and never changes to achieve reproducibility of any process that uses it.
+- **Complete historical account** - when data is used to gain insight and to drive decision-making discarding or modifying data is akin to rewriting history. The history of all data observed by the system must be preserved.
+- **Reproducibility** - the ability to reproduce the results is a cornerstone of the scientific method without which the process and findings of one party cannot be verified by others. Therefore, we require that all the transformations performed within the system must be fully reproducible, and it must be possible to get a reference to data that is frozen in time and never changes to achieve reproducibility of any process that uses it.
 - **Verifiability** - any party that plans to use some data must be able to verify its validity.
 - **Provenance** - regardless of how many transformation stages the data went through, it should be possible to trace any individual data cell back to its ultimate source and understand which data contributed to its existence and its value.
 
@@ -37,7 +37,7 @@ The primary focus of this specification is the **mission-critical data** such as
 - Financial data
 - Healthcare data
 - Scientific data
-- As well as any other data used for decision making
+- As well as any other data used for decision-making
 
 This specification does not target very high volume sources like IoT and sensor data where infinite retention of the entire history may be cost-prohibitive. We do, however, hope to shift the mindset of the data science community towards thinking about such cases as **design compromises**. Routine data loss should no longer be our default mode of operations.
 
@@ -71,7 +71,7 @@ Properties:
 Such representation poses many additional challenges when working with data, but, as we will show further - the benefits by far outweigh the added complexity, and that complexity can in most cases be addressed by better tooling.
 
 ## Nature of Transformations
-The state-of-the-art approach to transforming data today is to version the source data (using a hash sum or a stable reference) and version the code that transforms it (using a version control system). The result of transformations is then uploaded to some shared storage and made available to others. There are many tools that improve the reproducibility of such workflows, but all of them treat data as a mere binary blob, deprived of any of its intrinsic qualities.
+The state-of-the-art approach to transforming data today is to version the source data (using a hash sum or a stable reference) and version the code that transforms it (using a version control system). The result of transformations is then uploaded to some shared storage and made available to others. There are many tools that improve the reproducibility of such workflows, but all of them treat data as a mere binary blob, deprived of its intrinsic qualities.
 
 This leads to many problems:
 - Data is routinely copied
@@ -143,7 +143,7 @@ Our design goals are, therefore:
 - To support the evolution of transformations over time
 - To provide a way to correct past mistakes in data
 
-While for simplicity we previously considered derivative datasets to be only defined by one transformation query, in fact it can comprise of multiple queries that were active during different periods of time. The metadata keeps track of which parts of inputs were processed by which query and which parts of output were produced as the result, ensuring reproducibility. This idea will be further explored when we discuss the [Metadata Chain](#metadata-chain), but for now, get used to the idea that **almost anything that defines a dataset can change over time**.
+While for simplicity we previously considered derivative datasets to be only defined by one transformation query, in fact it can comprise multiple queries that were active during different periods of time. The metadata keeps track of which parts of inputs were processed by which query and which parts of output were produced as the result, ensuring reproducibility. This idea will be further explored when we discuss the [Metadata Chain](#metadata-chain), but for now, get used to the idea that **almost anything that defines a dataset can change over time**.
 
 ## Data Sharing
 The guiding factors in designing how data is shared were:
@@ -158,7 +158,7 @@ Metadata is usually several orders of magnitude smaller than the data it describ
 
 When the metadata of a certain dataset is reliably known, a peer can then download the data from any untrusted source and use the metadata validate the authenticity of every data slice that composes it (see [Hash Function](#hash)) - this means that we need to only ensure the validity of metadata, while the data can be stored almost anywhere with minimal replication factor, as long as one compromised party does not result in the complete loss of data.
 
-Metadata also provides us with a way to establish the trustworthiness of any dataset by reviewing the transformations declared in it, re-applying those transformations in a trusted environment, and comparing the results to the original data. In a distributed system, having peers cross-validate each others' published data can guarantee trusted results and allow them to promptly identify and exclude malicious peers from the network.
+Metadata also provides us with a way to establish the trustworthiness of any dataset by reviewing the transformations declared in it, re-applying those transformations in a trusted environment, and comparing the results to the original data. In a distributed system, having peers cross-validate each other's published data can guarantee trusted results and allow them to promptly identify and exclude malicious peers from the network.
 
 ## Transactional Semantics
 To achieve a perfect reproducibility the system needs to satisfy very strong transactional properties:
@@ -230,11 +230,11 @@ Just like [Data](#data), the metadata chain also has a temporal nature. It consi
 
 ![Diagram: Metadata Chain](images/metadata-chain.svg)
 
-All Metadata Blocks are immutable and changes by appending new blocks. With blocks, data, and checkpoints named after and referenced by the [hash](#hash) of their content - a dataset forms a type of a [content-addressable](https://en.wikipedia.org/wiki/Content-addressable_storage) system, where having a reference to the last Metadata Block one can traverse the entire chain an discover all the components of the dataset.
+All Metadata Blocks are immutable and changes by appending new blocks. With blocks, data, and checkpoints named after and referenced by the [hash](#hash) of their content - a dataset forms a type of [content-addressable](https://en.wikipedia.org/wiki/Content-addressable_storage) system, where having a reference to the last Metadata Block one can traverse the entire chain to discover all the components of the dataset.
 
 ![Diagram: Dataset as a Content-Addressable Graph](images/metadata-chain-2.svg)
 
-Metadata Chain also supports **Block References** that assign a certan symbolic name to a block hash, effectively acting as a named pointer. At the minimum all datasets have a `head` reference that indicates the current last block in the Metadata Chain. Using multiple references the metadata chain can be organized into a directed acyclic graph that can form branches, allowing for example to stage some subset of events for review or an automated QA process before they are accepted into the main chain.
+Metadata Chain also supports **Block References** that assign a certain symbolic name to a block hash, effectively acting as a named pointer. At the minimum all datasets have a `head` reference that indicates the current last block in the Metadata Chain. Using multiple references the metadata chain can be organized into a directed acyclic graph that can form branches, allowing for example to stage some subset of events for review or an automated QA process before they are accepted into the main chain.
 
 In addition to core events like adding data, running a query, and change of schema the Metadata Chain is designed to be extended to carry other kinds of information like:
 - Extra meaning and structure of knowledge that data represents (glossary, semantics, ontology)
@@ -389,7 +389,7 @@ See also:
 ## Provenance
 Data provenance describes the origins and the history of data and adds value to data by explaining how it was obtained.
 
-[Metadata Chain](#metadata-chain) alone can already significantly narrow down the search space when you want to explain how a certain piece of data came to be, as it keeps track of all the inputs and queries used to create a dataset. But the goal of the provenance system is to make this type of inquiries effortless.
+[Metadata Chain](#metadata-chain) alone can already significantly narrow down the search space when you want to explain how a certain piece of data came to be, as it keeps track of all the inputs and queries used to create a dataset. But the goal of the provenance system is to make this type of inquiry effortless.
 
 We differentiate the following kinds of provenance:
 - **Why-provenance** - tells us which input data elements were inspected to decide that an element should be present in the output at all - i.e. defines a sufficient set of elements needed to produce the output.
@@ -400,7 +400,7 @@ Since the [Engines](#engine) are responsible for all data transformations, it's 
 
 There are many different ways to implement provenance:
 - By statically analyzing the queries
-- By inversing transformations
+- By inverting transformations
 - By repeating the computations and logging the data used at every step
 - By propagating provenance data through all computations
 
@@ -444,11 +444,11 @@ A watermark defines the point in [Event Time](#event-time) for which with a high
 
 ![Diagram: Watermarks in the Stream](images/watermarks_in_stream.svg)
 
-When performing time-based windowed operation, aggregations, or joins it is important to know when a certain time window can be considered closed. Watermark tells the system "You most likely will not get event with time less than `T` any more".
+When performing time-based windowed operation, aggregations, or joins it is important to know when a certain time window can be considered closed. Watermark tells the system "You most likely will not get event with time less than `T` anymore".
 
 In the [Root Dataset](#root-dataset) events can still arrive even after their time interval has been already been closed by the watermark. Such events are considered "late" and it's up to the individual [Queries](#query) to decide how to handle them. They can be simply ignored, emitted into a side output, or still considered by emitting the "correction" event into the output.
 
-Watermarks in the system are defined per every [Metadata Block](#metadata-chain). By default the [Root Dataset](#root-dataset) will assign the watermark to the maximum observed [Event Time](#event-time) in the [Data Slice](#data-slice). You can and should override this behavior if you expect events to arrive out-of-order to some degree, e.g. offsetting the watermark by `1 day` prior to last seen event.
+Watermarks in the system are defined per every [Metadata Block](#metadata-chain). By default, the [Root Dataset](#root-dataset) will assign the watermark to the maximum observed [Event Time](#event-time) in the [Data Slice](#data-slice). You can and should override this behavior if you expect events to arrive out-of-order to some degree, e.g. offsetting the watermark by `1 day` prior to last seen event.
 
 ![Diagram: Watermarks in Time Domains](images/watermarks_vs_time.svg)
 
@@ -547,7 +547,7 @@ See also:
 - [RFC-012: Recommend base16 encoding](/rfcs/012-recommend-base16-encoding.md)
 
 ### Aliases and References
-Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](#repository). Unlike [Dataset IDs](#unique-identitifiers) they are are not collision-free and mutable.
+Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](#repository). Unlike [Dataset IDs](#unique-identitifiers) they are not collision-free and mutable.
 
 Depending on the context we differentiate the following types of references:
 - **Local Format** - used to refer to a dataset within a local workspace (can be single- and multi-tenant)
@@ -650,7 +650,7 @@ date_of_birth DATE,
 Supported types:
 
 |    DDL Type    |                                        Parquet Type                                        |
-| :------------: | :----------------------------------------------------------------------------------------: |
+|:--------------:|:------------------------------------------------------------------------------------------:|
 |   `BOOLEAN`    |                                         `boolean`                                          |
 |     `INT`      |                                          `int32`                                           |
 |    `BIGINT`    |                                          `int64`                                           |
@@ -672,17 +672,17 @@ Supported types:
 ## Common Data Schema
 All data in the system is guaranteed to have the following columns:
 
-|    Column     | Description                                                                                                                                                                                                                                                                                                                                      |
-| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                      |
-|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                |
-| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                          |
-| `event_time`  | [Event Time](#event-time) denotes when to our best knowledge an event has ocurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
+|    Column     | Description                                                                                                                                                                                                                                                                                                                                       |
+|:-------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                       |
+|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                 |
+| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                           |
+| `event_time`  | [Event Time](#event-time) denotes when to our best knowledge an event has occurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
 
 Representation:
 
 |    Column     |      Arrow Type      |                            Parquet Type                             | Recommended Parquet Encoding |
-| :-----------: | :------------------: | :-----------------------------------------------------------------: | :--------------------------: |
+|:-------------:|:--------------------:|:-------------------------------------------------------------------:|:----------------------------:|
 |   `offset`    |       `uint64`       |                               `INT64`                               |    `DELTA_BINARY_PACKED`     |
 |     `op`      |       `uint8`        |                               `INT32`                               |       `RLE_DICTIONARY`       |
 | `system_time` | `timestamp(ms, UTC)` |           `INT64, TIMESTAMP(MILLIS, AdjustedToUTC=true)`            |      `PLAIN_DICTIONARY`      |
@@ -690,7 +690,7 @@ Representation:
 
 
 > **TODO:**
-> - We are not allowing non-UTC-adjusted timestamps yet as Parquet does not offer a way to encode the timezone, meaning we need a reliable way to pass timezone information between different engines through some other means (e.g. Parquet metadata). Having naive/local timestamps without enforcing that they are accompanied by the specific timezone would be too error prone.
+> - We are not allowing non-UTC-adjusted timestamps yet as Parquet does not offer a way to encode the timezone, meaning we need a reliable way to pass timezone information between different engines through some other means (e.g. Parquet metadata). Having naive/local timestamps without enforcing that they are accompanied by the specific timezone would be too error-prone.
 
 ## Representation of Retractions and Corrections
 [Retractions and corrections](#retractions-and-corrections) are differentiated from regular [Events](#event) in the [Data Slice](#data-slice) via special `op` column, carrying an [Operation Type](#operation-type).
@@ -698,7 +698,7 @@ Representation:
 Valid operation types are:
 
 | Value | Operation name | Operation short code |
-| :---: | :------------: | :------------------: |
+|:-----:|:--------------:|:--------------------:|
 |   0   |    `append`    |         `+A`         |
 |   1   |   `retract`    |         `-R`         |
 |   2   | `correct-from` |         `-C`         |
@@ -817,7 +817,7 @@ The [Coordinator](#coordinator) is designed to isolate the [Engines](#engine) fr
 Inputs:
 - Transaction ID
 - Input [Data Slices](#data-slice)
-- Input [Watermakrs](#watermark)
+- Input [Watermarks](#watermark)
 - [Query](#query)
 - Previous [Checkpoint](#checkpoint)
 
@@ -845,7 +845,7 @@ Outputs:
 - (optional) [Data](#data) that has been produced when finalizing the old [Query](#query)
 
 #### Derive Provenance
-This operations is used to trace back a set of events in the output [Dataset](#dataset) to input events that contributed to their values or their existence (see [Provenance](#provenance)).
+These operations are used to trace back a set of events in the output [Dataset](#dataset) to input events that contributed to their values or their existence (see [Provenance](#provenance)).
 
 > **TODO:** The design of this operation is in progress.
 
@@ -885,10 +885,10 @@ To be able to evolve hashing algorithms over time we encode the identity of the 
 - [multihash](https://github.com/multiformats/multihash) - describes how to encode algorithm ID alongside the hash value.
 - [multibase](https://github.com/multiformats/multibase) - describes encoding used to represent a binary value as text (e.g. in YAML format or as a file name) without ambiguity of which encoding was used.
 
-It is expected that the specific `multibase` encoding is largely a presentation-layer concern that can varry between implementations. For protocol compatibility all implementations must support all encodings in the `final` state of approval in the [`multibase` specification](https://github.com/multiformats/multibase), transcoding the representations when needed.
+It is expected that the specific `multibase` encoding is largely a presentation-layer concern that can vary between implementations. For protocol compatibility all implementations must support all encodings in the `final` state of approval in the [`multibase` specification](https://github.com/multiformats/multibase), transcoding the representations when needed.
 
 For consistency, we recommended implementations to prefer the `base16` encoding. Although it produces longer hashes than other encodings, it:
-- Is case-insensitive and can appear in sub-domains
+- Is case-insensitive and can appear in subdomains
 - Does not contain symbols that can be easily confused
 - Does not have a risk of forming an accidental obscenity
 - Does not require padding
@@ -899,7 +899,7 @@ For representing the identity of hashing algorithms the official [multicodec](ht
 The `multicodec` table is extended with the following codes in the "private use area":
 
 | Codec             | Code       |
-| ----------------- | ---------- |
+|-------------------|------------|
 | `arrow0-sha3-256` | `0x300016` |
 
 See also:
@@ -912,7 +912,7 @@ See also:
 #### Metadata Block Hashing
 Blocks of the [MetadataChain](#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
 
-1. The [MetadataBlock](#metadatablock-schema) is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) format following a two-step process to ensure that all variable-size buffers are layed out in memory in a consistent order:
+1. The [MetadataBlock](#metadatablock-schema) is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) format following a two-step process to ensure that all variable-size buffers are laid out in memory in a consistent order:
    1. First, we iterate over all fields of the block in the same order they appear in the [schemas](#metadata-reference) serializing into buffers all vector-like and variable-size fields and recursing into nested data structures (tables) in the depth-first order.
    2. Second, we iterate over all fields again this time serializing all leftover fixed-size fields
 2. Block content is then nested into a [Manifest](#manifest-schema) object using same serialization rules as above
@@ -921,7 +921,7 @@ Blocks of the [MetadataChain](#metadata-chain) are referred to and linked togeth
 For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` table is extended with the following codes in the "private use area":
 
 | Codec                | Code       |
-| -------------------- | ---------- |
+|----------------------|------------|
 | `odf-metadata-block` | `0x400000` |
 
 The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).
@@ -971,7 +971,7 @@ This strategy transforms snapshot data into an append-only event stream by perfo
 
 Each event will have an additional column that signifies the kind of observation that was encountered.
 
-The `Snapshot` strategy also requires special treatment in regards to the [Event Time](#event-time). Since snapshot-style data exports represent the state of some system at a certain time - it is important to know what that time was. This time is usually captured in some form of metadata (e.g. in the name of the snapshot file, in the URL, or the HTTP caching headers. It should be possible to extract and propagate this time into a data column.
+The `Snapshot` strategy also requires special treatment in regard to the [Event Time](#event-time). Since snapshot-style data exports represent the state of some system at a certain time - it is important to know what that time was. This time is usually captured in some form of metadata (e.g. in the name of the snapshot file, in the URL, or the HTTP caching headers). It should be possible to extract and propagate this time into a data column.
 
 ### Derivative Transformations
 [Previously](#execute-query) we looked at how an [Engine](#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](#coordinator) side.
@@ -979,7 +979,7 @@ The `Snapshot` strategy also requires special treatment in regards to the [Event
 ![Sequence Diagram: Execute Query](images/engine_transform.svg)
 
 Here are the steps that the [Coordinator](#coordinator) performs during the transformation:
-- **Batch step** - Analyze the [Metadata Chains](#metadata-chain) of the [Dataset](#dataset) being transformed and all of the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
+- **Batch step** - Analyze the [Metadata Chains](#metadata-chain) of the [Dataset](#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
 - **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](#engine) [Migrate Query](#migrate-query) operation to make necessary adjustments for the new transformation parameters.
 - **Run query** - Pass the input [Data Slices](#data-slice) into the [Engine's](#engine) [Execute Query](#execute-query) operation
 - **Hash resulting data and checkpoint** - Obtain a stable [Hash](#hash) of the output [Data Slice](#data-slice) and [Checkpoint](#checkpoint) (see [Data Hashing](#data-hashing) and [Checkpoint Hashing](#checkpoint-hashing))
@@ -1047,7 +1047,7 @@ To describe the protocol we will use HTTP `GET {object-key}` notation below, but
 2) The "metadata walking" process starts with `GET /blocks/{blockHash}` and continues following the `prevBlockHash` links
 3) Data part files can be downloaded by using [`DataSlice::physicalHash`](#dataslice-schema) links with `GET /data/{physicalHash}`
 4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoints/{physicalHash}`
-5) The process continues until reching the first block of the dataset or other termination condition (e.g. reaching the block that has already been synced previously)
+5) The process continues until reaching the first block of the dataset or other termination condition (e.g. reaching the block that has already been synced previously)
 
 See also:
 - [RFC-007: Simple Transfer Protocol](/rfcs/007-simple-transfer-protocol.md)

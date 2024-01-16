@@ -18,7 +18,7 @@ Removes `SetWatermark` and modifies `AddData` and `ExecuteQuery` events so that 
 ## Motivation
 Currently, `AddData` and `ExecuteQuery` events carry  `[start, end]` intervals for blocks and offsets to describe inputs and outputs of a transaction. To represent empty input/output they are **made optional**.
 
-This is problematic, because to understand what offsets or blocks need to be used used for inputs / output of the next transaction it's sometimes required to scan metadata chain until a **non-empty interval** is encountered.
+This is problematic, because to understand what offsets or blocks need to be used for inputs / output of the next transaction it's sometimes required to scan metadata chain until a **non-empty interval** is encountered.
 
 Extending metadata to carry this information regardless of whether any input data was used or any output data was written would allow us to prepare the next transaction using the last `AddData` or `ExecuteQuery` block, avoiding deep scanning of the chain.
 

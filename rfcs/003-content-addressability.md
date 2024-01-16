@@ -28,7 +28,7 @@ Per [rationale](#rationale-and-alternatives), we have established that:
 
 This RFC therefore suggests some tweaks to the `MetadataBlock` schema to **align it with content-addressability** (see [reference section](#reference-level-explanation)).
 
-Additionally it will **introduce a globally unique dataset identifier** that can be used to refer to a dataset as a whole. This identifier will follow the [W3C DID Identity Scheme](https://w3c.github.io/did-core/). It will be created by hashing a public key of a `ed25519` key pair, practically guaranteeing its uniqueness.
+Additionally, it will **introduce a globally unique dataset identifier** that can be used to refer to a dataset as a whole. This identifier will follow the [W3C DID Identity Scheme](https://w3c.github.io/did-core/). It will be created by hashing a public key of a `ed25519` key pair, practically guaranteeing its uniqueness.
 
 Symbolic names will become aliases for such identities, meaning that:
 - Same dataset can have different names in different repositories (e.g. mirrors) while still sharing same identity
@@ -86,7 +86,7 @@ Multibase = [a-zA-Z0-9+/=]+
 ## Drawbacks
 
 - We are adding more fields to `MetadataBlock` which is already anemic - this will be addressed separately in a follow-up RFC.
-- A seemingly unavoidable break in abstraction layers exists where a named reference (higher-level concept) is used from within derivative dataset inputs from metadata (lower-level concept). This is, however, similar to having a HTML page that contains a relative URL of another page. 
+- A seemingly unavoidable break in abstraction layers exists where a named reference (higher-level concept) is used from within derivative dataset inputs from metadata (lower-level concept). This is, however, similar to having an HTML page that contains a relative URL of another page. 
 
 
 ## Rationale and alternatives

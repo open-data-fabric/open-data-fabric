@@ -16,7 +16,7 @@
 - Backwards-compatible means
   - whether software updated to this RFC will be able to operate on old data
   - in case of protocol updates - whether older clients will be able to communicate with newer servers
-- Forwards-compatibile means
+- Forwards-compatible means
   - whether data written by new software still can be used by older software
   - if newer clients will be able to communicate with older servers
 
@@ -27,13 +27,13 @@ One paragraph explanation of the feature.
 Why are we doing this? What use cases does it support? What is the expected outcome?
 
 ## Guide-level explanation
-Explain the proposal as if it was already included in the spec and you were teaching it to another ODF user. That generally means:
+Explain the proposal as if it was already included in the spec, and you were teaching it to another ODF user. That generally means:
 
 - Introducing new named concepts.
 - Explaining the feature largely in terms of examples.
 - Explaining how one should *think* about the feature, and how it should impact the way they use ODF. It should explain the impact as concretely as possible.
 - If applicable, provide sample error messages, deprecation warnings, or migration guidance.
-- If applicable, describe the differences between teaching this to existing ODF users and new ODF users.
+- If applicable, describe the differences between teaching this to exist ODF users and new ODF users.
 
 For implementation-oriented RFCs (e.g. for coordinator internals), this section should focus on how coordinator programmers should think about the change, and give examples of its concrete impact. For policy RFCs, this section should provide an example-driven introduction to the policy, and explain its impact in concrete terms.
 

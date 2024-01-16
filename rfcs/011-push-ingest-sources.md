@@ -31,7 +31,7 @@ Users can define push sources on root datasets using `AddPushSource`, `DisablePu
 
 Multiple push sources can be active simultaneously per one dataset for cases where multiple actors are writing to the same dataset simultaneously in slightly varying formats.
 
-Push and polling sources are mutually exclusive. However it must be possible to switch dataset from "push" to "pull" ingest and vice versa - thus we also introduce `DisablePollingSource` event that allows to turn off the polling source before swithcing to push model.
+Push and polling sources are mutually exclusive. However, it must be possible to switch dataset from "push" to "pull" ingest and vice versa - thus we also introduce `DisablePollingSource` event that allows to turn off the polling source before switching to push model.
 
 The state of push sources can be stored in existing `sourceState` section of `AddData` event.
 

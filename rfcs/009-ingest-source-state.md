@@ -19,7 +19,7 @@ For example when using `SetPollingSource` source state can be in the form of:
 - filename of the last file matched by glob pattern
 - or a height of the block of indexed blockchain.
 
-Currently we don't have anywhere to store such data.
+Currently, we don't have anywhere to store such data.
 
 ## Guide-level explanation
 When ingesting data, an ODF implementation will be able to attach opaque state data to the `AddData` event in order to resume ingestion most efficiently on the next iteration. The source state data will allow differentiating the kind of state that is preserved (similarly to MIME type) and will specify the identity of the source.
@@ -35,8 +35,8 @@ Two predefined source state kinds will be added:
 - `odf/etag` - for state identifiers similar to `ETag` HTTP header
 - `odf/last-modified` - for RFC3338 timestamps with meaning similar to `Last-Modified` HTTP header
 
-One predefined source ID will me added:
-- `odf/polling` - refering to the source specified in the `SetPollingSource` metadata event
+One predefined source ID will be added:
+- `odf/polling` - referring to the source specified in the `SetPollingSource` metadata event
 
 Both fields will be plain strings and not enums allowing different implementations to define their own extensions.
 

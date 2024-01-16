@@ -14,12 +14,12 @@ This RFC standardizes how equality, equivalence, and integrity checks are perfor
 
 Use cases we want to cover are:
 - **Integrity Checks** - ensuring that data is not tampered after downloading it from untrusted source
-- **Equivalence Checks** - after replaying the transformation ensure result is the same as one presented by the dataset owner (transfomration result is not spoofed)
+- **Equivalence Checks** - after replaying the transformation ensure result is the same as one presented by the dataset owner (transformation result is not spoofed)
 - **Content Addressability** - being able to store data in a content-addressable system (e.g. IPFS)
 
 A standard practice for these is through use of **cryptographic digests** (hash sums). Git, blockchain, Docker, IPFS are few of many examples.
 
-The one big problem with this approach is **reproducibility**. ODF's core guarantee that repeating the same transformation always produces identical result. Reproducibility requires perfect determinism. While ODF goes a long way in improving likelyhood of determinism in the engines, some non-determinism may also come from the coordinator.
+The one big problem with this approach is **reproducibility**. ODF's core guarantee that repeating the same transformation always produces identical result. Reproducibility requires perfect determinism. While ODF goes a long way in improving likelihood of determinism in the engines, some non-determinism may also come from the coordinator.
 
 The task of writing output data is delegated to the coordinator. We are currently using Parquet format for on-disk representation. Parquet format is **non-reproducible** (non-deterministic) - writing logically identical data with different implementations or different versions of the libraries may produce files that are different on the binary level.
 
@@ -38,20 +38,20 @@ To isolate ourselves from non-determinism of Parquet storage format we will use 
 
 **Logical hash** will be used for integrity and equivalence checks. It should maximize the chances that logically identical data results in an identical hash sum.
 
-Luckily, we already use a data format that specifies binary layouts of data in the memory - **Apache Arrow**. It has a lot of similar sources of non-determinism as Parquet (e.g. data cell marked as `null` by validity mask might have uninitialized memory in it), but can be used as a foundation for **efficiently** implementing a satble hash algorithm.
+Luckily, we already use a data format that specifies binary layouts of data in the memory - **Apache Arrow**. It has a lot of similar sources of non-determinism as Parquet (e.g. data cell marked as `null` by validity mask might have uninitialized memory in it), but can be used as a foundation for **efficiently** implementing a stable hash algorithm.
 
 Due to absence of existing solutions it was decided to implement our own hashing scheme on top of Apache Arrow format as described in detail in [arrow-digest](https://github.com/sergiimk/arrow-digest) repository.
 
 ### Future-Proofing
-This is likely not the last time we change the hashing algorithm, but we should aim for such changes not to be breaking in future.
+This is likely not the last time we change the hashing algorithm, but we should aim for such changes not to be breaking in the future.
 
-As algorithms may have vulnerabilities, or as hash lenghts become less secure with advances in computing power, we need an ability to evolve the algorithms we use over time. To future-proof metadata we will be storing the hashing algorithm identifier alongside the hash value, and coordinator implementations will be able to differentiate between versions and decide how to deal with them.
+As algorithms may have vulnerabilities, or as hash lengths become less secure with advances in computing power, we need an ability to evolve the algorithms we use over time. To future-proof metadata we will be storing the hashing algorithm identifier alongside the hash value, and coordinator implementations will be able to differentiate between versions and decide how to deal with them.
 
 This problem is already addressed by the [multiformats](https://github.com/multiformats/multiformats) project, specifically:
 - [multihash](https://github.com/multiformats/multihash) - describes how to encode algorithm ID alongside the hash value.
 - [multibase](https://github.com/multiformats/multibase) - describes how to represent binary value in a string (e.g. for YAML format) without ambiguity of which encoding was used.
 
-In future we will apply this scheme to all hashes, but for now only limiting them to data-related.
+In the future, we will apply this scheme to all hashes, but for now only limiting them to data-related.
 
 ## Reference-level explanation
 
@@ -62,7 +62,7 @@ New schema format `multihash` is introduced:
 The official `multicodec` table will be extended with the following codes in the "private use area":
 
 | Codec             | Code       |
-| ----------------- | ---------- |
+|-------------------|------------|
 | `arrow0-sha3-256` | `0x300016` |
 
 Because `multihash` format has a static prefix the short (8-character) hash representation should use tail bytes of multihash instead of the head.

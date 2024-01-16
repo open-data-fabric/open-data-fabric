@@ -40,7 +40,7 @@ channels:
   dataset/pull/response:
     publish:
       operationId: odf.dataset.pull.response
-      summary: Indicates a succesful response to the initiated pull request and provides size estimation
+      summary: Indicates a successful response to the initiated pull request and provides size estimation
       security:
         - jwt: []
       message:
@@ -86,7 +86,7 @@ channels:
           properties:
             blocks:
               $ref: '#/components/schemas/ObjectsBatch'
-  
+
   dataset/pull/objects/transfer/request:
     subscribe:
       operationId: odf.dataset.pull.objects.transfer.request
@@ -101,13 +101,13 @@ channels:
           type: object
           required:
             - objectFiles
-          properties:  
+          properties:
             objectFiles:
               type: array
               description: List of object file references in this bulk
               items:
                 $ref: '#/components/schemas/ObjectFileReference'
-      
+
   dataset/pull/objects/transfer/response:
     publish:
       operationId: odf.dataset.pull.objects.transfer.response
@@ -122,7 +122,7 @@ channels:
           type: object
           required:
             - objectTransferStrategies
-          properties:   
+          properties:
             objectTransferStrategies:
               type: array
               description: Agreed download operations for the requested bulk of object files
@@ -160,7 +160,7 @@ channels:
   dataset/push/request/accepted:
     publish:
       operationId: odf.dataset.push.request.accepted
-      summary: Informs about succesfull acceptance of dataset push request
+      summary: Informs about successful acceptance of dataset push request
       security:
         - jwt: []
       message:
@@ -189,7 +189,7 @@ channels:
   dataset/push/metadata/accepted:
     publish:
       operationId: odf.dataset.push.metadata.accepted
-      summary: Informs about succesfull acceptance of dataset metadata during push
+      summary: Informs about successful acceptance of dataset metadata during push
       security:
         - jwt: []
       message:
@@ -220,7 +220,7 @@ channels:
               description: List of object file references in this bulk
               items:
                 $ref: '#/components/schemas/ObjectFileReference'
-      
+
   dataset/push/objects/objects/transfer/response:
     publish:
       operationId: odf.dataset.push.objects.transfer.response
@@ -235,7 +235,7 @@ channels:
           type: object
           required:
             - objectTransferStrategies
-          properties:           
+          properties:
             objectTransferStrategies:
               type: array
               description: Agreed upload operations for the requested bulk of object files
@@ -254,7 +254,7 @@ channels:
         contentType: application/json
         payload:
           type: object
-          description: Empty object, indicating succesfull completion
+          description: Empty object, indicating successful completion
 
   dataset/push/complete/confirmed:
     publish:
@@ -268,7 +268,7 @@ channels:
         contentType: application/json
         payload:
           type: object
-          description: Empty object, indicating succesfull completion confirmation
+          description: Empty object, indicating successful completion confirmation
 
   dataset/error:
     publish:
@@ -331,7 +331,7 @@ components:
           type: string
           enum: [HttpDownload]  # Maybe other methods in future
         downloadFrom:
-          $ref: '#/components/schemas/TransferUrl'    
+          $ref: '#/components/schemas/TransferUrl'
 
     PushObjectTransferStrategy:
       type: object
@@ -382,7 +382,7 @@ components:
           $ref: '#/components/schemas/ObjectType'
         physicalHash:
           type: string
-          format: multihash    
+          format: multihash
 
     ObjectType:
       type: string

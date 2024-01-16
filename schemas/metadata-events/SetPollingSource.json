@@ -1,7 +1,7 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/SetPollingSource",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Contains information on how extenrally-hosted data can be ingested into the root dataset.",
+  "description": "Contains information on how externally-hosted data can be ingested into the root dataset.",
   "type": "object",
   "additionalProperties": false,
   "required": [

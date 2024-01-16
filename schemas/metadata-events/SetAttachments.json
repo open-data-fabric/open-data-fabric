@@ -9,7 +9,7 @@
   ],
   "properties": {
     "attachments": {
-      "$ref": "/shcemas/Attachments",
+      "$ref": "/schemas/Attachments",
       "description": "One of the supported attachment sources."
     }
   }

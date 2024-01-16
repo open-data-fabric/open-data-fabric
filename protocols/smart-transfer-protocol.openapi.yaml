@@ -146,7 +146,7 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/blockHash'     
+        - $ref: '#/components/parameters/blockHash'
       responses:
         200:
           description: Successfully fetched block contents
@@ -165,7 +165,7 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/physicalHash'     
+        - $ref: '#/components/parameters/physicalHash'
       responses:
         200:
           description: Successfully fetched data object contents
@@ -184,10 +184,10 @@ paths:
       security:
         - odf_access_token: []
       parameters:
-        - $ref: '#/components/parameters/physicalHash'     
+        - $ref: '#/components/parameters/physicalHash'
       responses:
         200:
-          description: Successfully fetched checkpoinnt object contents
+          description: Successfully fetched checkpoint object contents
           content:
             application/octet-stream:
               schema:
