@@ -42,7 +42,7 @@ $(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) tools/jsonschema_to_flatbuffers.py
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
-	@# Dependency: nodejs-markdown-toc
+	@# Dependency: nodejs-markdown-toc (npm install -g markdown-toc)
 	markdown-toc --maxdepth 2 -i open-data-fabric.md
 
 clean:
