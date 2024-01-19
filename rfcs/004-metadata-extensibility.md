@@ -54,7 +54,7 @@ will produce metadata chain with three blocks:
 Core events:
 
 | Event Type     | Description                                                                                |
-|----------------|--------------------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------------------------------------ |
 | `Seed`         | Contains identity information of a dataset and always appears as the first metadata block. |
 | `AddData`      | Signifies that data was added into the `root` dataset.                                     |
 | `SetWatermark` | Signifies that watermark of the dataset has been advanced.                                 |
@@ -64,7 +64,7 @@ Core events:
 Extension events:
 
 | Event Type         | Description                                                                                      |
-|--------------------|--------------------------------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------------------------------ |
 | `SetPollingSource` | (Optional extension) Defines how externally-hosted data can be ingested into the `root` dataset. |
 
 ## Drawbacks

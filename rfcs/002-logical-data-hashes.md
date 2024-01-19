@@ -62,7 +62,7 @@ New schema format `multihash` is introduced:
 The official `multicodec` table will be extended with the following codes in the "private use area":
 
 | Codec             | Code       |
-|-------------------|------------|
+| ----------------- | ---------- |
 | `arrow0-sha3-256` | `0x300016` |
 
 Because `multihash` format has a static prefix the short (8-character) hash representation should use tail bytes of multihash instead of the head.

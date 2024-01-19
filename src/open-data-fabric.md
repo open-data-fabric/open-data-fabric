@@ -650,7 +650,7 @@ date_of_birth DATE,
 Supported types:
 
 |    DDL Type    |                                        Parquet Type                                        |
-|:--------------:|:------------------------------------------------------------------------------------------:|
+| :------------: | :----------------------------------------------------------------------------------------: |
 |   `BOOLEAN`    |                                         `boolean`                                          |
 |     `INT`      |                                          `int32`                                           |
 |    `BIGINT`    |                                          `int64`                                           |
@@ -672,17 +672,17 @@ Supported types:
 ## Common Data Schema
 All data in the system is guaranteed to have the following columns:
 
-|    Column     | Description                                                                                                                                                                                                                                                                                                                                       |
-|:-------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                       |
-|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                 |
-| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                           |
+|    Column     | Description                                                                                                                                                                                                                                                                                                                                      |
+| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                      |
+|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                |
+| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                          |
 | `event_time`  | [Event Time](#event-time) denotes when to our best knowledge an event has occurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
 
 Representation:
 
 |    Column     |      Arrow Type      |                            Parquet Type                             | Recommended Parquet Encoding |
-|:-------------:|:--------------------:|:-------------------------------------------------------------------:|:----------------------------:|
+| :-----------: | :------------------: | :-----------------------------------------------------------------: | :--------------------------: |
 |   `offset`    |       `uint64`       |                               `INT64`                               |    `DELTA_BINARY_PACKED`     |
 |     `op`      |       `uint8`        |                               `INT32`                               |       `RLE_DICTIONARY`       |
 | `system_time` | `timestamp(ms, UTC)` |           `INT64, TIMESTAMP(MILLIS, AdjustedToUTC=true)`            |      `PLAIN_DICTIONARY`      |
@@ -698,7 +698,7 @@ Representation:
 Valid operation types are:
 
 | Value | Operation name | Operation short code |
-|:-----:|:--------------:|:--------------------:|
+| :---: | :------------: | :------------------: |
 |   0   |    `append`    |         `+A`         |
 |   1   |   `retract`    |         `-R`         |
 |   2   | `correct-from` |         `-C`         |
@@ -845,7 +845,7 @@ Outputs:
 - (optional) [Data](#data) that has been produced when finalizing the old [Query](#query)
 
 #### Derive Provenance
-These operations are used to trace back a set of events in the output [Dataset](#dataset) to input events that contributed to their values or their existence (see [Provenance](#provenance)).
+This operation is used to trace back a set of events in the output [Dataset](#dataset) to input events that contributed to their values or their existence (see [Provenance](#provenance)).
 
 > **TODO:** The design of this operation is in progress.
 
@@ -899,7 +899,7 @@ For representing the identity of hashing algorithms the official [multicodec](ht
 The `multicodec` table is extended with the following codes in the "private use area":
 
 | Codec             | Code       |
-|-------------------|------------|
+| ----------------- | ---------- |
 | `arrow0-sha3-256` | `0x300016` |
 
 See also:
@@ -921,7 +921,7 @@ Blocks of the [MetadataChain](#metadata-chain) are referred to and linked togeth
 For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` table is extended with the following codes in the "private use area":
 
 | Codec                | Code       |
-|----------------------|------------|
+| -------------------- | ---------- |
 | `odf-metadata-block` | `0x400000` |
 
 The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).

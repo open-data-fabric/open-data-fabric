@@ -33,7 +33,7 @@ Explain the proposal as if it was already included in the spec, and you were tea
 - Explaining the feature largely in terms of examples.
 - Explaining how one should *think* about the feature, and how it should impact the way they use ODF. It should explain the impact as concretely as possible.
 - If applicable, provide sample error messages, deprecation warnings, or migration guidance.
-- If applicable, describe the differences between teaching this to exist ODF users and new ODF users.
+- If applicable, describe the differences between teaching this to existing ODF users and new ODF users.
 
 For implementation-oriented RFCs (e.g. for coordinator internals), this section should focus on how coordinator programmers should think about the change, and give examples of its concrete impact. For policy RFCs, this section should provide an example-driven introduction to the policy, and explain its impact in concrete terms.
 

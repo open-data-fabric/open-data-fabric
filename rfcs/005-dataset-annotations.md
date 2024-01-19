@@ -56,7 +56,7 @@ content:
 Following extension events will be added to the specification:
 
 | Event Type       | Description                                                                                                                |
-|------------------|----------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `SetInfo`        | (Optional extension, unstable) Provides basic human-readable description of a dataset                                      |
 | `SetLicense`     | (Optional extension, unstable) Defines the dataset license.                                                                |
 | `SetAttachments` | (Optional extension, unstable) Associates a set of files with this dataset (readme, notebooks, additional metadata, etc.). |
@@ -81,7 +81,7 @@ This presents a few options:
 
 We decide to delay the decision for now until we do more research on standards and investigate replacing data model with `IPLD`.
 
-In addition to basic annotation metadata we will also have files associated with datasets. These could be:
+In addition to basic annotative metadata we will also have files associated with datasets. These could be:
 - A simple README file in different text formats
 - Images used in the README
 - A set of notebooks that demonstrate how to use datasets
