@@ -125,7 +125,7 @@ Considering all the above we decide to:
 - Use **Two-event Changelog Stream format** as the most complete and the least intrusive format for representing corrections and retractions
   - Retract and Upsert streams can still be supported as subsets of the Changelog Stream model
 - Extend the set of standard columns with `op` column to define the operation
-- Avoid the use of the word `update` and favor the word `correction` to further distantiate ourselves from the CDC and CRUD mentality
+- Avoid the use of the word `update` and favor the word `correction` to further distant ourselves from the CDC and CRUD mentality
 - Generalize `MergeSchema::Snapshot` to use this column.
 
 ## Reference-level explanation
@@ -162,7 +162,7 @@ Previously `MergeStrategy::Snapshot` produced an [upsert stream](#upsert-stream)
 Migration to [changelog stream](#changelog-stream-two-events) format will produce more records and slow down the CDC operation, but make stream more versatile, as it will be possible to feed it directly into engines without propagating the knowledge of primary keys. We therefore decide to accept the associated costs.
 
 ### Affect on current batch engines
-Some ODF engine implementations, like Kamu Spark and DataFusion engines, are operating in batch mode. This is a transitional measure and they explicitly warn users that they are not complete ODF engine implementations and should be used only for `map` / `filter` style queries. Those engines often reorder rows due to their parallel nature and resort to re-sorting records by `event_time` after processing. While this was mostly fine before, with these changes the event order becomes very important, and in the presence of corrections and retractions order cannot be easily restored by re-sorting, as that would require some kind of primary key which not every dataset has.
+Some ODF engine implementations, like Kamu Spark and DataFusion engines, are operating in batch mode. This is a transitional measure, and they explicitly warn users that they are not complete ODF engine implementations and should be used only for `map` / `filter` style queries. Those engines often reorder rows due to their parallel nature and resort to re-sorting records by `event_time` after processing. While this was mostly fine before, with these changes the event order becomes very important, and in the presence of corrections and retractions order cannot be easily restored by re-sorting, as that would require some kind of primary key which not every dataset has.
 
 We accept this added complexity and recommend that transitional batch-mode engines:
 - preserve the order of records during processing (e.g. by coalescing inputs into one partition)
@@ -213,7 +213,7 @@ Such association would allow:
 
 In practice this may be hard to implement. A record identifier such as `offset` would need to be propagated through all streaming queries. We wouldn't want to leave such a delicate and error-prone detail to the user, so we would need to analyze and dynamically rewrite queries to add offset propagation. And since the only thing that knows how to interpret engine's dialect is the engine itself - this rewrite would need to be implemented individually by each engine. 
 
-At this stage of ODF development we decided that introducing query rewrite would be too costly, but we will consider it in future.
+At this stage of ODF development we decided that introducing query rewrite would be too costly, but we will consider it in the future.
 
 Additionally, query rewrites and associations between records are already a part of the vision for ODF's **fine-grain provenance**, and must be designed together, holistically.
 

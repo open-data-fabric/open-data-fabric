@@ -12,19 +12,19 @@ This RFC proposes to no longer allow arbitrary files and directory structures as
 
 ## Motivation
 
-Currently engine can produce a checkpoint that includes arbitrary structure of files and directories. This presents few problems:
+Currently, engine can produce a checkpoint that includes arbitrary structure of files and directories. This presents few problems:
 
 1) Metadata blocks need to refer to checkpoints by hash, but there is no standard approach to computing a hash of a directory. We would need to create a stable directory hashing algorithm ourselves and this complexity will spread to all implementations.
 
 2) Allowing arbitrary file structures is also a security concern, e.g. need to make sure engines don't create weird symlinks.
 
-3) When downloading a dataset from repository, many transfer protocols don't have a standard way to list a directory. One such example is HTTP - there is no standard content format for `GET` on a directory - most web servers will return a stylyzed HTML. Similarly to how Git can clone a repo using the ["dumb protocol"](https://git-scm.com/book/en/v2/Git-Internals-Transfer-Protocols) we'd like to be able to walk and download entire dataset, and this means having a fixed directory structure and only referencing files.
+3) When downloading a dataset from repository, many transfer protocols don't have a standard way to list a directory. One such example is HTTP - there is no standard content format for `GET` on a directory - most web servers will return a styled HTML. Similarly to how Git can clone a repo using the ["dumb protocol"](https://git-scm.com/book/en/v2/Git-Internals-Transfer-Protocols) we'd like to be able to walk and download entire dataset, and this means having a fixed directory structure and only referencing files.
 
 ## Guide-level explanation
 
 ## Reference-level explanation
 
-Specification will be updated to no nonger refer to checkpoints as opaque directories.
+Specification will be updated to no longer refer to checkpoints as opaque directories.
 
 The temporary `ExecuteQueryRequest` schema that relies on file mounting will be updated.
 

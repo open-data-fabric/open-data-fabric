@@ -37,7 +37,7 @@ The proposal is to:
 This change will be executed as part of the backwards compatibility breaking changes.
 
 ## Drawbacks
-1) **Compatibility**: Declaring that we support multiple `multibase` encodings instead of just one may slightly complicate compatibility between implementations, but since `multibase` is a self-describing format these issues should be easily addressable. This approach also has additional benefit of upgradeability.
+1) **Compatibility**: Declaring that we support multiple `multibase` encodings instead of just one may slightly complicate compatibility between implementations, but since `multibase` is a self-describing format these issues should be easily addressable. This approach also has additional benefit of upgradability.
 
 2) **Increase of length**: For an implementation choosing to stick with `base16` recommendation the main drawback is the increase of length of hashes in:
 - file and directory names

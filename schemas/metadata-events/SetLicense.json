@@ -12,7 +12,7 @@
   "properties": {
     "shortName": {
       "type": "string",
-      "description": "Abbriviated name of the license."
+      "description": "Abbreviated name of the license."
     },
     "name": {
       "type": "string",

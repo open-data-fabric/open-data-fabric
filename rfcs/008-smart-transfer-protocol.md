@@ -129,7 +129,7 @@ asynchronous duplex messaging channel as defined by `AsyncAPI`.
 - Garbage Collector mechanism within the dataset storage, as orphaned files may occur:
    - when client failed to upload the objects and did not commit the push
    - when late collision happens (parallel pushes)
-- Should this protocol support live streaming of datasets?
+- Should this protocol support live-streaming of datasets?
 - Should it support in-band data transfers?
   - And if yes, should it be used for query results or for getting data from projections?
 

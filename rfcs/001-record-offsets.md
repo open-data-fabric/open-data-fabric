@@ -8,7 +8,7 @@
 
 ## Summary
 
-This RFC introducess new system column `offset` that represents the sequential number of the row from the beginning of the dataset.
+This RFC introduces new system column `offset` that represents the sequential number of the row from the beginning of the dataset.
 
 This is a **backwards incompatible change**.
 
@@ -50,7 +50,7 @@ All intervals (for offsets and metadata) will be closed/inclusive `[start; end]`
 
 ## Rationale and alternatives
 
-- We could rely on individual data engines to materialize offset collumn on the fly, but this
+- We could rely on individual data engines to materialize offset column on the fly, but this
   - Would need to be handled in every engine, query console etc.
   - May interfere with storage formats if rows are reordered during writing or reading
 

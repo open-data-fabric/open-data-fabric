@@ -12,7 +12,7 @@ This RFC proposes a new `MetadataBlock` schema that makes metadata less ambiguou
 
 ## Motivation
 
-`MetadataBlock` schema today consists of multiple optional fields that appear in metadata under different conditions. For example, the `outputSlice` field is present when a transformation resulted in some new data added to the datasets, the `outputWatermark` tells us that transformation had bumbed up the watermark of a dataset - it can be present even when no new output data was produced. So when you want to process only metadata blocks that correspond to transformations - you get into a position of wondering what's the "definitive sign" of transformation taking place, is it the presence of `outputWatermark`, `ouputSlice`, or `inputSclices`?
+`MetadataBlock` schema today consists of multiple optional fields that appear in metadata under different conditions. For example, the `outputSlice` field is present when a transformation resulted in some new data added to the datasets, the `outputWatermark` tells us that transformation had bumped up the watermark of a dataset - it can be present even when no new output data was produced. So when you want to process only metadata blocks that correspond to transformations - you get into a position of wondering what's the "definitive sign" of transformation taking place, is it the presence of `outputWatermark`, `ouputSlice`, or `inputSclices`?
 
 These are the clear signs of "anemic data" - the problem ODF was designed to prevent in data, as compared to approaches like Change Data Capture. As the set of features ODF supports grows, such anemic ever-growing schema will become unsustainable.
 
@@ -20,7 +20,7 @@ This RFC will explore how to transition metadata into a descriptive event-based 
 
 ## Guide-level explanation
 
-This RFC proposes to replace the anemic fields of the `MetadataBlock` schema with a extensible set of `MetadataEvent`s, with every `MetadataBlock` containing a single `MetadataEvent` of a certain type. `MetadataEvent` will correspond to a certain transaction on the dataset (e.g. executing query, specifying polling source, updating transformation query). Every event will contain only fields that are relevant to the transaction.
+This RFC proposes to replace the anemic fields of the `MetadataBlock` schema with an extensible set of `MetadataEvent`s, with every `MetadataBlock` containing a single `MetadataEvent` of a certain type. `MetadataEvent` will correspond to a certain transaction on the dataset (e.g. executing query, specifying polling source, updating transformation query). Every event will contain only fields that are relevant to the transaction.
 
 A similar transformation will be done to the `DatasetSnapshot` schema. Instead of directly representing the first `MetadataBlock` it will contain an array of `MetadataEvent`s that bring the dataset into a desired state. This means that in most cases a dataset newly-created from a `DatasetSnapshot` will have more than one block.
 
@@ -84,7 +84,7 @@ Extension events:
 ## Unresolved questions
 
 - **Forward-compatibility** requires a way to differentiate between events that coordinator has to understand and events that can be safely ignored if coordinator does not support them. 
-  - Currently we don't have a good way to achieve this without running into too many issues with `flatbuffers`.
+  - Currently, we don't have a good way to achieve this without running into too many issues with `flatbuffers`.
   - We postpone this issue until we get better clarity on the long-term serialization format - we're getting more indications that `flatbuffers` is not the best way forward and may consider alternatives. This also ties in with considering `IPLD`.
 
 

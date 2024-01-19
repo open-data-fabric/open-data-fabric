@@ -74,14 +74,14 @@ This presents a few options:
 - Define our own schemas 
   - Easy for development, but will result in poor interoperability
 - Define our own schemas, but align them with existing standards
-  - Better interop, but puts burden on chosing the right standards to follow and keeping up with their evolution
+  - Better interop, but puts burden on choosing the right standards to follow and keeping up with their evolution
 - Start with an existing standard
-  - It's likely that some aspects we need will not be covered and we'll have to extend and customize
+  - It's likely that some aspects we need will not be covered, and we'll have to extend and customize
   - We may not be able to express some standard schemas in our strongly-typed data model
 
 We decide to delay the decision for now until we do more research on standards and investigate replacing data model with `IPLD`.
 
-In addition to basic annotational metadata we will also have files associated with datasets. These could be:
+In addition to basic annotative metadata we will also have files associated with datasets. These could be:
 - A simple README file in different text formats
 - Images used in the README
 - A set of notebooks that demonstrate how to use datasets
@@ -92,7 +92,7 @@ We do not want to re-invent version control systems in ODF metadata chain - ther
 
 ## Unresolved questions
 
-- **Balance between schema and flexibility** - it should be easy for users to extend the metadata for their own governance needs. We should either allows some free-form component in the existing metadata events, or create separate event types.
+- **Balance between schema and flexibility** - it should be easy for users to extend the metadata for their own governance needs. We should either allow some free-form component in the existing metadata events, or create separate event types.
 
 ## Future possibilities
 

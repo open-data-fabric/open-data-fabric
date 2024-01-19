@@ -83,7 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.18.0] - 2021-08-05
 ### Changed
-- Renamed `remote` into `repository` to avoid some terminology pitfals.
+- Renamed `remote` into `repository` to avoid some terminology pitfalls.
 
 ## [0.17.0] - 2020-12-26
 ### Added
