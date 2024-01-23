@@ -12,6 +12,7 @@ PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 
 #![allow(clippy::all)]
+#![allow(clippy::pedantic)]
 
 use crate::dtos;
 use crate::dtos::{CompressionFormat, DatasetKind, SourceOrdering};
