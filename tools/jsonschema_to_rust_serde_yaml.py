@@ -11,6 +11,7 @@ PREAMBLE = """
 ////////////////////////////////////////////////////////////////////////////////
 
 #![allow(clippy::all)]
+#![allow(clippy::pedantic)]
 
 use std::path::PathBuf;
 use super::formats::{base64, datetime_rfc3339, datetime_rfc3339_opt};

@@ -12,7 +12,9 @@ PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 
 #![allow(unused_variables)]
+
 #![allow(clippy::all)]
+#![allow(clippy::pedantic)]
 
 use chrono::{DateTime, Utc};
 use opendatafabric as odf;

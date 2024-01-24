@@ -12,6 +12,7 @@ PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 
 #![allow(clippy::all)]
+#![allow(clippy::pedantic)]
 
 use crate::identity::*;
 use crate::formats::Multihash;

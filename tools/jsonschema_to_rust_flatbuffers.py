@@ -14,7 +14,9 @@ PREAMBLE = """
 
 #![allow(unused_variables)]
 #![allow(unused_mut)]
+
 #![allow(clippy::all)]
+#![allow(clippy::pedantic)]
 
 use super::proxies_generated as fb;
 mod odf {
