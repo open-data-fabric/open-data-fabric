@@ -33,6 +33,7 @@ Develop a method of semi-structured data exchange that would:
   * [Offset](#offset)
   * [Operation Type](#operation-type)
   * [Data Slice](#data-slice)
+  * [Metadata](#metadata)
   * [Metadata Chain](#metadata-chain)
   * [Dataset](#dataset)
   * [Query](#query)
@@ -43,11 +44,13 @@ Develop a method of semi-structured data exchange that would:
   * [Merge Strategy](#merge-strategy)
   * [Hash](#hash)
   * [Provenance](#provenance)
+  * [Verifiability](#verifiability)
   * [Time](#time)
   * [Watermark](#watermark)
   * [Retractions and Corrections](#retractions-and-corrections)
   * [Repository](#repository)
   * [Projection](#projection)
+  * [Manifest](#manifest)
 - [Specification](#specification)
   * [Dataset Identity](#dataset-identity)
   * [Data Format](#data-format)
@@ -268,6 +271,9 @@ More formally, a slice is a:
 
 ![Diagram: Data Slices and Metadata](images/metadata.svg)
 
+## Metadata
+Refers to information about a [Dataset](#dataset) stored in its [Metadata Chain](#metadata-chain).
+
 ## Metadata Chain
 Metadata Chain captures all essential information about the [Dataset](#dataset), including:
 - Where the data comes from (see [Data Ingestion](#data-ingestion))
@@ -460,6 +466,43 @@ See also:
 - [Provenance in Databases: Why, How, and Where](http://homepages.inf.ed.ac.uk/jcheney/publications/provdbsurvey.pdf)
 - [Engine Contract: Derive Provenance](#derive-provenance)
 
+## Verifiability
+In the scope of this specification, verifiability of data means the ability to establish:
+- The ultimate source(s) of data:
+  - Which [Root Datasets](#root-dataset) the data is coming from
+  - Who these datasets belong to (ownership)
+  - And which actor has added the specific records (accountability)
+- The transformations performed to create this data:
+  - The graph of [Derivative Datasets](#derivative-dataset) upstream to the one being verified
+  - Authorship of those datasets (accountability)
+- And finally, that the data in fact corresponds to performing declared transformations on the source data.
+
+In other words, having root datasets `A`, `B` and a derivative dataset `C = f(A, B)`:
+- The data in `A` (and similarly in `B`) is verifiable if:
+  - [Metadata Chain](#metadata-chain) of `A` is valid
+    - Metadata block hashes are valid, forming a valid chain
+    - Blocks point to [Data Slices](#data-slice) and [Checkpoints](#checkpoint) with valid hashes
+- The data in `C` is verifiable if:
+  - [Metadata Chain](#metadata-chain) of `C` is valid
+  - Data in `C` corresponds to applying `f(A, B)` according to all transformation steps declared in the [Metadata Chain](#metadata-chain).
+
+The last step of ensuring that `f(A, B) = C` can be achieved by several means:
+- Reproducibility - by applying same transformations and comparing the results
+- Verifiable computing - different types of proofs that can attest to validity of results without redoing the computations.
+
+Examples of verifiable computing can include:
+- [Trusted Execution Environments](https://en.wikipedia.org/wiki/Trusted_execution_environment) (TEEs)
+- [Non-interactive Proofs](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) (including "zero-knowledge").
+
+Verifiability should not be confused with *trustworthiness* or *reality* of data. Verifying a dataset doesn't prove that the data in it is either truthful or more "real" than other data. The value of verifiability comes from establishing the provenance of data so that:
+- One could understand whether data is coming from reputable sources - sources they can trust (attribution)
+- One could review all derivative transformations applied to the data by intermediate actors (auditability).
+
+Verifiability provides the foundation upon which *trust* in data can be built:
+- First in the form **authority** - organizations putting their name behind the data they publish
+- Secondly in the form of **reputation** - trusting the sources or pipelines used by large parts of the community
+- Thirdly in the form of **cross-validation** - e.g. performing outlier detection on data from several similar publishers to establish common truth.
+
 ## Time
 The system applies the idea of [bitemporal data modelling](https://en.wikipedia.org/wiki/Bitemporal_Modeling) to the event streams. It differentiates two kinds of time:
 - [System time](#system-time) - tells us when some event was observed by the system
@@ -547,6 +590,9 @@ Understanding the difference between these projections is essential when working
 
 See also:
 - [A Brief History of Time in Data Modelling: OLAP Systems](https://www.kamu.dev/blog/a-brief-history-of-time-in-data-modelling-olap-systems/)
+
+## Manifest
+When [Metadata](#metadata) objects are saved on disk or transmitted on the network the typically wrapped in an extra [`Manifest`](#manifest-schema) layer.
 
 # Specification
 
@@ -722,11 +768,11 @@ Supported types:
 ## Common Data Schema
 All data in the system is guaranteed to have the following columns:
 
-|    Column     | Description                                                                                                                                                                                                                                                                                                                                      |
-| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                      |
-|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                |
-| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                          |
+|    Column     | Description                                                                                                                                                                                                                                                                                                                                       |
+| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                       |
+|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                 |
+| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                           |
 | `event_time`  | [Event Time](#event-time) denotes when to our best knowledge an event has occurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
 
 Representation:
