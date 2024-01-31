@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./src/images/odf_logo_2.png" alt="Open Data Fabric" width="500">
+<img src="./src/images/odf-logo.png" alt="Open Data Fabric">
 
 <p><strong><i>Open protocol for decentralized exchange and transformation of data</i></strong></p>
 
