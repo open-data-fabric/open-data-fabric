@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.34.0
+Version: 0.34.1
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -621,6 +621,8 @@ did:odf:fed012126262ba49e1ba8392c26f7a39e1ba8d756c7469786d3365200c68402ff65dc
 https://opendata.ca/odf/census-2016-population/
 ipfs://bafkreie3hfshd4ikinnbio3kewo2hvj6doh5jp3p23iwk2evgo2un5g7km/
 </pre>
+
+Note that name components such as `DatasetName`, `AccountName`, `RepoName` are case-insensitive, i.e. names `ny-newyork` and `NY-NewYork` are considered identical during lookups and uniqueness checks within the repository.
 
 Full [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) grammar:
 ```
