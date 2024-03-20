@@ -9,9 +9,7 @@ from typing import Iterator, cast
 
 DEFAULT_INDENT = 4
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
-ALLOWED_SCHEMAS = frozenset(['MetadataEvent'])
-
-PREAMBLE = f"""
+PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 // WARNING: This file is auto-generated from Open Data Fabric Schemas
 // See: http://opendatafabric.org/
@@ -19,66 +17,47 @@ PREAMBLE = f"""
 
 use bitflags::bitflags;
 
-use crate::{{ {','.join(ALLOWED_SCHEMAS)} }};
+use crate::MetadataEvent;
 
 ///////////////////////////////////////////////////////////////////////////////
 """
 
 JsonType = dict[str, 'JsonType']
+SchemaName = str
 
 
 def render(schemas_dir: str) -> None:
-    schemas = read_schemas(schemas_dir)
-
     print(PREAMBLE)
 
-    for name in sorted(schemas.keys()):
-        if name not in ALLOWED_SCHEMAS:
-            continue
+    name, sch = read_schema(schemas_dir, 'metadata-events/MetadataEvent.json')
 
-        sch = schemas[name]
+    try:
+        print('/' * 80)
+        print(f'// {name}')
+        print('// ' + DOCS_URL.format(name.lower()))
+        print('/' * 80)
+        print()
 
-        try:
-            if name == 'Manifest':
-                continue
-
-            print('/' * 80)
-            print(f'// {name}')
-            print('// ' + DOCS_URL.format(name.lower()))
-            print('/' * 80)
-            print()
-
-            for l in render_schema(name, sch):
-                print(l)
-            print()
+        for l in render_schema(name, sch):
+            print(l)
+        print()
 
 
-        except Exception as ex:
-            raise Exception(
-                f'Error while rendering {name} schema:\n{sch}'
-            ) from ex
+    except Exception as ex:
+        raise Exception(
+            f'Error while rendering {name} schema:\n{sch}'
+        ) from ex
 
 
-def read_schemas(schemas_dir: str) -> dict[str, JsonType]:
-    schemas = {}
-    read_schemas_rec(schemas_dir, schemas)
-    return schemas
+def read_schema(schemas_dir: str, file_path: str) -> (SchemaName, JsonType):
+    path = os.path.join(schemas_dir, file_path)
 
-
-def read_schemas_rec(schemas_dir: str, schemas: dict[str, JsonType]) -> None:
-    for fname in os.listdir(schemas_dir):
-        path = os.path.join(schemas_dir, fname)
-
-        if os.path.isdir(path):
-            read_schemas_rec(path, schemas)
-            continue
-
-        with open(path) as f:
-            s = json.load(f)
-            fname = os.path.splitext(os.path.split(path)[-1])[0]
-            name = os.path.splitext(s['$id'].split('/')[-1])[0]
-            assert fname == name, f"{fname} != {name}"
-            schemas[name] = s
+    with open(path) as f:
+        schema = json.load(f)
+        fname = os.path.splitext(os.path.split(path)[-1])[0]
+        name = os.path.splitext(schema['$id'].split('/')[-1])[0]
+        assert fname == name, f"{fname} != {name}"
+        return name, schema
 
 
 def render_comment(text: str) -> Iterator[str]:
