@@ -57,10 +57,10 @@ def _read_schemas(schemas_dir: StrPath, recursive: bool, on_schema: Callable[[*S
                 _read_schemas(path, recursive, on_schema)
             continue
 
-        on_schema(*_read_schema(path))
+        on_schema(*read_schema(path))
 
 
-def _read_schema(path: StrPath) -> SchemaRec:
+def read_schema(path: StrPath) -> SchemaRec:
     with open(path) as f:
         sch = json.load(f)
         fname = os.path.splitext(os.path.split(path)[-1])[0]

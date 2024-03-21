@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import os
 import re
 import sys
-import json
-
+from pathlib import Path
 from typing import Iterator, cast
+
+from utils.schemas import JsonType, read_schema
 
 DEFAULT_INDENT = 4
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
@@ -22,14 +22,11 @@ use crate::MetadataEvent;
 ///////////////////////////////////////////////////////////////////////////////
 """
 
-JsonType = dict[str, 'JsonType']
-SchemaName = str
-
 
 def render(schemas_dir: str) -> None:
     print(PREAMBLE)
 
-    name, sch = read_schema(schemas_dir, 'metadata-events/MetadataEvent.json')
+    name, sch, _ = read_schema(Path(schemas_dir) / 'metadata-events' / 'MetadataEvent.json')
 
     try:
         print('/' * 80)
@@ -41,23 +38,10 @@ def render(schemas_dir: str) -> None:
         for l in render_schema(name, sch):
             print(l)
         print()
-
-
     except Exception as ex:
         raise Exception(
             f'Error while rendering {name} schema:\n{sch}'
         ) from ex
-
-
-def read_schema(schemas_dir: str, file_path: str) -> (SchemaName, JsonType):
-    path = os.path.join(schemas_dir, file_path)
-
-    with open(path) as f:
-        schema = json.load(f)
-        fname = os.path.splitext(os.path.split(path)[-1])[0]
-        name = os.path.splitext(schema['$id'].split('/')[-1])[0]
-        assert fname == name, f"{fname} != {name}"
-        return name, schema
 
 
 def render_comment(text: str) -> Iterator[str]:
