@@ -4,7 +4,6 @@ import re
 import sys
 import json
 
-
 PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 // WARNING: This file is auto-generated from Open Data Fabric Schemas
@@ -24,7 +23,6 @@ use enum_variants::*;
 DEFAULT_INDENT = 4
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
-
 
 extra_types = []
 
@@ -67,6 +65,7 @@ def read_schemas(schemas_dir):
     schemas = {}
     read_schemas_rec(schemas_dir, schemas)
     return schemas
+
 
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):

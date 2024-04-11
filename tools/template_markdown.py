@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-import os
 import re
-
 
 INLINE_MARKDOWN = re.compile(r"!\[.*\]\((.+.md)\)")
 
@@ -17,7 +15,7 @@ def template(source, dest):
 
         fpath = m.group(1)
         with open(fpath) as f:
-            ftext= f.read()
+            ftext = f.read()
 
         tpl = tpl[:m.start()] + ftext + tpl[m.end():]
 
@@ -27,4 +25,5 @@ def template(source, dest):
 
 if __name__ == "__main__":
     import sys
+
     template(sys.argv[1], sys.argv[2])

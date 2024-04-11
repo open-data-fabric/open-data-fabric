@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 import os
 import sys
+import json
+
 sys.path.append(os.path.dirname(__file__))
 
-import json
 import utils.schemas
 
-
 PREAMBLE = """/*
- * Copyright (c) 2018 kamu.dev
+ * Copyright (c) 2024 kamu.dev
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -60,7 +60,6 @@ case class DatasetRefAny(s: String) extends AnyVal {
 DEFAULT_INDENT = 2
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
-
 
 extra_types = []
 external_traits = {}
@@ -273,4 +272,5 @@ def indent(gen, i=DEFAULT_INDENT):
 
 if __name__ == "__main__":
     import sys
+
     render(sys.argv[1])

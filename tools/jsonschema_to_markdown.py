@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import os
 import sys
+
 sys.path.append(os.path.dirname(__file__))
 
-import json
 import utils.schemas
 
 
@@ -16,15 +16,15 @@ class Ctx:
 
     def nest(self):
         return Ctx(
-            out=self.out, 
+            out=self.out,
             schemas=self.schemas,
             header_level=self.header_level + 1,
             current_schema=self.current_schema,
         )
-    
+
     def with_schema(self, schema):
         return Ctx(
-            out=self.out, 
+            out=self.out,
             schemas=self.schemas,
             header_level=self.header_level,
             current_schema=schema,
@@ -33,7 +33,7 @@ class Ctx:
     def section_id(self, name):
         id = name.lower().replace(" ", "-")
         return f"reference-{id}"
-    
+
     def schema_id(self, name):
         id = name.lower().replace("::", "-")
         return f"{id}-schema"
@@ -78,14 +78,14 @@ def render_union(ctx, sch, name):
     rows = []
     for option in sch["oneOf"]:
         option_id = option["$ref"].split("/")[-1]
-        
+
         if option["$ref"].startswith("#"):
             ename = name + "::" + option_id
         else:
             ename = option_id
-        
+
         link = f"[{ename}](#{ctx.schema_id(ename)})"
-        
+
         description = option.get("description", "")
         if not description:
             if option["$ref"].startswith("#"):
@@ -158,12 +158,12 @@ def render_object(ctx, sch, name):
         header=["Property", "Type", "Required", "Format", "Description"],
         header_fmt=[":---:", ":---:", ":---:", ":---:", "---"],
         rows=[[
-                f"`{pname}`",
-                render_type(ctx, psch),
-                "V" if pname in sch["required"] else "",
-                render_format(psch),
-                psch.get("description", "")
-            ]
+            f"`{pname}`",
+            render_type(ctx, psch),
+            "V" if pname in sch["required"] else "",
+            render_format(psch),
+            psch.get("description", "")
+        ]
             for pname, psch in sch["properties"].items()
         ]
     )
@@ -205,17 +205,17 @@ def render_toc(ctx):
 
 
 def schemas_by_kind(schemas, kind, priority=()):
-        filtered = [s for s in schemas.values() if s.kind == kind]
-        filtered.sort(key=lambda x: x.name)
+    filtered = [s for s in schemas.values() if s.kind == kind]
+    filtered.sort(key=lambda x: x.name)
 
-        for p in priority:
-            for i in range(len(filtered)):
-                if filtered[i].name == p:
-                    s = filtered.pop(i)
-                    filtered.insert(0, s)
-                    break
+    for p in priority:
+        for i in range(len(filtered)):
+            if filtered[i].name == p:
+                s = filtered.pop(i)
+                filtered.insert(0, s)
+                break
 
-        return filtered
+    return filtered
 
 
 def render_all(ctx, schemas_dir):
