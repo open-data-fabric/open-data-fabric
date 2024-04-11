@@ -5,7 +5,6 @@ import sys
 import json
 import functools
 
-
 PREAMBLE = """
 ////////////////////////////////////////////////////////////////////////////////
 // WARNING: This file is auto-generated from Open Data Fabric Schemas
@@ -80,7 +79,6 @@ fn fb_to_datetime(dt: &fb::Timestamp) -> DateTime<Utc> {
 INDENT = 4
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
-
 
 struct_types = set()
 enum_types = set()
@@ -161,6 +159,7 @@ def read_schemas(schemas_dir):
     read_schemas_rec(schemas_dir, schemas)
     return schemas
 
+
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
@@ -234,7 +233,7 @@ def render_struct(name, sch):
 def render_string_enum(name, sch):
     yield f"impl From<odf::{name}> for fb::{name} {{"
     yield f"    fn from(v: odf::{name}) -> Self {{"
-    yield  "        match v {"
+    yield "        match v {"
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
         yield ' ' * INDENT * 3 + f"odf::{name}::{capitalized} => fb::{name}::{capitalized},"
@@ -244,7 +243,7 @@ def render_string_enum(name, sch):
     yield ""
     yield f"impl Into<odf::{name}> for fb::{name} {{"
     yield f"    fn into(self) -> odf::{name} {{"
-    yield  "        match self {"
+    yield "        match self {"
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
         yield ' ' * INDENT * 3 + f"fb::{name}::{capitalized} => odf::{name}::{capitalized},"
@@ -378,7 +377,6 @@ def render_oneof_element_de(name, sch, isch):
         yield "),"
 
 
-
 def pre_ser_composite_type(name, sch):
     if sch.get('type') == 'array':
         isch = sch['items']
@@ -426,7 +424,7 @@ def de_composite_type(name, sch, enum_t_accessor):
             yield from de_composite_type("i.value().unwrap()", isch, "i.value_type()")
         else:
             yield from de_composite_type("i", isch, None)
-        yield  ").collect()"
+        yield ").collect()"
     elif is_string_enum(sch):
         yield f"{name}.into()"
     elif '$ref' in sch:
@@ -489,16 +487,16 @@ def ser_primitive_type(name, sch):
             assert ptype == 'integer'
             yield name
         elif fmt in (
-            'multihash',
-            'url',
-            'path',
-            'regex',
-            'dataset-id',
-            'dataset-name',
-            'dataset-alias',
-            'dataset-ref',
-            'dataset-ref-any',
-            'flatbuffers',
+                'multihash',
+                'url',
+                'path',
+                'regex',
+                'dataset-id',
+                'dataset-name',
+                'dataset-alias',
+                'dataset-ref',
+                'dataset-ref-any',
+                'flatbuffers',
         ):
             assert ptype == 'string'
         elif fmt == 'date-time':
@@ -515,7 +513,6 @@ def ser_primitive_type(name, sch):
         pass
     else:
         raise Exception(f'Expected primitive type schema: {sch}')
-        yield
 
 
 def de_primitive_type(name, sch, enum_t_accessor):

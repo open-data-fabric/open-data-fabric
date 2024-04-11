@@ -3,7 +3,6 @@ import os
 import re
 import json
 
-
 PREAMBLE = """
 ////////////////////////////////////////////////////////////////////////////////
 // WARNING: This file is auto-generated from Open Data Fabric Schemas
@@ -51,7 +50,6 @@ DEFAULT_INDENT = 2
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
 
-
 extra_types = []
 
 
@@ -93,6 +91,7 @@ def read_schemas(schemas_dir):
     schemas = {}
     read_schemas_rec(schemas_dir, schemas)
     return schemas
+
 
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
@@ -319,4 +318,5 @@ def indent(gen, i=DEFAULT_INDENT):
 
 if __name__ == "__main__":
     import sys
+
     render(sys.argv[1])

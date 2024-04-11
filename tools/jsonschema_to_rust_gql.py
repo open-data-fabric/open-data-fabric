@@ -4,7 +4,6 @@ import re
 import sys
 import json
 
-
 PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 // WARNING: This file is auto-generated from Open Data Fabric Schemas
@@ -99,7 +98,6 @@ impl From<odf::SetDataSchema> for SetDataSchema {
 """,
 }
 
-
 extra_types = []
 
 
@@ -141,6 +139,7 @@ def read_schemas(schemas_dir):
     schemas = {}
     read_schemas_rec(schemas_dir, schemas)
     return schemas
+
 
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):

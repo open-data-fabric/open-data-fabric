@@ -3,7 +3,6 @@ import os
 import re
 import json
 
-
 PREAMBLE = [
     '/' * 80,
     '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
@@ -22,7 +21,6 @@ PREAMBLE = [
 DEFAULT_INDENT = 2
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
-
 
 extra_types = []
 
@@ -76,10 +74,11 @@ def read_schemas(schemas_dir):
     read_schemas_rec(schemas_dir, schemas)
     return schemas
 
+
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
         path = os.path.join(schemas_dir, fname)
-        
+
         if os.path.isdir(path):
             read_schemas_rec(path, schemas)
             continue
@@ -102,7 +101,7 @@ def in_dependency_order(schemas):
         visited.add(name)
         schema = schemas[name]
         yield from _in_dependency_order_rec(schema, visited, schemas)
-        yield (name, schema)
+        yield name, schema
 
 
 def _in_dependency_order_rec(schema, visited, schemas):
@@ -128,7 +127,7 @@ def _in_dependency_order_rec(schema, visited, schemas):
             if name not in visited:
                 visited.add(name)
                 yield from _in_dependency_order_rec(schemas[name], visited, schemas)
-                yield (name, schemas[name])
+                yield name, schemas[name]
 
 
 def render_schema(name, sch):
@@ -176,8 +175,8 @@ def render_oneof(name, sch):
     if sch.get("root"):
         yield ""
         yield f"table {name}Root {{"
-        yield  " " * DEFAULT_INDENT + f"value: {name};"
-        yield  "}"
+        yield " " * DEFAULT_INDENT + f"value: {name};"
+        yield "}"
 
 
 def render_string_enum(name, sch):
@@ -265,4 +264,5 @@ def indent(gen, i=DEFAULT_INDENT):
 
 if __name__ == "__main__":
     import sys
+
     render(sys.argv[1])

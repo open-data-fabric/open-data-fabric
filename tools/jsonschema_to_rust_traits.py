@@ -4,7 +4,6 @@ import re
 import sys
 import json
 
-
 PREAMBLE = """
 ///////////////////////////////////////////////////////////////////////////////
 // WARNING: This file is auto-generated from Open Data Fabric Schemas
@@ -25,7 +24,6 @@ use std::path::Path;
 DEFAULT_INDENT = 4
 
 DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
-
 
 struct_types = set()
 extra_types = []
@@ -84,6 +82,7 @@ def read_schemas(schemas_dir):
     schemas = {}
     read_schemas_rec(schemas_dir, schemas)
     return schemas
+
 
 def read_schemas_rec(schemas_dir, schemas):
     for fname in os.listdir(schemas_dir):
@@ -260,7 +259,7 @@ def get_composite_type(sch):
         return f"Box<dyn Iterator<Item = {ptyp}> + '_>"
     elif 'enum' in sch:
         assert sch['type'] == 'string'
-        #extra_types.append(lambda: render_string_enum(sch['enumName'], sch))
+        # extra_types.append(lambda: render_string_enum(sch['enumName'], sch))
         return sch['enumName']
     else:
         return get_primitive_type(sch)
