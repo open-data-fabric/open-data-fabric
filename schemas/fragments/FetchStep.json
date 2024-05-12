@@ -98,6 +98,41 @@
           "description": "Environment variables to propagate into or set in the container."
         }
       }
+    },
+    "Mqtt": {
+      "description": "Connects to an MQTT broker to fetch events from the specified topic.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "port",
+        "topics"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Hostname of the MQTT broker."
+        },
+        "port": {
+          "type": "integer",
+          "description": "Port of the MQTT broker."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username to use for auth with the broker."
+        },
+        "password": {
+          "type": "string",
+          "description": "Password to use for auth with the broker (can be templated)."
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "/schemas/MqttTopicSubscription"
+          },
+          "description": "List of topic subscription parameters."
+        }
+      }
     }
   },
   "oneOf": [
@@ -109,6 +144,9 @@
     },
     {
       "$ref": "#/$defs/Container"
+    },
+    {
+      "$ref": "#/$defs/Mqtt"
     }
   ]
 }

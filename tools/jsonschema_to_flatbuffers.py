@@ -29,6 +29,8 @@ def is_string_enum(typ):
     return typ in (
         'CompressionFormat',
         'SourceOrdering',
+        'DatasetKind',
+        'MqttQos',
     )
 
 

@@ -14,7 +14,7 @@ PREAMBLE = """
 #![allow(clippy::pedantic)]
 
 use crate::dtos;
-use crate::dtos::{CompressionFormat, DatasetKind, SourceOrdering};
+use crate::dtos::{CompressionFormat, DatasetKind, SourceOrdering, MqttQos};
 use crate::identity::*;
 use crate::formats::*;
 use chrono::{DateTime, Utc};
@@ -38,6 +38,7 @@ def is_string_enum(typ):
         'CompressionFormat',
         'SourceOrdering',
         'DatasetKind',
+        'MqttQos',
     )
 
 

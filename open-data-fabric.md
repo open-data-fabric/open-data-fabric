@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.34.1
+Version: 0.35.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1222,6 +1222,7 @@ See also:
   - [ExecuteTransformInput](#executetransforminput-schema)
   - [FetchStep](#fetchstep-schema)
   - [MergeStrategy](#mergestrategy-schema)
+  - [MqttTopicSubscription](#mqtttopicsubscription-schema)
   - [OffsetInterval](#offsetinterval-schema)
   - [PrepStep](#prepstep-schema)
   - [ReadStep](#readstep-schema)
@@ -1857,6 +1858,7 @@ Defines the external source of data.
 | [FetchStep::Url](#fetchstep-url-schema) | Pulls data from one of the supported sources by its URL. |
 | [FetchStep::FilesGlob](#fetchstep-filesglob-schema) | Uses glob operator to match files on the local file system. |
 | [FetchStep::Container](#fetchstep-container-schema) | Runs the specified OCI container to fetch data from an arbitrary source. |
+| [FetchStep::Mqtt](#fetchstep-mqtt-schema) | Connects to an MQTT broker to fetch events from the specified topic. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1902,6 +1904,22 @@ Runs the specified OCI container to fetch data from an arbitrary source.
 | `command` | array(`string`) |  |  | Specifies the entrypoint. Not executed within a shell. The default OCI image's ENTRYPOINT is used if this is not provided. |
 | `args` | array(`string`) |  |  | Arguments to the entrypoint. The OCI image's CMD is used if this is not provided. |
 | `env` | array([EnvVar](#envvar-schema)) |  |  | Environment variables to propagate into or set in the container. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="fetchstep-mqtt-schema"></a>
+##### FetchStep::Mqtt
+Connects to an MQTT broker to fetch events from the specified topic.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `host` | `string` | V |  | Hostname of the MQTT broker. |
+| `port` | `integer` | V |  | Port of the MQTT broker. |
+| `username` | `string` |  |  | Username to use for auth with the broker. |
+| `password` | `string` |  |  | Password to use for auth with the broker (can be templated). |
+| `topics` | array([MqttTopicSubscription](#mqtttopicsubscription-schema)) | V |  | List of topic subscription parameters. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1973,6 +1991,19 @@ To identify whether a row has changed this strategy will compare all other colum
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+
+<a name="mqtttopicsubscription-schema"></a>
+##### MqttTopicSubscription
+MQTT topic subscription parameters.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `path` | `string` | V |  | Name of the topic (may include patterns). |
+| `qos` | `string` |  |  | Quality of service class |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MqttTopicSubscription.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 <a name="offsetinterval-schema"></a>
 ##### OffsetInterval
