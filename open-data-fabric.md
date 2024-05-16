@@ -1222,6 +1222,7 @@ See also:
   - [ExecuteTransformInput](#executetransforminput-schema)
   - [FetchStep](#fetchstep-schema)
   - [MergeStrategy](#mergestrategy-schema)
+  - [MqttQos](#mqttqos-schema)
   - [MqttTopicSubscription](#mqtttopicsubscription-schema)
   - [OffsetInterval](#offsetinterval-schema)
   - [PrepStep](#prepstep-schema)
@@ -1992,6 +1993,20 @@ To identify whether a row has changed this strategy will compare all other colum
 [^](#reference-information)
 
 
+<a name="mqttqos-schema"></a>
+##### MqttQos
+MQTT: Quality of service class.
+
+| Enum Value |
+| :---: |
+| AtMostOnce |
+| AtLeastOnce |
+| ExactlyOnce |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MqttQos.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="mqtttopicsubscription-schema"></a>
 ##### MqttTopicSubscription
 MQTT topic subscription parameters.
@@ -1999,7 +2014,7 @@ MQTT topic subscription parameters.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `path` | `string` | V |  | Name of the topic (may include patterns). |
-| `qos` | `string` |  |  | Quality of service class |
+| `qos` | [MqttQos](#mqttqos-schema) |  |  | Quality of service class. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MqttTopicSubscription.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
