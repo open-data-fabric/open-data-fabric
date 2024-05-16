@@ -341,7 +341,7 @@ enum MqttQos: int32 {
 
 table MqttTopicSubscription {
   path: string;
-  qos: MqttQos;
+  qos: MqttQos = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

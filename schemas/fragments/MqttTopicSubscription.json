@@ -14,7 +14,8 @@
         },
         "qos": {
             "$ref": "/schemas/MqttQos",
-            "description": "Quality of service class."
+            "description": "Quality of service class.",
+            "default": "AtMostOnce"
         }
     }
 }

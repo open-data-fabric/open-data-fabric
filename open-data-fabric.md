@@ -1995,7 +1995,7 @@ To identify whether a row has changed this strategy will compare all other colum
 
 <a name="mqttqos-schema"></a>
 ##### MqttQos
-MQTT: Quality of service class.
+MQTT quality of service class.
 
 | Enum Value |
 | :---: |

@@ -205,7 +205,10 @@ def get_composite_type(sch, required):
             ptyp += " = null"
         return ptyp
     elif '$ref' in sch:
-        return sch['$ref'].split('/')[-1]
+        ptyp = sch['$ref'].split('/')[-1]
+        if is_string_enum(ptyp) and not required:
+            ptyp += " = null"
+        return ptyp
     else:
         ptyp = get_primitive_type(sch)
         if not required and ptyp not in ('string', '[ubyte]', 'Timestamp'):
