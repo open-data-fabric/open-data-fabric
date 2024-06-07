@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.35.0
+Version: 0.36.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1860,6 +1860,7 @@ Defines the external source of data.
 | [FetchStep::FilesGlob](#fetchstep-filesglob-schema) | Uses glob operator to match files on the local file system. |
 | [FetchStep::Container](#fetchstep-container-schema) | Runs the specified OCI container to fetch data from an arbitrary source. |
 | [FetchStep::Mqtt](#fetchstep-mqtt-schema) | Connects to an MQTT broker to fetch events from the specified topic. |
+| [FetchStep::EthereumLogs](#fetchstep-ethereumlogs-schema) | Connects to an Ethereum node to stream transaction logs. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1921,6 +1922,21 @@ Connects to an MQTT broker to fetch events from the specified topic.
 | `username` | `string` |  |  | Username to use for auth with the broker. |
 | `password` | `string` |  |  | Password to use for auth with the broker (can be templated). |
 | `topics` | array([MqttTopicSubscription](#mqtttopicsubscription-schema)) | V |  | List of topic subscription parameters. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="fetchstep-ethereumlogs-schema"></a>
+##### FetchStep::EthereumLogs
+Connects to an Ethereum node to stream transaction logs.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `chainId` | `integer` |  | `uint64` | Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain. |
+| `nodeUrl` | `string` |  | `url` | Url of the node. |
+| `filter` | `string` |  |  | An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node. |
+| `signature` | `string` |  |  | Solidity log event signature to use for decoding. Using this field adds `event` to the output containing decoded log as JSON. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/FetchStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

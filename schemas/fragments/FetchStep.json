@@ -133,6 +133,33 @@
           "description": "List of topic subscription parameters."
         }
       }
+    },
+    "EthereumLogs": {
+      "description": "Connects to an Ethereum node to stream transaction logs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "chainId": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain."
+        },
+        "nodeUrl": {
+          "type": "string",
+          "format": "url",
+          "description": "Url of the node."
+        },
+        "filter": {
+          "type": "string",
+          "description": "An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.",
+          "example": "block_number > 123 and address = X'5fbdb2315678afecb367f032d93f642f64180aa3' and topic1 = X'000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Solidity log event signature to use for decoding. Using this field adds `event` to the output containing decoded log as JSON."
+        }
+      }
     }
   },
   "oneOf": [
@@ -147,6 +174,9 @@
     },
     {
       "$ref": "#/$defs/Mqtt"
+    },
+    {
+      "$ref": "#/$defs/EthereumLogs"
     }
   ]
 }
