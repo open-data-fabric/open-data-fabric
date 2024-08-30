@@ -81,6 +81,14 @@ components:
       required: false
       example: 13
 
+    odfSmartTransferProtocolVersion:
+      in: header
+      name: x-odf-smtp-version
+      schema:
+        type: string
+      required: true
+      example: 1
+
   responses:
 
     SwitchedToWebSocketResponse:
@@ -207,6 +215,7 @@ paths:
         - $ref: '#/components/parameters/connectionUpgrade'
         - $ref: '#/components/parameters/webSocketProtocol'
         - $ref: '#/components/parameters/webSocketProtocolVersion'
+        - $ref: '#/components/parameters/odfSmartTransferProtocolVersion'
       responses:
         101:
           $ref: '#/components/responses/SwitchedToWebSocketResponse'
@@ -224,6 +233,7 @@ paths:
         - $ref: '#/components/parameters/connectionUpgrade'
         - $ref: '#/components/parameters/webSocketProtocol'
         - $ref: '#/components/parameters/webSocketProtocolVersion'
+        - $ref: '#/components/parameters/odfSmartTransferProtocolVersion'
       responses:
         101:
           $ref: '#/components/responses/SwitchedToWebSocketResponse'
