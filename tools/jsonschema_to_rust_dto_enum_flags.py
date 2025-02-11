@@ -29,10 +29,10 @@ def render(schemas_dir: str) -> None:
     name, sch, _ = read_schema(Path(schemas_dir) / 'metadata-events' / 'MetadataEvent.json')
 
     try:
-        print('/' * 80)
+        print('/' * 120)
         print(f'// {name}')
         print('// ' + DOCS_URL.format(name.lower()))
-        print('/' * 80)
+        print('/' * 120)
         print()
 
         for l in render_schema(name, sch):

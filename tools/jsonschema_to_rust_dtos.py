@@ -38,10 +38,10 @@ def render(schemas_dir):
         try:
             if name == 'Manifest':
                 continue
-            print('/' * 80)
+            print('/' * 120)
             print(f'// {name}')
             print('// ' + DOCS_URL.format(name.lower()))
-            print('/' * 80)
+            print('/' * 120)
             print()
 
             for l in render_schema(name, sch):
