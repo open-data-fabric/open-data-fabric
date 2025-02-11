@@ -4,10 +4,10 @@ import re
 import json
 
 PREAMBLE = [
-    '/' * 80,
+    '/' * 120,
     '// WARNING: This file is auto-generated from Open Data Fabric Schemas',
     '// See: http://opendatafabric.org/',
-    '/' * 80,
+    '/' * 120,
     '',
     'struct Timestamp {',
     '  year: int32;',
@@ -46,10 +46,10 @@ def render(schemas_dir):
             continue
 
         try:
-            print('/' * 80)
+            print('/' * 120)
             print(f'// {name}')
             print('// ' + DOCS_URL.format(name.lower()))
-            print('/' * 80)
+            print('/' * 120)
             print()
 
             lines = list(render_schema(name, sch))
