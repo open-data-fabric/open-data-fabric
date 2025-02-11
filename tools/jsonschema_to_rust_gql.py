@@ -16,7 +16,6 @@ PREAMBLE = """
 #![allow(clippy::pedantic)]
 
 use chrono::{DateTime, Utc};
-use opendatafabric as odf;
 
 use crate::prelude::*;
 use crate::queries::Dataset;
@@ -42,8 +41,8 @@ impl TransformInput {
     }
 }
 
-impl From<odf::TransformInput> for TransformInput {
-    fn from(v: odf::TransformInput) -> Self {
+impl From<odf::metadata::TransformInput> for TransformInput {
+    fn from(v: odf::metadata::TransformInput) -> Self {
         Self {
             dataset_ref: v.dataset_ref.into(),
             alias: v.alias.unwrap(),
@@ -61,8 +60,8 @@ pub struct TransformSql {
     pub temporal_tables: Option<Vec<TemporalTable>>,
 }
 
-impl From<odf::TransformSql> for TransformSql {
-    fn from(v: odf::TransformSql) -> Self {
+impl From<odf::metadata::TransformSql> for TransformSql {
+    fn from(v: odf::metadata::TransformSql) -> Self {
         let queries = if let Some(query) = v.query {
             vec![SqlQueryStep { alias: None, query }]
         } else {
@@ -86,8 +85,8 @@ pub struct SetDataSchema {
     pub schema: DataSchema,
 }
 
-impl From<odf::SetDataSchema> for SetDataSchema {
-    fn from(v: odf::SetDataSchema) -> Self {
+impl From<odf::metadata::SetDataSchema> for SetDataSchema {
+    fn from(v: odf::metadata::SetDataSchema) -> Self {
         // TODO: Error handling?
         // TODO: Externalize format decision?
         let arrow_schema = v.schema_as_arrow().unwrap();
@@ -188,8 +187,8 @@ def render_struct(name, sch):
     yield '}'
 
     yield ''
-    yield f'impl From<odf::{name}> for {name} {{'
-    yield f'fn from(v: odf::{name}) -> Self {{'
+    yield f'impl From<odf::metadata::{name}> for {name} {{'
+    yield f'fn from(v: odf::metadata::{name}) -> Self {{'
     yield 'Self {'
     if not props:
         yield "_dummy: None"
@@ -231,13 +230,13 @@ def render_oneof(name, sch):
         yield from indent(render_oneof_element(name, sch, isch))
     yield '}'
     yield ''
-    yield f'impl From<odf::{name}> for {name} {{'
-    yield f'fn from(v: odf::{name}) -> Self {{'
+    yield f'impl From<odf::metadata::{name}> for {name} {{'
+    yield f'fn from(v: odf::metadata::{name}) -> Self {{'
     yield 'match v {'
     for isch in sch['oneOf']:
         ref = isch["$ref"]
         ename = ref.split('/')[-1]
-        yield f'odf::{name}::{ename}(v) => Self::{ename}(v.into()),'
+        yield f'odf::metadata::{name}::{ename}(v) => Self::{ename}(v.into()),'
     yield '}'
     yield '}'
     yield '}'
@@ -266,22 +265,22 @@ def render_string_enum(name, sch):
         yield ' ' * DEFAULT_INDENT + capitalized + ','
     yield '}'
     yield ''
-    yield f'impl From<odf::{name}> for {name} {{'
-    yield f'fn from(v: odf::{name}) -> Self {{'
+    yield f'impl From<odf::metadata::{name}> for {name} {{'
+    yield f'fn from(v: odf::metadata::{name}) -> Self {{'
     yield 'match v {'
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
-        yield f'odf::{name}::{capitalized} => Self::{capitalized},'
+        yield f'odf::metadata::{name}::{capitalized} => Self::{capitalized},'
     yield '}'
     yield '}'
     yield '}'
     yield ''
-    yield f'impl Into<odf::{name}> for {name} {{'
-    yield f'fn into(self) -> odf::{name} {{'
+    yield f'impl Into<odf::metadata::{name}> for {name} {{'
+    yield f'fn into(self) -> odf::metadata::{name} {{'
     yield 'match self {'
     for value in sch['enum']:
         capitalized = value[0].upper() + value[1:]
-        yield f'Self::{capitalized} => odf::{name}::{capitalized},'
+        yield f'Self::{capitalized} => odf::metadata::{name}::{capitalized},'
     yield '}'
     yield '}'
     yield '}'
