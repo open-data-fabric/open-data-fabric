@@ -27,6 +27,51 @@ DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-
 
 CUSTOM_TYPES = {
     "TransformInput": """
+#[derive(Interface, Debug, Clone)]
+#[graphql(field(name = "message", ty = "String"))]
+pub enum TransformInputDataset {
+    Accessible(TransformInputDatasetAccessible),
+    NotAccessible(TransformInputDatasetNotAccessible),
+}
+
+impl TransformInputDataset {
+    pub fn accessible(dataset: Dataset) -> Self {
+        Self::Accessible(TransformInputDatasetAccessible { dataset })
+    }
+
+    pub fn not_accessible(dataset_ref: odf::DatasetRef) -> Self {
+        Self::NotAccessible(TransformInputDatasetNotAccessible {
+            dataset_ref: dataset_ref.into(),
+        })
+    }
+}
+
+#[derive(SimpleObject, Debug, Clone)]
+#[graphql(complex)]
+pub struct TransformInputDatasetAccessible {
+    pub dataset: Dataset,
+}
+
+#[ComplexObject]
+impl TransformInputDatasetAccessible {
+    async fn message(&self) -> String {
+        "Found".to_string()
+    }
+}
+
+#[derive(SimpleObject, Debug, Clone)]
+#[graphql(complex)]
+pub struct TransformInputDatasetNotAccessible {
+    pub dataset_ref: DatasetRef,
+}
+
+#[ComplexObject]
+impl TransformInputDatasetNotAccessible {
+    async fn message(&self) -> String {
+        "Not Accessible".to_string()
+    }
+}
+
 #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
 #[graphql(complex)]
 pub struct TransformInput {
@@ -36,8 +81,8 @@ pub struct TransformInput {
 
 #[ComplexObject]
 impl TransformInput {
-    async fn dataset(&self, ctx: &Context<'_>) -> Result<Dataset> {
-        Dataset::from_ref(ctx, &self.dataset_ref).await
+    async fn input_dataset(&self, ctx: &Context<'_>) -> Result<TransformInputDataset> {
+        Dataset::try_from_ref(ctx, &self.dataset_ref).await
     }
 }
 
