@@ -4,7 +4,7 @@ name: gh-pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["master"]
+    branches: [ "master" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
