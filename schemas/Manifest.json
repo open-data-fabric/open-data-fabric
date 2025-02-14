@@ -17,6 +17,7 @@
     },
     "version": {
       "type": "integer",
+      "format": "int32",
       "description": "Major version number of the resource contained in this manifest. It provides the mechanism for introducing compatibility breaking changes."
     },
     "content": {

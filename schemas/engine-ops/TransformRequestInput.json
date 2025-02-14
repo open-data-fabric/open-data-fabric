@@ -52,7 +52,8 @@
             "type": "array",
             "items": {
                 "$ref": "/schemas/Watermark"
-            }
+            },
+            "description": "Watermarks that should be injected into the stream to separate micro batches for reproducibility."
         }
     }
 }

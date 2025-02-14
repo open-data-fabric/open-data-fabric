@@ -11,11 +11,13 @@
     "properties": {
         "systemTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Moment in processing time when watermark was emitted."
         },
         "eventTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Moment in event time which watermark has reached."
         }
     }
 }

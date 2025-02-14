@@ -54,12 +54,7 @@
           "description": "Describes the caching settings used for this source."
         },
         "order": {
-          "type": "string",
-          "enumName": "SourceOrdering",
-          "enum": [
-            "ByEventTime",
-            "ByName"
-          ],
+          "$ref": "/schemas/SourceOrdering",
           "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark."
         }
       }
@@ -115,6 +110,7 @@
         },
         "port": {
           "type": "integer",
+          "format": "int32",
           "description": "Port of the MQTT broker."
         },
         "username": {
@@ -153,7 +149,9 @@
         "filter": {
           "type": "string",
           "description": "An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.",
-          "example": "block_number > 123 and address = X'5fbdb2315678afecb367f032d93f642f64180aa3' and topic1 = X'000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'"
+          "examples": [
+            "block_number > 123 and address = X'5fbdb2315678afecb367f032d93f642f64180aa3' and topic1 = X'000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'"
+          ]
         },
         "signature": {
           "type": "string",

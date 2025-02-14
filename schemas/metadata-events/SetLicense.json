@@ -24,7 +24,8 @@
     },
     "websiteUrl": {
       "type": "string",
-      "format": "url"
+      "format": "url",
+      "description": "URL where licensing terms can be found."
     }
   }
 }

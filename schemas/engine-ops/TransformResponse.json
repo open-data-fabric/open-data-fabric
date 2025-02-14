@@ -2,13 +2,13 @@
     "$id": "http://open-data-fabric.github.com/schemas/TransformResponse",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "description": "Sent by an engine to coordinator when performing the data transformation",
-    "root": true,
     "$defs": {
         "Progress": {
             "type": "object",
             "additionalProperties": false,
             "required": [],
-            "properties": {}
+            "properties": {},
+            "description": "Reports query progress"
         },
         "Success": {
             "type": "object",
@@ -24,7 +24,8 @@
                     "format": "date-time",
                     "description": "Watermark advanced by the transaction, if any."
                 }
-            }
+            },
+            "description": "Query executed successfully"
         },
         "InvalidQuery": {
             "type": "object",
@@ -37,7 +38,8 @@
                     "type": "string",
                     "description": "Explanation of an error"
                 }
-            }
+            },
+            "description": "Query did not pass validation"
         },
         "InternalError": {
             "type": "object",
@@ -54,7 +56,8 @@
                     "type": "string",
                     "description": "Details of an error (e.g. a backtrace)"
                 }
-            }
+            },
+            "description": "Internal error during query execution"
         }
     },
     "oneOf": [

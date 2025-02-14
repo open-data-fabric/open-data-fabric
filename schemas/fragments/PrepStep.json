@@ -12,12 +12,7 @@
       ],
       "properties": {
         "format": {
-          "type": "string",
-          "enum": [
-            "Gzip",
-            "Zip"
-          ],
-          "enumName": "CompressionFormat",
+          "$ref": "/schemas/CompressionFormat",
           "description": "Name of a compression algorithm used on data."
         },
         "subPath": {

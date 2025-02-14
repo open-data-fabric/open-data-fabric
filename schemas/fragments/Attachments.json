@@ -15,7 +15,8 @@
           "type": "array",
           "items": {
             "$ref": "/schemas/AttachmentEmbedded"
-          }
+          },
+          "description": "List of embedded items."
         }
       }
     }

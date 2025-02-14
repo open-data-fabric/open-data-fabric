@@ -1,0 +1,14 @@
+[package]
+name = "odf-schemas"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+convert_case = { version = "0.7" }
+glob = { version = "0.3" }
+indexmap = { version = "2", features = ["serde"] }
+indoc = { version = "2" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_with = { version = "3" }

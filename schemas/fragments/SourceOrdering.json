@@ -1,0 +1,10 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/SourceOrdering",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specifies how input files should be ordered before ingestion.",
+  "type": "string",
+  "enum": [
+    "ByEventTime",
+    "ByName"
+  ]
+}
