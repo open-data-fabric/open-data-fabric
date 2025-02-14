@@ -273,11 +273,7 @@ def render_field_pre_ser(pname, psch, required):
 
 def render_field_ser(pname, psch, required, preserialized):
     name = to_snake_case(pname)
-
-    if name in ("size",):
-        fname = name + "_"
-    else:
-        fname = name
+    fname = name
 
     if preserialized:
         if required:
@@ -305,11 +301,7 @@ def render_field_ser(pname, psch, required, preserialized):
 
 def render_field_de(pname, psch, required):
     name = to_snake_case(pname)
-
-    if name in ("size",):
-        fname = name + "_"
-    else:
-        fname = name
+    fname = name
 
     yield f"{name}:"
     if required and (is_string_enum(psch) or psch.get("type") in ("integer",)):
@@ -441,7 +433,7 @@ def pre_ser_primitive_type(name, sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt in ('int64', 'uint64'):
+        if fmt in ('int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'):
             assert ptype == 'integer'
         elif fmt == 'multihash':
             assert ptype == 'string'
@@ -483,7 +475,7 @@ def ser_primitive_type(name, sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt in ('int64', 'uint64'):
+        if fmt in ('int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'):
             assert ptype == 'integer'
             yield name
         elif fmt in (
@@ -519,7 +511,7 @@ def de_primitive_type(name, sch, enum_t_accessor):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt in ('int64', 'uint64'):
+        if fmt in ('int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'):
             assert ptype == 'integer'
             yield f'{name}'
         elif fmt == 'multihash':

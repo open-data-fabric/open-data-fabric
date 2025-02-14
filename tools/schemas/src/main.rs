@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use odf_schemas::{cli, codegen, json_schema, model};
@@ -7,9 +7,10 @@ use odf_schemas::{cli, codegen, json_schema, model};
 
 fn main() {
     let args = odf_schemas::cli::Cli::parse();
+    let schemas_dir = args.schemas_dir.unwrap_or(PathBuf::from("schemas/"));
     match args.command {
-        cli::Command::Lint(cmd) => lint(cmd, &args.schemas_dir),
-        cli::Command::Codegen(cmd) => codegen(cmd, &args.schemas_dir),
+        cli::Command::Lint(cmd) => lint(cmd, &schemas_dir),
+        cli::Command::Codegen(cmd) => codegen(cmd, &schemas_dir),
     }
 }
 

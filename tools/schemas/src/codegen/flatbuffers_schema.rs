@@ -331,7 +331,10 @@ fn render_enum(
 fn format_type(typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
+        model::Type::Int16 => format!("int16"),
         model::Type::Int32 => format!("int32"),
+        model::Type::Int64 => format!("int64"),
+        model::Type::UInt16 => format!("uint16"),
         model::Type::UInt32 => format!("uint32"),
         model::Type::UInt64 => format!("uint64"),
         model::Type::String => format!("string"),

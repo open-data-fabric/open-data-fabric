@@ -64,7 +64,10 @@ pub struct Enum {
 #[derive(Debug, Clone)]
 pub enum Type {
     Boolean,
+    Int16,
     Int32,
+    Int64,
+    UInt16,
     UInt32,
     UInt64,
     String,
@@ -367,7 +370,9 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String, require_descripti
     match (typ.as_str(), format.as_deref()) {
         ("boolean", None) => Type::Boolean,
         ("integer", Some(format)) => match format {
+            "int16" => Type::Int16,
             "int32" => Type::Int32,
+            "uint16" => Type::UInt16,
             "uint32" => Type::UInt32,
             "uint64" => Type::UInt64,
             _ => panic!("Invalid integer format: {ctx}: {}", schema.display()),

@@ -7,7 +7,7 @@ use clap::Parser;
 #[derive(Debug, Parser)]
 pub struct Cli {
     #[arg(long)]
-    pub schemas_dir: PathBuf,
+    pub schemas_dir: Option<PathBuf>,
 
     #[command(subcommand)]
     pub command: Command,

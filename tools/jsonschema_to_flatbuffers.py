@@ -220,7 +220,7 @@ def get_primitive_type(sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt in ('int64', 'uint64'):
+        if fmt in ('int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'):
             assert ptype == 'integer'
             return fmt
         elif fmt == 'url':

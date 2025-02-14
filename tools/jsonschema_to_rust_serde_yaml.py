@@ -238,10 +238,22 @@ def get_primitive_type(sch):
     ptype = sch.get('type')
     fmt = sch.get('format')
     if fmt is not None:
-        if fmt == 'int64':
+        if fmt == 'int16':
+            assert ptype == 'integer'
+            return 'i16'
+        elif fmt == 'uint16':
+            assert ptype == 'integer'
+            return 'u16'
+        elif fmt == 'int32':
+            assert ptype == 'integer'
+            return 'i32'
+        elif fmt == 'uint32':
+            assert ptype == 'integer'
+            return 'u32'
+        elif fmt == 'int64':
             assert ptype == 'integer'
             return 'i64'
-        if fmt == 'uint64':
+        elif fmt == 'uint64':
             assert ptype == 'integer'
             return 'u64'
         elif fmt == 'multihash':
