@@ -1,5 +1,5 @@
 use convert_case::{Case, Casing};
-use std::collections::BTreeMap;
+use std::{borrow::Cow, collections::BTreeMap};
 
 use indexmap::IndexMap;
 
@@ -9,17 +9,36 @@ use crate::json_schema;
 
 #[derive(Debug, Clone)]
 pub struct Model {
-    pub types: BTreeMap<String, TypeDefinition>,
+    pub types: BTreeMap<TypeId, TypeDefinition>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TypeName(pub String);
+pub struct TypeId {
+    pub namespace: Option<String>,
+    pub name: String,
+}
 
-impl std::fmt::Display for TypeName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+impl TypeId {
+    pub fn join<'a, 'b>(&'a self, sep: &'b str) -> Cow<'a, String> {
+        if let Some(ns) = &self.namespace {
+            Cow::Owned(format!("{ns}{sep}{}", self.name))
+        } else {
+            Cow::Borrowed(&self.name)
+        }
+    }
+}
+
+impl PartialOrd for TypeId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.join("::").partial_cmp(&other.join("::"))
+    }
+}
+
+impl Ord for TypeId {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.join("::").cmp(&other.join("::"))
     }
 }
 
@@ -31,32 +50,40 @@ pub enum TypeDefinition {
 }
 
 impl TypeDefinition {
-    pub fn name(&self) -> &TypeName {
+    pub fn id(&self) -> &TypeId {
         match self {
-            TypeDefinition::Object(v) => &v.name,
-            TypeDefinition::Union(v) => &v.name,
-            TypeDefinition::Enum(v) => &v.name,
+            TypeDefinition::Object(v) => &v.id,
+            TypeDefinition::Union(v) => &v.id,
+            TypeDefinition::Enum(v) => &v.id,
+        }
+    }
+
+    pub fn description(&self) -> &str {
+        match self {
+            TypeDefinition::Object(v) => &v.description,
+            TypeDefinition::Union(v) => &v.description,
+            TypeDefinition::Enum(v) => &v.description,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Object {
-    pub name: TypeName,
+    pub id: TypeId,
     pub fields: IndexMap<String, Field>,
     pub description: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct Union {
-    pub name: TypeName,
-    pub variants: Vec<TypeName>,
+    pub id: TypeId,
+    pub variants: Vec<TypeId>,
     pub description: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct Enum {
-    pub name: TypeName,
+    pub id: TypeId,
     pub variants: Vec<String>,
     pub description: String,
 }
@@ -82,7 +109,7 @@ pub enum Type {
     Regex,
     Url,
     Array(Array),
-    Custom(TypeName),
+    Custom(TypeId),
 }
 
 #[derive(Debug, Clone)]
@@ -96,6 +123,8 @@ pub struct Field {
     pub typ: Type,
     pub optional: bool,
     pub description: String,
+    pub default: Option<serde_json::Value>,
+    pub examples: Option<Vec<serde_json::Value>>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,21 +136,27 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
         let id = schema.id.take().expect("Named type missing an $id");
         schema.schema.take().expect("Named type missing a $schema");
 
-        let root_name = id_to_name(&id);
+        let root = TypeId {
+            namespace: None,
+            name: id.rsplit_once('/').unwrap().1.to_string(),
+        };
 
         // Extract all $defs into top-level types
         for (dname, dsch) in schema.defs.take().unwrap_or_default() {
-            let def_name = TypeName(format!("{root_name}{dname}"));
+            let def_name = TypeId {
+                namespace: Some(root.name.clone()),
+                name: dname,
+            };
             let typ = parse_type_definition(
                 def_name.clone(),
                 dsch,
-                format!("{root_name}.$defs.{def_name}"),
+                format!("{}.$defs.{}", root.name, def_name.name),
             );
-            types.insert(typ.name().0.clone(), typ);
+            types.insert(typ.id().clone(), typ);
         }
 
-        let typ = parse_type_definition(root_name.clone(), schema, format!("{root_name}"));
-        types.insert(typ.name().0.clone(), typ);
+        let typ = parse_type_definition(root.clone(), schema, format!("{}", root.name));
+        types.insert(typ.id().clone(), typ);
     }
 
     Model { types }
@@ -129,11 +164,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_definition(
-    name: TypeName,
-    schema: json_schema::Schema,
-    ctx: String,
-) -> TypeDefinition {
+fn parse_type_definition(name: TypeId, schema: json_schema::Schema, ctx: String) -> TypeDefinition {
     match &schema {
         json_schema::Schema {
             one_of: Some(_), ..
@@ -150,7 +181,7 @@ fn parse_type_definition(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -> Object {
+fn parse_type_object(id: TypeId, schema: json_schema::Schema, ctx: String) -> Object {
     assert_eq!(schema.r#type.as_deref(), Some("object"));
 
     let json_schema::Schema {
@@ -165,10 +196,10 @@ fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -
         r#enum: None,
         items: None,
         r#ref: None,
-        format: _,
-        default: _,
+        format: None,
+        default: None,
         description: Some(description),
-        examples: _,
+        examples: None,
     } = schema
     else {
         panic!("Invalid object schema: {ctx}: {}", schema.display())
@@ -184,6 +215,10 @@ fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -
             .description
             .take()
             .expect(&format!("Field missing description: {ctx}.{pname}"));
+
+        let fdefault = psch.default.take();
+        let fexamples = psch.examples.take();
+
         let ftype = parse_type(psch, format!("{ctx}.{pname}"));
         let fname = pname.to_case(Case::Snake);
 
@@ -192,6 +227,8 @@ fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -
             typ: ftype,
             optional: !required.contains(&pname),
             description: fdesc,
+            default: fdefault,
+            examples: fexamples,
         };
 
         fields.insert(fname, field);
@@ -205,7 +242,7 @@ fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -
     }
 
     Object {
-        name,
+        id,
         description,
         fields,
     }
@@ -213,7 +250,7 @@ fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_union(name: TypeName, schema: json_schema::Schema, ctx: String) -> Union {
+fn parse_type_union(id: TypeId, schema: json_schema::Schema, ctx: String) -> Union {
     let json_schema::Schema {
         id: None,
         schema: None,
@@ -242,7 +279,7 @@ fn parse_type_union(name: TypeName, schema: json_schema::Schema, ctx: String) ->
     }
 
     Union {
-        name,
+        id,
         variants,
         description,
     }
@@ -250,7 +287,7 @@ fn parse_type_union(name: TypeName, schema: json_schema::Schema, ctx: String) ->
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_enum(name: TypeName, schema: json_schema::Schema, ctx: String) -> Enum {
+fn parse_type_enum(id: TypeId, schema: json_schema::Schema, ctx: String) -> Enum {
     let json_schema::Schema {
         id: None,
         schema: None,
@@ -283,7 +320,7 @@ fn parse_type_enum(name: TypeName, schema: json_schema::Schema, ctx: String) -> 
     }
 
     Enum {
-        name,
+        id,
         variants,
         description,
     }
@@ -326,7 +363,7 @@ fn parse_type_array(schema: json_schema::Schema, ctx: String) -> Array {
         format: None,
         default: None,
         description: None,
-        examples,
+        examples: None,
     } = schema
     else {
         panic!("Invalid array schema: {ctx}: {}", schema.display())
@@ -353,7 +390,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         items: None,
         r#ref: None,
         format,
-        default,
+        default: None,
         description: None,
         examples: _,
     } = &schema
@@ -388,7 +425,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_ref(schema: json_schema::Schema, ctx: String) -> TypeName {
+fn parse_ref(schema: json_schema::Schema, ctx: String) -> TypeId {
     let json_schema::Schema {
         id: None,
         schema: None,
@@ -402,30 +439,32 @@ fn parse_ref(schema: json_schema::Schema, ctx: String) -> TypeName {
         items: None,
         r#ref: Some(reff),
         format: None,
-        default,
-        description,
+        default: None,
+        description: None,
         examples: None,
     } = schema
     else {
         panic!("Invalid $ref schema: {ctx}: {}", schema.display())
     };
 
-    TypeName(ref_to_name(&reff, format!("{ctx}.$ref")))
+    ref_to_name(&reff, format!("{ctx}.$ref"))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn id_to_name(id: &str) -> TypeName {
-    TypeName(id.rsplit_once('/').unwrap().1.to_string())
-}
-
-fn ref_to_name(reff: &str, ctx: String) -> String {
-    let parent_name = ctx.split_once('.').unwrap().0;
-    let name = reff.rsplit_once('/').unwrap().1;
+fn ref_to_name(reff: &str, ctx: String) -> TypeId {
+    let parent = ctx.split_once('.').unwrap().0.to_string();
+    let name = reff.rsplit_once('/').unwrap().1.to_string();
     if reff.starts_with("/schemas/") {
-        name.to_string()
+        TypeId {
+            namespace: None,
+            name,
+        }
     } else if reff.starts_with("#/$defs") {
-        format!("{parent_name}{name}")
+        TypeId {
+            namespace: Some(parent),
+            name,
+        }
     } else {
         panic!("Invalid reference: {ctx}: {reff}")
     }

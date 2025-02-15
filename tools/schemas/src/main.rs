@@ -35,7 +35,10 @@ fn lint(_cmd: cli::Lint, schemas_dir: &Path) {
 
     let model = model::parse_jsonschema(schemas);
 
-    println!("Successfully linted {} types", model.types.len());
+    for t in model.types.values() {
+        eprintln!("{}", t.id().join("::"));
+    }
+    eprintln!("Successfully linted {} types", model.types.len());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

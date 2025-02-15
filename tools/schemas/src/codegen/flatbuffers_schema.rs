@@ -41,10 +41,14 @@ fn render_impl(
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in in_dependency_order(&model) {
-        if !wrappers.contains(typ.name()) && !roots.contains(typ.name()) {
+        if !wrappers.contains(typ.id()) && !roots.contains(typ.id()) {
             writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
-            writeln!(w, "// {}", typ.name())?;
-            writeln!(w, "// {SPEC_URL}#{}-schema", typ.name().0.to_lowercase())?;
+            writeln!(w, "// {}", typ.id().join(""))?;
+            writeln!(
+                w,
+                "// {SPEC_URL}#{}-schema",
+                typ.id().join("").to_lowercase()
+            )?;
             writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
             writeln!(w, "")?;
         }
@@ -63,7 +67,7 @@ fn render_impl(
 
 // TODO: Can't find a related issue, is this a general Fb limitation or just of rust codegen?
 /// Flatbuffers cannot directly store union types in arrays. To solve this we introduce special wrapper table types.
-fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>) {
+fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) {
     let mut new_model = model.clone();
     let mut wrappers = Vec::new();
 
@@ -81,12 +85,15 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
                 continue;
             };
 
-            let item_type = model.types.get(&item_type_name.0).unwrap();
+            let item_type = model.types.get(&item_type_name).unwrap();
             if let model::TypeDefinition::Union(_) = item_type {
                 // Create a wrapper type
-                let wrapper_type_name = model::TypeName(format!("{}Wrapper", item_type.name()));
+                let wrapper_type_id = model::TypeId {
+                    namespace: None,
+                    name: format!("{}Wrapper", item_type.id().join("")),
+                };
                 let wrapper_type = model::TypeDefinition::Object(model::Object {
-                    name: wrapper_type_name.clone(),
+                    id: wrapper_type_id.clone(),
                     fields: IndexMap::from([(
                         "value".to_string(),
                         model::Field {
@@ -94,6 +101,8 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
                             typ: model::Type::Custom(item_type_name.clone()),
                             optional: false,
                             description: String::new(),
+                            default: None,
+                            examples: None,
                         },
                     )]),
                     description: String::new(),
@@ -101,11 +110,11 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
 
                 new_model
                     .types
-                    .insert(wrapper_type_name.0.clone(), wrapper_type);
+                    .insert(wrapper_type_id.clone(), wrapper_type);
 
                 // Patch array type
                 let model::TypeDefinition::Object(new_object) =
-                    new_model.types.get_mut(&typ.name().0).unwrap()
+                    new_model.types.get_mut(typ.id()).unwrap()
                 else {
                     unreachable!();
                 };
@@ -116,9 +125,9 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
                     unreachable!();
                 };
 
-                new_array.item_type = Box::new(model::Type::Custom(wrapper_type_name.clone()));
+                new_array.item_type = Box::new(model::Type::Custom(wrapper_type_id.clone()));
 
-                wrappers.push(wrapper_type_name);
+                wrappers.push(wrapper_type_id);
             }
         }
     }
@@ -130,14 +139,12 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
 
 // TODO: Can't find a related issue, is this a general Fb limitation or just of rust codegen?
 /// Flatbuffer unions are hard to work with as top-level types, so for root union we generate special wrapper table types.
-fn wrap_root_unions_with_tables(
-    mut model: model::Model,
-) -> (model::Model, HashSet<model::TypeName>) {
+fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashSet<model::TypeId>) {
     let mut root_unions: HashSet<_> = model
         .types
         .values()
         .filter_map(|t| match t {
-            model::TypeDefinition::Union(t) => Some(t.name.clone()),
+            model::TypeDefinition::Union(t) => Some(t.id.clone()),
             _ => None,
         })
         .collect();
@@ -165,7 +172,10 @@ fn wrap_root_unions_with_tables(
 
     for root in &root_unions {
         let wrapper_type = model::TypeDefinition::Object(model::Object {
-            name: model::TypeName(format!("{root}Root")),
+            id: model::TypeId {
+                namespace: None,
+                name: format!("{}Root", root.name),
+            },
             fields: IndexMap::from([(
                 "value".to_string(),
                 model::Field {
@@ -173,14 +183,14 @@ fn wrap_root_unions_with_tables(
                     typ: model::Type::Custom(root.clone()),
                     optional: false,
                     description: String::new(),
+                    default: None,
+                    examples: None,
                 },
             )]),
             description: String::new(),
         });
 
-        model
-            .types
-            .insert(wrapper_type.name().0.clone(), wrapper_type);
+        model.types.insert(wrapper_type.id().clone(), wrapper_type);
     }
 
     (model, root_unions)
@@ -204,14 +214,14 @@ fn in_dependency_order(model: &model::Model) -> Vec<model::TypeDefinition> {
 fn in_dependency_order_rec(
     typ: &model::TypeDefinition,
     model: &model::Model,
-    visited: &mut HashSet<String>,
+    visited: &mut HashSet<model::TypeId>,
     res: &mut Vec<model::TypeDefinition>,
 ) {
-    if visited.contains(&typ.name().0) {
+    if visited.contains(typ.id()) {
         return;
     }
 
-    visited.insert(typ.name().0.clone());
+    visited.insert(typ.id().clone());
 
     match typ {
         model::TypeDefinition::Object(t) => {
@@ -238,12 +248,12 @@ fn in_dependency_order_rec(
 fn in_dependency_order_rec_t(
     typ: &model::Type,
     model: &model::Model,
-    visited: &mut HashSet<String>,
+    visited: &mut HashSet<model::TypeId>,
     res: &mut Vec<model::TypeDefinition>,
 ) {
     match typ {
         model::Type::Custom(name) => {
-            let typ = model.types.get(&name.0).unwrap();
+            let typ = model.types.get(&name).unwrap();
             in_dependency_order_rec(&typ, model, visited, res);
         }
         model::Type::Array(t) => {
@@ -260,7 +270,7 @@ fn render_object(
     model: &model::Model,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    writeln!(w, "table {} {{", typ.name)?;
+    writeln!(w, "table {} {{", typ.id.join(""))?;
     {
         let mut i = w.indent();
         for field in typ.fields.values() {
@@ -273,7 +283,7 @@ fn render_object(
                     | model::Type::UInt64
                     | model::Type::Int32,
                 ) => " = null",
-                (true, model::Type::Custom(name)) => match model.types.get(&name.0).unwrap() {
+                (true, model::Type::Custom(name)) => match model.types.get(&name).unwrap() {
                     model::TypeDefinition::Enum(_) => " = null",
                     _ => "",
                 },
@@ -300,11 +310,11 @@ fn render_union(
     typ: &model::Union,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    writeln!(w, "union {} {{", typ.name)?;
+    writeln!(w, "union {} {{", typ.id.join(""))?;
     {
         let mut i = w.indent();
         for variant in &typ.variants {
-            writeln!(i, "{},", variant.0)?;
+            writeln!(i, "{},", variant.join(""))?;
         }
     }
     writeln!(w, "}}")?;
@@ -318,7 +328,7 @@ fn render_enum(
     typ: &model::Enum,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    writeln!(w, "enum {}: int32 {{", typ.name)?;
+    writeln!(w, "enum {}: int32 {{", typ.id.join(""))?;
     {
         let mut i = w.indent();
         for variant in &typ.variants {
@@ -354,7 +364,7 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Regex => format!("string"),
         model::Type::Url => format!("string"),
         model::Type::Array(t) => format!("[{}]", format_type(&t.item_type)),
-        model::Type::Custom(name) => name.0.clone(),
+        model::Type::Custom(name) => name.join("").to_string(),
     }
 }
 
