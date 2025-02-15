@@ -29,7 +29,8 @@
             "description": "An alias of this input to be used in queries."
         },
         "vocab": {
-            "$ref": "/schemas/DatasetVocabulary"
+            "$ref": "/schemas/DatasetVocabulary",
+            "description": "Vocabulary of the input dataset."
         },
         "offsetInterval": {
             "$ref": "/schemas/OffsetInterval",

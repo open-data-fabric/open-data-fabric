@@ -32,7 +32,8 @@
             "description": "System time to use for new records."
         },
         "vocab": {
-            "$ref": "/schemas/DatasetVocabulary"
+            "$ref": "/schemas/DatasetVocabulary",
+            "description": "Vocabulary of the output dataset."
         },
         "transform": {
             "$ref": "/schemas/Transform",

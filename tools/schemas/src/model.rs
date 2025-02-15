@@ -95,6 +95,7 @@ pub struct Field {
     pub name: String,
     pub typ: Type,
     pub optional: bool,
+    pub description: String,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,31 +167,31 @@ fn parse_type_object(name: TypeName, schema: json_schema::Schema, ctx: String) -
         r#ref: None,
         format: _,
         default: _,
-        description: Some(_),
+        description: Some(description),
         examples: _,
     } = schema
     else {
         panic!("Invalid object schema: {ctx}: {}", schema.display())
     };
 
-    let description = schema
-        .description
-        .clone()
-        .expect(&format!("Schema is missing description: {ctx}"));
-
     let mut fields = IndexMap::new();
 
-    for (pname, psch) in schema
+    for (pname, mut psch) in schema
         .properties
         .expect(&format!("Object schema without properties: {ctx}"))
     {
-        let ftype = parse_type(psch, format!("{ctx}.{pname}"), true);
+        let fdesc = psch
+            .description
+            .take()
+            .expect(&format!("Field missing description: {ctx}.{pname}"));
+        let ftype = parse_type(psch, format!("{ctx}.{pname}"));
         let fname = pname.to_case(Case::Snake);
 
         let field = Field {
             name: fname.clone(),
             typ: ftype,
             optional: !required.contains(&pname),
+            description: fdesc,
         };
 
         fields.insert(fname, field);
@@ -290,7 +291,7 @@ fn parse_type_enum(name: TypeName, schema: json_schema::Schema, ctx: String) -> 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type(schema: json_schema::Schema, ctx: String, require_description: bool) -> Type {
+fn parse_type(schema: json_schema::Schema, ctx: String) -> Type {
     match &schema {
         json_schema::Schema { r#ref: Some(_), .. } => Type::Custom(parse_ref(schema, ctx)),
         json_schema::Schema {
@@ -299,7 +300,7 @@ fn parse_type(schema: json_schema::Schema, ctx: String, require_description: boo
         json_schema::Schema {
             r#type: Some(t), ..
         } if ["string", "integer", "boolean"].contains(&t.as_str()) => {
-            parse_type_scalar(schema, ctx, require_description)
+            parse_type_scalar(schema, ctx)
         }
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
@@ -324,28 +325,21 @@ fn parse_type_array(schema: json_schema::Schema, ctx: String) -> Array {
         r#ref: None,
         format: None,
         default: None,
-        description: Some(_),
+        description: None,
         examples,
     } = schema
     else {
         panic!("Invalid array schema: {ctx}: {}", schema.display())
     };
 
-    let item_type = Box::new(parse_type(*items, format!("{ctx}.items"), false));
+    let item_type = Box::new(parse_type(*items, format!("{ctx}.items")));
 
     Array { item_type }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_scalar(schema: json_schema::Schema, ctx: String, require_description: bool) -> Type {
-    if require_description && schema.description.is_none() {
-        panic!(
-            "Type does not provide a description: {ctx}: {}",
-            schema.display()
-        );
-    }
-
+fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
     let json_schema::Schema {
         id: None,
         schema: None,
@@ -360,7 +354,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String, require_descripti
         r#ref: None,
         format,
         default,
-        description,
+        description: None,
         examples: _,
     } = &schema
     else {

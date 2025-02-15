@@ -1,6 +1,6 @@
 use indexmap::IndexMap;
 
-use crate::model::{self, TypeName};
+use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::collections::HashSet;
 use std::io::Write;
@@ -93,6 +93,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
                             name: "value".to_string(),
                             typ: model::Type::Custom(item_type_name.clone()),
                             optional: false,
+                            description: String::new(),
                         },
                     )]),
                     description: String::new(),
@@ -129,7 +130,9 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeName>
 
 // TODO: Can't find a related issue, is this a general Fb limitation or just of rust codegen?
 /// Flatbuffer unions are hard to work with as top-level types, so for root union we generate special wrapper table types.
-fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashSet<TypeName>) {
+fn wrap_root_unions_with_tables(
+    mut model: model::Model,
+) -> (model::Model, HashSet<model::TypeName>) {
     let mut root_unions: HashSet<_> = model
         .types
         .values()
@@ -169,6 +172,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
                     name: "value".to_string(),
                     typ: model::Type::Custom(root.clone()),
                     optional: false,
+                    description: String::new(),
                 },
             )]),
             description: String::new(),
