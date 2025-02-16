@@ -44,9 +44,11 @@ fn render_impl(
         if !wrappers.contains(typ.id()) && !roots.contains(typ.id()) {
             writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
             writeln!(w, "// {}", typ.id().join(""))?;
+            render_description(typ.description(), None, None, w)?;
+            writeln!(w, "//")?;
             writeln!(
                 w,
-                "// {SPEC_URL}#{}-schema",
+                "// See: {SPEC_URL}#{}-schema",
                 typ.id().join("").to_lowercase()
             )?;
             writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
@@ -274,6 +276,13 @@ fn render_object(
     {
         let mut i = w.indent();
         for field in typ.fields.values() {
+            render_description(
+                &field.description,
+                field.default.as_ref(),
+                field.examples.as_ref(),
+                &mut i,
+            )?;
+
             let optionality_modifier = match (field.optional, &field.typ) {
                 (false, _) => "",
                 (
@@ -366,6 +375,33 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Array(t) => format!("[{}]", format_type(&t.item_type)),
         model::Type::Custom(name) => name.join("").to_string(),
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn render_description(
+    desc: &str,
+    default: Option<&serde_json::Value>,
+    examples: Option<&Vec<serde_json::Value>>,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    if !desc.is_empty() {
+        for line in desc.split('\n') {
+            writeln!(w, "// {line}")?;
+        }
+    }
+    if let Some(default) = default {
+        writeln!(w, "//")?;
+        writeln!(w, "// Defaults to: {default}")?;
+    }
+    if let Some(examples) = examples {
+        writeln!(w, "//")?;
+        writeln!(w, "// Examples:")?;
+        for ex in examples {
+            writeln!(w, "// - {ex}")?;
+        }
+    }
+    Ok(())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,5 @@
 use crate::model;
-use crate::utils::indent_writer::IndentWriter;
 use convert_case::{Case, Casing};
-use std::io::Write;
 
 const SPEC_URL: &str =
     "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
@@ -28,14 +26,6 @@ const PREAMBLE: &str = indoc::indoc!(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    let mut w = IndentWriter::new(w, "  ");
-    render_impl(model, &mut w)
-}
-
-fn render_impl(
-    model: model::Model,
-    w: &mut IndentWriter<&mut dyn std::io::Write>,
-) -> Result<(), std::io::Error> {
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in model.types.values() {
@@ -72,33 +62,28 @@ fn render_impl(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_object(
-    typ: &model::Object,
-    w: &mut IndentWriter<&mut dyn std::io::Write>,
-) -> Result<(), std::io::Error> {
+fn render_object(typ: &model::Object, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub struct {} {{", typ.id.join(""))?;
 
-    let mut i = w.indent();
     for field in typ.fields.values() {
         render_description(
             &field.description,
             field.default.as_ref(),
             field.examples.as_ref(),
-            &mut i,
+            w,
         )?;
         if !field.optional {
-            writeln!(i, "pub {}: {},", field.name, format_type(&field.typ))?;
+            writeln!(w, "pub {}: {},", field.name, format_type(&field.typ))?;
         } else {
             writeln!(
-                i,
+                w,
                 "pub {}: Option<{}>,",
                 field.name,
                 format_type(&field.typ)
             )?;
         }
     }
-    drop(i);
 
     writeln!(w, "}}")?;
     Ok(())
@@ -106,17 +91,11 @@ fn render_object(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_union(
-    typ: &model::Union,
-    w: &mut IndentWriter<&mut dyn std::io::Write>,
-) -> Result<(), std::io::Error> {
+fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
-    {
-        let mut i = w.indent();
-        for variant in &typ.variants {
-            writeln!(i, "{}({}),", variant.name, variant.join(""))?;
-        }
+    for variant in &typ.variants {
+        writeln!(w, "{}({}),", variant.name, variant.join(""))?;
     }
     writeln!(w, "}}")?;
     writeln!(w)?;
@@ -136,17 +115,11 @@ fn render_union(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_enum(
-    typ: &model::Enum,
-    w: &mut IndentWriter<&mut dyn std::io::Write>,
-) -> Result<(), std::io::Error> {
+fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     writeln!(w, "#[derive(Clone, Copy, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
-    {
-        let mut i = w.indent();
-        for variant in &typ.variants {
-            writeln!(i, "{variant},")?;
-        }
+    for variant in &typ.variants {
+        writeln!(w, "{variant},")?;
     }
     writeln!(w, "}}")?;
 
@@ -209,7 +182,7 @@ fn render_description(
 
 fn render_union_bitflags(
     typ: &model::Union,
-    w: &mut IndentWriter<&mut dyn std::io::Write>,
+    w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     writeln!(w, "bitflags! {{")?;
     writeln!(

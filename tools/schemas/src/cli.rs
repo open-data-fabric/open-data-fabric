@@ -40,6 +40,7 @@ pub struct Codegen {
 pub enum CodegenLang {
     FlatbuffersSchema,
     RustDtos,
+    RustGraphql,
     RustSerde,
     RustSerdeFlatbuffers,
 }
