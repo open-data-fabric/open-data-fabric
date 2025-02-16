@@ -1,0 +1,36 @@
+name: build
+on:
+  push:
+    paths:
+      - "**"
+      # - "!docs/**"
+  # manual trigger
+  workflow_dispatch: { }
+jobs:
+
+  lint_schemas:
+    name: Lint / Schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+      - run: |
+          make lint
+
+  lint_codegen:
+    name: Lint / Codegen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: Generate artifacts
+        run: |
+          make schemas-generated/flatbuffers/opendatafabric.fbs
+      - name: Check generated files
+        run: git diff && git diff-index --quiet HEAD

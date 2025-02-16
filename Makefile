@@ -21,7 +21,7 @@ SCHEMA_MARKDOWN = build/metadata-reference.md
 SCHEMA_MARKDOWNC = python tools/jsonschema_to_markdown.py schemas/
 
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
-SCHEMA_FLATBUFFERSC = python tools/jsonschema_to_flatbuffers.py schemas/
+SCHEMA_FLATBUFFERSC = cargo run -q -- codegen flatbuffers-schema
 
 all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) $(SCHEMA_MARKDOWN) $(SCHEMA_FLATBUFFERS) open-data-fabric.md
 
@@ -37,7 +37,7 @@ $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 $(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) tools/jsonschema_to_markdown.py
 	$(SCHEMA_MARKDOWNC) > $@
 
-$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) tools/jsonschema_to_flatbuffers.py
+$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(wildcard tools/schemas/**/*.rs)
 	$(SCHEMA_FLATBUFFERSC) > $@
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
@@ -45,5 +45,12 @@ open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 	@# Dependency: nodejs-markdown-toc (npm install -g markdown-toc)
 	markdown-toc --maxdepth 2 -i open-data-fabric.md
 
+
+.PHONY: lint
+lint:
+	cargo run -q -- lint
+
+
+.PHONY: clean
 clean:
 	rm -rf build/ open-data-fabric.md
