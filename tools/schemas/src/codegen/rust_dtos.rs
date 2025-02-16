@@ -214,18 +214,18 @@ fn render_union_bitflags(
     writeln!(w, "bitflags! {{")?;
     writeln!(
         w,
-        "  #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]"
+        "    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]"
     )?;
-    writeln!(w, "  pub struct {}TypeFlags: u32 {{", typ.id.name)?;
+    writeln!(w, "    pub struct {}TypeFlags: u32 {{", typ.id.name)?;
     for (i, variant) in typ.variants.iter().enumerate() {
         writeln!(
             w,
-            "    const {} = 1 << {};",
+            "        const {} = 1 << {};",
             variant.name.to_case(Case::UpperSnake),
             i
         )?;
     }
-    writeln!(w, "  }}")?;
+    writeln!(w, "    }}")?;
     writeln!(w, "}}")?;
     writeln!(w)?;
 
@@ -234,19 +234,19 @@ fn render_union_bitflags(
         "impl From<&{}> for {}TypeFlags {{",
         typ.id.name, typ.id.name
     )?;
-    writeln!(w, "  fn from(v: &{}) -> Self {{", typ.id.name)?;
-    writeln!(w, "    match v {{")?;
+    writeln!(w, "    fn from(v: &{}) -> Self {{", typ.id.name)?;
+    writeln!(w, "        match v {{")?;
     for variant in &typ.variants {
         writeln!(
             w,
-            "      {}::{}(_) => Self::{},",
+            "            {}::{}(_) => Self::{},",
             typ.id.name,
             variant.name,
             variant.name.to_case(Case::UpperSnake),
         )?;
     }
+    writeln!(w, "        }}")?;
     writeln!(w, "    }}")?;
-    writeln!(w, "  }}")?;
     writeln!(w, "}}")?;
     Ok(())
 }

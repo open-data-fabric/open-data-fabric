@@ -55,6 +55,9 @@ fn codegen(cmd: cli::Codegen, schemas_dir: &Path) {
         cli::CodegenLang::RustDtos => {
             codegen::rust_dtos::render(model, &mut w).unwrap();
         }
+        cli::CodegenLang::RustFlatbuffers => {
+            codegen::rust_flatbuffers::render(model, &mut w).unwrap();
+        }
     }
 }
 
