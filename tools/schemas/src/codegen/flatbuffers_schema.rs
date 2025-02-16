@@ -4,6 +4,7 @@ use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::collections::HashSet;
 use std::io::Write;
+use std::path::PathBuf;
 
 const SPEC_URL: &str =
     "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
@@ -108,6 +109,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                         },
                     )]),
                     description: String::new(),
+                    src: PathBuf::new(),
                 });
 
                 new_model
@@ -190,6 +192,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
                 },
             )]),
             description: String::new(),
+            src: PathBuf::new(),
         });
 
         model.types.insert(wrapper_type.id().clone(), wrapper_type);

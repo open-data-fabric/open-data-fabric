@@ -52,6 +52,9 @@ fn codegen(cmd: cli::Codegen, schemas_dir: &Path) {
         cli::CodegenLang::FlatbuffersSchema => {
             codegen::flatbuffers_schema::render(model, &mut w).unwrap();
         }
+        cli::CodegenLang::Markdown => {
+            codegen::markdown::render(model, &mut w).unwrap();
+        }
         cli::CodegenLang::RustDtos => {
             codegen::rust_dtos::render(model, &mut w).unwrap();
         }

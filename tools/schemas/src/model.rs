@@ -1,5 +1,9 @@
 use convert_case::{Case, Casing};
-use std::{borrow::Cow, collections::BTreeMap};
+use std::{
+    borrow::Cow,
+    collections::BTreeMap,
+    path::{Path, PathBuf},
+};
 
 use indexmap::IndexMap;
 
@@ -65,6 +69,14 @@ impl TypeDefinition {
             TypeDefinition::Enum(v) => &v.description,
         }
     }
+
+    pub fn src(&self) -> &Path {
+        match self {
+            TypeDefinition::Struct(v) => &v.src,
+            TypeDefinition::Union(v) => &v.src,
+            TypeDefinition::Enum(v) => &v.src,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -72,6 +84,7 @@ pub struct Struct {
     pub id: TypeId,
     pub fields: IndexMap<String, Field>,
     pub description: String,
+    pub src: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -79,6 +92,7 @@ pub struct Union {
     pub id: TypeId,
     pub variants: Vec<TypeId>,
     pub description: String,
+    pub src: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -86,6 +100,7 @@ pub struct Enum {
     pub id: TypeId,
     pub variants: Vec<String>,
     pub description: String,
+    pub src: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -136,6 +151,8 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
         let id = schema.id.take().expect("Named type missing an $id");
         schema.schema.take().expect("Named type missing a $schema");
 
+        let src = schema.src.take().expect("Schema without source path");
+
         let root = TypeId {
             namespace: None,
             name: id.rsplit_once('/').unwrap().1.to_string(),
@@ -150,12 +167,13 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             let typ = parse_type_definition(
                 def_name.clone(),
                 dsch,
+                src.clone(),
                 format!("{}.$defs.{}", root.name, def_name.name),
             );
             types.insert(typ.id().clone(), typ);
         }
 
-        let typ = parse_type_definition(root.clone(), schema, format!("{}", root.name));
+        let typ = parse_type_definition(root.clone(), schema, src, format!("{}", root.name));
         types.insert(typ.id().clone(), typ);
     }
 
@@ -164,24 +182,29 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_definition(name: TypeId, schema: json_schema::Schema, ctx: String) -> TypeDefinition {
+fn parse_type_definition(
+    name: TypeId,
+    schema: json_schema::Schema,
+    src: PathBuf,
+    ctx: String,
+) -> TypeDefinition {
     match &schema {
         json_schema::Schema {
             one_of: Some(_), ..
-        } => TypeDefinition::Union(parse_type_union(name, schema, ctx)),
+        } => TypeDefinition::Union(parse_type_union(name, schema, src, ctx)),
         json_schema::Schema {
             r#enum: Some(_), ..
-        } => TypeDefinition::Enum(parse_type_enum(name, schema, ctx)),
+        } => TypeDefinition::Enum(parse_type_enum(name, schema, src, ctx)),
         json_schema::Schema {
             r#type: Some(t), ..
-        } if t == "object" => TypeDefinition::Struct(parse_type_struct(name, schema, ctx)),
+        } if t == "object" => TypeDefinition::Struct(parse_type_struct(name, schema, src, ctx)),
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_struct(id: TypeId, schema: json_schema::Schema, ctx: String) -> Struct {
+fn parse_type_struct(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Struct {
     assert_eq!(schema.r#type.as_deref(), Some("object"));
 
     let json_schema::Schema {
@@ -200,6 +223,7 @@ fn parse_type_struct(id: TypeId, schema: json_schema::Schema, ctx: String) -> St
         default: None,
         description: Some(description),
         examples: None,
+        src: None,
     } = schema
     else {
         panic!("Invalid struct schema: {ctx}: {}", schema.display())
@@ -245,12 +269,13 @@ fn parse_type_struct(id: TypeId, schema: json_schema::Schema, ctx: String) -> St
         id,
         description,
         fields,
+        src,
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_union(id: TypeId, schema: json_schema::Schema, ctx: String) -> Union {
+fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Union {
     let json_schema::Schema {
         id: None,
         schema: None,
@@ -267,6 +292,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, ctx: String) -> Uni
         default: None,
         description: Some(description),
         examples: None,
+        src: None,
     } = schema
     else {
         panic!("Invalid union schema: {ctx}: {}", schema.display())
@@ -282,12 +308,13 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, ctx: String) -> Uni
         id,
         variants,
         description,
+        src,
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_enum(id: TypeId, schema: json_schema::Schema, ctx: String) -> Enum {
+fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Enum {
     let json_schema::Schema {
         id: None,
         schema: None,
@@ -304,6 +331,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, ctx: String) -> Enum
         default: None,
         description: Some(description),
         examples: None,
+        src: None,
     } = schema
     else {
         panic!("Invalid enum schema: {ctx}: {}", schema.display())
@@ -323,6 +351,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, ctx: String) -> Enum
         id,
         variants,
         description,
+        src,
     }
 }
 
@@ -364,6 +393,7 @@ fn parse_type_array(schema: json_schema::Schema, ctx: String) -> Array {
         default: None,
         description: None,
         examples: None,
+        src: None,
     } = schema
     else {
         panic!("Invalid array schema: {ctx}: {}", schema.display())
@@ -393,6 +423,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         default: None,
         description: None,
         examples: _,
+        src: None,
     } = &schema
     else {
         panic!("Invalid scalar schema: {ctx}: {}", schema.display())
@@ -442,6 +473,7 @@ fn parse_ref(schema: json_schema::Schema, ctx: String) -> TypeId {
         default: None,
         description: None,
         examples: None,
+        src: None,
     } = schema
     else {
         panic!("Invalid $ref schema: {ctx}: {}", schema.display())

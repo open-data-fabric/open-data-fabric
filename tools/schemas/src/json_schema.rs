@@ -2,7 +2,7 @@ use indexmap::IndexMap;
 use serde_with::skip_serializing_none;
 use std::{
     collections::{HashMap, HashSet},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +46,8 @@ pub struct Schema {
     pub description: Option<String>,
 
     pub examples: Option<Vec<serde_json::Value>>,
+
+    pub src: Option<PathBuf>,
 }
 
 impl Schema {
@@ -77,7 +79,7 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
             continue;
         }
 
-        let schema: Schema = serde_json::from_reader(std::fs::File::open(&path).unwrap())
+        let mut schema: Schema = serde_json::from_reader(std::fs::File::open(&path).unwrap())
             .expect(&format!("Error while parsing schema in {}", path.display()));
 
         // Check that all schemas have IDs that match their file names
@@ -85,6 +87,8 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
             "Top-level schema in {} does not specify an $id",
             path.display()
         ));
+
+        schema.src = Some(path.clone());
 
         assert_eq!(
             *id,

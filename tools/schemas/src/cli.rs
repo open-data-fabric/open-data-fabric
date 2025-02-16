@@ -39,6 +39,7 @@ pub struct Codegen {
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum CodegenLang {
     FlatbuffersSchema,
+    Markdown,
     RustDtos,
     RustGraphql,
     RustSerde,

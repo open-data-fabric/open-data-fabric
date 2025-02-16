@@ -16,12 +16,10 @@ DIAGRAMS_SRC_RAW = $(wildcard src/images/*.svg)
 DIAGRAMS_RAW = $(subst src/images,images,$(DIAGRAMS_SRC_RAW))
 
 SCHEMAS_SRC = $(wildcard schemas/**/*.json)
+SCHEMAS_UTILS_SRC = $(wildcard tools/schemas/**/*.rs)
 
 SCHEMA_MARKDOWN = build/metadata-reference.md
-SCHEMA_MARKDOWNC = python tools/jsonschema_to_markdown.py schemas/
-
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
-SCHEMA_FLATBUFFERSC = cargo run -q -- codegen flatbuffers-schema
 
 all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) $(SCHEMA_MARKDOWN) $(SCHEMA_FLATBUFFERS) open-data-fabric.md
 
@@ -34,11 +32,11 @@ $(DIAGRAMS): images/%.svg: src/images/%.puml
 $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 	cp $^ $@
 
-$(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) tools/jsonschema_to_markdown.py
-	$(SCHEMA_MARKDOWNC) > $@
+$(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
+	cargo run -q -- codegen markdown > $@
 
-$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(wildcard tools/schemas/**/*.rs)
-	$(SCHEMA_FLATBUFFERSC) > $@
+$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
+	cargo run -q -- codegen flatbuffers-schema > $@
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
