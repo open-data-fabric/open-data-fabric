@@ -56,7 +56,7 @@ fn render_impl(
         }
 
         match &typ {
-            model::TypeDefinition::Object(t) => render_object(t, &model, w)?,
+            model::TypeDefinition::Struct(t) => render_struct(t, &model, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
         }
@@ -74,7 +74,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
     let mut wrappers = Vec::new();
 
     for typ in model.types.values() {
-        let model::TypeDefinition::Object(obj) = typ else {
+        let model::TypeDefinition::Struct(obj) = typ else {
             continue;
         };
 
@@ -94,7 +94,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                     namespace: None,
                     name: format!("{}Wrapper", item_type.id().join("")),
                 };
-                let wrapper_type = model::TypeDefinition::Object(model::Object {
+                let wrapper_type = model::TypeDefinition::Struct(model::Struct {
                     id: wrapper_type_id.clone(),
                     fields: IndexMap::from([(
                         "value".to_string(),
@@ -115,13 +115,13 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                     .insert(wrapper_type_id.clone(), wrapper_type);
 
                 // Patch array type
-                let model::TypeDefinition::Object(new_object) =
+                let model::TypeDefinition::Struct(new_struct) =
                     new_model.types.get_mut(typ.id()).unwrap()
                 else {
                     unreachable!();
                 };
 
-                let new_field = new_object.fields.get_mut(&field.name).unwrap();
+                let new_field = new_struct.fields.get_mut(&field.name).unwrap();
 
                 let model::Type::Array(new_array) = &mut new_field.typ else {
                     unreachable!();
@@ -152,7 +152,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
         .collect();
 
     for typ in model.types.values() {
-        let model::TypeDefinition::Object(obj) = typ else {
+        let model::TypeDefinition::Struct(obj) = typ else {
             continue;
         };
 
@@ -173,7 +173,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
     }
 
     for root in &root_unions {
-        let wrapper_type = model::TypeDefinition::Object(model::Object {
+        let wrapper_type = model::TypeDefinition::Struct(model::Struct {
             id: model::TypeId {
                 namespace: None,
                 name: format!("{}Root", root.name),
@@ -226,7 +226,7 @@ fn in_dependency_order_rec(
     visited.insert(typ.id().clone());
 
     match typ {
-        model::TypeDefinition::Object(t) => {
+        model::TypeDefinition::Struct(t) => {
             for field in t.fields.values() {
                 in_dependency_order_rec_t(&field.typ, model, visited, res)
             }
@@ -267,8 +267,8 @@ fn in_dependency_order_rec_t(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_object(
-    typ: &model::Object,
+fn render_struct(
+    typ: &model::Struct,
     model: &model::Model,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {

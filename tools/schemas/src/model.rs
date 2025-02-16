@@ -44,7 +44,7 @@ impl Ord for TypeId {
 
 #[derive(Debug, Clone)]
 pub enum TypeDefinition {
-    Object(Object),
+    Struct(Struct),
     Union(Union),
     Enum(Enum),
 }
@@ -52,7 +52,7 @@ pub enum TypeDefinition {
 impl TypeDefinition {
     pub fn id(&self) -> &TypeId {
         match self {
-            TypeDefinition::Object(v) => &v.id,
+            TypeDefinition::Struct(v) => &v.id,
             TypeDefinition::Union(v) => &v.id,
             TypeDefinition::Enum(v) => &v.id,
         }
@@ -60,7 +60,7 @@ impl TypeDefinition {
 
     pub fn description(&self) -> &str {
         match self {
-            TypeDefinition::Object(v) => &v.description,
+            TypeDefinition::Struct(v) => &v.description,
             TypeDefinition::Union(v) => &v.description,
             TypeDefinition::Enum(v) => &v.description,
         }
@@ -68,7 +68,7 @@ impl TypeDefinition {
 }
 
 #[derive(Debug, Clone)]
-pub struct Object {
+pub struct Struct {
     pub id: TypeId,
     pub fields: IndexMap<String, Field>,
     pub description: String,
@@ -174,14 +174,14 @@ fn parse_type_definition(name: TypeId, schema: json_schema::Schema, ctx: String)
         } => TypeDefinition::Enum(parse_type_enum(name, schema, ctx)),
         json_schema::Schema {
             r#type: Some(t), ..
-        } if t == "object" => TypeDefinition::Object(parse_type_object(name, schema, ctx)),
+        } if t == "object" => TypeDefinition::Struct(parse_type_struct(name, schema, ctx)),
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_object(id: TypeId, schema: json_schema::Schema, ctx: String) -> Object {
+fn parse_type_struct(id: TypeId, schema: json_schema::Schema, ctx: String) -> Struct {
     assert_eq!(schema.r#type.as_deref(), Some("object"));
 
     let json_schema::Schema {
@@ -202,14 +202,14 @@ fn parse_type_object(id: TypeId, schema: json_schema::Schema, ctx: String) -> Ob
         examples: None,
     } = schema
     else {
-        panic!("Invalid object schema: {ctx}: {}", schema.display())
+        panic!("Invalid struct schema: {ctx}: {}", schema.display())
     };
 
     let mut fields = IndexMap::new();
 
     for (pname, mut psch) in schema
         .properties
-        .expect(&format!("Object schema without properties: {ctx}"))
+        .expect(&format!("Struct schema without properties: {ctx}"))
     {
         let fdesc = psch
             .description
@@ -241,7 +241,7 @@ fn parse_type_object(id: TypeId, schema: json_schema::Schema, ctx: String) -> Ob
         }
     }
 
-    Object {
+    Struct {
         id,
         description,
         fields,

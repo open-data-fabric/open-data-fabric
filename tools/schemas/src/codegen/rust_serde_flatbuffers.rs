@@ -122,7 +122,7 @@ impl Helpers {
 
     fn is_struct_id(&self, id: &model::TypeId) -> bool {
         match self.model.types.get(id).unwrap() {
-            model::TypeDefinition::Object(_) => true,
+            model::TypeDefinition::Struct(_) => true,
             _ => false,
         }
     }
@@ -186,7 +186,7 @@ fn render_impl(
         writeln!(w, "")?;
 
         match &typ {
-            model::TypeDefinition::Object(t) => render_object(t, &helpers, w)?,
+            model::TypeDefinition::Struct(t) => render_struct(t, &helpers, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
         }
@@ -199,8 +199,8 @@ fn render_impl(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_object(
-    typ: &model::Object,
+fn render_struct(
+    typ: &model::Struct,
     helpers: &Helpers,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {

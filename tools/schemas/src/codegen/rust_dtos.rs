@@ -44,7 +44,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         )?;
 
         match &typ {
-            model::TypeDefinition::Object(t) => render_object(t, w)?,
+            model::TypeDefinition::Struct(t) => render_struct(t, w)?,
             model::TypeDefinition::Union(t) => {
                 render_union(t, w)?;
 
@@ -62,7 +62,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_object(typ: &model::Object, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub struct {} {{", typ.id.join(""))?;
 
