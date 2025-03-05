@@ -27,7 +27,7 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
         "TransformInput",
         indoc::indoc!(
             r#"
-            #[derive(Interface, Debug, Clone)]
+            #[derive(Interface, Debug)]
             #[graphql(field(name = "message", ty = "String"))]
             pub enum TransformInputDataset {
                 Accessible(TransformInputDatasetAccessible),
@@ -46,7 +46,7 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
                 }
             }
 
-            #[derive(SimpleObject, Debug, Clone)]
+            #[derive(SimpleObject, Debug)]
             #[graphql(complex)]
             pub struct TransformInputDatasetAccessible {
                 pub dataset: Dataset,
@@ -59,10 +59,10 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
                 }
             }
 
-            #[derive(SimpleObject, Debug, Clone)]
+            #[derive(SimpleObject, Debug)]
             #[graphql(complex)]
             pub struct TransformInputDatasetNotAccessible {
-                pub dataset_ref: DatasetRef,
+                pub dataset_ref: DatasetRef<'static>,
             }
 
             #[ComplexObject]
@@ -75,7 +75,7 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
             #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
             #[graphql(complex)]
             pub struct TransformInput {
-                pub dataset_ref: DatasetRef,
+                pub dataset_ref: DatasetRef<'static>,
                 pub alias: String,
             }
 
@@ -339,13 +339,13 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),
         model::Type::String => format!("String"),
-        model::Type::DatasetAlias => format!("DatasetAlias"),
-        model::Type::DatasetId => format!("DatasetID"),
-        model::Type::DatasetRef => format!("DatasetRef"),
+        model::Type::DatasetAlias => format!("DatasetAlias<'static>"),
+        model::Type::DatasetId => format!("DatasetID<'static>"),
+        model::Type::DatasetRef => format!("DatasetRef<'static>"),
         model::Type::DateTime => format!("DateTime<Utc>"),
         model::Type::Flatbuffers => format!("Vec<u8>"),
         model::Type::Multicodec => format!("Multicodec"),
-        model::Type::Multihash => format!("Multihash"),
+        model::Type::Multihash => format!("Multihash<'static>"),
         model::Type::Path => format!("OSPath"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
