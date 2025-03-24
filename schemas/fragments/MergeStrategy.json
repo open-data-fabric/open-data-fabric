@@ -10,6 +10,23 @@
       "required": [],
       "properties": {}
     },
+    "ChangelogStream": {
+      "description": "Changelog stream merge strategy.\n\nThis is the native stream format for ODF that accurately describes the evolution of all event records including appends, retractions, and corrections as per RFC-015. No pre-processing except for format validation is done.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primaryKey"
+      ],
+      "properties": {
+        "primaryKey": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the columns that uniquely identify the record throughout its lifetime"
+        }
+      }
+    },
     "Ledger": {
       "description": "Ledger merge strategy.\n\nThis strategy should be used for data sources containing ledgers of events. Currently this strategy will only perform deduplication of events using user-specified primary key columns. This means that the source data can contain partially overlapping set of records and only those records that were not previously seen will be appended.",
       "type": "object",
@@ -50,6 +67,23 @@
           "description": "Names of the columns to compared to determine if a row has changed between two snapshots."
         }
       }
+    },
+    "UpsertStream": {
+      "description": "Upsert stream merge strategy.\n\nThis strategy should be used for data sources containing ledgers of insert-or-update and delete events. Unlike ChangelogStream the insert-or-update events only carry the new values, so this strategy will use primary key to re-classify the events into an append or a correction from/to pair, looking up the previous values.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primaryKey"
+      ],
+      "properties": {
+        "primaryKey": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the columns that uniquely identify the record throughout its lifetime"
+        }
+      }
     }
   },
   "oneOf": [
@@ -61,6 +95,12 @@
     },
     {
       "$ref": "#/$defs/Snapshot"
+    },
+    {
+      "$ref": "#/$defs/ChangelogStream"
+    },
+    {
+      "$ref": "#/$defs/UpsertStream"
     }
   ]
 }

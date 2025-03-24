@@ -1961,6 +1961,8 @@ Merge strategy determines how newly ingested data should be combined with the da
 | [MergeStrategy::Append](#mergestrategy-append-schema) | Append merge strategy.<br/><br/>Under this strategy new data will be appended to the dataset in its entirety, without any deduplication. |
 | [MergeStrategy::Ledger](#mergestrategy-ledger-schema) | Ledger merge strategy.<br/><br/>This strategy should be used for data sources containing ledgers of events. Currently this strategy will only perform deduplication of events using user-specified primary key columns. This means that the source data can contain partially overlapping set of records and only those records that were not previously seen will be appended. |
 | [MergeStrategy::Snapshot](#mergestrategy-snapshot-schema) | Snapshot merge strategy.<br/><br/>This strategy can be used for data state snapshots that are taken periodically and contain only the latest state of the observed entity or system. Over time such snapshots can have new rows added, and old rows either removed or modified.<br/><br/>This strategy transforms snapshot data into an append-only event stream where data already added is immutable. It does so by performing Change Data Capture - essentially diffing the current state of data against the reconstructed previous state and recording differences as retractions or corrections. The Operation Type "op" column will contain:<br/>  - append (`+A`) when a row appears for the first time<br/>  - retraction (`-D`) when row disappears<br/>  - correction (`-C`, `+C`) when row data has changed, with `-C` event carrying the old value of the row and `+C` carrying the new value.<br/><br/>To correctly associate rows between old and new snapshots this strategy relies on user-specified primary key columns.<br/><br/>To identify whether a row has changed this strategy will compare all other columns one by one. If the data contains a column that is guaranteed to change whenever any of the data columns changes (for example a last modification timestamp, an incremental version, or a data hash), then it can be specified in `compareColumns` property to speed up the detection of modified rows. |
+| [MergeStrategy::ChangelogStream](#mergestrategy-changelogstream-schema) | Changelog stream merge strategy.<br/><br/>This is the native stream format for ODF that accurately describes the evolution of all event records including appends, retractions, and corrections as per RFC-015. No pre-processing except for format validation is done. |
+| [MergeStrategy::UpsertStream](#mergestrategy-upsertstream-schema) | Upsert stream merge strategy.<br/><br/>This strategy should be used for data sources containing ledgers of insert-or-update and delete events. Unlike ChangelogStream the insert-or-update events only carry the new values, so this strategy will use primary key to re-classify the events into an append or a correction from/to pair, looking up the previous values. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1974,6 +1976,20 @@ Under this strategy new data will be appended to the dataset in its entirety, wi
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="mergestrategy-changelogstream-schema"></a>
+##### MergeStrategy::ChangelogStream
+Changelog stream merge strategy.
+
+This is the native stream format for ODF that accurately describes the evolution of all event records including appends, retractions, and corrections as per RFC-015. No pre-processing except for format validation is done.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2012,6 +2028,20 @@ To identify whether a row has changed this strategy will compare all other colum
 | :---: | :---: | :---: | :---: | --- |
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime. |
 | `compareColumns` | array(`string`) |  |  | Names of the columns to compared to determine if a row has changed between two snapshots. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="mergestrategy-upsertstream-schema"></a>
+##### MergeStrategy::UpsertStream
+Upsert stream merge strategy.
+
+This strategy should be used for data sources containing ledgers of insert-or-update and delete events. Unlike ChangelogStream the insert-or-update events only carry the new values, so this strategy will use primary key to re-classify the events into an append or a correction from/to pair, looking up the previous values.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
