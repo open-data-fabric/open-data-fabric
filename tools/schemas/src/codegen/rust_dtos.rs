@@ -116,7 +116,12 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    writeln!(w, "#[derive(Clone, Copy, PartialEq, Eq, Debug)]")?;
+    if typ.id.name == "DatasetKind" {
+        // TODO: Introduce `extra_derives`
+        writeln!(w, "#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]")?;
+    } else {
+        writeln!(w, "#[derive(Clone, Copy, PartialEq, Eq, Debug)]")?;
+    }
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
     for variant in &typ.variants {
         writeln!(w, "{variant},")?;
