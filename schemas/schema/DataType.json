@@ -1,0 +1,359 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DataType",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines a logical type of the field. Logical type determines the semantics and boudaries of a type and how it can be operated on, without a concern about encoding and physical layout of the data in chunks.",
+  "$defs": {
+    "Binary": {
+      "description": "A sequence of bytes. Used for arbitrary binary data.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "fixedLength": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Number of bytes per value for fixed-size binary. If omitted, the binary is variable-length."
+        }
+      }
+    },
+    "Bool": {
+      "description": "A boolean value representing true or false.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Date": {
+      "description": "A calendar date.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Decimal": {
+      "description": "A fixed-point decimal number with a specified precision and scale.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "precision",
+        "scale"
+      ],
+      "properties": {
+        "precision": {
+          "type": "integer",
+          "format": "uint32",
+          "description": "Total number of decimal digits that can be stored."
+        },
+        "scale": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of digits after the decimal point. In certain situations, scale could be negative number. For negative scale, it is the number of padding 0 to the right of the digits.\n\nFor example the number 12300 could be treated as a decimal has precision 3 and scale -2."
+        }
+      }
+    },
+    "Duration": {
+      "description": "An elapsed time interval with a specified time unit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit"
+      ],
+      "properties": {
+        "unit": {
+          "$ref": "/schemas/TimeUnit",
+          "description": "The unit of the duration measurement."
+        }
+      }
+    },
+    "Float16": {
+      "description": "A floating-point number.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Float32": {
+      "description": "A floating-point number.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Float64": {
+      "description": "A floating-point number.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Int8": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Int16": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Int32": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Int64": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "UInt8": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "UInt16": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "UInt32": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "UInt64": {
+      "description": "An integer value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "List": {
+      "description": "A list of values, all having the same data type.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "itemType"
+      ],
+      "properties": {
+        "itemType": {
+          "$ref": "/schemas/DataType",
+          "description": "Data type of list items.",
+          "codegen": {
+            "rust": {
+              "container": "Box"
+            }
+          }
+        },
+        "fixedLength": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Number of list items per value for fixed-size lists. If omitted, the list is variable-length."
+        }
+      }
+    },
+    "Map": {
+      "description": "A map of key-value pairs, represented as a list of entries (structs with key and value fields).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyType",
+        "valueType"
+      ],
+      "properties": {
+        "keyType": {
+          "$ref": "/schemas/DataType",
+          "description": "Data type of the map's keys.",
+          "codegen": {
+            "rust": {
+              "container": "Box"
+            }
+          }
+        },
+        "valueType": {
+          "$ref": "/schemas/DataType",
+          "description": "Data type of the map's values.",
+          "codegen": {
+            "rust": {
+              "container": "Box"
+            }
+          }
+        },
+        "keysSorted": {
+          "type": "boolean",
+          "description": "Set to true if the keys within each value are sorted."
+        }
+      }
+    },
+    "Null": {
+      "description": "A type representing the absence of a value (null).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "Option": {
+      "description": "A type representing an optional (nullable) value of another data type.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inner"
+      ],
+      "properties": {
+        "inner": {
+          "$ref": "/schemas/DataType",
+          "description": "Inner data type for the optional value.",
+          "codegen": {
+            "rust": {
+              "container": "Box"
+            }
+          }
+        }
+      }
+    },
+    "Struct": {
+      "description": "A collection of named fields, each with its own data type.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fields"
+      ],
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "/schemas/DataField"
+          },
+          "description": "Fields that make up the struct."
+        }
+      }
+    },
+    "Time": {
+      "description": "A time of day value, without a date, with a specified unit of granularity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit"
+      ],
+      "properties": {
+        "unit": {
+          "$ref": "/schemas/TimeUnit",
+          "description": "The unit of the time value."
+        }
+      }
+    },
+    "Timestamp": {
+      "description": "A point in time, represented as an offset from the Unix epoch, with optional timezone.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit"
+      ],
+      "properties": {
+        "unit": {
+          "$ref": "/schemas/TimeUnit",
+          "description": "The unit of the timestamp value that determines its precision."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "The timezone is an optional string indicating the name of a timezone\none of\n\n* As used in the Olson timezone database (the \"tz database\" or\n  \"tzdata\"), such as \"America/New_York\".\n* An absolute timezone offset of the form \"+XX:XX\" or \"-XX:XX\",\n  such as \"+07:30\".\n\nWhether a timezone string is present indicates different semantics about\nthe data (see above)."
+        }
+      }
+    },
+    "String": {
+      "description": "A Unicode string.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Binary"
+    },
+    {
+      "$ref": "#/$defs/Bool"
+    },
+    {
+      "$ref": "#/$defs/Date"
+    },
+    {
+      "$ref": "#/$defs/Decimal"
+    },
+    {
+      "$ref": "#/$defs/Duration"
+    },
+    {
+      "$ref": "#/$defs/Float16"
+    },
+    {
+      "$ref": "#/$defs/Float32"
+    },
+    {
+      "$ref": "#/$defs/Float64"
+    },
+    {
+      "$ref": "#/$defs/Int8"
+    },
+    {
+      "$ref": "#/$defs/Int16"
+    },
+    {
+      "$ref": "#/$defs/Int32"
+    },
+    {
+      "$ref": "#/$defs/Int64"
+    },
+    {
+      "$ref": "#/$defs/UInt8"
+    },
+    {
+      "$ref": "#/$defs/UInt16"
+    },
+    {
+      "$ref": "#/$defs/UInt32"
+    },
+    {
+      "$ref": "#/$defs/UInt64"
+    },
+    {
+      "$ref": "#/$defs/List"
+    },
+    {
+      "$ref": "#/$defs/Map"
+    },
+    {
+      "$ref": "#/$defs/Null"
+    },
+    {
+      "$ref": "#/$defs/Option"
+    },
+    {
+      "$ref": "#/$defs/Struct"
+    },
+    {
+      "$ref": "#/$defs/Time"
+    },
+    {
+      "$ref": "#/$defs/Timestamp"
+    },
+    {
+      "$ref": "#/$defs/String"
+    }
+  ]
+}

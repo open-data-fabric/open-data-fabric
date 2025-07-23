@@ -15,13 +15,13 @@ DIAGRAMS = $(subst src/images,images,$(patsubst %.puml, %.svg, $(DIAGRAMS_SRC)))
 DIAGRAMS_SRC_RAW = $(wildcard src/images/*.svg)
 DIAGRAMS_RAW = $(subst src/images,images,$(DIAGRAMS_SRC_RAW))
 
-SCHEMAS_SRC = $(wildcard schemas/**/*.json)
-SCHEMAS_UTILS_SRC = $(wildcard tools/schemas/**/*.rs)
+SCHEMAS_SRC = $(shell find schemas/ -type f -name '*.json')
+SCHEMAS_UTILS_SRC = $(shell find tools/schemas/ -type f -name '*.rs')
 
 SCHEMA_MARKDOWN = build/metadata-reference.md
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
 
-all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) $(SCHEMA_MARKDOWN) $(SCHEMA_FLATBUFFERS) open-data-fabric.md
+all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) schema-lint $(SCHEMA_FLATBUFFERS) $(SCHEMA_MARKDOWN) open-data-fabric.md
 
 build/:
 	mkdir -p build/
@@ -31,6 +31,9 @@ $(DIAGRAMS): images/%.svg: src/images/%.puml
 
 $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 	cp $^ $@
+
+schema-lint: $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
+	cargo run -q -- lint
 
 $(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
 	cargo run -q -- codegen markdown > $@
@@ -52,3 +55,13 @@ lint:
 .PHONY: clean
 clean:
 	rm -rf build/ open-data-fabric.md
+
+
+# Image with all tools pre-installed
+.PHONY: image
+image:
+	cd tools/image && $(RUNTIME) build -t odf-dev .
+
+.PHONY: all-in-container
+all-in-container:
+	$(RUNTIME) run --rm -v "$(PWD)":/workspace odf-dev make

@@ -13,22 +13,18 @@
   "properties": {
     "offsetColumn": {
       "type": "string",
-      "default": "offset",
       "description": "Name of the offset column."
     },
     "operationTypeColumn": {
       "type": "string",
-      "default": "op",
       "description": "Name of the operation type column."
     },
     "systemTimeColumn": {
       "type": "string",
-      "default": "system_time",
       "description": "Name of the system time column."
     },
     "eventTimeColumn": {
       "type": "string",
-      "default": "event_time",
       "description": "Name of the event time column."
     }
   }

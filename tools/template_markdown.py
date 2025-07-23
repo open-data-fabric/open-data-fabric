@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import re
 
 INLINE_MARKDOWN = re.compile(r"!\[.*\]\((.+.md)\)")

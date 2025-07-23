@@ -1,0 +1,13 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/TimeUnit",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines the unit of measurement of time",
+  "type": "string",
+  "format": "int16",
+  "enum": [
+    "Second", 
+    "Millisecond", 
+    "Microsecond", 
+    "Nanosecond"
+  ]
+}

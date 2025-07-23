@@ -1,5 +1,7 @@
+use crate::codegen::rust_common::format_ident;
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
+use std::borrow::Cow;
 use std::io::Write;
 
 const SPEC_URL: &str =
@@ -120,18 +122,13 @@ impl Helpers {
         }
     }
 
-    fn is_struct_id(&self, id: &model::TypeId) -> bool {
-        match self.model.types.get(id).unwrap() {
-            model::TypeDefinition::Struct(_) => true,
-            _ => false,
-        }
-    }
-
     fn is_integer(&self, typ: &model::Type) -> bool {
         match typ {
-            model::Type::Int16
+            model::Type::Int8
+            | model::Type::Int16
             | model::Type::Int32
             | model::Type::Int64
+            | model::Type::UInt8
             | model::Type::UInt16
             | model::Type::UInt32
             | model::Type::UInt64 => true,
@@ -149,6 +146,13 @@ impl Helpers {
             | model::Type::Url
             | model::Type::Array(_)
             | model::Type::Custom(_) => false,
+        }
+    }
+
+    fn is_boolean(&self, typ: &model::Type) -> bool {
+        match typ {
+            model::Type::Boolean => true,
+            _ => false,
         }
     }
 }
@@ -175,20 +179,27 @@ fn render_impl(
             continue;
         }
 
-        writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+        writeln!(
+            w,
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+        )?;
         writeln!(w, "// {}", typ.id().join(""))?;
         writeln!(
             w,
             "// {SPEC_URL}#{}-schema",
             typ.id().join("").to_lowercase()
         )?;
-        writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+        writeln!(
+            w,
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+        )?;
         writeln!(w, "")?;
 
         match &typ {
             model::TypeDefinition::Struct(t) => render_struct(t, &helpers, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
+            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
         }
         writeln!(w)?;
     }
@@ -260,7 +271,7 @@ fn render_field_pre_ser(
     helpers: &Helpers,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<bool, std::io::Error> {
-    let name = &field.name;
+    let name = format_ident(&field.name);
 
     if field.optional {
         let mut buf = Vec::<u8>::new();
@@ -276,7 +287,7 @@ fn render_field_pre_ser(
     } else {
         let mut buf = Vec::<u8>::new();
         format_pre_ser_type(
-            format!("self.{}", field.name),
+            format!("self.{}", format_ident(&field.name)),
             &field.typ,
             helpers,
             &mut buf,
@@ -298,11 +309,15 @@ fn format_pre_ser_type(
     helpers: &Helpers,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
+    let name = format_ident(&name);
+
     match typ {
         model::Type::Boolean
+        | model::Type::Int8
         | model::Type::Int16
         | model::Type::Int32
         | model::Type::Int64
+        | model::Type::UInt8
         | model::Type::UInt16
         | model::Type::UInt32
         | model::Type::UInt64
@@ -356,18 +371,22 @@ fn render_field_ser(
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
     let name = &field.name;
+    let accessor = format_accessor(name);
 
     if preserialized {
         if !field.optional {
             if helpers.is_union(&field.typ) {
                 writeln!(w, "builder.add_{name}_type({name}_offset.0);")?;
-                writeln!(w, "builder.add_{name}({name}_offset.1);")?;
+                writeln!(w, "builder.add_{accessor}({name}_offset.1);")?;
             } else {
-                writeln!(w, "builder.add_{name}({name}_offset);")?;
+                writeln!(w, "builder.add_{accessor}({name}_offset);")?;
             }
         } else {
             if helpers.is_union(&field.typ) {
-                writeln!(w, "{name}_offset.map(|(e, off)| {{ builder.add_{name}_type(e); builder.add_{name}(off) }});")?;
+                writeln!(
+                    w,
+                    "{name}_offset.map(|(e, off)| {{ builder.add_{name}_type(e); builder.add_{name}(off) }});"
+                )?;
             } else {
                 writeln!(w, "{name}_offset.map(|off| builder.add_{name}(off));")?;
             }
@@ -394,9 +413,11 @@ fn render_type_ser(
 ) -> Result<(), std::io::Error> {
     match typ {
         model::Type::Boolean
+        | model::Type::Int8
         | model::Type::Int16
         | model::Type::Int32
         | model::Type::Int64
+        | model::Type::UInt8
         | model::Type::UInt16
         | model::Type::UInt32
         | model::Type::UInt64 => writeln!(w, "{name}")?,
@@ -429,19 +450,32 @@ fn render_field_de(
     helpers: &Helpers,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    let name = &field.name;
+    let name = format_ident(&field.name);
+    let accessor = format_accessor(&field.name);
+
+    let container = field
+        .codegen_hints
+        .get("rust")
+        .and_then(|m| m.get("container"));
 
     writeln!(w, "{name}:")?;
-    if !field.optional && (helpers.is_enum(&field.typ) || helpers.is_integer(&field.typ)) {
+    if !field.optional
+        && (helpers.is_enum(&field.typ)
+            || helpers.is_integer(&field.typ)
+            || helpers.is_boolean(&field.typ))
+    {
         render_type_de(
-            format!("proxy.{name}()"),
+            format!("proxy.{accessor}()"),
             &field.typ,
             format!("proxy.{name}_type()"),
             helpers,
             w,
         )?;
     } else {
-        writeln!(w, "proxy.{name}().map(|v| {{")?;
+        writeln!(w, "proxy.{accessor}().map(|v| {{")?;
+        if let Some(container) = container {
+            writeln!(w, "{container}::new(")?;
+        }
         render_type_de(
             format!("v"),
             &field.typ,
@@ -449,6 +483,9 @@ fn render_field_de(
             helpers,
             w,
         )?;
+        if container.is_some() {
+            writeln!(w, ")")?;
+        }
         writeln!(w, "}})")?;
         if !field.optional {
             writeln!(w, ".unwrap()")?;
@@ -467,9 +504,11 @@ fn render_type_de(
 ) -> Result<(), std::io::Error> {
     match typ {
         model::Type::Boolean
+        | model::Type::Int8
         | model::Type::Int16
         | model::Type::Int32
         | model::Type::Int64
+        | model::Type::UInt8
         | model::Type::UInt16
         | model::Type::UInt32
         | model::Type::UInt64 => writeln!(w, "{name}")?,
@@ -503,17 +542,17 @@ fn render_type_de(
             }
             writeln!(w, ").collect()")?;
         }
-        model::Type::Custom(type_id) if helpers.is_enum_id(type_id) => {
-            writeln!(w, "{name}.into()")?
-        }
-        model::Type::Custom(type_id) if helpers.is_struct_id(type_id) => {
-            writeln!(w, "odf::{}::deserialize({name})", type_id.join(""))?
-        }
-        model::Type::Custom(type_id) => writeln!(
-            w,
-            "odf::{}::deserialize({name}, {enum_t_accessor})",
-            type_id.join("")
-        )?,
+        model::Type::Custom(type_id) => match helpers.model.types.get(type_id).unwrap() {
+            model::TypeDefinition::Enum(_) => writeln!(w, "{name}.into()")?,
+            model::TypeDefinition::Struct(_) | model::TypeDefinition::Extensions(_) => {
+                writeln!(w, "odf::{}::deserialize({name})", type_id.join(""))?
+            }
+            model::TypeDefinition::Union(_) => writeln!(
+                w,
+                "odf::{}::deserialize({name}, {enum_t_accessor})",
+                type_id.join("")
+            )?,
+        },
     }
     Ok(())
 }
@@ -530,7 +569,10 @@ fn render_union(
         w,
         "impl<'fb> FlatbuffersEnumSerializable<'fb, fb::{name}> for odf::{name} {{"
     )?;
-    writeln!(w, "fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (fb::{name}, WIPOffset<UnionWIPOffset>) {{")?;
+    writeln!(
+        w,
+        "fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> (fb::{name}, WIPOffset<UnionWIPOffset>) {{"
+    )?;
     writeln!(w, "match self {{")?;
 
     for variant in &typ.variants {
@@ -604,6 +646,63 @@ fn render_enum(
     writeln!(w, "}}")?;
 
     Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn render_extensions(
+    typ: &model::Extensions,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let name = typ.id.join("");
+
+    writeln!(
+        w,
+        "impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{"
+    )?;
+    writeln!(w, "type OffsetT = WIPOffset<fb::{name}<'fb>>;")?;
+    writeln!(w)?;
+    writeln!(
+        w,
+        "fn serialize(&self, fb: &mut FlatBufferBuilder <'fb>) -> Self::OffsetT {{"
+    )?;
+
+    writeln!(
+        w,
+        "let attributes_offset = fb.create_string(&serde_json::to_string(&self.attributes).unwrap());"
+    )?;
+    writeln!(w, "let mut builder = fb::{name}Builder::new(fb);")?;
+    writeln!(w, "builder.add_attributes(attributes_offset);")?;
+
+    writeln!(w, "builder.finish()")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w)?;
+
+    writeln!(
+        w,
+        "impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{"
+    )?;
+    writeln!(w, "fn deserialize(proxy: fb::{name}<'fb>) -> Self {{")?;
+    writeln!(
+        w,
+        "let attributes = serde_json::from_str(proxy.attributes().unwrap()).unwrap();"
+    )?;
+    writeln!(w, "odf::{name} {{")?;
+    writeln!(w, "attributes")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn format_accessor<'a>(ident: &'a str) -> Cow<'a, str> {
+    match ident {
+        "type" => "type_".into(),
+        _ => Cow::Borrowed(ident),
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

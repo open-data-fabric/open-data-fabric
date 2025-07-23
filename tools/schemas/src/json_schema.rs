@@ -27,6 +27,8 @@ pub struct Schema {
 
     pub properties: Option<IndexMap<String, Schema>>,
 
+    pub pattern_properties: Option<IndexMap<String, Schema>>,
+
     pub additional_properties: Option<bool>,
 
     pub one_of: Option<Vec<Schema>>,
@@ -44,6 +46,15 @@ pub struct Schema {
     pub default: Option<serde_json::Value>,
 
     pub description: Option<String>,
+
+    /// Serialization tag used to preserve binary compatiblity when evolving the schemas
+    pub tag: Option<u32>,
+
+    /// Code generation hints per language
+    pub codegen: Option<IndexMap<String, IndexMap<String, String>>>,
+
+    /// Marks schema as deprecated
+    pub deprecated: Option<bool>,
 
     pub examples: Option<Vec<serde_json::Value>>,
 
@@ -107,68 +118,88 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn check_referential_integrity(schemas: &[Schema], roots: &[String]) {
-    let schemas: HashMap<String, &Schema> = schemas
-        .iter()
-        .map(|s| {
-            (
-                s.id.as_ref()
-                    .unwrap()
-                    .rsplit_once('/')
-                    .unwrap()
-                    .1
-                    .to_string(),
-                s,
-            )
-        })
-        .collect();
+pub fn check_referential_integrity(top_level_schemas: &[Schema], roots: &[String]) {
+    let mut schemas = HashMap::new();
 
-    let mut unexplored = Vec::new();
-    let mut explored = HashSet::new();
-
-    for root in roots {
-        unexplored.push(
-            *schemas
-                .get(root)
-                .expect(&format!("Could not find root schema {}", root)),
-        );
+    // Add top-level schemas
+    for s in top_level_schemas {
+        let id = crate::model::schema_id_to_type_id(s.id.as_deref().unwrap_or_default());
+        schemas.insert(id, s);
     }
 
-    while !unexplored.is_empty() {
-        let schema = unexplored.pop().unwrap();
-        explored.insert(
-            schema
-                .id
-                .as_ref()
-                .unwrap()
-                .rsplit_once('/')
-                .unwrap()
-                .1
-                .to_string(),
-        );
+    // Add all defs
+    for s in top_level_schemas {
+        let id = crate::model::schema_id_to_type_id(s.id.as_deref().unwrap_or_default());
 
-        for reff in extract_refs(schema) {
-            match reff {
-                Ref::Global(name) => {
-                    if !explored.contains(&name) {
-                        unexplored.push(
-                            *schemas
-                                .get(&name)
-                                .expect(&format!("Refereced schema {name} not found")),
-                        );
-                    }
-                }
-                Ref::Def(_name) => {
-                    // TODO: check all definitions are used
-                }
+        if let Some(defs) = &s.defs {
+            for (name, ds) in defs {
+                let did = id.subtype(name);
+                schemas.insert(did, ds);
             }
         }
     }
 
-    for name in schemas.keys() {
-        if !explored.contains(name) {
-            panic!("Schema {} is never used", name);
+    let mut to_explore = Vec::new();
+    let mut explored = HashSet::new();
+
+    // Seed `to_explore` with provided known roots
+    for root in roots {
+        let id = crate::model::TypeId::new_root(root);
+        let schema = schemas
+            .get(&id)
+            .expect(&format!("Could not find specified root schema: {}", root));
+
+        to_explore.push((id, *schema));
+    }
+
+    // Start exploring the reference graph
+    while !to_explore.is_empty() {
+        let (id, schema) = to_explore.pop().unwrap();
+
+        explored.insert(id.clone());
+
+        for reff in extract_refs(schema) {
+            let ref_id = match reff {
+                Ref::Global {
+                    schema_id,
+                    subschema_def: None,
+                } => crate::model::TypeId {
+                    parent: None,
+                    name: schema_id,
+                },
+                Ref::Global {
+                    schema_id,
+                    subschema_def: Some(subschema_def),
+                } => crate::model::TypeId {
+                    parent: Some(Box::new(crate::model::TypeId::new_root(schema_id))),
+                    name: subschema_def,
+                },
+                Ref::Def(name) => id.root().subtype(name),
+            };
+
+            if !explored.contains(&ref_id) {
+                let schema = schemas.get(&ref_id).expect(&format!(
+                    "Schema {} referenced by {} not found",
+                    ref_id.join("::"),
+                    id.join("::")
+                ));
+
+                to_explore.push((ref_id, schema));
+            }
         }
+    }
+
+    let unused_schemas: Vec<_> = schemas
+        .keys()
+        .filter(|name| !explored.contains(*name))
+        .map(|id| id.join("::").to_string())
+        .collect();
+
+    if !unused_schemas.is_empty() {
+        panic!(
+            "Some schemas are never used:\n  {}",
+            unused_schemas.join("\n  ")
+        );
     }
 }
 
@@ -177,6 +208,12 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
 
     if let Some(properties) = &schema.properties {
         for prop in properties.values() {
+            refs.extend(extract_refs(prop));
+        }
+    }
+
+    if let Some(pattern_properties) = &schema.pattern_properties {
+        for prop in pattern_properties.values() {
             refs.extend(extract_refs(prop));
         }
     }
@@ -195,18 +232,28 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
         refs.extend(extract_refs(item_schema));
     }
 
-    if let Some(defs) = &schema.defs {
-        for def in defs.values() {
-            refs.extend(extract_refs(def));
-        }
-    }
+    // if let Some(defs) = &schema.defs {
+    //     for def in defs.values() {
+    //         refs.extend(extract_refs(def));
+    //     }
+    // }
 
     refs
 }
 
 fn decode_ref(reff: &str) -> Ref {
     if let Some(global) = reff.strip_prefix("/schemas/") {
-        Ref::Global(global.to_string())
+        if let Some((global, local)) = global.split_once("#/$defs/") {
+            Ref::Global {
+                schema_id: global.to_string(),
+                subschema_def: Some(local.to_string()),
+            }
+        } else {
+            Ref::Global {
+                schema_id: global.to_string(),
+                subschema_def: None,
+            }
+        }
     } else if let Some(local) = reff.strip_prefix("#/$defs/") {
         Ref::Def(local.to_string())
     } else {
@@ -215,6 +262,9 @@ fn decode_ref(reff: &str) -> Ref {
 }
 
 enum Ref {
-    Global(String),
+    Global {
+        schema_id: String,
+        subschema_def: Option<String>,
+    },
     Def(String),
 }

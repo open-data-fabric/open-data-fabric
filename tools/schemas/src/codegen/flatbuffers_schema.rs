@@ -43,7 +43,10 @@ fn render_impl(
 
     for typ in in_dependency_order(&model) {
         if !wrappers.contains(typ.id()) && !roots.contains(typ.id()) {
-            writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+            writeln!(
+                w,
+                "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+            )?;
             writeln!(w, "// {}", typ.id().join(""))?;
             render_description(typ.description(), None, None, w)?;
             writeln!(w, "//")?;
@@ -52,7 +55,10 @@ fn render_impl(
                 "// See: {SPEC_URL}#{}-schema",
                 typ.id().join("").to_lowercase()
             )?;
-            writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+            writeln!(
+                w,
+                "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+            )?;
             writeln!(w, "")?;
         }
 
@@ -60,6 +66,7 @@ fn render_impl(
             model::TypeDefinition::Struct(t) => render_struct(t, &model, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
+            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
         }
         writeln!(w, "")?;
     }
@@ -92,7 +99,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
             if let model::TypeDefinition::Union(_) = item_type {
                 // Create a wrapper type
                 let wrapper_type_id = model::TypeId {
-                    namespace: None,
+                    parent: None,
                     name: format!("{}Wrapper", item_type.id().join("")),
                 };
                 let wrapper_type = model::TypeDefinition::Struct(model::Struct {
@@ -102,10 +109,14 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                         model::Field {
                             name: "value".to_string(),
                             typ: model::Type::Custom(item_type_name.clone()),
+                            validations: Vec::new(),
                             optional: false,
                             description: String::new(),
+                            explicit_tag: None,
                             default: None,
                             examples: None,
+                            deprecated: false,
+                            codegen_hints: Default::default(),
                         },
                     )]),
                     description: String::new(),
@@ -177,7 +188,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
     for root in &root_unions {
         let wrapper_type = model::TypeDefinition::Struct(model::Struct {
             id: model::TypeId {
-                namespace: None,
+                parent: None,
                 name: format!("{}Root", root.name),
             },
             fields: IndexMap::from([(
@@ -185,10 +196,14 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
                 model::Field {
                     name: "value".to_string(),
                     typ: model::Type::Custom(root.clone()),
+                    validations: Vec::new(),
                     optional: false,
                     description: String::new(),
+                    explicit_tag: None,
                     default: None,
                     examples: None,
+                    deprecated: false,
+                    codegen_hints: Default::default(),
                 },
             )]),
             description: String::new(),
@@ -233,8 +248,15 @@ fn in_dependency_order_rec(
             for field in t.fields.values() {
                 in_dependency_order_rec_t(&field.typ, model, visited, res)
             }
+
+            // Order struct field types before the struct
+            res.push(typ.clone());
         }
         model::TypeDefinition::Union(type_union) => {
+            // Order union before its variants, because flatc is a poorly maintained turd
+            // See: https://github.com/google/flatbuffers/issues/4725
+            res.push(typ.clone());
+
             for variant in &type_union.variants {
                 in_dependency_order_rec_t(
                     &model::Type::Custom(variant.clone()),
@@ -244,10 +266,10 @@ fn in_dependency_order_rec(
                 )
             }
         }
-        model::TypeDefinition::Enum(_) => (),
+        model::TypeDefinition::Enum(_) | model::TypeDefinition::Extensions(_) => {
+            res.push(typ.clone());
+        }
     }
-
-    res.push(typ.clone());
 }
 
 fn in_dependency_order_rec_t(
@@ -257,8 +279,12 @@ fn in_dependency_order_rec_t(
     res: &mut Vec<model::TypeDefinition>,
 ) {
     match typ {
-        model::Type::Custom(name) => {
-            let typ = model.types.get(&name).unwrap();
+        model::Type::Custom(id) => {
+            let typ = model
+                .types
+                .get(&id)
+                .expect(&format!("Expected to find type {id:?}"));
+
             in_dependency_order_rec(&typ, model, visited, res);
         }
         model::Type::Array(t) => {
@@ -275,10 +301,16 @@ fn render_struct(
     model: &model::Model,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
+    let fields_with_tags = allocate_struct_field_ids(typ, model);
+
     writeln!(w, "table {} {{", typ.id.join(""))?;
     {
         let mut i = w.indent();
-        for field in typ.fields.values() {
+        for field in fields_with_tags {
+            let id = field.id;
+            let deprecated = field.deprecated;
+            let field = field.field;
+
             render_description(
                 &field.description,
                 field.default.as_ref(),
@@ -291,9 +323,14 @@ fn render_struct(
                 (
                     true,
                     model::Type::Boolean
+                    | model::Type::Int8
+                    | model::Type::Int16
+                    | model::Type::Int32
+                    | model::Type::Int64
+                    | model::Type::UInt8
+                    | model::Type::UInt16
                     | model::Type::UInt32
-                    | model::Type::UInt64
-                    | model::Type::Int32,
+                    | model::Type::UInt64,
                 ) => " = null",
                 (true, model::Type::Custom(name)) => match model.types.get(&name).unwrap() {
                     model::TypeDefinition::Enum(_) => " = null",
@@ -302,12 +339,33 @@ fn render_struct(
                 _ => "",
             };
 
+            let mut attributes = Vec::new();
+            if let Some(tag) = id {
+                let hint = match &field.typ {
+                    model::Type::Custom(fid) => match &model.types[fid] {
+                        model::TypeDefinition::Union(_) => " /* union takes 2 slots */",
+                        _ => "",
+                    },
+                    _ => "",
+                };
+                attributes.push(format!("id: {tag}{hint}"));
+            }
+            if deprecated {
+                attributes.push("deprecated".to_string());
+            };
+            let attributes = if attributes.is_empty() {
+                String::new()
+            } else {
+                format!(" ({})", attributes.join(", "))
+            };
+
             writeln!(
                 i,
-                "{}: {}{};",
+                "{}: {}{}{};",
                 field.name,
                 format_type(&field.typ),
-                optionality_modifier
+                optionality_modifier,
+                attributes,
             )?;
         }
     }
@@ -340,7 +398,12 @@ fn render_enum(
     typ: &model::Enum,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    writeln!(w, "enum {}: int32 {{", typ.id.join(""))?;
+    writeln!(
+        w,
+        "enum {}: {} {{",
+        typ.id.join(""),
+        format_type(&typ.format)
+    )?;
     {
         let mut i = w.indent();
         for variant in &typ.variants {
@@ -354,12 +417,30 @@ fn render_enum(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn render_extensions(
+    typ: &model::Extensions,
+    w: &mut IndentWriter<&mut dyn std::io::Write>,
+) -> Result<(), std::io::Error> {
+    writeln!(w, "table {} {{", typ.id.join(""))?;
+    {
+        let mut i = w.indent();
+        writeln!(i, "// JSON encoded")?;
+        writeln!(i, "attributes: string;")?;
+    }
+    writeln!(w, "}}")?;
+    Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 fn format_type(typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
+        model::Type::Int8 => format!("byte"),
         model::Type::Int16 => format!("int16"),
         model::Type::Int32 => format!("int32"),
         model::Type::Int64 => format!("int64"),
+        model::Type::UInt8 => format!("ubyte"),
         model::Type::UInt16 => format!("uint16"),
         model::Type::UInt32 => format!("uint32"),
         model::Type::UInt64 => format!("uint64"),
@@ -408,3 +489,95 @@ fn render_description(
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct FieldWithId {
+    field: model::Field,
+    id: Option<u32>,
+
+    // Note that this field is different from `Filed::deprecated`.
+    // In flatbuffers deprecation means that field accessors will
+    // not be generated, while in ODF we continue to generate accessors
+    // to allow applications to migrate.
+    deprecated: bool,
+}
+
+/// This process decides what tag should each schema field have. There are a few caveats:
+/// - Union type fields take up two tags, one for type another for value (see https://flatbuffers.dev/schema/#attributes).
+/// - All tags must be sequential and start with 0. In light of this we have to produce dummy fields in cases when explicit tag is used with a gap.
+fn allocate_struct_field_ids(typ: &model::Struct, model: &model::Model) -> Vec<FieldWithId> {
+    // No explicit tags - leave ids empty
+    if !typ.fields.values().any(|f| f.explicit_tag.is_some()) {
+        return typ
+            .fields
+            .values()
+            .map(|f| FieldWithId {
+                field: f.clone(),
+                id: None,
+                deprecated: false,
+            })
+            .collect();
+    }
+
+    let mut fields_with_ids = Vec::new();
+    let mut maybe_prev_id = None;
+    let mut maybe_prev_tag = None;
+
+    for f in typ.fields.values() {
+        let actual_tag = f.explicit_tag.unwrap();
+        let tag_delta = actual_tag - maybe_prev_tag.unwrap_or(0);
+
+        // Unions add implicit field and must specify the tag of the second one
+        let slots_per_field = match &f.typ {
+            model::Type::Custom(fid) => match &model.types[fid] {
+                model::TypeDefinition::Union(_) => 2,
+                _ => 1,
+            },
+            _ => 1,
+        };
+
+        let next_id = maybe_prev_id.map(|id| id + slots_per_field).unwrap_or(0);
+        let actual_id = maybe_prev_id.unwrap_or(0) + slots_per_field - 1 + tag_delta;
+
+        // If there is a gap - we have to pad it with dummy fields
+        for dummy_id in next_id..actual_id {
+            let dummy_field = model::Field {
+                name: format!("dummy_{dummy_id}"),
+                typ: model::Type::UInt8,
+                validations: Vec::new(),
+                optional: false,
+                description: if dummy_id == next_id {
+                    format!(
+                        "The following field(s) reserve IDs [{}..{}] for schema evolution.",
+                        next_id,
+                        actual_id - 1
+                    )
+                } else {
+                    String::new()
+                },
+                default: None,
+                examples: None,
+                explicit_tag: None,
+                // Marking dummy fields as deprecated ensures they cannot be assigned or read by accident
+                deprecated: true,
+                codegen_hints: Default::default(),
+            };
+
+            fields_with_ids.push(FieldWithId {
+                field: dummy_field,
+                id: Some(dummy_id),
+                deprecated: true,
+            });
+        }
+
+        fields_with_ids.push(FieldWithId {
+            field: f.clone(),
+            id: Some(actual_id),
+            deprecated: false,
+        });
+
+        maybe_prev_tag = Some(actual_tag);
+        maybe_prev_id = Some(actual_id);
+    }
+
+    fields_with_ids
+}

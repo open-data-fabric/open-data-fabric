@@ -1,0 +1,10 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/ExtraAttributes",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Container for custom key-value extension attributes. Every key must be in the form of `<domain>/<path>` (e.g. `kamu.dev/archetype`) in order to fully disambiguate the value in the face of multiple extensions. Values may be any valid JSON including nested objects.",
+  "type": "object",
+  "additionalProperties": false,
+  "patternProperties": {
+    "^[a-zA-Z0-9.-]+\\/[a-zA-Z0-9_-]+$": {}
+  }
+}

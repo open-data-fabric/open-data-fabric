@@ -1,4 +1,4 @@
-use crate::model;
+use crate::{codegen::rust_common::format_ident, model};
 use convert_case::{Case, Casing};
 
 const SPEC_URL: &str =
@@ -15,7 +15,7 @@ const PREAMBLE: &str = indoc::indoc!(
     #![allow(clippy::pedantic)]
 
     use std::path::PathBuf;
-    use super::formats::{base64, datetime_rfc3339, datetime_rfc3339_opt};
+    use super::formats::*;
     use crate::*;
     use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
     use chrono::{DateTime, Utc};
@@ -58,20 +58,27 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
-        writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+        writeln!(
+            w,
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+        )?;
         writeln!(w, "// {}", typ.id().join(""))?;
         writeln!(
             w,
             "// {SPEC_URL}#{}-schema",
             typ.id().join("").to_lowercase()
         )?;
-        writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+        writeln!(
+            w,
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+        )?;
         writeln!(w, "")?;
 
         match &typ {
             model::TypeDefinition::Struct(t) => render_struct(t, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
+            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
         }
         writeln!(w)?;
     }
@@ -85,10 +92,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
     writeln!(w, "#[serde_as]")?;
     writeln!(w, "#[skip_serializing_none]")?;
-    writeln!(
-        w,
-        "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]"
-    )?;
+    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
     writeln!(w, "#[serde(remote = \"{name}\")]")?;
     writeln!(
         w,
@@ -107,6 +111,11 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 }
 
 fn render_field(field: &model::Field, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let container = field
+        .codegen_hints
+        .get("rust")
+        .and_then(|m| m.get("container"));
+
     match &field.typ {
         model::Type::DateTime => {
             if field.optional {
@@ -116,7 +125,12 @@ fn render_field(field: &model::Field, w: &mut dyn std::io::Write) -> Result<(), 
             }
         }
         model::Type::Flatbuffers => {
-            writeln!(w, "#[serde(with = \"base64\")]")?;
+            if field.optional {
+                writeln!(w, "#[serde(with = \"base64_opt\")]")?;
+                writeln!(w, "#[serde(default)]")?;
+            } else {
+                writeln!(w, "#[serde(with = \"base64\")]")?;
+            }
         }
         model::Type::Array(arr) => match &*arr.item_type {
             model::Type::Custom(id) => {
@@ -130,24 +144,31 @@ fn render_field(field: &model::Field, w: &mut dyn std::io::Write) -> Result<(), 
             _ => (),
         },
         model::Type::Custom(id) => {
+            let mut serde_as = format!("{}Def", id.join(""));
+            if let Some(container) = container {
+                serde_as = format!("{container}<{serde_as}>");
+            }
             if field.optional {
-                writeln!(w, "#[serde_as(as = \"Option<{}Def>\")]", id.join(""))?;
+                serde_as = format!("Option<{serde_as}>");
+            }
+            writeln!(w, "#[serde_as(as = \"{serde_as}\")]")?;
+
+            if field.optional {
                 writeln!(w, "#[serde(default)]")?;
-            } else {
-                writeln!(w, "#[serde_as(as = \"{}Def\")]", id.join(""))?;
             }
         }
         _ => (),
     };
 
-    let typ = format_type(&field.typ);
-    let typ = if field.optional {
-        format!("Option<{typ}>")
-    } else {
-        typ
-    };
+    let mut typ = format_type(&field.typ);
+    if let Some(container) = container {
+        typ = format!("{container}<{typ}>");
+    }
+    if field.optional {
+        typ = format!("Option<{typ}>");
+    }
 
-    writeln!(w, "pub {}: {typ},", field.name)?;
+    writeln!(w, "pub {}: {typ},", format_ident(&field.name))?;
     Ok(())
 }
 
@@ -157,10 +178,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     let name = typ.id.join("");
 
     writeln!(w, "#[serde_as]")?;
-    writeln!(
-        w,
-        "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]"
-    )?;
+    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
     writeln!(w, "#[serde(remote = \"{name}\")]")?;
     writeln!(w, "#[serde(deny_unknown_fields, tag = \"kind\")]")?;
     writeln!(w, "pub enum {name}Def {{")?;
@@ -197,10 +215,7 @@ fn render_union_variant(
 fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
 
-    writeln!(
-        w,
-        "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]"
-    )?;
+    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
     writeln!(w, "#[serde(remote = \"{name}\")]")?;
     writeln!(w, "#[serde(deny_unknown_fields)]")?;
     writeln!(w, "pub enum {name}Def {{")?;
@@ -210,6 +225,33 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
             writeln!(w, "{variant},")?;
         }
     }
+    writeln!(w, "}}")?;
+    writeln!(w)?;
+    writeln!(w, "implement_serde_as!({name}, {name}Def, \"{name}Def\");")?;
+    Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn render_extensions(
+    typ: &model::Extensions,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let name = typ.id.join("");
+
+    writeln!(w, "#[serde_as]")?;
+    writeln!(w, "#[skip_serializing_none]")?;
+    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
+    writeln!(w, "#[serde(remote = \"{name}\")]")?;
+    writeln!(w, "pub struct {name}Def {{")?;
+
+    writeln!(w, "#[serde(flatten)]")?;
+    writeln!(w, "#[serde(with = \"map_value_limited_precision\")]")?;
+    writeln!(
+        w,
+        "pub attributes: serde_json::Map<String, serde_json::Value>,"
+    )?;
+
     writeln!(w, "}}")?;
     writeln!(w)?;
     writeln!(w, "implement_serde_as!({name}, {name}Def, \"{name}Def\");")?;
@@ -234,11 +276,6 @@ fn render_aliases(name: &str, w: &mut dyn std::io::Write) -> Result<(), std::io:
     }
     writeln!(w, ")]")?;
 
-    //writeln!(w, "#[serde(alias = \"{}\")]", varname.to_lowercase())?;
-    //writeln!(
-    //    w,
-    //    "{varname}(#[serde_as(as = \"{typename}Def\")] {typename}),"
-    //)?;
     Ok(())
 }
 
@@ -247,9 +284,11 @@ fn render_aliases(name: &str, w: &mut dyn std::io::Write) -> Result<(), std::io:
 fn format_type(typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
+        model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),
         model::Type::Int32 => format!("i32"),
         model::Type::Int64 => format!("i64"),
+        model::Type::UInt8 => format!("u8"),
         model::Type::UInt16 => format!("u16"),
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),

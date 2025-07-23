@@ -1,4 +1,4 @@
-use crate::model;
+use crate::{codegen::rust_common::format_ident, model};
 
 const SPEC_URL: &str =
     "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
@@ -137,15 +137,13 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
             r#"
             #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
             pub struct SetDataSchema {
-                pub schema: DataSchema,
+                pub schema: crate::prelude::DataSchema,
             }
 
             impl From<odf::metadata::SetDataSchema> for SetDataSchema {
                 fn from(v: odf::metadata::SetDataSchema) -> Self {
-                    // TODO: Error handling?
-                    // TODO: Externalize format decision?
-                    let arrow_schema = v.schema_as_arrow().unwrap();
-                    let schema = DataSchema::from_arrow_schema(&arrow_schema, DataSchemaFormat::ParquetJson);
+                    // TODO: Externalize format decision
+                    let schema = crate::prelude::DataSchema::new(std::sync::Arc::new(v.upgrade().schema), DataSchemaFormat::ParquetJson);
                     Self { schema }
                 }
             }
@@ -166,7 +164,15 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
-        writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+        // Schemas are represented in GQL via embedded content, so we don't generate types for those
+        if typ.category() == model::TypeCategory::DataSchema {
+            continue;
+        }
+
+        writeln!(
+            w,
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+        )?;
         writeln!(w)?;
         render_description(typ.description(), None, None, w)?;
         writeln!(w, "///")?;
@@ -183,6 +189,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 model::TypeDefinition::Struct(t) => render_struct(t, w)?,
                 model::TypeDefinition::Union(t) => render_union(t, w)?,
                 model::TypeDefinition::Enum(t) => render_enum(t, w)?,
+                model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
             }
         }
         writeln!(w)?;
@@ -209,16 +216,18 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
             field.examples.as_ref(),
             w,
         )?;
-        if !field.optional {
-            writeln!(w, "pub {}: {},", field.name, format_type(&field.typ))?;
-        } else {
-            writeln!(
-                w,
-                "pub {}: Option<{}>,",
-                field.name,
-                format_type(&field.typ)
-            )?;
+        let mut typ = format_type(&field.typ);
+        if let Some(container) = field
+            .codegen_hints
+            .get("rust")
+            .and_then(|m| m.get("container"))
+        {
+            typ = format!("{container}<{typ}>");
         }
+        if field.optional {
+            typ = format!("Option<{typ}>");
+        }
+        writeln!(w, "pub {}: {},", format_ident(&field.name), typ)?;
     }
 
     writeln!(w, "}}")?;
@@ -232,30 +241,39 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     }
 
     for field in typ.fields.values() {
-        let fname = &field.name;
+        let fname = format_ident(&field.name);
 
-        match &field.typ {
+        let container = field
+            .codegen_hints
+            .get("rust")
+            .and_then(|m| m.get("container"));
+
+        let convert = match &field.typ {
             model::Type::Array(_) => {
                 if !field.optional {
-                    writeln!(
-                        w,
-                        "{fname}: v.{fname}.into_iter().map(Into::into).collect(),"
-                    )?;
+                    format!("v.{fname}.into_iter().map(Into::into).collect()")
                 } else {
-                    writeln!(
-                        w,
-                        "{fname}: v.{fname}.map(|v| v.into_iter().map(Into::into).collect()),"
-                    )?;
+                    format!("v.{fname}.map(|v| v.into_iter().map(Into::into).collect())")
                 }
             }
             _ => {
                 if !field.optional {
-                    writeln!(w, "{fname}: v.{fname}.into(),")?;
+                    if let Some(container) = container {
+                        format!("{container}::new((*v.{fname}).into())")
+                    } else {
+                        format!("v.{fname}.into()")
+                    }
                 } else {
-                    writeln!(w, "{fname}: v.{fname}.map(Into::into),")?;
+                    if let Some(container) = container {
+                        format!("v.{fname}.map(|v| {container}::new((*v).into()))")
+                    } else {
+                        format!("v.{fname}.map(Into::into)")
+                    }
                 }
             }
-        }
+        };
+
+        writeln!(w, "{fname}: {convert},")?;
     }
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
@@ -329,12 +347,66 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn render_extensions(
+    typ: &model::Extensions,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let typ = typ.id.join("");
+
+    writeln!(
+        w,
+        r#"
+        #[nutype::nutype(derive(AsRef, Clone, Debug, Into, PartialEq, Eq))]
+        pub struct {typ}(serde_json::Map<String, serde_json::Value>);
+        impl Default for {typ} {{
+            fn default() -> Self {{
+                Self::new(Default::default())
+            }}
+        }}
+        impl From<odf::metadata::{typ}> for {typ} {{
+            fn from(value: odf::metadata::{typ}) -> Self {{
+                Self::new(value.attributes)
+            }}
+        }}
+        #[async_graphql::Scalar]
+        impl async_graphql::ScalarType for {typ} {{
+            fn parse(gql_value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {{
+                let async_graphql::Value::Object(gql_map) = &gql_value else {{
+                    return Err(async_graphql::InputValueError::custom(format!(
+                        "Invalid {typ} value: '{{gql_value}}'"
+                    )));
+                }};
+                let json_value = serde_json::to_value(gql_map)?;
+
+                let serde_json::Value::Object(json_map) = json_value else {{
+                    unreachable!()
+                }};
+
+                Ok(Self::new(json_map))
+            }}
+
+            fn to_value(&self) -> async_graphql::Value {{
+                match async_graphql::Value::from_json(serde_json::Value::Object(self.as_ref().clone())) {{
+                    Ok(v) => v,
+                    Err(e) => unreachable!("{{e}}"),
+                }}
+            }}
+        }}
+        "#
+    )?;
+    Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 fn format_type(typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
+        model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),
         model::Type::Int32 => format!("i32"),
         model::Type::Int64 => format!("i64"),
+        model::Type::UInt8 => format!("u8"),
         model::Type::UInt16 => format!("u16"),
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),

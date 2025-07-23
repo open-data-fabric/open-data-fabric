@@ -1,3 +1,4 @@
+use super::rust_common::format_ident;
 use crate::model;
 use convert_case::{Case, Casing};
 
@@ -33,7 +34,10 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
-        writeln!(w, "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")?;
+        writeln!(
+            w,
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+        )?;
         writeln!(w)?;
         render_description(typ.description(), None, None, w)?;
         writeln!(w, "///")?;
@@ -54,6 +58,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 }
             }
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
+            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
         }
         writeln!(w)?;
     }
@@ -73,16 +78,19 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
             field.examples.as_ref(),
             w,
         )?;
-        if !field.optional {
-            writeln!(w, "pub {}: {},", field.name, format_type(&field.typ))?;
-        } else {
-            writeln!(
-                w,
-                "pub {}: Option<{}>,",
-                field.name,
-                format_type(&field.typ)
-            )?;
+
+        let mut typ = format_type(&field.typ);
+        if let Some(container) = field
+            .codegen_hints
+            .get("rust")
+            .and_then(|m| m.get("container"))
+        {
+            typ = format!("{container}<{typ}>");
         }
+        if field.optional {
+            typ = format!("Option<{typ}>");
+        }
+        writeln!(w, "pub {}: {},", format_ident(&field.name), typ)?;
     }
 
     writeln!(w, "}}")?;
@@ -133,12 +141,30 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn render_extensions(
+    typ: &model::Extensions,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
+    writeln!(w, "pub struct {} {{", typ.id.join(""))?;
+    writeln!(
+        w,
+        "pub attributes: serde_json::Map<String, serde_json::Value>,"
+    )?;
+    writeln!(w, "}}")?;
+    Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 fn format_type(typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
+        model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),
         model::Type::Int32 => format!("i32"),
         model::Type::Int64 => format!("i64"),
+        model::Type::UInt8 => format!("u8"),
         model::Type::UInt16 => format!("u16"),
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),

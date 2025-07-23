@@ -1204,6 +1204,11 @@ See also:
   - [SetPollingSource](#setpollingsource-schema)
   - [SetTransform](#settransform-schema)
   - [SetVocab](#setvocab-schema)
+- [Data Schema](#reference-data-schema)
+  - [DataField](#datafield-schema)
+  - [DataSchema](#dataschema-schema)
+  - [DataType](#datatype-schema)
+  - [TimeUnit](#timeunit-schema)
 - [Engine Protocol](#reference-engine-protocol)
   - [RawQueryRequest](#rawqueryrequest-schema)
   - [RawQueryResponse](#rawqueryresponse-schema)
@@ -1221,6 +1226,7 @@ See also:
   - [EnvVar](#envvar-schema)
   - [EventTimeSource](#eventtimesource-schema)
   - [ExecuteTransformInput](#executetransforminput-schema)
+  - [ExtraAttributes](#extraattributes-schema)
   - [FetchStep](#fetchstep-schema)
   - [MergeStrategy](#mergestrategy-schema)
   - [MqttQos](#mqttqos-schema)
@@ -1237,6 +1243,363 @@ See also:
   - [Transform](#transform-schema)
   - [TransformInput](#transforminput-schema)
   - [Watermark](#watermark-schema)
+
+<a name="reference-data-schema"></a>
+#### Data Schema
+<a name="dataschema-schema"></a>
+##### DataSchema
+This schema aims to be a human-friendly variant of Arrow. Arrow currently specifies only the [flatbuffer format](https://github.com/apache/arrow/blob/f9301c0ba8a7ed1b0b63275cfdd4c44c26b04675/format/Schema.fbs) which has many legacy to it and is not suited to be defined by humans, so we had to define our own schema format. While inspired by Arrow - this format makes a clear separation between logical data types and encoding (physical layout) of data in the chunks.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `fields` | array([DataField](#datafield-schema)) | V |  | Top-level fields (columns) of the schema. |
+| `extra` | [ExtraAttributes](#extraattributes-schema) |  |  | ODF extensions |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataSchema.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datafield-schema"></a>
+##### DataField
+Represents a named field (column) in a root or nested struct schema
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Name of the field |
+| `type` | [DataType](#datatype-schema) | V |  | Logical type of the field that defines its semantic behavior and value ranges |
+| `extra` | [ExtraAttributes](#extraattributes-schema) |  |  | ODF extensions |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataField.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-schema"></a>
+##### DataType
+Defines a logical type of the field. Logical type determines the semantics and boudaries of a type and how it can be operated on, without a concern about encoding and physical layout of the data in chunks.
+
+| Union Type | Description |
+| :---: | --- |
+| [DataType::Binary](#datatype-binary-schema) | A sequence of bytes. Used for arbitrary binary data. |
+| [DataType::Bool](#datatype-bool-schema) | A boolean value representing true or false. |
+| [DataType::Date](#datatype-date-schema) | A calendar date. |
+| [DataType::Decimal](#datatype-decimal-schema) | A fixed-point decimal number with a specified precision and scale. |
+| [DataType::Duration](#datatype-duration-schema) | An elapsed time interval with a specified time unit. |
+| [DataType::Float16](#datatype-float16-schema) | A floating-point number. |
+| [DataType::Float32](#datatype-float32-schema) | A floating-point number. |
+| [DataType::Float64](#datatype-float64-schema) | A floating-point number. |
+| [DataType::Int8](#datatype-int8-schema) | An integer value. |
+| [DataType::Int16](#datatype-int16-schema) | An integer value. |
+| [DataType::Int32](#datatype-int32-schema) | An integer value. |
+| [DataType::Int64](#datatype-int64-schema) | An integer value. |
+| [DataType::UInt8](#datatype-uint8-schema) | An integer value. |
+| [DataType::UInt16](#datatype-uint16-schema) | An integer value. |
+| [DataType::UInt32](#datatype-uint32-schema) | An integer value. |
+| [DataType::UInt64](#datatype-uint64-schema) | An integer value. |
+| [DataType::List](#datatype-list-schema) | A list of values, all having the same data type. |
+| [DataType::Map](#datatype-map-schema) | A map of key-value pairs, represented as a list of entries (structs with key and value fields). |
+| [DataType::Null](#datatype-null-schema) | A type representing the absence of a value (null). |
+| [DataType::Option](#datatype-option-schema) | A type representing an optional (nullable) value of another data type. |
+| [DataType::Struct](#datatype-struct-schema) | A collection of named fields, each with its own data type. |
+| [DataType::Time](#datatype-time-schema) | A time of day value, without a date, with a specified unit of granularity. |
+| [DataType::Timestamp](#datatype-timestamp-schema) | A point in time, represented as an offset from the Unix epoch, with optional timezone. |
+| [DataType::String](#datatype-string-schema) | A Unicode string. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-binary-schema"></a>
+##### DataType::Binary
+A sequence of bytes. Used for arbitrary binary data.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `fixedLength` | `integer` |  | `uint64` | Number of bytes per value for fixed-size binary. If omitted, the binary is variable-length. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-bool-schema"></a>
+##### DataType::Bool
+A boolean value representing true or false.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-date-schema"></a>
+##### DataType::Date
+A calendar date.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-decimal-schema"></a>
+##### DataType::Decimal
+A fixed-point decimal number with a specified precision and scale.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `precision` | `integer` | V | `uint32` | Total number of decimal digits that can be stored. |
+| `scale` | `integer` | V | `int32` | Number of digits after the decimal point. In certain situations, scale could be negative number. For negative scale, it is the number of padding 0 to the right of the digits.<br/><br/>For example the number 12300 could be treated as a decimal has precision 3 and scale -2. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-duration-schema"></a>
+##### DataType::Duration
+An elapsed time interval with a specified time unit.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `unit` | [TimeUnit](#timeunit-schema) | V |  | The unit of the duration measurement. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-float16-schema"></a>
+##### DataType::Float16
+A floating-point number.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-float32-schema"></a>
+##### DataType::Float32
+A floating-point number.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-float64-schema"></a>
+##### DataType::Float64
+A floating-point number.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-int16-schema"></a>
+##### DataType::Int16
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-int32-schema"></a>
+##### DataType::Int32
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-int64-schema"></a>
+##### DataType::Int64
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-int8-schema"></a>
+##### DataType::Int8
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-list-schema"></a>
+##### DataType::List
+A list of values, all having the same data type.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `itemType` | [DataType](#datatype-schema) | V |  | Data type of list items. |
+| `fixedLength` | `integer` |  | `uint64` | Number of list items per value for fixed-size lists. If omitted, the list is variable-length. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-map-schema"></a>
+##### DataType::Map
+A map of key-value pairs, represented as a list of entries (structs with key and value fields).
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `keyType` | [DataType](#datatype-schema) | V |  | Data type of the map's keys. |
+| `valueType` | [DataType](#datatype-schema) | V |  | Data type of the map's values. |
+| `keysSorted` | `boolean` |  |  | Set to true if the keys within each value are sorted. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-null-schema"></a>
+##### DataType::Null
+A type representing the absence of a value (null).
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-option-schema"></a>
+##### DataType::Option
+A type representing an optional (nullable) value of another data type.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `inner` | [DataType](#datatype-schema) | V |  | Inner data type for the optional value. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-string-schema"></a>
+##### DataType::String
+A Unicode string.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-struct-schema"></a>
+##### DataType::Struct
+A collection of named fields, each with its own data type.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `fields` | array([DataField](#datafield-schema)) | V |  | Fields that make up the struct. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-time-schema"></a>
+##### DataType::Time
+A time of day value, without a date, with a specified unit of granularity.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `unit` | [TimeUnit](#timeunit-schema) | V |  | The unit of the time value. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-timestamp-schema"></a>
+##### DataType::Timestamp
+A point in time, represented as an offset from the Unix epoch, with optional timezone.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `unit` | [TimeUnit](#timeunit-schema) | V |  | The unit of the timestamp value that determines its precision. |
+| `timezone` | `string` |  |  | The timezone is an optional string indicating the name of a timezone<br/>one of<br/><br/>* As used in the Olson timezone database (the "tz database" or<br/>  "tzdata"), such as "America/New_York".<br/>* An absolute timezone offset of the form "+XX:XX" or "-XX:XX",<br/>  such as "+07:30".<br/><br/>Whether a timezone string is present indicates different semantics about<br/>the data (see above). |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-uint16-schema"></a>
+##### DataType::UInt16
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-uint32-schema"></a>
+##### DataType::UInt32
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-uint64-schema"></a>
+##### DataType::UInt64
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datatype-uint8-schema"></a>
+##### DataType::UInt8
+An integer value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="timeunit-schema"></a>
+##### TimeUnit
+Defines the unit of measurement of time
+
+| Enum Value |
+| :---: |
+| Second |
+| Millisecond |
+| Microsecond |
+| Nanosecond |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/TimeUnit.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 <a name="reference-manifests"></a>
 #### Manifests
@@ -1322,6 +1685,7 @@ Indicates that data has been ingested into a root dataset.
 | `newCheckpoint` | [Checkpoint](#checkpoint-schema) |  |  | Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified. |
 | `newWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one. Thus, watermarks are monotonically non-decreasing. |
 | `newSourceState` | [SourceState](#sourcestate-schema) |  |  | The state of the source the data was added from to allow fast resuming. If the state did not change but is still relevant for subsequent runs it should be carried, i.e. only the last state per source is considered when resuming. |
+| `extra` | [ExtraAttributes](#extraattributes-schema) |  |  | ODF extensions. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/AddData.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1413,7 +1777,8 @@ Specifies the complete schema of Data Slices added to the Dataset following this
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | `string` | V | `flatbuffers` | Apache Arrow schema encoded in its native flatbuffers representation. |
+| `rawArrowSchema` | `string` |  | `flatbuffers` | DEPRECATED: Apache Arrow schema encoded in its native flatbuffers representation. |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Defines the logical schema of the data files that follow this event. Will become a required field after migration. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/SetDataSchema.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1859,6 +2224,25 @@ Describes a slice of the input dataset used during a transformation
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ExecuteTransformInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
+
+<a name="extraattributes-schema"></a>
+##### ExtraAttributes
+Container for custom key-value extension attributes. Every key must be in the form of `<domain>/<path>` (e.g. `kamu.dev/archetype`) in order to fully disambiguate the value in the face of multiple extensions. Values may be any valid JSON including nested objects.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ExtraAttributes.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="known-extra-attrs"></a>
+###### Known Extensions
+| Extension | Description |
+| --- | --- |
+| `opendatafabric.net/description` | Used for human readable schema field descriptions |
+| `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
+| `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
+| `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
 
 <a name="fetchstep-schema"></a>
 ##### FetchStep

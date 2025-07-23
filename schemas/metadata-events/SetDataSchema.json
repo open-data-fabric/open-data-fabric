@@ -4,14 +4,19 @@
   "description": "Specifies the complete schema of Data Slices added to the Dataset following this event.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "schema"
-  ],
+  "required": [],
   "properties": {
-    "schema": {
+    "rawArrowSchema": {
+      "tag": 0,
       "type": "string",
       "format": "flatbuffers",
-      "description": "Apache Arrow schema encoded in its native flatbuffers representation."
+      "deprecated": true,
+      "description": "DEPRECATED: Apache Arrow schema encoded in its native flatbuffers representation."
+    },
+    "schema": {
+      "tag": 1,
+      "$ref": "/schemas/DataSchema",
+      "description": "Defines the logical schema of the data files that follow this event. Will become a required field after migration."
     }
   }
 }

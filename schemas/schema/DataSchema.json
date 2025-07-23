@@ -1,0 +1,23 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/DataSchema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "This schema aims to be a human-friendly variant of Arrow. Arrow currently specifies only the [flatbuffer format](https://github.com/apache/arrow/blob/f9301c0ba8a7ed1b0b63275cfdd4c44c26b04675/format/Schema.fbs) which has many legacy to it and is not suited to be defined by humans, so we had to define our own schema format. While inspired by Arrow - this format makes a clear separation between logical data types and encoding (physical layout) of data in the chunks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fields"
+  ],
+  "properties": {
+    "fields": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/DataField"
+      },
+      "description": "Top-level fields (columns) of the schema."
+    },
+    "extra": {
+      "$ref": "/schemas/ExtraAttributes",
+      "description": "ODF extensions"
+    }
+  }
+}

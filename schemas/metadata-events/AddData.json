@@ -32,6 +32,10 @@
     "newSourceState": {
       "$ref": "/schemas/SourceState",
       "description": "The state of the source the data was added from to allow fast resuming. If the state did not change but is still relevant for subsequent runs it should be carried, i.e. only the last state per source is considered when resuming."
+    },
+    "extra": {
+      "$ref": "/schemas/ExtraAttributes",
+      "description": "ODF extensions."
     }
   }
 }
