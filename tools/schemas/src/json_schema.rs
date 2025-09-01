@@ -232,11 +232,11 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
         refs.extend(extract_refs(item_schema));
     }
 
-    // if let Some(defs) = &schema.defs {
-    //     for def in defs.values() {
-    //         refs.extend(extract_refs(def));
-    //     }
-    // }
+    if let Some(defs) = &schema.defs {
+        for def in defs.values() {
+            refs.extend(extract_refs(def));
+        }
+    }
 
     refs
 }

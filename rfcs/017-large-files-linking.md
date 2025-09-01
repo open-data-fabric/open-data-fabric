@@ -97,7 +97,7 @@ Example of defining a column using extended `ObjectLink` type:
 
 Linked object data will be stored in `/data/<multihash>` section of the dataset, together with the data chunks.
 
-Proposed schema for "versioned file" dataset archetype:
+Example schema of a dataset that links to externally-stored MRI images:
 ```yaml
 fields:
 - name: offset
@@ -116,10 +116,7 @@ fields:
     kind: Timestamp
     unit: Millisecond
     timezone: UTC
-- name: version
-  type:
-    kind: UInt64
-- name: content_hash
+- name: mri_content_hash
   type:
     kind: String
   extra:
@@ -127,22 +124,18 @@ fields:
       kind: ObjectLink  # [2]
       linkType:
         kind: Multihash  # [3]
-- name: content_length
+- name: patient_id
   type:
-    kind: UInt64
-- name: content_type
-  type:
-    kind: Option
-    inner:
-      kind: String
-extra:
-    kamu.dev/archetype: VersionedFile  # [4]
+    kind: String
+  extra:
+    opendatafabric.org/type:
+      kind: Did  # [4]
 ```
 
 `[1]` New experimental attribute `opendatafabric.org/type` that defines an extended set of field `Type`s
 `[2]` New extended logical type `ObjectLink` signifies that the value references an external object. The mandatory `linkType` property defines the type of the link.
 `[3]` New extended logical type `Multihash` signifies a `String` in a self-describing [multihash](https://github.com/multiformats/multihash) format.
-`[4]` The `kamu.dev/archetype` is experimental in `kamu.dev` scope and included for example purposes only.
+`[4]` Same extended type mechanism is used for `Did` type.
 
 
 The `AddData` event will be extended with `linkedObjects` summary:
@@ -160,12 +153,12 @@ event:
   newWatermark: 2022-08-12T03:41:37Z
   extra:
     opendatafabric.org/linkedObjects:  # [5]
-      numObjects: 1123
+      numObjectsNaive: 1123  # [6]
       sizeNaive: 100500  # [6]
 ```
 
 `[5]` New `opendatafabric.org/linkedObjects` custom attribute contains the summary section to understand how many external objects were associated with a certain `AddData` event as well as their total size from metadata only, without querying the individual Parquet data chunks.
-`[6]` The total size of all linked objects that doesn't account for possible duplicates (see [notes](#accounting-for-duplicates-in-size-calculation)).
+`[6]` The object count and total size are labeled "naive" as they do NOT account for possible duplicates (see [notes](#accounting-for-duplicates-in-size-calculation)).
 
 ### Impact on existing functionality
 To properly support this extension, implementations will need to:

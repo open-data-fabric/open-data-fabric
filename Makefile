@@ -9,10 +9,10 @@ PLANTUML = $(RUNTIME) run --rm -v $(PWD):/opt/workdir --workdir /opt/workdir $(P
 
 MDTPL = tools/template_markdown.py
 
-DIAGRAMS_SRC = $(wildcard src/images/*.puml)
+DIAGRAMS_SRC = $(shell find src/images/ -type f -name '*.puml')
 DIAGRAMS = $(subst src/images,images,$(patsubst %.puml, %.svg, $(DIAGRAMS_SRC)))
 
-DIAGRAMS_SRC_RAW = $(wildcard src/images/*.svg)
+DIAGRAMS_SRC_RAW = $(shell find src/images/ -type f -name '*.svg')
 DIAGRAMS_RAW = $(subst src/images,images,$(DIAGRAMS_SRC_RAW))
 
 SCHEMAS_SRC = $(shell find schemas/ -type f -name '*.json')

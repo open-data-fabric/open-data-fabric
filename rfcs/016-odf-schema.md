@@ -95,6 +95,17 @@ This format is compatible with old event format because flatbuffers only care ab
 - kind: SetDataSchema
   schema:  # [1]
     fields:
+      - name: offset
+        type:
+          kind: UInt64
+      - name: op
+        type:
+          kind: UInt8
+      - name: system_time
+        type:
+          kind: Timestamp
+          unit: Millisecond
+          timezone: UTC
       - name: event_time
         type:
           kind: Timestamp
@@ -103,7 +114,7 @@ This format is compatible with old event format because flatbuffers only care ab
         extra:  # [2]
           a.com/a: foo
           b.com/x: bar
-      - name: content_hash
+      - name: mri_content_hash
         type:
           kind: String
         extra: # [2]
@@ -128,11 +139,17 @@ This format is compatible with old event format because flatbuffers only care ab
                 inner:
                   kind: String
               description: Subject's gender
+      - name: area_codes
+        description: List of body area codes covered by this MRI scan
+        type:
+          kind: List
+          itemType:
+            kind: String
     extra: # [2]
       c.com/z: baz
 ```
 
-`[1]` New `schema` field replaces the old `schema` field now containing the ODF schema. We can do such replacement because this field was never specified explicitly in any of the YAML manifests before, so this is not a breaking change from manifest perspective.
+`[1]` New `schema` field replaces the old `schema` field now containing the ODF schema. Note that schema includes the system columns like `offset`, `op`, and `system_time`.
 
 `[2]` The `extra` field is a container for custom attributes (see [format explanation](#attributes-format) below). Extra attributes will be allowed on the schema level too and work the same as on field (column) level.
 
