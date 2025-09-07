@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.36.0
+Version: 0.37.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -2243,6 +2243,15 @@ Container for custom key-value extension attributes. Every key must be in the fo
 | `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
 | `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
 | `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
+
+<a name="known-extra-types"></a>
+###### Known Extended Types
+| Extended Type | Core Type | Description |
+| --- | --- | --- |
+| `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
+| `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
+| `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
+
 
 <a name="fetchstep-schema"></a>
 ##### FetchStep

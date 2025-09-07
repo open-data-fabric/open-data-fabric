@@ -66,7 +66,7 @@ In order to preserve tamper-proof properties of the ODF datasets we refer to ext
 
 The links (hashes) of the external binaries will be specified in data columns (see [rejected alternatives](#rejected-linking-binaries-via-metadata-chain)). Metadata chain will only contain summary information that allows to count and calculate the size of linked objects.
 
-To mark a column that stores links to external objects we will introduce a new `ObjectLink` logical type that initially will be in the `multishash` format. During this early stage we don't have enough confidence in this approach to make `ObjectLink` and `Multihash` part of the core ODF schema, so we will first introduce them via extra attributes mechanism.
+To mark a column that stores links to external objects we will introduce a new `ObjectLink` logical type that initially will be in the `multihash` format. During this early stage we don't have enough confidence in this approach to make `ObjectLink` and `Multihash` part of the core ODF schema, so we will first introduce them via extra attributes mechanism.
 
 Initially we will only support linked objects that are stored alongside (embedded) in a dataset, but may expand it in future towards sharing objects between multiple datasets and use of separate storage.
 

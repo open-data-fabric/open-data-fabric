@@ -351,36 +351,40 @@ fn render_extensions(
         w,
     )?;
 
-    render_table(
-        vec!["Extension", "Description"],
-        vec!["---", "---"],
-        vec![
-            vec![
-                "`opendatafabric.net/description`".into(),
-                "Used for human readable schema field descriptions".into(),
-            ],
-            vec![
-                "`opendatafabric.net/type`".into(),
-                "An extended set of logical types that ODF recommends but does not require every implementation to support".into(),
-            ],
-            vec![
-                "`opendatafabric.org/linkedObjects`".into(),
-                "When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size".into(),
-            ],
-            vec![
-                "`arrow.apache.org/bufferEncoding`".into(),
-                "Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema".into(),
-            ],
-            vec![
-                "`arrow.apache.org/dateEncoding`".into(),
-                "Used to accurately represent date encoding type when converting Arrow schema to ODF schema".into(),
-            ],
-            vec![
-                "`arrow.apache.org/decimalEncoding`".into(),
-                "Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema".into(),
-            ],
-        ],
+    writeln!(
         w,
+        indoc::indoc!(
+            r#"
+            | Extension | Description |
+            | --- | --- |
+            | `opendatafabric.net/description` | Used for human readable schema field descriptions |
+            | `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
+            | `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
+            | `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
+            | `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
+            | `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
+            "#
+        )
+    )?;
+
+    render_header(
+        "Known Extended Types",
+        Some("known-extra-types".to_string()),
+        lvl + 1,
+        w,
+    )?;
+
+    writeln!(
+        w,
+        indoc::indoc!(
+            r#"
+            | Extended Type | Core Type | Description |
+            | --- | --- | --- |
+            | `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
+            | `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
+            | `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
+            "#
+        )
     )?;
 
     Ok(())

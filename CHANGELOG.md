@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.37.0] - 2025-09-08
 ### Added
-- `ChangelogStream` and `UpsertStream` merge strategies.
+- Introduced `ChangelogStream` and `UpsertStream` merge strategies.
+- [RFC-016: ODF schema format](rfcs/016-odf-schema.md)
+- [RFC-017: Large files linking](rfcs/017-large-files-linking.md)
 
 ## [0.36.0] - 2024-06-07
 ### Added
