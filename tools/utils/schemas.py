@@ -14,7 +14,7 @@ class Schema:
     name: str
     schema: JsonType
     path: StrPath
-    kind: Literal["root", "metadata-event", "engine-op", "fragment"]
+    kind: Literal["root", "metadata-event", "data-schema", "engine-op", "fragment"]
 
 
 def read_schemas(schemas_dir: StrPath) -> dict[SchemaName, Schema]:
@@ -31,6 +31,13 @@ def read_schemas(schemas_dir: StrPath) -> dict[SchemaName, Schema]:
         True,
         lambda name, sch, path: results.__setitem__(name,
                                                     Schema(name=name, schema=sch, path=path, kind="metadata-event"))
+    )
+
+    _read_schemas(
+        os.path.join(schemas_dir, "schema"),
+        True,
+        lambda name, sch, path: results.__setitem__(name,
+                                                    Schema(name=name, schema=sch, path=path, kind="data-schema"))
     )
 
     _read_schemas(

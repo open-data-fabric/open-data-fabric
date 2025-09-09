@@ -1324,9 +1324,6 @@ A sequence of bytes. Used for arbitrary binary data.
 ##### DataType::Bool
 A boolean value representing true or false.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1334,9 +1331,6 @@ A boolean value representing true or false.
 <a name="datatype-date-schema"></a>
 ##### DataType::Date
 A calendar date.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1371,9 +1365,6 @@ An elapsed time interval with a specified time unit.
 ##### DataType::Float16
 A floating-point number.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1381,9 +1372,6 @@ A floating-point number.
 <a name="datatype-float32-schema"></a>
 ##### DataType::Float32
 A floating-point number.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1393,9 +1381,6 @@ A floating-point number.
 ##### DataType::Float64
 A floating-point number.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1403,9 +1388,6 @@ A floating-point number.
 <a name="datatype-int16-schema"></a>
 ##### DataType::Int16
 An integer value.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1415,9 +1397,6 @@ An integer value.
 ##### DataType::Int32
 An integer value.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1426,9 +1405,6 @@ An integer value.
 ##### DataType::Int64
 An integer value.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1436,9 +1412,6 @@ An integer value.
 <a name="datatype-int8-schema"></a>
 ##### DataType::Int8
 An integer value.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1475,9 +1448,6 @@ A map of key-value pairs, represented as a list of entries (structs with key and
 ##### DataType::Null
 A type representing the absence of a value (null).
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1497,9 +1467,6 @@ A type representing an optional (nullable) value of another data type.
 <a name="datatype-string-schema"></a>
 ##### DataType::String
 A Unicode string.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1546,9 +1513,6 @@ A point in time, represented as an offset from the Unix epoch, with optional tim
 ##### DataType::UInt16
 An integer value.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1556,9 +1520,6 @@ An integer value.
 <a name="datatype-uint32-schema"></a>
 ##### DataType::UInt32
 An integer value.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1568,9 +1529,6 @@ An integer value.
 ##### DataType::UInt64
 An integer value.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -1578,9 +1536,6 @@ An integer value.
 <a name="datatype-uint8-schema"></a>
 ##### DataType::UInt8
 An integer value.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1709,9 +1664,6 @@ Describes how to ingest data into a root dataset from a certain logical source.
 <a name="disablepollingsource-schema"></a>
 ##### DisablePollingSource
 Disables the previously defined polling source.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/metadata-events/DisablePollingSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1916,9 +1868,6 @@ Query did not pass validation
 ##### RawQueryResponse::Progress
 Reports query progress
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/RawQueryResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -2018,9 +1967,6 @@ Query did not pass validation
 <a name="transformresponse-progress-schema"></a>
 ##### TransformResponse::Progress
 Reports query progress
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine-ops/TransformResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2178,9 +2124,6 @@ Defines the external source of data.
 ##### EventTimeSource::FromMetadata
 Extracts event time from the source's metadata.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
@@ -2201,9 +2144,6 @@ Extracts event time from the path component of the source.
 <a name="eventtimesource-fromsystemtime-schema"></a>
 ##### EventTimeSource::FromSystemTime
 Assigns event time from the system time source.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2366,9 +2306,6 @@ Merge strategy determines how newly ingested data should be combined with the da
 Append merge strategy.
 
 Under this strategy new data will be appended to the dataset in its entirety, without any deduplication.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2665,9 +2602,6 @@ Defines how external data should be cached.
 <a name="sourcecaching-forever-schema"></a>
 ##### SourceCaching::Forever
 After source was processed once it will never be ingested again.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/SourceCaching.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

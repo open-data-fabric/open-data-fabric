@@ -237,28 +237,31 @@ fn render_struct(
     writeln!(w, "{}", typ.description)?;
     writeln!(w)?;
 
-    render_table(
-        vec!["Property", "Type", "Required", "Format", "Description"],
-        vec![":---:", ":---:", ":---:", ":---:", "---"],
-        typ.fields
-            .values()
-            .map(|f| {
-                vec![
-                    format!("`{}`", f.name.to_case(Case::Camel)),
-                    as_json_type(&f.typ),
-                    if f.optional {
-                        String::new()
-                    } else {
-                        "V".to_string()
-                    },
-                    as_format(&f.typ),
-                    f.description.clone(),
-                ]
-            })
-            .collect(),
-        w,
-    )?;
-    writeln!(w)?;
+    if !typ.fields.is_empty() {
+        render_table(
+            vec!["Property", "Type", "Required", "Format", "Description"],
+            vec![":---:", ":---:", ":---:", ":---:", "---"],
+            typ.fields
+                .values()
+                .map(|f| {
+                    vec![
+                        format!("`{}`", f.name.to_case(Case::Camel)),
+                        as_json_type(&f.typ),
+                        if f.optional {
+                            String::new()
+                        } else {
+                            "V".to_string()
+                        },
+                        as_format(&f.typ),
+                        f.description.clone(),
+                    ]
+                })
+                .collect(),
+            w,
+        )?;
+        writeln!(w)?;
+    }
+
     render_schema_links(&typ.src, w)?;
     Ok(())
 }
