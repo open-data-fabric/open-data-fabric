@@ -15,12 +15,15 @@ const PREAMBLE: &str = indoc::indoc!(
     #![allow(clippy::all)]
     #![allow(clippy::pedantic)]
 
-    use crate::identity::*;
-    use crate::formats::Multihash;
-    use chrono::{DateTime, Utc};
     use std::path::PathBuf;
-    use enum_variants::*;
+
     use bitflags::bitflags;
+    use chrono::{DateTime, Utc};
+    use enum_variants::*;
+    use serde::{Deserialize, Serialize};
+
+    use crate::formats::Multihash;
+    use crate::identity::*;
     "#
 );
 
