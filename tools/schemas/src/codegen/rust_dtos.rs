@@ -15,12 +15,15 @@ const PREAMBLE: &str = indoc::indoc!(
     #![allow(clippy::all)]
     #![allow(clippy::pedantic)]
 
-    use crate::identity::*;
-    use crate::formats::Multihash;
-    use chrono::{DateTime, Utc};
     use std::path::PathBuf;
-    use enum_variants::*;
+
     use bitflags::bitflags;
+    use chrono::{DateTime, Utc};
+    use enum_variants::*;
+    use serde::{Deserialize, Serialize};
+
+    use crate::formats::Multihash;
+    use crate::identity::*;
     "#
 );
 
@@ -218,7 +221,7 @@ fn render_union_bitflags(
     writeln!(w, "bitflags! {{")?;
     writeln!(
         w,
-        "    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]"
+        "    #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]"
     )?;
     writeln!(w, "    pub struct {}TypeFlags: u32 {{", typ.id.name)?;
     for (i, variant) in typ.variants.iter().enumerate() {
