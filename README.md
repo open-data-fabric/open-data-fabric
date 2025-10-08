@@ -27,7 +27,7 @@ The goal of this specification is to develop a method of data exchange that woul
 - Improve liquidity of data by speeding up the data propagation times from publishers to consumers
 - Create a feedback loop between data consumers and publishers, allowing them to collaborate on better data availability, recency, and design
 
-`ODF` protocol combines four decades of evolution in enterprise analytical data architectures with innovations in Web3 cryptography and trustless networks to creatie a decentralized data supply chain that can provide timely, high-quality, and verifiable data for data science, AI, smart contracts, and applications.
+ODF protocol combines four decades of evolution in enterprise analytical data architectures with innovations in Web3 cryptography and trustless networks to create a decentralized data supply chain that can provide timely, high-quality, and verifiable data for data science, AI, smart contracts, and applications.
 
 
 ## Quick Summary
@@ -49,7 +49,7 @@ At a bird's eye view, ODF specifies the following aspects of data management, wi
 ### Identity, Ownership, Accountability
 - W3C [DIDs](https://www.w3.org/TR/did-1.0/) are used to uniquely identify datasets on the network - they are an irrevocable part of the metadata chain
 - DIDs likewise identify actors: data owners, processors, validators, replicators...
-- DID key signing schemes can be used to declare and **prove ovnership** over datasets in a decentralized network
+- DID key signing chains are used to **prove ownership** over datasets in a decentralized network
 - Metadata blocks support actor signatures to assign **accountability**
 
 <p align="center">
@@ -58,8 +58,8 @@ At a bird's eye view, ODF specifies the following aspects of data management, wi
 
 ### Data Transfer Protocols
 - ODF "nodes" that range from CLI tools to analytical clusters can exchange data using a set of protocols
-- "Simple tranfer protocol" is provided for maximal interoperability
-- "Smart tranfer protocol" is provided for secure yet highly efficient direct-from-storage data replication
+- "Simple transfer protocol" is provided for maximal interoperability
+- "Smart transfer protocol" is provided for secure yet highly efficient direct-to-storage data replication
 
 <p align="center">
 <img src="images/odf-protocols.svg" alt="Dataset" width="700">
@@ -123,7 +123,7 @@ See also our [Roadmap](https://github.com/kamu-data/open-data-fabric/projects/1)
 
 
 ## History
-The specification was originally developed by [Kamu](https://kamu.dev) as part of the [kamu-cli](https://github.com/kamu-data/kamu-cli/) data management tool. While developing it, we quickly realized that the very essence of what we're trying to build - a collaborative open data processing pipeline based on verifiable trust - requires full transparency and openness on our part. We strongly believe in the potential of our ideas to bring data management to the next level, to provide better quality data faster to the people who need it to innovate, fight deceases, build better businesses, and make informed political decisions. Therefore, we saw it as our duty to share these ideas with the community and make the system as inclusive as possible for the existing technologies and future innovations, and work together to build momentum needed to achieve such radical change.
+The specification was originally developed by [Kamu](https://kamu.dev) as part of the [kamu-cli](https://github.com/kamu-data/kamu-cli/) data management tool. While developing it, we quickly realized that the very essence of what we're trying to build - a collaborative open data processing pipeline based on verifiable trust - requires full transparency and openness on our part. We strongly believe in the potential of our ideas to bring data management to the next level, to provide better quality data faster to the people who need it to innovate, fight diseases, build better businesses, and make informed political decisions. Therefore, we saw it as our duty to share these ideas with the community and make the system as inclusive as possible for the existing technologies and future innovations, and work together to build momentum needed to achieve such radical change.
 
 ## Contributing
 See [Contribution Guidelines](./CONTRIBUTING.md)
