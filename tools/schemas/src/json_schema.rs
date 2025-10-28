@@ -62,7 +62,7 @@ pub struct Schema {
 }
 
 impl Schema {
-    pub fn display(&self) -> SchemaDisplay {
+    pub fn display(&self) -> SchemaDisplay<'_> {
         SchemaDisplay(self)
     }
 }

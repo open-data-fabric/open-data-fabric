@@ -11,7 +11,7 @@ const PREAMBLE: &str = indoc::indoc!(
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     #![allow(unused_variables)]
-
+    #![allow(dead_code)]
     #![allow(clippy::all)]
     #![allow(clippy::pedantic)]
 
