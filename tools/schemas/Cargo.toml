@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
-convert_case = { version = "0.7" }
+convert_case = { version = "0.8" }
 glob = { version = "0.3" }
 indexmap = { version = "2", features = ["serde"] }
 indoc = { version = "2" }
