@@ -87,7 +87,8 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
                     } else {
                         Ok(TransformInputDataset::not_accessible(
                             self.dataset_ref.clone().into(),
-                    ))
+                        ))
+                    }
                 }
             }
 
