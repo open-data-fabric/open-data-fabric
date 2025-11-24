@@ -82,7 +82,12 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
             #[ComplexObject]
             impl TransformInput {
                 async fn input_dataset(&self, ctx: &Context<'_>) -> Result<TransformInputDataset> {
-                    Dataset::try_from_ref(ctx, &self.dataset_ref).await
+                    if let Some(dataset) = Dataset::try_from_ref(ctx, &self.dataset_ref).await? {
+                        Ok(TransformInputDataset::accessible(dataset))
+                    } else {
+                        Ok(TransformInputDataset::not_accessible(
+                            self.dataset_ref.clone().into(),
+                    ))
                 }
             }
 
