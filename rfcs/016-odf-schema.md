@@ -109,7 +109,7 @@ This format is compatible with old event format because flatbuffers only care ab
       - name: event_time
         type:
           kind: Timestamp
-          unit: Milliseconds
+          unit: Millisecond
           timezone: UTC
         extra:  # [2]
           a.com/a: foo
@@ -117,34 +117,37 @@ This format is compatible with old event format because flatbuffers only care ab
       - name: mri_content_hash
         type:
           kind: String
-        extra: # [2]
+        extra:  # [2]
           opendatafabric.org/description: References the MRI scan data linked to the dataset by its hash  # [3]
-          opendatafabric.org/type: # [4]
+          opendatafabric.org/type:  # [4]
             kind: Multihash
       - name: subject
-        description: Information about the subject
         type:
           kind: Struct
-          fields: # [5]
+          fields:  # [5]
             - name: id
               type:
                 kind: String
-              description: Subject's unique identity
-              extra: # [2]
-                opendatafabric.org/type: # [4]
+              extra:
+                opendatafabric.org/description: Subject's unique identity
+                opendatafabric.org/type:
                   kind: Did
             - name: gender
               type:
                 kind: Option  # [6]
                 inner:
                   kind: String
-              description: Subject's gender
+              extra:
+                opendatafabric.org/description: Subject's gender
+        extra:
+          opendatafabric.org/description: Information about the subject
       - name: area_codes
-        description: List of body area codes covered by this MRI scan
         type:
           kind: List
           itemType:
             kind: String
+        extra:
+          opendatafabric.org/description: List of body area codes covered by this MRI scan
     extra: # [2]
       c.com/z: baz
 ```
