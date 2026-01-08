@@ -72,7 +72,7 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
                 }
             }
 
-            #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
+            #[derive(SimpleObject, Debug, Clone)]
             #[graphql(complex)]
             pub struct TransformInput {
                 pub dataset_ref: DatasetRef<'static>,
@@ -102,7 +102,7 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
         "TransformSql",
         indoc::indoc!(
             r#"
-            #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
+            #[derive(SimpleObject, Debug, Clone)]
             pub struct TransformSql {
                 pub engine: String,
                 pub version: Option<String>,
@@ -135,16 +135,27 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
         "SetDataSchema",
         indoc::indoc!(
             r#"
-            #[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]
+            #[derive(Debug, Clone)]
             pub struct SetDataSchema {
-                pub schema: crate::prelude::DataSchema,
+                pub schema: std::sync::Arc<odf::schema::DataSchema>,
+            }
+
+            #[Object]
+            impl SetDataSchema {
+                // TODO: Make `format` required argument
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> crate::prelude::DataSchema {
+                    crate::prelude::DataSchema::new(
+                        self.schema.clone(),
+                        format.unwrap_or(DataSchemaFormat::ParquetJson),
+                    )
+                }
             }
 
             impl From<odf::metadata::SetDataSchema> for SetDataSchema {
                 fn from(v: odf::metadata::SetDataSchema) -> Self {
-                    // TODO: Externalize format decision
-                    let schema = crate::prelude::DataSchema::new(std::sync::Arc::new(v.upgrade().schema), DataSchemaFormat::ParquetJson);
-                    Self { schema }
+                    Self {
+                        schema: std::sync::Arc::new(v.upgrade().schema),
+                    }
                 }
             }
             "#
@@ -202,7 +213,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
 
-    writeln!(w, "#[derive(SimpleObject, Debug, Clone, PartialEq, Eq)]")?;
+    writeln!(w, "#[derive(SimpleObject, Debug, Clone)]")?;
     writeln!(w, "pub struct {name} {{")?;
 
     if typ.fields.is_empty() {
@@ -286,7 +297,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
 
-    writeln!(w, "#[derive(Union, Debug, Clone, PartialEq, Eq)]")?;
+    writeln!(w, "#[derive(Union, Debug, Clone)]")?;
     writeln!(w, "pub enum {name} {{")?;
     for variant in &typ.variants {
         writeln!(w, "{}({}),", variant.name, variant.join(""))?;
@@ -356,7 +367,7 @@ fn render_extensions(
     writeln!(
         w,
         r#"
-        #[nutype::nutype(derive(AsRef, Clone, Debug, Into, PartialEq, Eq))]
+        #[nutype::nutype(derive(AsRef, Clone, Debug, Into))]
         pub struct {typ}(serde_json::Map<String, serde_json::Value>);
         impl Default for {typ} {{
             fn default() -> Self {{
