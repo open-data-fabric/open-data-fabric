@@ -1,17 +1,18 @@
 <div align="center">
 
-<img src="./src/images/odf-logo.png" alt="Open Data Fabric">
+<img src="./images/odf-blackboard.png" alt="Open Data Fabric" width="600">
 
-<p><strong><i>Open protocol for decentralized exchange and transformation of data</i></strong></p>
+<p><strong><i>Open protocol for multi-party exchange and collaborative processing of data</i></strong></p>
 
-[Website](https://docs.kamu.dev/odf/) |
+[Website](https://opendatafabric.org) |
 [Reference Implementation](https://github.com/kamu-data/kamu-cli) |
 [Original Whitepaper](https://arxiv.org/abs/2111.06364) |
 [Chat](https://discord.gg/nU6TXRQNXC)
 
 
-[![Spec](https://img.shields.io/github/v/tag/open-data-fabric/open-data-fabric?include_prereleases&logo=gitbook&logoColor=white&label=Spec&style=for-the-badge)](https://github.com/open-data-fabric/open-data-fabric/blob/master/open-data-fabric.md)
-[![Metadata Reference](https://img.shields.io/static/v1?label={}&message=Schemas&color=blue&style=for-the-badge)](./open-data-fabric.md#reference-information)
+[![Spec](https://img.shields.io/github/v/tag/open-data-fabric/open-data-fabric?include_prereleases&logo=gitbook&logoColor=white&label=Spec&style=for-the-badge)](https://docs.kamu.dev/odf/spec/)
+[![Metadata Reference](https://img.shields.io/static/v1?label={}&message=Reference&color=blue&style=for-the-badge)](https://docs.kamu.dev/odf/reference/)
+[![RFCs](https://img.shields.io/static/v1?label={}&message=RFCs&color=blue&style=for-the-badge)](https://docs.kamu.dev/odf/rfcs/)
 [![Chat](https://shields.io/discord/898726370199359498?style=for-the-badge&logo=discord&label=Discord)](https://discord.gg/nU6TXRQNXC)
 
 </p>
