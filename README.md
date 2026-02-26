@@ -1,8 +1,10 @@
 <div align="center">
 
+<a href="https://opendatafabric.org">
 <img src="./images/odf-blackboard.png" alt="Open Data Fabric" width="600">
+</a>
 
-<p><strong><i>Open protocol for multi-party exchange and collaborative processing of data</i></strong></p>
+<p><strong>Open protocol for multi-party exchange and collaborative processing of data</strong></p>
 
 [Website](https://opendatafabric.org) |
 [Reference Implementation](https://github.com/kamu-data/kamu-cli) |
