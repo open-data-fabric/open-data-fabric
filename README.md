@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://opendatafabric.org">
+<a href="https://opendatafabric.org" target="_blank">
 <img src="./images/odf-blackboard.png" alt="Open Data Fabric" width="600">
 </a>
 
