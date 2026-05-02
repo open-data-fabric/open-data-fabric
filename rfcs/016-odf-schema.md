@@ -8,7 +8,7 @@
 **Published Date**: 2025-08-25
 
 **Authors**:
-- [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](kamu.dev)
+- [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 
 
 **Compatibility**:

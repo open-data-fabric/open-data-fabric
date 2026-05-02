@@ -37,7 +37,16 @@
       }
     }
   },
+  "format": "union-or-string",
   "oneOf": [
+    {
+      "type": "string",
+      "enum": [
+        "FromMetadata",
+        "FromPath",
+        "FromSystemTime"
+      ]
+    },
     {
       "$ref": "#/$defs/FromMetadata"
     },

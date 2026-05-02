@@ -25,7 +25,7 @@ const PREAMBLE: &str = indoc::indoc!(
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     macro_rules! implement_serde_as {
-        ($dto:ty, $impl:ty, $impl_name:literal) => {
+        ($dto:ty, $impl:ty) => {
             impl ::serde_with::SerializeAs<$dto> for $impl {
                 fn serialize_as<S>(source: &$dto, serializer: S) -> Result<S::Ok, S::Error>
                 where
@@ -44,6 +44,100 @@ const PREAMBLE: &str = indoc::indoc!(
                 }
             }
         };
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    macro_rules! implement_serde_as_short_form_union {
+        ($dto:ty, $impl:ty) => {
+            impl ::serde_with::SerializeAs<$dto> for $impl {
+                fn serialize_as<S>(source: &$dto, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: Serializer,
+                {
+                    <$impl>::serialize(source, serializer)
+                }
+            }
+
+            impl<'de> serde_with::DeserializeAs<'de, $dto> for $impl {
+                fn deserialize_as<D>(deserializer: D) -> Result<$dto, D::Error>
+                where
+                    D: Deserializer<'de>,
+                {
+                    struct EnumOrShortForm;
+
+                    impl<'de> ::serde::de::Visitor<'de> for EnumOrShortForm {
+                        type Value = $dto;
+
+                        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                            formatter.write_str("Tagged enum of short-form type name")
+                        }
+
+                        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                        where
+                            E: ::serde::de::Error,
+                        {
+                            let map = ShortFormUnionToMap::new(value);
+                            self.visit_map(map)
+                        }
+
+                        fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
+                        where
+                            M: ::serde::de::MapAccess<'de>,
+                        {
+                            <$impl>::deserialize(::serde::de::value::MapAccessDeserializer::new(map))
+                        }
+                    }
+
+                    deserializer.deserialize_any(EnumOrShortForm)
+                }
+            }
+        };
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    /// Helper to expand the `"typename"` string into `{"kind": "typename"}` map form
+    struct ShortFormUnionToMap<'a, Err> {
+        typename: Option<&'a str>,
+        phantom: std::marker::PhantomData<Err>,
+    }
+
+    impl<'a, Err> ShortFormUnionToMap<'a, Err> {
+        fn new(typename: &'a str) -> Self {
+            Self {
+                typename: Some(typename),
+                phantom: std::marker::PhantomData,
+            }
+        }
+    }
+
+    impl<'a, 'de, Err> ::serde::de::MapAccess<'de> for ShortFormUnionToMap<'a, Err>
+    where
+        Err: ::serde::de::Error,
+    {
+        type Error = Err;
+
+        fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
+        where
+            K: ::serde::de::DeserializeSeed<'de>,
+        {
+            if self.typename.is_some() {
+                seed.deserialize(::serde::de::value::StrDeserializer::new("kind"))
+                    .map(Some)
+            } else {
+                Ok(None)
+            }
+        }
+
+        fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
+        where
+            V: ::serde::de::DeserializeSeed<'de>,
+        {
+            seed.deserialize(::serde::de::value::StrDeserializer::new(
+                self.typename.take().unwrap(),
+            ))
+        }
     }
     "#
 );
@@ -106,7 +200,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
     writeln!(w, "}}")?;
     writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def, \"{name}Def\");")?;
+    writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
     Ok(())
 }
 
@@ -189,7 +283,14 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 
     writeln!(w, "}}")?;
     writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def, \"{name}Def\");")?;
+    if !typ.short_form {
+        writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
+    } else {
+        writeln!(
+            w,
+            "implement_serde_as_short_form_union!({name}, {name}Def);"
+        )?;
+    }
 
     Ok(())
 }
@@ -227,7 +328,7 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
     }
     writeln!(w, "}}")?;
     writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def, \"{name}Def\");")?;
+    writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
     Ok(())
 }
 
@@ -254,7 +355,7 @@ fn render_extensions(
 
     writeln!(w, "}}")?;
     writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def, \"{name}Def\");")?;
+    writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
     Ok(())
 }
 

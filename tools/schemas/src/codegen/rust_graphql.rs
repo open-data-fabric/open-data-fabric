@@ -15,6 +15,8 @@ const PREAMBLE: &str = indoc::indoc!(
     #![allow(clippy::all)]
     #![allow(clippy::pedantic)]
 
+    use std::sync::Arc;
+
     use chrono::{DateTime, Utc};
 
     use crate::prelude::*;
@@ -22,7 +24,7 @@ const PREAMBLE: &str = indoc::indoc!(
     "#
 );
 
-const CUSTOM_TYPES: [(&str, &str); 3] = [
+const CUSTOM_TYPES: [(&str, &str); 11] = [
     (
         "TransformInput",
         indoc::indoc!(
@@ -152,7 +154,7 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
                 async fn schema(&self, format: Option<DataSchemaFormat>) -> crate::prelude::DataSchema {
                     crate::prelude::DataSchema::new(
                         self.schema.clone(),
-                        format.unwrap_or(DataSchemaFormat::ParquetJson),
+                        format.unwrap_or(DataSchemaFormat::OdfJson),
                     )
                 }
             }
@@ -162,6 +164,479 @@ const CUSTOM_TYPES: [(&str, &str); 3] = [
                     Self {
                         schema: std::sync::Arc::new(v.upgrade().schema),
                     }
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStep",
+        indoc::indoc!(
+            r#"
+            #[derive(Interface, Debug, Clone)]
+            #[graphql(field(
+                name = "schema",
+                ty = "Option<crate::prelude::DataSchema>",
+                arg(name = "format", ty = "Option<DataSchemaFormat>"),
+            ))]
+            pub enum ReadStep {
+                Csv(ReadStepCsv),
+                GeoJson(ReadStepGeoJson),
+                EsriShapefile(ReadStepEsriShapefile),
+                Parquet(ReadStepParquet),
+                Json(ReadStepJson),
+                NdJson(ReadStepNdJson),
+                NdGeoJson(ReadStepNdGeoJson),
+            }
+
+            impl From<odf::metadata::ReadStep> for ReadStep {
+                fn from(v: odf::metadata::ReadStep) -> Self {
+                    match v {
+                        odf::metadata::ReadStep::Csv(v) => Self::Csv(v.into()),
+                        odf::metadata::ReadStep::GeoJson(v) => Self::GeoJson(v.into()),
+                        odf::metadata::ReadStep::EsriShapefile(v) => Self::EsriShapefile(v.into()),
+                        odf::metadata::ReadStep::Parquet(v) => Self::Parquet(v.into()),
+                        odf::metadata::ReadStep::Json(v) => Self::Json(v.into()),
+                        odf::metadata::ReadStep::NdJson(v) => Self::NdJson(v.into()),
+                        odf::metadata::ReadStep::NdGeoJson(v) => Self::NdGeoJson(v.into()),
+                    }
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepCsv",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepCsv {
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                ///
+                /// Examples:
+                /// - ["date TIMESTAMP","city STRING","population INT"]
+                pub ddl_schema: Option<Vec<String>>,
+                /// Sets a single character as a separator for each field and value.
+                ///
+                /// Defaults to: ","
+                pub separator: Option<String>,
+                /// Decodes the CSV files by the given encoding type.
+                ///
+                /// Defaults to: "utf8"
+                pub encoding: Option<String>,
+                /// Sets a single character used for escaping quoted values where the
+                /// separator can be part of the value. Set an empty string to turn off
+                /// quotations.
+                ///
+                /// Defaults to: "\""
+                pub quote: Option<String>,
+                /// Sets a single character used for escaping quotes inside an already
+                /// quoted value.
+                ///
+                /// Defaults to: "\\"
+                pub escape: Option<String>,
+                /// Use the first line as names of columns.
+                ///
+                /// Defaults to: false
+                pub header: Option<bool>,
+                /// Infers the input schema automatically from data. It requires one extra
+                /// pass over the data.
+                ///
+                /// Defaults to: false
+                pub infer_schema: Option<bool>,
+                /// Sets the string representation of a null value.
+                ///
+                /// Defaults to: ""
+                pub null_value: Option<String>,
+                /// Sets the string that indicates a date format. The `rfc3339` is the only
+                /// required format, the other format strings are implementation-specific.
+                ///
+                /// Defaults to: "rfc3339"
+                pub date_format: Option<String>,
+                /// Sets the string that indicates a timestamp format. The `rfc3339` is the
+                /// only required format, the other format strings are
+                /// implementation-specific.
+                ///
+                /// Defaults to: "rfc3339"
+                pub timestamp_format: Option<String>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepCsv> for ReadStepCsv {
+                fn from(v: odf::metadata::ReadStepCsv) -> Self {
+                    let odf::metadata::ReadStepCsv {
+                        ddl_schema,
+                        separator,
+                        encoding,
+                        quote,
+                        escape,
+                        header,
+                        infer_schema,
+                        null_value,
+                        date_format,
+                        timestamp_format,
+                        schema,
+                    } = v;
+
+                    Self {
+                        ddl_schema,
+                        separator,
+                        encoding,
+                        quote,
+                        escape,
+                        header,
+                        infer_schema,
+                        null_value,
+                        date_format,
+                        timestamp_format,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepCsv {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepEsriShapefile",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepEsriShapefile {
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                pub ddl_schema: Option<Vec<String>>,
+                /// If the ZIP archive contains multiple shapefiles use this field to
+                /// specify a sub-path to the desired `.shp` file. Can contain glob patterns
+                /// to act as a filter.
+                pub sub_path: Option<String>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepEsriShapefile> for ReadStepEsriShapefile {
+                fn from(v: odf::metadata::ReadStepEsriShapefile) -> Self {
+                    let odf::metadata::ReadStepEsriShapefile {
+                        ddl_schema,
+                        sub_path,
+                        schema,
+                    } = v;
+                    Self {
+                        ddl_schema,
+                        sub_path,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepEsriShapefile {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepGeoJson",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepGeoJson {
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                pub ddl_schema: Option<Vec<String>>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepGeoJson> for ReadStepGeoJson {
+                fn from(v: odf::metadata::ReadStepGeoJson) -> Self {
+                    let odf::metadata::ReadStepGeoJson {
+                        ddl_schema,
+                        schema,
+                    } = v;
+                    Self {
+                        ddl_schema,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepGeoJson {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepJson",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepJson {
+                /// Path in the form of `a.b.c` to a sub-element of the root JSON object
+                /// that is an array or objects. If not specified it is assumed that the
+                /// root element is an array.
+                pub sub_path: Option<String>,
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                pub ddl_schema: Option<Vec<String>>,
+                /// Sets the string that indicates a date format. The `rfc3339` is the only
+                /// required format, the other format strings are implementation-specific.
+                ///
+                /// Defaults to: "rfc3339"
+                pub date_format: Option<String>,
+                /// Allows to forcibly set one of standard basic or extended encodings.
+                ///
+                /// Defaults to: "utf8"
+                pub encoding: Option<String>,
+                /// Sets the string that indicates a timestamp format. The `rfc3339` is the
+                /// only required format, the other format strings are
+                /// implementation-specific.
+                ///
+                /// Defaults to: "rfc3339"
+                pub timestamp_format: Option<String>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepJson> for ReadStepJson {
+                fn from(v: odf::metadata::ReadStepJson) -> Self {
+                    let odf::metadata::ReadStepJson {
+                        sub_path,
+                        ddl_schema,
+                        date_format,
+                        encoding,
+                        timestamp_format,
+                        schema,
+                    } = v;
+
+                    Self {
+                        sub_path,
+                        ddl_schema,
+                        date_format,
+                        encoding,
+                        timestamp_format,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepJson {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepNdGeoJson",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepNdGeoJson {
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                pub ddl_schema: Option<Vec<String>>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepNdGeoJson> for ReadStepNdGeoJson {
+                fn from(v: odf::metadata::ReadStepNdGeoJson) -> Self {
+                    let odf::metadata::ReadStepNdGeoJson { ddl_schema, schema } = v;
+                    Self {
+                        ddl_schema,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepNdGeoJson {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepNdJson",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepNdJson {
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                pub ddl_schema: Option<Vec<String>>,
+                /// Sets the string that indicates a date format. The `rfc3339` is the only
+                /// required format, the other format strings are implementation-specific.
+                ///
+                /// Defaults to: "rfc3339"
+                pub date_format: Option<String>,
+                /// Allows to forcibly set one of standard basic or extended encodings.
+                ///
+                /// Defaults to: "utf8"
+                pub encoding: Option<String>,
+                /// Sets the string that indicates a timestamp format. The `rfc3339` is the
+                /// only required format, the other format strings are
+                /// implementation-specific.
+                ///
+                /// Defaults to: "rfc3339"
+                pub timestamp_format: Option<String>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepNdJson> for ReadStepNdJson {
+                fn from(v: odf::metadata::ReadStepNdJson) -> Self {
+                    let odf::metadata::ReadStepNdJson {
+                        ddl_schema,
+                        date_format,
+                        encoding,
+                        timestamp_format,
+                        schema,
+                    } = v;
+
+                    Self {
+                        ddl_schema,
+                        date_format,
+                        encoding,
+                        timestamp_format,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepNdJson {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
+                }
+            }
+            "#
+        ),
+    ),
+    (
+        "ReadStepParquet",
+        indoc::indoc!(
+            r#"
+            #[derive(SimpleObject, Debug, Clone)]
+            #[graphql(complex)]
+            pub struct ReadStepParquet {
+                /// DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values
+                /// into more appropriate data types.
+                pub ddl_schema: Option<Vec<String>>,
+
+                #[graphql(skip)]
+                pub schema: Option<Arc<odf::schema::DataSchema>>,
+            }
+
+            impl From<odf::metadata::ReadStepParquet> for ReadStepParquet {
+                fn from(v: odf::metadata::ReadStepParquet) -> Self {
+                    let odf::metadata::ReadStepParquet { ddl_schema, schema } = v;
+                    Self {
+                        ddl_schema,
+                        schema: schema.map(Arc::new),
+                    }
+                }
+            }
+
+            #[ComplexObject]
+            impl ReadStepParquet {
+                /// Schema used to coerce values into more appropriate data types.
+                async fn schema(&self, format: Option<DataSchemaFormat>) -> Option<crate::prelude::DataSchema> {
+                    self.schema.clone().or_else(|| {
+                        self.ddl_schema.as_ref().and_then(|s| {
+                            odf::utils::schema::parse::parse_ddl_to_odf_schema(&s.join(", "))
+                                .ok()
+                                .map(Arc::new)
+                        })
+                    }).map(|s| {
+                        crate::prelude::DataSchema::new(s, format.unwrap_or(DataSchemaFormat::OdfJson))
+                    })
                 }
             }
             "#

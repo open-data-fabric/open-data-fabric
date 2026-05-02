@@ -717,7 +717,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::DataTypeDuration {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let mut builder = fb::DataTypeDurationBuilder::new(fb);
-        builder.add_unit(self.unit.into());
+        self.unit.map(|v| builder.add_unit(v.into()));
         builder.finish()
     }
 }
@@ -725,7 +725,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::DataTypeDuration {
 impl<'fb> FlatbuffersDeserializable<fb::DataTypeDuration<'fb>> for odf::DataTypeDuration {
     fn deserialize(proxy: fb::DataTypeDuration<'fb>) -> Self {
         odf::DataTypeDuration {
-            unit: proxy.unit().into(),
+            unit: proxy.unit().map(|v| v.into()),
         }
     }
 }
@@ -1045,7 +1045,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::DataTypeTime {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let mut builder = fb::DataTypeTimeBuilder::new(fb);
-        builder.add_unit(self.unit.into());
+        self.unit.map(|v| builder.add_unit(v.into()));
         builder.finish()
     }
 }
@@ -1053,7 +1053,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::DataTypeTime {
 impl<'fb> FlatbuffersDeserializable<fb::DataTypeTime<'fb>> for odf::DataTypeTime {
     fn deserialize(proxy: fb::DataTypeTime<'fb>) -> Self {
         odf::DataTypeTime {
-            unit: proxy.unit().into(),
+            unit: proxy.unit().map(|v| v.into()),
         }
     }
 }
@@ -1069,7 +1069,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::DataTypeTimestamp {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let timezone_offset = self.timezone.as_ref().map(|v| fb.create_string(&v));
         let mut builder = fb::DataTypeTimestampBuilder::new(fb);
-        builder.add_unit(self.unit.into());
+        self.unit.map(|v| builder.add_unit(v.into()));
         timezone_offset.map(|off| builder.add_timezone(off));
         builder.finish()
     }
@@ -1078,7 +1078,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::DataTypeTimestamp {
 impl<'fb> FlatbuffersDeserializable<fb::DataTypeTimestamp<'fb>> for odf::DataTypeTimestamp {
     fn deserialize(proxy: fb::DataTypeTimestamp<'fb>) -> Self {
         odf::DataTypeTimestamp {
-            unit: proxy.unit().into(),
+            unit: proxy.unit().map(|v| v.into()),
             timezone: proxy.timezone().map(|v| v.to_owned()),
         }
     }
@@ -2709,7 +2709,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepCsv {
     type OffsetT = WIPOffset<fb::ReadStepCsv<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
@@ -2720,8 +2720,9 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepCsv {
         let null_value_offset = self.null_value.as_ref().map(|v| fb.create_string(&v));
         let date_format_offset = self.date_format.as_ref().map(|v| fb.create_string(&v));
         let timestamp_format_offset = self.timestamp_format.as_ref().map(|v| fb.create_string(&v));
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepCsvBuilder::new(fb);
-        schema_offset.map(|off| builder.add_schema(off));
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         separator_offset.map(|off| builder.add_separator(off));
         encoding_offset.map(|off| builder.add_encoding(off));
         quote_offset.map(|off| builder.add_quote(off));
@@ -2731,6 +2732,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepCsv {
         null_value_offset.map(|off| builder.add_null_value(off));
         date_format_offset.map(|off| builder.add_date_format(off));
         timestamp_format_offset.map(|off| builder.add_timestamp_format(off));
+        schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
 }
@@ -2738,8 +2740,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepCsv {
 impl<'fb> FlatbuffersDeserializable<fb::ReadStepCsv<'fb>> for odf::ReadStepCsv {
     fn deserialize(proxy: fb::ReadStepCsv<'fb>) -> Self {
         odf::ReadStepCsv {
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
             separator: proxy.separator().map(|v| v.to_owned()),
             encoding: proxy.encoding().map(|v| v.to_owned()),
@@ -2750,6 +2752,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ReadStepCsv<'fb>> for odf::ReadStepCsv {
             null_value: proxy.null_value().map(|v| v.to_owned()),
             date_format: proxy.date_format().map(|v| v.to_owned()),
             timestamp_format: proxy.timestamp_format().map(|v| v.to_owned()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }
@@ -2763,14 +2766,16 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepEsriShapefile {
     type OffsetT = WIPOffset<fb::ReadStepEsriShapefile<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
         let sub_path_offset = self.sub_path.as_ref().map(|v| fb.create_string(&v));
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepEsriShapefileBuilder::new(fb);
-        schema_offset.map(|off| builder.add_schema(off));
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         sub_path_offset.map(|off| builder.add_sub_path(off));
+        schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
 }
@@ -2778,10 +2783,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepEsriShapefile {
 impl<'fb> FlatbuffersDeserializable<fb::ReadStepEsriShapefile<'fb>> for odf::ReadStepEsriShapefile {
     fn deserialize(proxy: fb::ReadStepEsriShapefile<'fb>) -> Self {
         odf::ReadStepEsriShapefile {
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
             sub_path: proxy.sub_path().map(|v| v.to_owned()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }
@@ -2795,11 +2801,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepGeoJson {
     type OffsetT = WIPOffset<fb::ReadStepGeoJson<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepGeoJsonBuilder::new(fb);
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
@@ -2808,9 +2816,10 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepGeoJson {
 impl<'fb> FlatbuffersDeserializable<fb::ReadStepGeoJson<'fb>> for odf::ReadStepGeoJson {
     fn deserialize(proxy: fb::ReadStepGeoJson<'fb>) -> Self {
         odf::ReadStepGeoJson {
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }
@@ -2825,19 +2834,21 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepJson {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let sub_path_offset = self.sub_path.as_ref().map(|v| fb.create_string(&v));
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
         let date_format_offset = self.date_format.as_ref().map(|v| fb.create_string(&v));
         let encoding_offset = self.encoding.as_ref().map(|v| fb.create_string(&v));
         let timestamp_format_offset = self.timestamp_format.as_ref().map(|v| fb.create_string(&v));
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepJsonBuilder::new(fb);
         sub_path_offset.map(|off| builder.add_sub_path(off));
-        schema_offset.map(|off| builder.add_schema(off));
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         date_format_offset.map(|off| builder.add_date_format(off));
         encoding_offset.map(|off| builder.add_encoding(off));
         timestamp_format_offset.map(|off| builder.add_timestamp_format(off));
+        schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
 }
@@ -2846,12 +2857,13 @@ impl<'fb> FlatbuffersDeserializable<fb::ReadStepJson<'fb>> for odf::ReadStepJson
     fn deserialize(proxy: fb::ReadStepJson<'fb>) -> Self {
         odf::ReadStepJson {
             sub_path: proxy.sub_path().map(|v| v.to_owned()),
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
             date_format: proxy.date_format().map(|v| v.to_owned()),
             encoding: proxy.encoding().map(|v| v.to_owned()),
             timestamp_format: proxy.timestamp_format().map(|v| v.to_owned()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }
@@ -2865,11 +2877,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepNdGeoJson {
     type OffsetT = WIPOffset<fb::ReadStepNdGeoJson<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepNdGeoJsonBuilder::new(fb);
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
@@ -2878,9 +2892,10 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepNdGeoJson {
 impl<'fb> FlatbuffersDeserializable<fb::ReadStepNdGeoJson<'fb>> for odf::ReadStepNdGeoJson {
     fn deserialize(proxy: fb::ReadStepNdGeoJson<'fb>) -> Self {
         odf::ReadStepNdGeoJson {
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }
@@ -2894,18 +2909,20 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepNdJson {
     type OffsetT = WIPOffset<fb::ReadStepNdJson<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
         let date_format_offset = self.date_format.as_ref().map(|v| fb.create_string(&v));
         let encoding_offset = self.encoding.as_ref().map(|v| fb.create_string(&v));
         let timestamp_format_offset = self.timestamp_format.as_ref().map(|v| fb.create_string(&v));
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepNdJsonBuilder::new(fb);
-        schema_offset.map(|off| builder.add_schema(off));
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         date_format_offset.map(|off| builder.add_date_format(off));
         encoding_offset.map(|off| builder.add_encoding(off));
         timestamp_format_offset.map(|off| builder.add_timestamp_format(off));
+        schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
 }
@@ -2913,12 +2930,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepNdJson {
 impl<'fb> FlatbuffersDeserializable<fb::ReadStepNdJson<'fb>> for odf::ReadStepNdJson {
     fn deserialize(proxy: fb::ReadStepNdJson<'fb>) -> Self {
         odf::ReadStepNdJson {
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
             date_format: proxy.date_format().map(|v| v.to_owned()),
             encoding: proxy.encoding().map(|v| v.to_owned()),
             timestamp_format: proxy.timestamp_format().map(|v| v.to_owned()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }
@@ -2932,11 +2950,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepParquet {
     type OffsetT = WIPOffset<fb::ReadStepParquet<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let schema_offset = self.schema.as_ref().map(|v| {
+        let ddl_schema_offset = self.ddl_schema.as_ref().map(|v| {
             let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
             fb.create_vector(&offsets)
         });
+        let schema_offset = self.schema.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::ReadStepParquetBuilder::new(fb);
+        ddl_schema_offset.map(|off| builder.add_ddl_schema(off));
         schema_offset.map(|off| builder.add_schema(off));
         builder.finish()
     }
@@ -2945,9 +2965,10 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::ReadStepParquet {
 impl<'fb> FlatbuffersDeserializable<fb::ReadStepParquet<'fb>> for odf::ReadStepParquet {
     fn deserialize(proxy: fb::ReadStepParquet<'fb>) -> Self {
         odf::ReadStepParquet {
-            schema: proxy
-                .schema()
+            ddl_schema: proxy
+                .ddl_schema()
                 .map(|v| v.iter().map(|i| i.to_owned()).collect()),
+            schema: proxy.schema().map(|v| odf::DataSchema::deserialize(v)),
         }
     }
 }

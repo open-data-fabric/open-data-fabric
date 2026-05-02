@@ -147,6 +147,7 @@ pub struct Union {
     pub variants: Vec<TypeId>,
     pub description: String,
     pub src: PathBuf,
+    pub short_form: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -382,11 +383,11 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         properties: None,
         pattern_properties: None,
         additional_properties: None,
-        one_of: Some(one_of),
+        one_of: Some(mut one_of),
         r#enum: None,
         items: None,
         r#ref: None,
-        format: None,
+        format,
         default: None,
         description: Some(description),
         tag: None,
@@ -399,16 +400,48 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         panic!("Invalid union schema: {ctx}: {}", schema.display())
     };
 
+    let (short_form, expected_variants) = match format.as_deref() {
+        None => (false, None),
+        Some("union-or-string") => {
+            let str_enum = one_of.remove(0);
+
+            assert_eq!(
+                str_enum.r#type.as_deref(),
+                Some("string"),
+                "First variant of a `union-or-string` must be a string type: {ctx}"
+            );
+
+            assert!(
+                str_enum.r#enum.is_some(),
+                "First variant of a `union-or-string` must specify an enum: {ctx}"
+            );
+
+            (true, str_enum.r#enum)
+        }
+        Some(fmt) => panic!("Invalid union format: {ctx}: {fmt}"),
+    };
+
     let mut variants = Vec::new();
     for (i, schema) in one_of.into_iter().enumerate() {
         let reff = parse_ref(schema, &id, format!("{ctx}.$oneOf.[{i}]"));
         variants.push(reff);
     }
 
+    assert!(!variants.is_empty(), "Union must have at least one variant");
+
+    if let Some(expected_variants) = expected_variants {
+        let actual_variants: Vec<String> = variants.iter().map(|v| v.name.clone()).collect();
+        assert_eq!(
+            expected_variants, actual_variants,
+            "union-or-string enum must match referenced variants"
+        );
+    }
+
     Union {
         id,
         variants,
         description,
+        short_form,
         src,
     }
 }
@@ -463,6 +496,8 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         "uint64" => Type::UInt64,
         fmt => panic!("Invalid enum format: {ctx}: {}", fmt),
     };
+
+    assert!(!variants.is_empty(), "Enum must have at least one variant");
 
     Enum {
         id,

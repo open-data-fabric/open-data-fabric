@@ -244,6 +244,12 @@ fn render_struct(
             typ.fields
                 .values()
                 .map(|f| {
+                    let mut description = f.description.clone();
+
+                    if let Some(default) = &f.default {
+                        description += format!("\n\nDefault: {default}").as_str();
+                    }
+
                     vec![
                         format!("`{}`", f.name.to_case(Case::Camel)),
                         as_json_type(&f.typ),
@@ -253,7 +259,7 @@ fn render_struct(
                             "V".to_string()
                         },
                         as_format(&f.typ),
-                        f.description.clone(),
+                        description,
                     ]
                 })
                 .collect(),

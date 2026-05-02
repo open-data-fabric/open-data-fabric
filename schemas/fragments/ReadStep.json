@@ -9,12 +9,13 @@
       "additionalProperties": false,
       "required": [],
       "properties": {
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types.",
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types.",
           "examples": [
             [
               "date TIMESTAMP",
@@ -67,6 +68,10 @@
           "type": "string",
           "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
           "default": "rfc3339"
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     },
@@ -80,12 +85,13 @@
           "type": "string",
           "description": "Path in the form of `a.b.c` to a sub-element of the root JSON object that is an array or objects. If not specified it is assumed that the root element is an array."
         },
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
         },
         "dateFormat": {
           "type": "string",
@@ -101,6 +107,10 @@
           "type": "string",
           "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
           "default": "rfc3339"
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     },
@@ -110,12 +120,13 @@
       "additionalProperties": false,
       "required": [],
       "properties": {
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
         },
         "dateFormat": {
           "type": "string",
@@ -131,6 +142,10 @@
           "type": "string",
           "description": "Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.",
           "default": "rfc3339"
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     },
@@ -140,12 +155,17 @@
       "additionalProperties": false,
       "required": [],
       "properties": {
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     },
@@ -155,12 +175,17 @@
       "additionalProperties": false,
       "required": [],
       "properties": {
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     },
@@ -170,16 +195,21 @@
       "additionalProperties": false,
       "required": [],
       "properties": {
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
         },
         "subPath": {
           "type": "string",
           "description": "If the ZIP archive contains multiple shapefiles use this field to specify a sub-path to the desired `.shp` file. Can contain glob patterns to act as a filter."
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     },
@@ -189,12 +219,17 @@
       "additionalProperties": false,
       "required": [],
       "properties": {
-        "schema": {
+        "ddlSchema": {
+          "deprecated": true,
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+          "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
+        },
+        "schema": {
+          "$ref": "/schemas/DataSchema",
+          "description": "Schema used to coerce values into more appropriate data types."
         }
       }
     }

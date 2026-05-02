@@ -71,7 +71,16 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
+    let mut derives = vec!["Clone", "Debug", "Eq"];
+
+    if !typ.fields.values().any(|f| f.default.is_some()) {
+        derives.push("PartialEq");
+    }
+    if typ.fields.values().all(|f| f.optional) {
+        derives.push("Default");
+    }
+
+    writeln!(w, "#[derive({})]", derives.join(", "))?;
     writeln!(w, "pub struct {} {{", typ.id.join(""))?;
 
     for field in typ.fields.values() {
@@ -97,6 +106,88 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     }
 
     writeln!(w, "}}")?;
+
+    if typ.fields.values().any(|f| f.default.is_some()) {
+        writeln!(w)?;
+        writeln!(w, "impl {} {{", typ.id.join(""))?;
+
+        for field in typ.fields.values() {
+            if let Some(default) = &field.default {
+                let name = format_ident(&field.name);
+                let mut default_typ = format_type(&field.typ);
+                let mut accessor_typ = default_typ.clone();
+
+                let value = match &field.typ {
+                    model::Type::Boolean => format!("{default}"),
+                    model::Type::String => {
+                        default_typ = "&'static str".to_string();
+                        accessor_typ = "&str".to_string();
+                        format!("{default}")
+                    }
+                    model::Type::Custom(_tid) => {
+                        format!("{default_typ}::{}", default.as_str().unwrap())
+                    }
+                    typ => unimplemented!(
+                        "Default value formatting for {typ:?} types is not implemented"
+                    ),
+                };
+
+                writeln!(w, "pub fn default_{name}() -> {default_typ} {{")?;
+                writeln!(w, "{value}")?;
+                writeln!(w, "}}")?;
+
+                writeln!(w, "pub fn {name}(&self) -> {accessor_typ} {{")?;
+
+                match &field.typ {
+                    model::Type::Boolean | model::Type::Custom(_) => {
+                        writeln!(w, "self.{name}.unwrap_or(Self::default_{name}())")?
+                    }
+                    model::Type::String => writeln!(
+                        w,
+                        "self.{name}.as_deref().unwrap_or(Self::default_{name}())"
+                    )?,
+                    typ => unimplemented!(
+                        "Default value formatting for {typ:?} types is not implemented"
+                    ),
+                };
+
+                writeln!(w, "}}")?;
+            }
+        }
+
+        writeln!(w, "}}")?;
+    }
+
+    // Impl PartialEq that treats missing default properties equal to default values
+    if typ.fields.values().any(|f| f.default.is_some()) {
+        writeln!(w)?;
+        writeln!(w, "impl PartialEq for {} {{", typ.id.join(""))?;
+        writeln!(w, "fn eq(&self, other: &Self) -> bool {{")?;
+
+        for (i, field) in typ.fields.values().enumerate() {
+            let fname = format_ident(&field.name);
+            if i != 0 {
+                writeln!(w, "&&")?;
+            }
+            if field.default.is_none() {
+                writeln!(w, "self.{fname} == other.{fname}")?;
+            } else {
+                match &field.typ {
+                    model::Type::String => writeln!(
+                        w,
+                        "self.{fname}.as_deref().or_else(|| Some(Self::default_{fname}())) == other.{fname}.as_deref().or_else(|| Some(Self::default_{fname}()))"
+                    )?,
+                    _ => writeln!(
+                        w,
+                        "self.{fname}.or_else(|| Some(Self::default_{fname}())) == other.{fname}.or_else(|| Some(Self::default_{fname}()))"
+                    )?,
+                };
+            }
+        }
+
+        writeln!(w, "}} }}")?;
+    }
+
     Ok(())
 }
 

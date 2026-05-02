@@ -43,6 +43,8 @@ pub struct Schema {
     // ODF Extensions
     pub format: Option<String>,
 
+    /// Specifies the default value that all implementations must fall back onto if the property is not defined.
+    /// Codegen will still output the field as optional because we want to round-trip serialization to output same data as inputed.
     pub default: Option<serde_json::Value>,
 
     pub description: Option<String>,

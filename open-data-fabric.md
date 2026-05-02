@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.37.0
+Version: 0.38.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1301,7 +1301,7 @@ Defines a logical type of the field. Logical type determines the semantics and b
 | [DataType::Option](#datatype-option-schema) | A type representing an optional (nullable) value of another data type. |
 | [DataType::Struct](#datatype-struct-schema) | A collection of named fields, each with its own data type. |
 | [DataType::Time](#datatype-time-schema) | A time of day value, without a date, with a specified unit of granularity. |
-| [DataType::Timestamp](#datatype-timestamp-schema) | A point in time, represented as an offset from the Unix epoch, with optional timezone. |
+| [DataType::Timestamp](#datatype-timestamp-schema) | A point in time, represented as an offset from the Unix epoch in a specific timezone. |
 | [DataType::String](#datatype-string-schema) | A Unicode string. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
@@ -1355,7 +1355,7 @@ An elapsed time interval with a specified time unit.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `unit` | [TimeUnit](#timeunit-schema) | V |  | The unit of the duration measurement. |
+| `unit` | [TimeUnit](#timeunit-schema) |  |  | The unit of the duration measurement.<br/><br/>Default: "Millisecond" |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1490,7 +1490,7 @@ A time of day value, without a date, with a specified unit of granularity.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `unit` | [TimeUnit](#timeunit-schema) | V |  | The unit of the time value. |
+| `unit` | [TimeUnit](#timeunit-schema) |  |  | The unit of the time value.<br/><br/>Default: "Millisecond" |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1498,12 +1498,12 @@ A time of day value, without a date, with a specified unit of granularity.
 
 <a name="datatype-timestamp-schema"></a>
 ##### DataType::Timestamp
-A point in time, represented as an offset from the Unix epoch, with optional timezone.
+A point in time, represented as an offset from the Unix epoch in a specific timezone.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `unit` | [TimeUnit](#timeunit-schema) | V |  | The unit of the timestamp value that determines its precision. |
-| `timezone` | `string` |  |  | The timezone is an optional string indicating the name of a timezone<br/>one of<br/><br/>* As used in the Olson timezone database (the "tz database" or<br/>  "tzdata"), such as "America/New_York".<br/>* An absolute timezone offset of the form "+XX:XX" or "-XX:XX",<br/>  such as "+07:30".<br/><br/>Whether a timezone string is present indicates different semantics about<br/>the data (see above). |
+| `unit` | [TimeUnit](#timeunit-schema) |  |  | The unit of the timestamp value that determines its precision.<br/><br/>Default: "Millisecond" |
+| `timezone` | `string` |  |  | The timezone is an optional string indicating the name of a timezone<br/>one of<br/><br/>* As used in the Olson timezone database (the "tz database" or<br/>  "tzdata"), such as "America/New_York".<br/>* An absolute timezone offset of the form "+XX:XX" or "-XX:XX",<br/>  such as "+07:30".<br/><br/>Default: "UTC" |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/schema/DataType.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2398,7 +2398,7 @@ MQTT topic subscription parameters.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `path` | `string` | V |  | Name of the topic (may include patterns). |
-| `qos` | [MqttQos](#mqttqos-schema) |  |  | Quality of service class. |
+| `qos` | [MqttQos](#mqttqos-schema) |  |  | Quality of service class.<br/><br/>Default: "AtMostOnce" |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/MqttTopicSubscription.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2479,16 +2479,17 @@ Reader for comma-separated files.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `separator` | `string` |  |  | Sets a single character as a separator for each field and value. |
-| `encoding` | `string` |  |  | Decodes the CSV files by the given encoding type. |
-| `quote` | `string` |  |  | Sets a single character used for escaping quoted values where the separator can be part of the value. Set an empty string to turn off quotations. |
-| `escape` | `string` |  |  | Sets a single character used for escaping quotes inside an already quoted value. |
-| `header` | `boolean` |  |  | Use the first line as names of columns. |
-| `inferSchema` | `boolean` |  |  | Infers the input schema automatically from data. It requires one extra pass over the data. |
-| `nullValue` | `string` |  |  | Sets the string representation of a null value. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `separator` | `string` |  |  | Sets a single character as a separator for each field and value.<br/><br/>Default: "," |
+| `encoding` | `string` |  |  | Decodes the CSV files by the given encoding type.<br/><br/>Default: "utf8" |
+| `quote` | `string` |  |  | Sets a single character used for escaping quoted values where the separator can be part of the value. Set an empty string to turn off quotations.<br/><br/>Default: "\"" |
+| `escape` | `string` |  |  | Sets a single character used for escaping quotes inside an already quoted value.<br/><br/>Default: "\\" |
+| `header` | `boolean` |  |  | Use the first line as names of columns.<br/><br/>Default: false |
+| `inferSchema` | `boolean` |  |  | Infers the input schema automatically from data. It requires one extra pass over the data.<br/><br/>Default: false |
+| `nullValue` | `string` |  |  | Sets the string representation of a null value.<br/><br/>Default: "" |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2500,8 +2501,9 @@ Reader for ESRI Shapefile format.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
 | `subPath` | `string` |  |  | If the ZIP archive contains multiple shapefiles use this field to specify a sub-path to the desired `.shp` file. Can contain glob patterns to act as a filter. |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2513,7 +2515,8 @@ Reader for GeoJSON files. It expects one `FeatureCollection` object in the root 
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2526,10 +2529,11 @@ Reader for JSON files that contain an array of objects within them.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `subPath` | `string` |  |  | Path in the form of `a.b.c` to a sub-element of the root JSON object that is an array or objects. If not specified it is assumed that the root element is an array. |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
-| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encodings. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
+| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encodings.<br/><br/>Default: "utf8" |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2541,7 +2545,8 @@ Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format bu
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2553,10 +2558,11 @@ Reader for files containing multiple newline-delimited JSON objects with the sam
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
-| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
-| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encodings. |
-| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `dateFormat` | `string` |  |  | Sets the string that indicates a date format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
+| `encoding` | `string` |  |  | Allows to forcibly set one of standard basic or extended encodings.<br/><br/>Default: "utf8" |
+| `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2568,7 +2574,8 @@ Reader for Apache Parquet format.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `schema` | array(`string`) |  |  | A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
+| `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)

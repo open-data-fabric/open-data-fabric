@@ -11,7 +11,12 @@
       "properties": {}
     }
   },
+  "format": "union-or-string",
   "oneOf": [
+    {
+      "type": "string",
+      "enum": ["Forever"]
+    },
     {
       "$ref": "#/$defs/Forever"
     }

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.0] - 2026-05-03
+### Changed
+- **Breaking:** Support for ODF schema in sources
+  - `read.schema` now expects ODF and old field was renamed to `read.ddlSchema`
+  - YAML manifests will need to be updated
+  - Flatbuffer binary compatibility is preserved so existing datasets will continue to work fine
+- Support short-form union representation for more concise ODF schema in manifests
+- Defaults for `unit` and `timezone` in data types for even more conciseness
+- Codegen-level support for `default` properties and equivalence
+
 ## [0.37.0] - 2025-09-08
 ### Added
 - Introduced `ChangelogStream` and `UpsertStream` merge strategies.

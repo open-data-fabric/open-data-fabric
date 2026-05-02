@@ -55,13 +55,12 @@
       "description": "An elapsed time interval with a specified time unit.",
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "unit"
-      ],
+      "required": [],
       "properties": {
         "unit": {
           "$ref": "/schemas/TimeUnit",
-          "description": "The unit of the duration measurement."
+          "description": "The unit of the duration measurement.",
+          "default": "Millisecond"
         }
       }
     },
@@ -246,31 +245,30 @@
       "description": "A time of day value, without a date, with a specified unit of granularity.",
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "unit"
-      ],
+      "required": [],
       "properties": {
         "unit": {
           "$ref": "/schemas/TimeUnit",
+          "default": "Millisecond",
           "description": "The unit of the time value."
         }
       }
     },
     "Timestamp": {
-      "description": "A point in time, represented as an offset from the Unix epoch, with optional timezone.",
+      "description": "A point in time, represented as an offset from the Unix epoch in a specific timezone.",
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "unit"
-      ],
+      "required": [],
       "properties": {
         "unit": {
           "$ref": "/schemas/TimeUnit",
+          "default": "Millisecond",
           "description": "The unit of the timestamp value that determines its precision."
         },
         "timezone": {
           "type": "string",
-          "description": "The timezone is an optional string indicating the name of a timezone\none of\n\n* As used in the Olson timezone database (the \"tz database\" or\n  \"tzdata\"), such as \"America/New_York\".\n* An absolute timezone offset of the form \"+XX:XX\" or \"-XX:XX\",\n  such as \"+07:30\".\n\nWhether a timezone string is present indicates different semantics about\nthe data (see above)."
+          "default": "UTC",
+          "description": "The timezone is an optional string indicating the name of a timezone\none of\n\n* As used in the Olson timezone database (the \"tz database\" or\n  \"tzdata\"), such as \"America/New_York\".\n* An absolute timezone offset of the form \"+XX:XX\" or \"-XX:XX\",\n  such as \"+07:30\"."
         }
       }
     },
@@ -282,7 +280,37 @@
       "properties": {}
     }
   },
+  "format": "union-or-string",
   "oneOf": [
+    {
+      "type": "string",
+      "enum": [
+        "Binary",
+        "Bool",
+        "Date",
+        "Decimal",
+        "Duration",
+        "Float16",
+        "Float32",
+        "Float64",
+        "Int8",
+        "Int16",
+        "Int32",
+        "Int64",
+        "UInt8",
+        "UInt16",
+        "UInt32",
+        "UInt64",
+        "List",
+        "Map",
+        "Null",
+        "Option",
+        "Struct",
+        "Time",
+        "Timestamp",
+        "String"
+      ]
+    },
     {
       "$ref": "#/$defs/Binary"
     },
