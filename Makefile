@@ -21,7 +21,10 @@ SCHEMAS_UTILS_SRC = $(shell find tools/schemas/ -type f -name '*.rs')
 SCHEMA_MARKDOWN = build/metadata-reference.md
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
 
-all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) schema-lint $(SCHEMA_FLATBUFFERS) $(SCHEMA_MARKDOWN) open-data-fabric.md
+CODEGEN_CMD = cargo run -q -- codegen
+RUSTFMT = rustfmt --edition 2024 --style-edition 2024
+
+all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) schema-lint codegen $(SCHEMA_MARKDOWN) open-data-fabric.md
 
 build/:
 	mkdir -p build/
@@ -36,10 +39,24 @@ schema-lint: $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
 	cargo run -q -- lint
 
 $(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
-	cargo run -q -- codegen markdown > $@
+	$(CODEGEN_CMD) markdown > $@
 
 $(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
-	cargo run -q -- codegen flatbuffers-schema > $@
+	$(CODEGEN_CMD) flatbuffers-schema > $@
+
+.PHONY: codegen
+codegen:
+	$(CODEGEN_CMD) markdown > $(SCHEMA_MARKDOWN)
+	$(CODEGEN_CMD) flatbuffers-schema > $(SCHEMA_FLATBUFFERS)
+	$(CODEGEN_CMD) rust-dtos > tools/schemas/output/rust-dtos.rs
+	$(CODEGEN_CMD) rust-serde > tools/schemas/output/rust-serde.rs
+	$(CODEGEN_CMD) rust-serde-flatbuffers > tools/schemas/output/rust-serde-flatbuffers.rs
+	$(CODEGEN_CMD) rust-graphql > tools/schemas/output/rust-graphql.rs
+	$(RUSTFMT) tools/schemas/output/rust-dtos.rs
+	$(RUSTFMT) tools/schemas/output/rust-serde.rs
+	$(RUSTFMT) tools/schemas/output/rust-serde-flatbuffers.rs
+	$(RUSTFMT) tools/schemas/output/rust-graphql.rs
+	
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
