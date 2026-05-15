@@ -1,4 +1,5 @@
 use crate::codegen::rust_common::format_ident;
+use crate::json_schema::{CodegenHint, CodegenLanguage};
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::borrow::Cow;
@@ -137,6 +138,12 @@ impl Helpers {
             | model::Type::DatasetAlias
             | model::Type::DatasetId
             | model::Type::DatasetRef
+            | model::Type::AccountId
+            | model::Type::AccountName
+            | model::Type::ResourceContext
+            | model::Type::ResourceKind
+            | model::Type::ResourceId
+            | model::Type::ResourceName
             | model::Type::DateTime
             | model::Type::Flatbuffers
             | model::Type::Multicodec
@@ -144,8 +151,10 @@ impl Helpers {
             | model::Type::Path
             | model::Type::Regex
             | model::Type::Url
+            | model::Type::Generic(_)
             | model::Type::Array(_)
-            | model::Type::Custom(_) => false,
+            | model::Type::Custom(_)
+            | model::Type::AnyJson => false,
         }
     }
 
@@ -175,7 +184,21 @@ fn render_impl(
     };
 
     for typ in model.types.values() {
-        if typ.id().name == "Manifest" || typ.id().name == "DatasetSnapshot" {
+        if typ.id().name == "Manifest"
+            || typ.id().name == "DatasetSnapshot"
+            || typ.id().name == "Resource"
+        {
+            continue;
+        }
+
+        if typ
+            .codegen_hints()
+            .get(&CodegenLanguage::Rust)
+            .and_then(|h| h.get(&CodegenHint::DtoType))
+            .is_some()
+        {
+            // Externally defined types should implement their own
+            // flatbuffer serialization using proxy types generated from ODF schemas
             continue;
         }
 
@@ -199,7 +222,7 @@ fn render_impl(
             model::TypeDefinition::Struct(t) => render_struct(t, &helpers, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
-            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
+            model::TypeDefinition::Map(t) => render_map(t, w)?,
         }
         writeln!(w)?;
     }
@@ -323,11 +346,19 @@ fn format_pre_ser_type(
         | model::Type::UInt64
         | model::Type::DateTime => (),
         model::Type::String => writeln!(w, "fb.create_string(&{name})")?,
-        model::Type::DatasetAlias | model::Type::DatasetRef => {
-            writeln!(w, "fb.create_string(&{name}.to_string())")?
+        model::Type::AccountName
+        | model::Type::ResourceContext
+        | model::Type::ResourceKind
+        | model::Type::ResourceName
+        | model::Type::DatasetAlias
+        | model::Type::DatasetRef => writeln!(w, "fb.create_string(&{name}.to_string())")?,
+        model::Type::AccountId | model::Type::ResourceId => {
+            writeln!(w, "fb.create_vector(&{name}.as_bytes())")?
         }
         model::Type::DatasetId => writeln!(w, "fb.create_vector(&{name}.as_bytes().as_slice())")?,
-        model::Type::Flatbuffers => writeln!(w, "fb.create_vector(&{name}[..])")?,
+        model::Type::Flatbuffers | model::Type::Generic(_) => {
+            writeln!(w, "fb.create_vector(&{name}[..])")?
+        }
         model::Type::Multicodec => todo!(),
         model::Type::Multihash => writeln!(w, "fb.create_vector(&{name}.as_bytes().as_slice())")?,
         model::Type::Path => writeln!(w, "fb.create_string({name}.to_str().unwrap())")?,
@@ -356,6 +387,10 @@ fn format_pre_ser_type(
         }
         model::Type::Custom(id) if helpers.is_enum_id(id) => (),
         model::Type::Custom(_) => writeln!(w, "{name}.serialize(fb)")?,
+        model::Type::AnyJson => writeln!(
+            w,
+            "fb.create_string(&serde_json::to_string(&{name}).unwrap())"
+        )?,
     }
     Ok(())
 }
@@ -431,12 +466,20 @@ fn render_type_ser(
         | model::Type::Path
         | model::Type::Regex
         | model::Type::Url
+        | model::Type::AccountId
+        | model::Type::AccountName
+        | model::Type::ResourceContext
+        | model::Type::ResourceKind
+        | model::Type::ResourceId
+        | model::Type::ResourceName
+        | model::Type::Generic(_)
         | model::Type::Array(_) => (),
         model::Type::DateTime => writeln!(w, "&datetime_to_fb(&{name})")?,
         model::Type::Custom(type_id) if helpers.is_enum_id(type_id) => {
             writeln!(w, "{name}.into()")?
         }
         model::Type::Custom(_) => (),
+        model::Type::AnyJson => (),
     }
     Ok(())
 }
@@ -455,8 +498,8 @@ fn render_field_de(
 
     let container = field
         .codegen_hints
-        .get("rust")
-        .and_then(|m| m.get("container"));
+        .get(&CodegenLanguage::Rust)
+        .and_then(|m| m.get(&CodegenHint::Container));
 
     writeln!(w, "{name}:")?;
     if !field.optional
@@ -519,7 +562,9 @@ fn render_type_de(
         }
         model::Type::DatasetRef => writeln!(w, "odf::DatasetRef::try_from({name}).unwrap()")?,
         model::Type::DateTime => writeln!(w, "fb_to_datetime({name})")?,
-        model::Type::Flatbuffers => writeln!(w, "{name}.bytes().to_vec()")?,
+        model::Type::Flatbuffers | model::Type::Generic(_) => {
+            writeln!(w, "{name}.bytes().to_vec()")?
+        }
         model::Type::Multicodec => todo!(),
         model::Type::Multihash => {
             writeln!(w, "odf::Multihash::from_bytes({name}.bytes()).unwrap()")?
@@ -544,7 +589,7 @@ fn render_type_de(
         }
         model::Type::Custom(type_id) => match helpers.model.types.get(type_id).unwrap() {
             model::TypeDefinition::Enum(_) => writeln!(w, "{name}.into()")?,
-            model::TypeDefinition::Struct(_) | model::TypeDefinition::Extensions(_) => {
+            model::TypeDefinition::Struct(_) | model::TypeDefinition::Map(_) => {
                 writeln!(w, "odf::{}::deserialize({name})", type_id.join(""))?
             }
             model::TypeDefinition::Union(_) => writeln!(
@@ -553,6 +598,19 @@ fn render_type_de(
                 type_id.join("")
             )?,
         },
+        model::Type::AnyJson => writeln!(w, "serde_json::from_str({name}).unwrap()")?,
+        model::Type::AccountId => {
+            writeln!(w, "odf::AccountID::from_bytes({name}.bytes()).unwrap()")?
+        }
+        model::Type::AccountName => writeln!(w, "odf::AccountName::try_from({name}).unwrap()")?,
+        model::Type::ResourceContext => {
+            writeln!(w, "odf::ResourceContext::try_from({name}).unwrap()")?
+        }
+        model::Type::ResourceKind => writeln!(w, "odf::ResourceKind::try_from({name}).unwrap()")?,
+        model::Type::ResourceId => {
+            writeln!(w, "odf::ResourceID::from_bytes({name}.bytes()).unwrap()")?
+        }
+        model::Type::ResourceName => writeln!(w, "odf::ResourceName::try_from({name}).unwrap()")?,
     }
     Ok(())
 }
@@ -650,49 +708,116 @@ fn render_enum(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_extensions(
-    typ: &model::Extensions,
+fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    if let Some(format) = typ
+        .codegen_hints
+        .get(&CodegenLanguage::Flatbuffers)
+        .and_then(|h| h.get(&CodegenHint::MapFormat))
+    {
+        if format == "json-encoded-string" {
+            render_map_json_encoded_string(typ, w)
+        } else {
+            panic!("Unknown map format: {format} in {:?}", typ.id);
+        }
+    } else {
+        render_map_with_entry_table(typ, w)
+    }
+}
+
+fn render_map_with_entry_table(
+    typ: &model::Map,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let name = typ.id.join("");
+
+    let value_ser = match &typ.value_type {
+        model::Type::AnyJson => format!("fb.create_string(&serde_json::to_string(value).unwrap())"),
+        model::Type::Custom(_) => format!("value.serialize(fb)"),
+        _ => unreachable!(),
+    };
+    let value_de = match &typ.value_type {
+        model::Type::AnyJson => format!("serde_json::from_str(entry.value().unwrap()).unwrap()"),
+        model::Type::Custom(id) => {
+            format!("odf::{}::deserialize(entry.value().unwrap())", id.join(""))
+        }
+        _ => unreachable!(),
+    };
+
+    writeln!(
+        w,
+        r#"
+        impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{
+            type OffsetT = WIPOffset<fb::{name}<'fb>>;
+
+            fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {{
+                let entries: Vec<_> = self
+                    .entries
+                    .iter()
+                    .map(|(key, value)| {{
+                        let key_offset = fb.create_string(key);
+                        let value_offset = {value_ser};
+                        let mut entry_builder = fb::{name}EntryBuilder::new(fb);
+                        entry_builder.add_key(key_offset);
+                        entry_builder.add_value(value_offset);
+                        entry_builder.finish()
+                    }})
+                    .collect();
+                let entries_offset = fb.create_vector(&entries);
+                let mut builder = fb::{name}Builder::new(fb);
+                builder.add_entries(entries_offset);
+                builder.finish()
+            }}
+        }}
+
+        impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{
+            fn deserialize(proxy: fb::{name}<'fb>) -> Self {{
+                Self {{
+                    entries: proxy
+                        .entries()
+                        .unwrap_or_default()
+                        .iter()
+                        .map(|entry| {{
+                            let key = entry.key().to_string();
+                            let value = {value_de};
+                            (key, value)
+                        }})
+                        .collect(),
+                }}
+            }}
+        }}
+        "#
+    )?;
+    Ok(())
+}
+
+fn render_map_json_encoded_string(
+    typ: &model::Map,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
 
     writeln!(
         w,
-        "impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{"
-    )?;
-    writeln!(w, "type OffsetT = WIPOffset<fb::{name}<'fb>>;")?;
-    writeln!(w)?;
-    writeln!(
-        w,
-        "fn serialize(&self, fb: &mut FlatBufferBuilder <'fb>) -> Self::OffsetT {{"
-    )?;
+        r#"
+        impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{
+            type OffsetT = WIPOffset<fb::{name}<'fb>>;
 
-    writeln!(
-        w,
-        "let attributes_offset = fb.create_string(&serde_json::to_string(&self.attributes).unwrap());"
-    )?;
-    writeln!(w, "let mut builder = fb::{name}Builder::new(fb);")?;
-    writeln!(w, "builder.add_attributes(attributes_offset);")?;
+            fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {{
+                let entries_offset = fb.create_string(&serde_json::to_string(&self.entries).unwrap());
+                let mut builder = fb::{name}Builder::new(fb);
+                builder.add_entries(entries_offset);
+                builder.finish()
+            }}
+        }}
 
-    writeln!(w, "builder.finish()")?;
-    writeln!(w, "}}")?;
-    writeln!(w, "}}")?;
-    writeln!(w)?;
-
-    writeln!(
-        w,
-        "impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{"
+        impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{
+            fn deserialize(proxy: fb::{name}<'fb>) -> Self {{
+                let entries = serde_json::from_str(proxy.entries().unwrap()).unwrap();
+                Self {{ entries }}
+            }}
+        }}
+        "#
     )?;
-    writeln!(w, "fn deserialize(proxy: fb::{name}<'fb>) -> Self {{")?;
-    writeln!(
-        w,
-        "let attributes = serde_json::from_str(proxy.attributes().unwrap()).unwrap();"
-    )?;
-    writeln!(w, "odf::{name} {{")?;
-    writeln!(w, "attributes")?;
-    writeln!(w, "}}")?;
-    writeln!(w, "}}")?;
-    writeln!(w, "}}")?;
     Ok(())
 }
 

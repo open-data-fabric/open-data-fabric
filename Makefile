@@ -21,7 +21,7 @@ SCHEMAS_UTILS_SRC = $(shell find tools/schemas/ -type f -name '*.rs')
 SCHEMA_MARKDOWN = build/metadata-reference.md
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
 
-CODEGEN_CMD = cargo run -q -- codegen
+CODEGEN_CMD = RUST_BACKTRACE=1 cargo run -q -- codegen
 RUSTFMT = rustfmt --edition 2024 --style-edition 2024
 
 all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) schema-lint codegen $(SCHEMA_MARKDOWN) open-data-fabric.md
@@ -36,7 +36,7 @@ $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 	cp $^ $@
 
 schema-lint: $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
-	cargo run -q -- lint
+	RUST_BACKTRACE=1 cargo run -q -- lint
 
 $(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
 	$(CODEGEN_CMD) markdown > $@
@@ -66,7 +66,7 @@ open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 
 .PHONY: lint
 lint:
-	cargo run -q -- lint
+	RUST_BACKTRACE=1 cargo run -q -- lint
 
 
 .PHONY: clean

@@ -1,4 +1,8 @@
-use crate::{codegen::rust_common::format_ident, model};
+use crate::{
+    codegen::rust_common::format_ident,
+    json_schema::{CodegenHint, CodegenLanguage},
+    model,
+};
 use convert_case::{Case, Casing};
 
 const SPEC_URL: &str =
@@ -13,131 +17,64 @@ const PREAMBLE: &str = indoc::indoc!(
 
     #![allow(clippy::all)]
     #![allow(clippy::pedantic)]
+    #![allow(unused_variables)]
 
     use std::path::PathBuf;
-    use super::formats::*;
-    use crate::*;
-    use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use ::serde::{Deserialize, Serialize, Serializer, Deserializer};
     use chrono::{DateTime, Utc};
-    use serde_with::serde_as;
-    use serde_with::skip_serializing_none;
+    use multiformats::*;
+
+    use super::formats::*;
+    use crate::identity::*;
+
+    mod dtos {
+        pub use crate::dtos::*;
+        pub use crate::identity::*;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    pub trait IntoDto {
+        type Dto;
+        fn into_dto(self) -> Self::Dto;
+    }
+
+    impl IntoDto for ::serde::de::IgnoredAny {
+        type Dto = Self;
+        fn into_dto(self) -> Self::Dto { self }
+    }
+
+    impl IntoDto for ::serde_json::Value {
+        type Dto = Self;
+        fn into_dto(self) -> Self::Dto {
+            self
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     macro_rules! implement_serde_as {
-        ($dto:ty, $impl:ty) => {
-            impl ::serde_with::SerializeAs<$dto> for $impl {
-                fn serialize_as<S>(source: &$dto, serializer: S) -> Result<S::Ok, S::Error>
+        ($dto:ty, $proxy:ty) => {
+            impl ::serde_with::SerializeAs<$dto> for $proxy {
+                fn serialize_as<S>(value: &$dto, serializer: S) -> Result<S::Ok, S::Error>
                 where
                     S: Serializer,
                 {
-                    <$impl>::serialize(source, serializer)
+                    // TODO: PERF: Avoid cloning on serialize
+                    let value: $proxy = value.clone().into();
+                    value.serialize(serializer)
                 }
             }
 
-            impl<'de> serde_with::DeserializeAs<'de, $dto> for $impl {
+            impl<'de> serde_with::DeserializeAs<'de, $dto> for $proxy {
                 fn deserialize_as<D>(deserializer: D) -> Result<$dto, D::Error>
                 where
                     D: Deserializer<'de>,
                 {
-                    <$impl>::deserialize(deserializer)
+                    <$proxy>::deserialize(deserializer).map(Into::into)
                 }
             }
         };
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    macro_rules! implement_serde_as_short_form_union {
-        ($dto:ty, $impl:ty) => {
-            impl ::serde_with::SerializeAs<$dto> for $impl {
-                fn serialize_as<S>(source: &$dto, serializer: S) -> Result<S::Ok, S::Error>
-                where
-                    S: Serializer,
-                {
-                    <$impl>::serialize(source, serializer)
-                }
-            }
-
-            impl<'de> serde_with::DeserializeAs<'de, $dto> for $impl {
-                fn deserialize_as<D>(deserializer: D) -> Result<$dto, D::Error>
-                where
-                    D: Deserializer<'de>,
-                {
-                    struct EnumOrShortForm;
-
-                    impl<'de> ::serde::de::Visitor<'de> for EnumOrShortForm {
-                        type Value = $dto;
-
-                        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                            formatter.write_str("Tagged enum of short-form type name")
-                        }
-
-                        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-                        where
-                            E: ::serde::de::Error,
-                        {
-                            let map = ShortFormUnionToMap::new(value);
-                            self.visit_map(map)
-                        }
-
-                        fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
-                        where
-                            M: ::serde::de::MapAccess<'de>,
-                        {
-                            <$impl>::deserialize(::serde::de::value::MapAccessDeserializer::new(map))
-                        }
-                    }
-
-                    deserializer.deserialize_any(EnumOrShortForm)
-                }
-            }
-        };
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    /// Helper to expand the `"typename"` string into `{"kind": "typename"}` map form
-    struct ShortFormUnionToMap<'a, Err> {
-        typename: Option<&'a str>,
-        phantom: std::marker::PhantomData<Err>,
-    }
-
-    impl<'a, Err> ShortFormUnionToMap<'a, Err> {
-        fn new(typename: &'a str) -> Self {
-            Self {
-                typename: Some(typename),
-                phantom: std::marker::PhantomData,
-            }
-        }
-    }
-
-    impl<'a, 'de, Err> ::serde::de::MapAccess<'de> for ShortFormUnionToMap<'a, Err>
-    where
-        Err: ::serde::de::Error,
-    {
-        type Error = Err;
-
-        fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
-        where
-            K: ::serde::de::DeserializeSeed<'de>,
-        {
-            if self.typename.is_some() {
-                seed.deserialize(::serde::de::value::StrDeserializer::new("kind"))
-                    .map(Some)
-            } else {
-                Ok(None)
-            }
-        }
-
-        fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
-        where
-            V: ::serde::de::DeserializeSeed<'de>,
-        {
-            seed.deserialize(::serde::de::value::StrDeserializer::new(
-                self.typename.take().unwrap(),
-            ))
-        }
     }
     "#
 );
@@ -148,10 +85,6 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in model.types.values() {
-        if typ.id().name == "Manifest" {
-            continue;
-        }
-
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -166,54 +99,187 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
         )?;
-        writeln!(w, "")?;
+        writeln!(w)?;
 
         match &typ {
-            model::TypeDefinition::Struct(t) => render_struct(t, w)?,
+            model::TypeDefinition::Struct(t) => render_struct(&model, t, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
-            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
+            model::TypeDefinition::Map(t) => render_map(&model, t, w)?,
         }
+
         writeln!(w)?;
     }
+    writeln!(
+        w,
+        "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+    )?;
+    writeln!(w)?;
+
+    for typ in model.types.values() {
+        // TODO: Support #[serde_as(as = "X")] for generic types
+        match &typ {
+            model::TypeDefinition::Struct(t) if !t.generics.is_empty() => continue,
+            _ => (),
+        };
+        let name = typ.id().join("");
+        writeln!(w, "implement_serde_as!(dtos::{name}, {name});")?;
+    }
+
+    writeln!(w)?;
+
     Ok(())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+fn render_struct(
+    model: &model::Model,
+    typ: &model::Struct,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
+    let generics = format!("<{}>", typ.generics.join(", "));
+    let is_external = typ
+        .codegen_hints
+        .get(&CodegenLanguage::Rust)
+        .and_then(|h| h.get(&CodegenHint::DtoType))
+        .is_some();
 
-    writeln!(w, "#[serde_as]")?;
-    writeln!(w, "#[skip_serializing_none]")?;
-    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
-    writeln!(w, "#[serde(remote = \"{name}\")]")?;
-    writeln!(
-        w,
-        "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
-    )?;
-    writeln!(w, "pub struct {name}Def {{")?;
+    writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
+    writeln!(w, "#[serde(deny_unknown_fields)]")?;
+    writeln!(w, "#[serde(rename_all = \"camelCase\")]")?;
+    writeln!(w, "pub struct {name}{generics} {{")?;
 
     for field in typ.fields.values() {
-        render_field(field, w)?;
+        render_field(model, field, w)?;
     }
 
     writeln!(w, "}}")?;
+
     writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
+
+    let generics_dto = format!(
+        "<{}>",
+        typ.generics
+            .iter()
+            .map(|v| format!("{v}::Dto"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+
+    writeln!(w, "impl{generics} IntoDto for {name}{generics}")?;
+    if !typ.generics.is_empty() {
+        writeln!(w, "where")?;
+        for generic in &typ.generics {
+            writeln!(w, "{generic}: IntoDto,")?;
+            writeln!(w, "<{generic} as IntoDto>::Dto: From<{generic}>,")?;
+        }
+    }
+    writeln!(w, "{{")?;
+    writeln!(w, "type Dto = dtos::{name}{generics_dto};")?;
+    writeln!(w, "fn into_dto(self) -> Self::Dto {{ self.into() }}")?;
+    writeln!(w, "}}")?;
+
+    if typ.from_string {
+        writeln!(w)?;
+
+        writeln!(
+            w,
+            "impl From<dtos::{name}> for StructOrString<{name}> {{ fn from(v: dtos::{name}) -> Self {{ Self(v.into()) }} }}"
+        )?;
+
+        writeln!(
+            w,
+            "impl From<StructOrString<{name}>> for dtos::{name} {{ fn from(v: StructOrString<{name}>) -> Self {{ v.0.into() }} }}"
+        )?;
+    }
+
+    if is_external {
+        // External types should implement serde proxy conversions manually
+        return Ok(());
+    }
+
+    writeln!(w)?;
+
+    let generics_from: Vec<_> = typ.generics.iter().map(|v| format!("{v}From")).collect();
+    let generics_to: Vec<_> = typ.generics.iter().map(|v| format!("{v}To")).collect();
+    let generics_from_to: Vec<_> = generics_from
+        .iter()
+        .chain(generics_to.iter())
+        .cloned()
+        .collect();
+    let whereas: Vec<_> = typ
+        .generics
+        .iter()
+        .map(|v| format!("{v}To: From<{v}From>"))
+        .collect();
+
+    let generics_from = format!("<{}>", generics_from.join(", "));
+    let generics_to = format!("<{}>", generics_to.join(", "));
+    let generics_from_to = format!("<{}>", generics_from_to.join(", "));
+    let whereas = if typ.generics.is_empty() {
+        String::new()
+    } else {
+        format!("where {}", whereas.join(", "))
+    };
+
+    writeln!(
+        w,
+        "impl{generics_from_to} From<dtos::{name}{generics_from}> for {name}{generics_to} {whereas} {{"
+    )?;
+    writeln!(w, "fn from(v: dtos::{name}{generics_from}) -> Self {{")?;
+    writeln!(w, "Self {{")?;
+    for field in typ.fields.values() {
+        render_field_conversion(field, w)?;
+    }
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+
+    writeln!(w)?;
+
+    writeln!(
+        w,
+        "impl{generics_from_to} From<{name}{generics_from}> for dtos::{name}{generics_to} {whereas} {{"
+    )?;
+    writeln!(w, "fn from(v: {name}{generics_from}) -> Self {{")?;
+    writeln!(w, "Self {{")?;
+    for field in typ.fields.values() {
+        render_field_conversion(field, w)?;
+    }
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+
     Ok(())
 }
 
-fn render_field(field: &model::Field, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+fn render_field(
+    model: &model::Model,
+    field: &model::Field,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
     let container = field
         .codegen_hints
-        .get("rust")
-        .and_then(|m| m.get("container"));
+        .get(&CodegenLanguage::Rust)
+        .and_then(|m| m.get(&CodegenHint::Container));
+
+    if field.optional {
+        if let model::Type::Generic(_) = &field.typ {
+            // Workaround for serde bug
+            // See: https://github.com/serde-rs/serde/issues/2759
+            writeln!(w, "#[serde(default = \"Default::default\")]")?;
+        } else {
+            writeln!(w, "#[serde(default)]")?;
+        }
+        writeln!(w, "#[serde(skip_serializing_if = \"Option::is_none\")]")?;
+    }
 
     match &field.typ {
         model::Type::DateTime => {
             if field.optional {
-                writeln!(w, "#[serde(default, with = \"datetime_rfc3339_opt\")]")?;
+                writeln!(w, "#[serde(with = \"datetime_rfc3339_opt\")]")?;
             } else {
                 writeln!(w, "#[serde(with = \"datetime_rfc3339\")]")?;
             }
@@ -221,40 +287,14 @@ fn render_field(field: &model::Field, w: &mut dyn std::io::Write) -> Result<(), 
         model::Type::Flatbuffers => {
             if field.optional {
                 writeln!(w, "#[serde(with = \"base64_opt\")]")?;
-                writeln!(w, "#[serde(default)]")?;
             } else {
                 writeln!(w, "#[serde(with = \"base64\")]")?;
-            }
-        }
-        model::Type::Array(arr) => match &*arr.item_type {
-            model::Type::Custom(id) => {
-                if field.optional {
-                    writeln!(w, "#[serde_as(as = \"Option<Vec<{}Def>>\")]", id.join(""))?;
-                    writeln!(w, "#[serde(default)]")?;
-                } else {
-                    writeln!(w, "#[serde_as(as = \"Vec<{}Def>\")]", id.join(""))?;
-                }
-            }
-            _ => (),
-        },
-        model::Type::Custom(id) => {
-            let mut serde_as = format!("{}Def", id.join(""));
-            if let Some(container) = container {
-                serde_as = format!("{container}<{serde_as}>");
-            }
-            if field.optional {
-                serde_as = format!("Option<{serde_as}>");
-            }
-            writeln!(w, "#[serde_as(as = \"{serde_as}\")]")?;
-
-            if field.optional {
-                writeln!(w, "#[serde(default)]")?;
             }
         }
         _ => (),
     };
 
-    let mut typ = format_type(&field.typ);
+    let mut typ = format_type(model, &field.typ);
     if let Some(container) = container {
         typ = format!("{container}<{typ}>");
     }
@@ -266,48 +306,138 @@ fn render_field(field: &model::Field, w: &mut dyn std::io::Write) -> Result<(), 
     Ok(())
 }
 
+fn render_field_conversion(
+    field: &model::Field,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let container = field
+        .codegen_hints
+        .get(&CodegenLanguage::Rust)
+        .and_then(|m| m.get(&CodegenHint::Container));
+
+    let fname = format_ident(&field.name);
+
+    let convert = if let Some(container) = container {
+        format!(
+            "{container}::new({})",
+            format_into(&field.typ, &format!("(*v.{fname})"))
+        )
+    } else if !field.optional {
+        format_into(&field.typ, &format!("v.{fname}"))
+    } else {
+        format!("v.{fname}.map(|v| {{ {} }})", format_into(&field.typ, "v"))
+    };
+
+    writeln!(w, "{fname}: {convert},",)?;
+
+    Ok(())
+}
+
+fn format_into(typ: &model::Type, ident: &str) -> String {
+    match typ {
+        model::Type::Boolean
+        | model::Type::Int8
+        | model::Type::Int16
+        | model::Type::Int32
+        | model::Type::Int64
+        | model::Type::UInt8
+        | model::Type::UInt16
+        | model::Type::UInt32
+        | model::Type::UInt64
+        | model::Type::String
+        | model::Type::DatasetAlias
+        | model::Type::DatasetId
+        | model::Type::DatasetRef
+        | model::Type::DateTime
+        | model::Type::Flatbuffers
+        | model::Type::Multicodec
+        | model::Type::Multihash
+        | model::Type::Path
+        | model::Type::Regex
+        | model::Type::Url
+        | model::Type::AccountId
+        | model::Type::AccountName
+        | model::Type::ResourceContext
+        | model::Type::ResourceKind
+        | model::Type::ResourceId
+        | model::Type::ResourceName
+        | model::Type::AnyJson => format!("{ident}"),
+        model::Type::Generic(_) | model::Type::Custom(_) => format!("{ident}.into()"),
+        model::Type::Array(_) => format!("{ident}.into_iter().map(Into::into).collect()"),
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
 
-    writeln!(w, "#[serde_as]")?;
-    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
-    writeln!(w, "#[serde(remote = \"{name}\")]")?;
-    writeln!(w, "#[serde(deny_unknown_fields, tag = \"kind\")]")?;
-    writeln!(w, "pub enum {name}Def {{")?;
+    writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
+    writeln!(w, "#[serde(deny_unknown_fields)]")?;
+    writeln!(w, "#[serde(tag = \"kind\")]")?;
+    writeln!(w, "pub enum {name} {{")?;
 
     for variant in &typ.variants {
-        render_union_variant(variant, w)?;
+        let varname = &variant.name;
+        let typename = variant.join("");
+
+        // Allow lowercase and camelCase names
+        render_aliases(varname, w)?;
+        writeln!(w, "{varname}({typename}),")?;
     }
 
     writeln!(w, "}}")?;
-    writeln!(w)?;
-    if !typ.short_form {
-        writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
-    } else {
+
+    if typ.from_string {
+        writeln!(w)?;
+
         writeln!(
             w,
-            "implement_serde_as_short_form_union!({name}, {name}Def);"
+            "impl From<dtos::{name}> for UnionOrString<{name}> {{ fn from(v: dtos::{name}) -> Self {{ Self(v.into()) }} }}"
+        )?;
+
+        writeln!(
+            w,
+            "impl From<UnionOrString<{name}>> for dtos::{name} {{ fn from(v: UnionOrString<{name}>) -> Self {{ v.0.into() }} }}"
         )?;
     }
 
-    Ok(())
-}
+    writeln!(w)?;
 
-fn render_union_variant(
-    variant: &model::TypeId,
-    w: &mut dyn std::io::Write,
-) -> Result<(), std::io::Error> {
-    let varname = &variant.name;
-    let typename = variant.join("");
+    writeln!(w, "impl IntoDto for {name} {{")?;
+    writeln!(w, "type Dto = dtos::{name};")?;
+    writeln!(w, "fn into_dto(self) -> Self::Dto {{ self.into() }}")?;
+    writeln!(w, "}}")?;
 
-    // Allow lowercase and camelCase names
-    render_aliases(varname, w)?;
-    writeln!(
-        w,
-        "{varname}(#[serde_as(as = \"{typename}Def\")] {typename}),"
-    )?;
+    writeln!(w)?;
+
+    writeln!(w, "impl From<dtos::{name}> for {name} {{")?;
+    writeln!(w, "fn from(v: dtos::{name}) -> Self {{")?;
+    writeln!(w, "match v {{")?;
+    for variant in &typ.variants {
+        let varname = &variant.name;
+        writeln!(
+            w,
+            "dtos::{name}::{varname}(v) => Self::{varname}(v.into()),"
+        )?;
+    }
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+
+    writeln!(w)?;
+
+    writeln!(w, "impl From<{name}> for dtos::{name} {{")?;
+    writeln!(w, "fn from(v: {name}) -> Self {{")?;
+    writeln!(w, "match v {{")?;
+    for variant in &typ.variants {
+        let varname = &variant.name;
+        writeln!(w, "{name}::{varname}(v) => Self::{varname}(v.into()),")?;
+    }
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+
     Ok(())
 }
 
@@ -316,10 +446,9 @@ fn render_union_variant(
 fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
 
-    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
-    writeln!(w, "#[serde(remote = \"{name}\")]")?;
+    writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
     writeln!(w, "#[serde(deny_unknown_fields)]")?;
-    writeln!(w, "pub enum {name}Def {{")?;
+    writeln!(w, "pub enum {name} {{")?;
     {
         for variant in &typ.variants {
             render_aliases(&variant, w)?;
@@ -327,35 +456,99 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
         }
     }
     writeln!(w, "}}")?;
+
     writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
+
+    writeln!(w, "impl IntoDto for {name} {{")?;
+    writeln!(w, "type Dto = dtos::{name};")?;
+    writeln!(w, "fn into_dto(self) -> Self::Dto {{ self.into() }}")?;
+    writeln!(w, "}}")?;
+
+    writeln!(w)?;
+
+    writeln!(w, "impl From<dtos::{name}> for {name} {{")?;
+    writeln!(w, "fn from(v: dtos::{name}) -> Self {{")?;
+    writeln!(w, "match v {{")?;
+    for variant in &typ.variants {
+        writeln!(w, "dtos::{name}::{variant} => Self::{variant},")?;
+    }
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+
+    writeln!(w)?;
+
+    writeln!(w, "impl From<{name}> for dtos::{name} {{")?;
+    writeln!(w, "fn from(v: {name}) -> Self {{")?;
+    writeln!(w, "match v {{")?;
+    for variant in &typ.variants {
+        writeln!(w, "{name}::{variant} => Self::{variant},")?;
+    }
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+    writeln!(w, "}}")?;
+
     Ok(())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_extensions(
-    typ: &model::Extensions,
+fn render_map(
+    model: &model::Model,
+    typ: &model::Map,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
+    let value_type = format_type(model, &typ.value_type);
 
-    writeln!(w, "#[serde_as]")?;
-    writeln!(w, "#[skip_serializing_none]")?;
-    writeln!(w, "#[derive(Serialize, Deserialize)]")?;
-    writeln!(w, "#[serde(remote = \"{name}\")]")?;
-    writeln!(w, "pub struct {name}Def {{")?;
-
+    writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
+    writeln!(w, "pub struct {name} {{")?;
     writeln!(w, "#[serde(flatten)]")?;
-    writeln!(w, "#[serde(with = \"map_value_limited_precision\")]")?;
+    match typ.value_type {
+        model::Type::AnyJson => writeln!(w, "#[serde(with = \"map_value_limited_precision\")]")?,
+        _ => (),
+    }
     writeln!(
         w,
-        "pub attributes: serde_json::Map<String, serde_json::Value>,"
+        "pub entries: std::collections::BTreeMap<String, {value_type}>,"
+    )?;
+    writeln!(w, "}}")?;
+
+    writeln!(w)?;
+
+    let entries_into = match typ.value_type {
+        model::Type::Custom(_) => "v.entries.into_iter().map(|(k, v)| (k, v.into())).collect()",
+        _ => "v.entries",
+    };
+
+    writeln!(
+        w,
+        r#"
+        impl IntoDto for {name} {{
+            type Dto = dtos::{name};
+            fn into_dto(self) -> Self::Dto {{
+                self.into()
+            }}
+        }}
+
+        impl From<dtos::{name}> for {name} {{
+            fn from(v: dtos::{name}) -> Self {{
+                Self {{
+                    entries: {entries_into},
+                }}
+            }}
+        }}
+
+        impl From<{name}> for dtos::{name} {{
+            fn from(v: {name}) -> Self {{
+                Self {{
+                    entries: {entries_into},
+                }}
+            }}
+        }}
+        "#
     )?;
 
-    writeln!(w, "}}")?;
-    writeln!(w)?;
-    writeln!(w, "implement_serde_as!({name}, {name}Def);")?;
     Ok(())
 }
 
@@ -382,7 +575,7 @@ fn render_aliases(name: &str, w: &mut dyn std::io::Write) -> Result<(), std::io:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn format_type(typ: &model::Type) -> String {
+fn format_type(model: &model::Model, typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("i8"),
@@ -394,18 +587,41 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),
         model::Type::String => format!("String"),
-        model::Type::DatasetAlias => format!("DatasetAlias"),
-        model::Type::DatasetId => format!("DatasetID"),
-        model::Type::DatasetRef => format!("DatasetRef"),
         model::Type::DateTime => format!("DateTime<Utc>"),
-        model::Type::Flatbuffers => format!("Vec<u8>"),
-        model::Type::Multicodec => format!("Multicodec"),
+        // model::Type::Multicodec => format!("Multicodec"),
+        model::Type::Multicodec => format!("String"),
         model::Type::Multihash => format!("Multihash"),
         model::Type::Path => format!("PathBuf"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
-        model::Type::Array(t) => format!("Vec<{}>", format_type(&t.item_type)),
-        model::Type::Custom(name) => name.join("").to_string(),
+
+        model::Type::DatasetAlias => format!("DatasetAlias"),
+        model::Type::DatasetId => format!("DatasetID"),
+        model::Type::DatasetRef => format!("DatasetRef"),
+        model::Type::AccountId => format!("AccountID"),
+        model::Type::AccountName => format!("AccountName"),
+        model::Type::ResourceContext => format!("ResourceContext"),
+        model::Type::ResourceKind => format!("ResourceKind"),
+        model::Type::ResourceId => format!("ResourceID"),
+        model::Type::ResourceName => format!("ResourceName"),
+
+        model::Type::Flatbuffers => format!("Vec<u8>"),
+        model::Type::Generic(t) => t.clone(),
+        model::Type::Array(t) => format!("Vec<{}>", format_type(model, &t.item_type)),
+        model::Type::Custom(id) => {
+            let name = id.join("").to_string();
+
+            match &model.types[id] {
+                model::TypeDefinition::Struct(t) if t.from_string => {
+                    format!("StructOrString<{name}>")
+                }
+                model::TypeDefinition::Union(t) if t.from_string => {
+                    format!("UnionOrString<{name}>")
+                }
+                _ => name,
+            }
+        }
+        model::Type::AnyJson => format!("serde_json::Value"),
     }
 }
 

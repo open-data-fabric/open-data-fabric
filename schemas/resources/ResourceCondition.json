@@ -1,0 +1,31 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/ResourceCondition",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Generic contdition that can be added by contollers to provide additional information about the state of a resource.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["value"],
+  "properties": {
+    "value": {
+      "description": "Value of the condition."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human readable message indicating details about the transition."
+    },
+    "lastTransitionTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when condition transitioned from one status to another."
+    },
+    "observedGeneration": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Resource generation that was last processed by the controller that added this condition."
+    }
+  }
+}

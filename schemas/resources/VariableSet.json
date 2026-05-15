@@ -1,0 +1,16 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/VariableSet",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "variables"
+  ],
+  "properties": {
+    "variables": {
+      "$ref": "/schemas/Variables",
+      "description": "Key value pairs of variables."
+    }
+  }
+}

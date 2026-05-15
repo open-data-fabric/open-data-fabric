@@ -1,0 +1,10 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/ResourceAnnotations",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.",
+  "type": "object",
+  "additionalProperties": false,
+  "patternProperties": {
+    ".*": {}
+  }
+}

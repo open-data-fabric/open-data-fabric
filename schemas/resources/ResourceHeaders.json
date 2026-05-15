@@ -1,0 +1,54 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/ResourceHeaders",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Container for identity and ownership information of a resource.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "resource-id",
+      "description": "Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation."
+    },
+    "name": {
+      "type": "string",
+      "format": "resource-name",
+      "description": "Symbolic name of a resource that identifies it within a scope of an onwing account."
+    },
+    "account": {
+      "$ref": "/schemas/AccountRef",
+      "description": "Reference to an account that owns the resource."
+    },
+    "labels": {
+      "$ref": "/schemas/ResourceLabels",
+      "description": "Map of string keys and values that can be used to organize, categorize, and query resources."
+    },
+    "annotations": {
+      "$ref": "/schemas/ResourceAnnotations",
+      "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by."
+    },
+    "generation": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the resource was first applied and assigned an identity."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the resource was last updated, including header, spec, and status updates."
+    },
+    "deletedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the resource was deleted."
+    }
+  }
+}

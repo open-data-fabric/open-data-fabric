@@ -1,5 +1,8 @@
 use super::rust_common::format_ident;
-use crate::model;
+use crate::{
+    json_schema::{CodegenHint, CodegenLanguage},
+    model,
+};
 use convert_case::{Case, Casing};
 
 const SPEC_URL: &str =
@@ -33,7 +36,13 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in model.types.values() {
-        if typ.id().name == "Manifest" {
+        if typ
+            .codegen_hints()
+            .get(&CodegenLanguage::Rust)
+            .and_then(|h| h.get(&CodegenHint::DtoType))
+            .is_some()
+        {
+            // Externally defined type
             continue;
         }
 
@@ -61,7 +70,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 }
             }
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
-            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
+            model::TypeDefinition::Map(t) => render_map(t, w)?,
         }
         writeln!(w)?;
     }
@@ -71,6 +80,8 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let generics = format!("<{}>", typ.generics.join(", "));
+
     let mut derives = vec!["Clone", "Debug", "Eq"];
 
     if !typ.fields.values().any(|f| f.default.is_some()) {
@@ -81,7 +92,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     }
 
     writeln!(w, "#[derive({})]", derives.join(", "))?;
-    writeln!(w, "pub struct {} {{", typ.id.join(""))?;
+    writeln!(w, "pub struct {}{} {{", typ.id.join(""), generics)?;
 
     for field in typ.fields.values() {
         render_description(
@@ -94,8 +105,8 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
         let mut typ = format_type(&field.typ);
         if let Some(container) = field
             .codegen_hints
-            .get("rust")
-            .and_then(|m| m.get("container"))
+            .get(&CodegenLanguage::Rust)
+            .and_then(|m| m.get(&CodegenHint::Container))
         {
             typ = format!("{container}<{typ}>");
         }
@@ -235,15 +246,13 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_extensions(
-    typ: &model::Extensions,
-    w: &mut dyn std::io::Write,
-) -> Result<(), std::io::Error> {
+fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let value_type = format_type(&typ.value_type);
     writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub struct {} {{", typ.id.join(""))?;
     writeln!(
         w,
-        "pub attributes: serde_json::Map<String, serde_json::Value>,"
+        "pub entries: std::collections::BTreeMap<String, {value_type}>,"
     )?;
     writeln!(w, "}}")?;
     Ok(())
@@ -263,18 +272,30 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),
         model::Type::String => format!("String"),
-        model::Type::DatasetAlias => format!("DatasetAlias"),
-        model::Type::DatasetId => format!("DatasetID"),
-        model::Type::DatasetRef => format!("DatasetRef"),
+
+        // model::Type::Multicodec => format!("Multicodec"),
         model::Type::DateTime => format!("DateTime<Utc>"),
-        model::Type::Flatbuffers => format!("Vec<u8>"),
-        model::Type::Multicodec => format!("Multicodec"),
+        model::Type::Multicodec => format!("String"),
         model::Type::Multihash => format!("Multihash"),
         model::Type::Path => format!("PathBuf"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
+
+        model::Type::AccountId => format!("AccountID"),
+        model::Type::AccountName => format!("AccountName"),
+        model::Type::DatasetAlias => format!("DatasetAlias"),
+        model::Type::DatasetRef => format!("DatasetRef"),
+        model::Type::DatasetId => format!("DatasetID"),
+        model::Type::ResourceContext => format!("ResourceContext"),
+        model::Type::ResourceKind => format!("ResourceKind"),
+        model::Type::ResourceId => format!("ResourceID"),
+        model::Type::ResourceName => format!("ResourceName"),
+
+        model::Type::Flatbuffers => format!("Vec<u8>"),
+        model::Type::Generic(name) => name.clone(),
         model::Type::Array(t) => format!("Vec<{}>", format_type(&t.item_type)),
         model::Type::Custom(name) => name.join("").to_string(),
+        model::Type::AnyJson => format!("serde_json::Value"),
     }
 }
 

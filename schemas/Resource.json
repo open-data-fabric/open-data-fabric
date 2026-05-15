@@ -1,0 +1,38 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/Resource",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "kind",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "context": {
+      "type": "string",
+      "format": "resource-context",
+      "description": "Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`."
+    },
+    "kind": {
+      "type": "string",
+      "format": "resource-kind",
+      "description": "Type name of the resource which is unique within a given context."
+    },
+    "headers": {
+      "$ref": "/schemas/ResourceHeaders",
+      "description": "Container for identity and ownership information of a resource."
+    },
+    "spec": {
+      "type": "object",
+      "format": "fragment",
+      "description": "Specifies the desired state of a resource."
+    },
+    "status": {
+      "$ref": "/schemas/ResourceStatus",
+      "description": "Resource lifecycle and reconciliation inforamtion."
+    }
+  }
+}

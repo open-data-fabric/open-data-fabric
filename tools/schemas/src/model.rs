@@ -7,7 +7,7 @@ use std::{
 
 use indexmap::IndexMap;
 
-use crate::json_schema;
+use crate::json_schema::{self, CodegenHint, CodegenLanguage};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -73,7 +73,7 @@ pub enum TypeDefinition {
     Struct(Struct),
     Union(Union),
     Enum(Enum),
-    Extensions(Extensions),
+    Map(Map),
 }
 
 impl TypeDefinition {
@@ -82,7 +82,7 @@ impl TypeDefinition {
             TypeDefinition::Struct(v) => &v.id,
             TypeDefinition::Union(v) => &v.id,
             TypeDefinition::Enum(v) => &v.id,
-            TypeDefinition::Extensions(v) => &v.id,
+            TypeDefinition::Map(v) => &v.id,
         }
     }
 
@@ -91,7 +91,16 @@ impl TypeDefinition {
             TypeDefinition::Struct(v) => &v.description,
             TypeDefinition::Union(v) => &v.description,
             TypeDefinition::Enum(v) => &v.description,
-            TypeDefinition::Extensions(v) => &v.description,
+            TypeDefinition::Map(v) => &v.description,
+        }
+    }
+
+    pub fn codegen_hints(&self) -> &IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>> {
+        match self {
+            TypeDefinition::Struct(v) => &v.codegen_hints,
+            TypeDefinition::Union(v) => &v.codegen_hints,
+            TypeDefinition::Enum(v) => &v.codegen_hints,
+            TypeDefinition::Map(v) => &v.codegen_hints,
         }
     }
 
@@ -100,7 +109,7 @@ impl TypeDefinition {
             TypeDefinition::Struct(v) => &v.src,
             TypeDefinition::Union(v) => &v.src,
             TypeDefinition::Enum(v) => &v.src,
-            TypeDefinition::Extensions(v) => &v.src,
+            TypeDefinition::Map(v) => &v.src,
         }
     }
 
@@ -115,6 +124,7 @@ impl TypeDefinition {
             .unwrap()
         {
             "schemas" => TypeCategory::Root,
+            "resources" => TypeCategory::Resource,
             "fragments" => TypeCategory::Fragment,
             "metadata-events" => TypeCategory::MetadataEvent,
             "schema" => TypeCategory::DataSchema,
@@ -127,6 +137,7 @@ impl TypeDefinition {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TypeCategory {
     Root,
+    Resource,
     Fragment,
     MetadataEvent,
     DataSchema,
@@ -137,7 +148,10 @@ pub enum TypeCategory {
 pub struct Struct {
     pub id: TypeId,
     pub fields: IndexMap<String, Field>,
+    pub generics: Vec<String>,
     pub description: String,
+    pub from_string: bool,
+    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
     pub src: PathBuf,
 }
 
@@ -146,8 +160,9 @@ pub struct Union {
     pub id: TypeId,
     pub variants: Vec<TypeId>,
     pub description: String,
+    pub from_string: bool,
+    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
     pub src: PathBuf,
-    pub short_form: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -156,18 +171,22 @@ pub struct Enum {
     pub variants: Vec<String>,
     pub description: String,
     pub src: PathBuf,
+    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
     pub format: Type,
 }
 
 #[derive(Debug, Clone)]
-pub struct Extensions {
+pub struct Map {
     pub id: TypeId,
     pub description: String,
+    pub value_type: Type,
+    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
     pub src: PathBuf,
 }
 
 #[derive(Debug, Clone)]
 pub enum Type {
+    // Scalars
     Boolean,
     Int8,
     Int16,
@@ -178,18 +197,33 @@ pub enum Type {
     UInt32,
     UInt64,
     String,
-    DatasetAlias,
-    DatasetId,
-    DatasetRef,
+
     DateTime,
-    Flatbuffers,
     Multicodec,
     Multihash,
     Path,
     Regex,
     Url,
+
+    // Identity & references
+    AccountId,
+    AccountName,
+
+    DatasetAlias,
+    DatasetId,
+    DatasetRef,
+
+    ResourceContext,
+    ResourceKind,
+    ResourceId,
+    ResourceName,
+
+    // Composite
+    Flatbuffers,
+    Generic(String),
     Array(Array),
     Custom(TypeId),
+    AnyJson,
 }
 
 #[derive(Debug, Clone)]
@@ -208,7 +242,7 @@ pub struct Field {
     pub examples: Option<Vec<serde_json::Value>>,
     pub explicit_tag: Option<u32>,
     pub deprecated: bool,
-    pub codegen_hints: IndexMap<String, IndexMap<String, String>>,
+    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
 }
 
 #[derive(Debug, Clone)]
@@ -262,30 +296,97 @@ fn parse_type_definition(
 ) -> TypeDefinition {
     match &schema {
         json_schema::Schema {
-            one_of: Some(_), ..
+            one_of: Some(_),
+            format: None,
+            ..
         } => TypeDefinition::Union(parse_type_union(id, schema, src, ctx)),
+        json_schema::Schema {
+            one_of: Some(_),
+            format: Some(json_schema::Format::UnionOrString),
+            ..
+        } => {
+            let mut schema = schema;
+            match schema.one_of.as_mut().unwrap().remove(0) {
+                json_schema::Schema {
+                    r#type: Some(json_schema::Type::String),
+                    ..
+                } => (),
+                _ => panic!("First variant of a `union-or-string` must be a string type: {ctx}"),
+            }
+
+            TypeDefinition::Union(parse_type_union(id, schema, src, ctx))
+        }
+        json_schema::Schema {
+            format: Some(json_schema::Format::StructOrString),
+            ..
+        } => {
+            let mut schema = schema;
+            let Some(one_of) = &mut schema.one_of else {
+                panic!("A `struct-or-string` schema must be a `oneOf` union: {ctx}")
+            };
+
+            match one_of.remove(0) {
+                json_schema::Schema {
+                    r#type: Some(json_schema::Type::String),
+                    ..
+                } => (),
+                _ => panic!("First variant of a `struct-or-string` must be a string type: {ctx}"),
+            }
+
+            let obj = schema.one_of.as_mut().unwrap().remove(0);
+            assert!(schema.one_of.as_ref().unwrap().is_empty());
+
+            let schema = json_schema::Schema {
+                id: schema.id,
+                schema: schema.schema,
+                defs: schema.defs,
+                r#type: obj.r#type,
+                required: obj.required,
+                properties: obj.properties,
+                pattern_properties: obj.pattern_properties,
+                additional_properties: obj.additional_properties,
+                one_of: obj.one_of,
+                r#enum: obj.r#enum,
+                items: obj.items,
+                r#ref: obj.r#ref,
+                format: obj.format,
+                default: obj.default,
+                description: schema.description,
+                tag: obj.tag,
+                codegen: obj.codegen,
+                deprecated: obj.deprecated,
+                examples: obj.examples,
+                src: obj.src,
+            };
+            TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, true))
+        }
         json_schema::Schema {
             r#enum: Some(_), ..
         } => TypeDefinition::Enum(parse_type_enum(id, schema, src, ctx)),
         json_schema::Schema {
-            r#type: Some(t),
+            r#type: Some(json_schema::Type::Object),
             pattern_properties: Some(_),
             properties: None,
             ..
-        } if t == "object" => {
-            TypeDefinition::Extensions(parse_type_extensions(id, schema, src, ctx))
-        }
+        } => TypeDefinition::Map(parse_type_map(id, schema, src, ctx)),
         json_schema::Schema {
-            r#type: Some(t), ..
-        } if t == "object" => TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx)),
+            r#type: Some(json_schema::Type::Object),
+            ..
+        } => TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, false)),
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_struct(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Struct {
-    assert_eq!(schema.r#type.as_deref(), Some("object"));
+fn parse_type_struct(
+    id: TypeId,
+    schema: json_schema::Schema,
+    src: PathBuf,
+    ctx: String,
+    from_string: bool,
+) -> Struct {
+    assert_eq!(schema.r#type, Some(json_schema::Type::Object));
 
     let json_schema::Schema {
         id: None,
@@ -304,7 +405,7 @@ fn parse_type_struct(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx:
         default: None,
         description: Some(description),
         tag: None,
-        codegen: None,
+        codegen,
         deprecated: None,
         examples: None,
         src: None,
@@ -314,6 +415,7 @@ fn parse_type_struct(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx:
     };
 
     let mut fields = IndexMap::new();
+    let mut generics = Vec::new();
 
     for (pname, mut psch) in schema
         .properties
@@ -335,6 +437,15 @@ fn parse_type_struct(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx:
 
         let ftype = parse_type(psch, &id, format!("{ctx}.{pname}"));
         let fname = pname.to_case(Case::Snake);
+
+        let ftype = match ftype {
+            Type::Generic(_) => {
+                let generic_t = format!("{}{}T", fname[0..1].to_uppercase(), &fname[1..]);
+                generics.push(generic_t.clone());
+                Type::Generic(generic_t)
+            }
+            _ => ftype,
+        };
 
         let field = Field {
             name: fname.clone(),
@@ -367,6 +478,9 @@ fn parse_type_struct(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx:
         id,
         description,
         fields,
+        generics,
+        from_string,
+        codegen_hints: codegen.unwrap_or_default(),
         src,
     }
 }
@@ -383,7 +497,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         properties: None,
         pattern_properties: None,
         additional_properties: None,
-        one_of: Some(mut one_of),
+        one_of: Some(one_of),
         r#enum: None,
         items: None,
         r#ref: None,
@@ -400,25 +514,10 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         panic!("Invalid union schema: {ctx}: {}", schema.display())
     };
 
-    let (short_form, expected_variants) = match format.as_deref() {
-        None => (false, None),
-        Some("union-or-string") => {
-            let str_enum = one_of.remove(0);
-
-            assert_eq!(
-                str_enum.r#type.as_deref(),
-                Some("string"),
-                "First variant of a `union-or-string` must be a string type: {ctx}"
-            );
-
-            assert!(
-                str_enum.r#enum.is_some(),
-                "First variant of a `union-or-string` must specify an enum: {ctx}"
-            );
-
-            (true, str_enum.r#enum)
-        }
-        Some(fmt) => panic!("Invalid union format: {ctx}: {fmt}"),
+    let from_string = match format {
+        None => false,
+        Some(json_schema::Format::UnionOrString) => true,
+        Some(fmt) => panic!("Invalid union format: {ctx}: {fmt:?}"),
     };
 
     let mut variants = Vec::new();
@@ -429,19 +528,12 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
 
     assert!(!variants.is_empty(), "Union must have at least one variant");
 
-    if let Some(expected_variants) = expected_variants {
-        let actual_variants: Vec<String> = variants.iter().map(|v| v.name.clone()).collect();
-        assert_eq!(
-            expected_variants, actual_variants,
-            "union-or-string enum must match referenced variants"
-        );
-    }
-
     Union {
         id,
         variants,
         description,
-        short_form,
+        from_string,
+        codegen_hints: Default::default(),
         src,
     }
 }
@@ -475,7 +567,11 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         panic!("Invalid enum schema: {ctx}: {}", schema.display())
     };
 
-    assert_eq!(typ, "string", "Only string type enums are supported: {ctx}");
+    assert_eq!(
+        typ,
+        json_schema::Type::String,
+        "Only string type enums are supported: {ctx}"
+    );
 
     let mut variants = Vec::new();
     for variant in enums {
@@ -485,16 +581,16 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         }
     }
 
-    let format = match format.unwrap_or("int32".into()).as_str() {
-        "int8" => Type::Int8,
-        "int16" => Type::Int16,
-        "int32" => Type::Int32,
-        "int64" => Type::Int64,
-        "uint8" => Type::UInt8,
-        "uint16" => Type::UInt16,
-        "uint32" => Type::UInt32,
-        "uint64" => Type::UInt64,
-        fmt => panic!("Invalid enum format: {ctx}: {}", fmt),
+    let format = match format.unwrap_or(json_schema::Format::Int32) {
+        json_schema::Format::Int8 => Type::Int8,
+        json_schema::Format::Int16 => Type::Int16,
+        json_schema::Format::Int32 => Type::Int32,
+        json_schema::Format::Int64 => Type::Int64,
+        json_schema::Format::UInt8 => Type::UInt8,
+        json_schema::Format::UInt16 => Type::UInt16,
+        json_schema::Format::UInt32 => Type::UInt32,
+        json_schema::Format::UInt64 => Type::UInt64,
+        fmt => panic!("Invalid enum format: {ctx}: {fmt:?}"),
     };
 
     assert!(!variants.is_empty(), "Enum must have at least one variant");
@@ -503,20 +599,16 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         id,
         variants,
         description,
-        src,
         format,
+        codegen_hints: Default::default(),
+        src,
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn parse_type_extensions(
-    id: TypeId,
-    schema: json_schema::Schema,
-    src: PathBuf,
-    ctx: String,
-) -> Extensions {
-    assert_eq!(schema.r#type.as_deref(), Some("object"));
+fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Map {
+    assert_eq!(schema.r#type, Some(json_schema::Type::Object));
 
     let json_schema::Schema {
         id: None,
@@ -535,54 +627,33 @@ fn parse_type_extensions(
         default: None,
         description: Some(description),
         tag: None,
-        codegen: None,
+        codegen,
         deprecated: None,
         examples: None,
         src: None,
-    } = &schema
+    } = schema
     else {
-        panic!("Invalid extensions schema: {ctx}: {}", schema.display())
+        panic!("Invalid map schema: {ctx}: {}", schema.display())
     };
 
     if pattern_properties.len() != 1 {
-        panic!(
-            "Only one patterns is supported in extensions schema: {ctx}: {}",
-            schema.display()
-        )
+        panic!("Only one pattern is supported in map schema: {ctx}",)
     }
 
-    let Some(json_schema::Schema {
-        id: None,
-        schema: None,
-        defs: None,
-        r#type: None,
-        required: None,
-        properties: None,
-        pattern_properties: None,
-        additional_properties: None,
-        one_of: None,
-        r#enum: None,
-        items: None,
-        r#ref: None,
-        format: None,
-        default: None,
-        description: None,
-        tag: None,
-        codegen: None,
-        deprecated: None,
-        examples: None,
-        src: None,
-    }) = pattern_properties.values().into_iter().next()
-    else {
-        panic!(
-            "Extensions propety values expected to be any-type: {ctx}: {}",
-            schema.display()
-        )
-    };
+    let value_schema = pattern_properties.into_iter().next().unwrap().1;
 
-    Extensions {
+    let value_type = parse_type(value_schema, &id, ctx.clone());
+
+    match &value_type {
+        Type::String | Type::Custom(_) | Type::AnyJson => (),
+        _ => panic!("Map values can only be strings, any, or $ref: {ctx}"),
+    }
+
+    Map {
         id,
         description: description.clone(),
+        value_type,
+        codegen_hints: codegen.unwrap_or_default(),
         src,
     }
 }
@@ -593,13 +664,29 @@ fn parse_type(schema: json_schema::Schema, root: &TypeId, ctx: String) -> Type {
     match &schema {
         json_schema::Schema { r#ref: Some(_), .. } => Type::Custom(parse_ref(schema, root, ctx)),
         json_schema::Schema {
-            r#type: Some(t), ..
-        } if t == "array" => Type::Array(parse_type_array(schema, root, ctx)),
+            r#type: Some(json_schema::Type::Array),
+            ..
+        } => Type::Array(parse_type_array(schema, root, ctx)),
         json_schema::Schema {
-            r#type: Some(t), ..
-        } if ["string", "integer", "boolean"].contains(&t.as_str()) => {
-            parse_type_scalar(schema, ctx)
-        }
+            r#type:
+                Some(
+                    json_schema::Type::Boolean
+                    | json_schema::Type::Integer
+                    | json_schema::Type::String,
+                ),
+            ..
+        } => parse_type_scalar(schema, ctx),
+        json_schema::Schema {
+            r#type: Some(json_schema::Type::Object),
+            ..
+        } => parse_type_scalar(schema, ctx),
+        json_schema::Schema {
+            r#type: None,
+            r#ref: None,
+            one_of: None,
+            r#enum: None,
+            ..
+        } => Type::AnyJson,
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
 }
@@ -607,7 +694,7 @@ fn parse_type(schema: json_schema::Schema, root: &TypeId, ctx: String) -> Type {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn parse_type_array(schema: json_schema::Schema, root: &TypeId, ctx: String) -> Array {
-    assert_eq!(schema.r#type.as_deref(), Some("array"));
+    assert_eq!(schema.r#type, Some(json_schema::Type::Array));
 
     let json_schema::Schema {
         id: None,
@@ -669,28 +756,46 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         panic!("Invalid scalar schema: {ctx}: {}", schema.display())
     };
 
-    match (typ.as_str(), format.as_deref()) {
-        ("boolean", None) => Type::Boolean,
-        ("integer", Some(format)) => match format {
-            "int16" => Type::Int16,
-            "int32" => Type::Int32,
-            "int64" => Type::Int64,
-            "uint16" => Type::UInt16,
-            "uint32" => Type::UInt32,
-            "uint64" => Type::UInt64,
+    match (typ, format) {
+        (json_schema::Type::Boolean, None) => Type::Boolean,
+        (json_schema::Type::Integer, Some(format)) => match format {
+            json_schema::Format::Int8 => Type::Int8,
+            json_schema::Format::Int16 => Type::Int16,
+            json_schema::Format::Int32 => Type::Int32,
+            json_schema::Format::Int64 => Type::Int64,
+            json_schema::Format::UInt8 => Type::UInt8,
+            json_schema::Format::UInt16 => Type::UInt16,
+            json_schema::Format::UInt32 => Type::UInt32,
+            json_schema::Format::UInt64 => Type::UInt64,
             _ => panic!("Invalid integer format: {ctx}: {}", schema.display()),
         },
-        ("string", None) => Type::String,
-        ("string", Some("dataset-alias")) => Type::DatasetAlias,
-        ("string", Some("dataset-id")) => Type::DatasetId,
-        ("string", Some("dataset-ref")) => Type::DatasetRef,
-        ("string", Some("date-time")) => Type::DateTime,
-        ("string", Some("flatbuffers")) => Type::Flatbuffers,
-        ("string", Some("multicodec")) => Type::Multicodec,
-        ("string", Some("multihash")) => Type::Multihash,
-        ("string", Some("path")) => Type::Path,
-        ("string", Some("regex")) => Type::Regex,
-        ("string", Some("url")) => Type::Url,
+        (json_schema::Type::String, None) => Type::String,
+
+        (json_schema::Type::String, Some(json_schema::Format::DateTime)) => Type::DateTime,
+        (json_schema::Type::String, Some(json_schema::Format::Multicodec)) => Type::Multicodec,
+        (json_schema::Type::String, Some(json_schema::Format::Multihash)) => Type::Multihash,
+        (json_schema::Type::String, Some(json_schema::Format::Path)) => Type::Path,
+        (json_schema::Type::String, Some(json_schema::Format::Regex)) => Type::Regex,
+        (json_schema::Type::String, Some(json_schema::Format::Url)) => Type::Url,
+
+        (json_schema::Type::String, Some(json_schema::Format::AccountId)) => Type::AccountId,
+        (json_schema::Type::String, Some(json_schema::Format::AccountName)) => Type::AccountName,
+
+        (json_schema::Type::String, Some(json_schema::Format::DatasetAlias)) => Type::DatasetAlias,
+        (json_schema::Type::String, Some(json_schema::Format::DatasetId)) => Type::DatasetId,
+        (json_schema::Type::String, Some(json_schema::Format::DatasetRef)) => Type::DatasetRef,
+
+        (json_schema::Type::String, Some(json_schema::Format::ResourceContext)) => {
+            Type::ResourceContext
+        }
+        (json_schema::Type::String, Some(json_schema::Format::ResourceKind)) => Type::ResourceKind,
+        (json_schema::Type::String, Some(json_schema::Format::ResourceId)) => Type::ResourceId,
+        (json_schema::Type::String, Some(json_schema::Format::ResourceName)) => Type::ResourceName,
+
+        (json_schema::Type::String, Some(json_schema::Format::Flatbuffers)) => Type::Flatbuffers,
+        (json_schema::Type::Object, Some(json_schema::Format::Fragment)) => {
+            Type::Generic(String::new())
+        }
         _ => panic!("Invalid scalar schema: {ctx}: {}", schema.display()),
     }
 }

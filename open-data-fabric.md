@@ -1189,6 +1189,7 @@ See also:
   - [Manifest](#manifest-schema)
   - [DatasetSnapshot](#datasetsnapshot-schema)
   - [MetadataBlock](#metadatablock-schema)
+  - [Resource](#resource-schema)
 - [Metadata Events](#reference-metadata-events)
   - [MetadataEvent](#metadataevent-schema)
   - [AddData](#adddata-schema)
@@ -1234,7 +1235,6 @@ See also:
   - [OffsetInterval](#offsetinterval-schema)
   - [PrepStep](#prepstep-schema)
   - [ReadStep](#readstep-schema)
-  - [RequestHeader](#requestheader-schema)
   - [SourceCaching](#sourcecaching-schema)
   - [SourceOrdering](#sourceordering-schema)
   - [SourceState](#sourcestate-schema)
@@ -1566,7 +1566,7 @@ An object that wraps the metadata resources providing versioning and type identi
 | :---: | :---: | :---: | :---: | --- |
 | `kind` | `string` | V | [multicodec](https://github.com/multiformats/multicodec) | Type of the resource. |
 | `version` | `integer` | V | `int32` | Major version number of the resource contained in this manifest. It provides the mechanism for introducing compatibility breaking changes. |
-| `content` | `string` | V | `flatbuffers` | Resource data. |
+| `content` | `object` | V | `generic` | Resource data. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/Manifest.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1599,6 +1599,22 @@ An individual block in the metadata chain that captures the history of modificat
 | `event` | [MetadataEvent](#metadataevent-schema) | V |  | Event data. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/MetadataBlock.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="resource-schema"></a>
+##### Resource
+Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `context` | `string` | V |  | Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`. |
+| `kind` | `string` | V |  | Type name of the resource which is unique within a given context. |
+| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | `object` | V | `generic` | Specifies the desired state of a resource. |
+| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation inforamtion. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/Resource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2578,19 +2594,6 @@ Reader for Apache Parquet format.
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/ReadStep.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="requestheader-schema"></a>
-##### RequestHeader
-Defines a header (e.g. HTTP) to be passed into some request.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `name` | `string` | V |  | Name of the header. |
-| `value` | `string` | V |  | Value of the header. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/fragments/RequestHeader.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 

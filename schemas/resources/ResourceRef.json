@@ -1,0 +1,42 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/ResourceRef",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Reference to another resource.",
+  "type": "object",
+  "codegen": {
+    "rust": {
+      "dtoType": "ResourceRef"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "kind"
+  ],
+  "properties": {
+    "account": {
+      "$ref": "/schemas/AccountRef",
+      "description": "Reference to an account that owns the target resource."
+    },
+    "context": {
+      "type": "string",
+      "format": "resource-context",
+      "description": "Bounded domain of the target resource e.g. `secrets.opendatafabric.org/v1`."
+    },
+    "kind": {
+      "type": "string",
+      "format": "resource-kind",
+      "description": "Type of the target resource e.g. `SecretSet`."
+    },
+    "id": {
+      "type": "string",
+      "format": "resource-id",
+      "description": "ID of a resource."
+    },
+    "name": {
+      "type": "string",
+      "format": "resource-name",
+      "description": "Name of a resource."
+    }
+  }
+}

@@ -21,7 +21,7 @@ pub struct Schema {
     #[serde(rename = "$defs")]
     pub defs: Option<IndexMap<String, Schema>>,
 
-    pub r#type: Option<String>,
+    pub r#type: Option<Type>,
 
     pub required: Option<Vec<String>>,
 
@@ -41,7 +41,7 @@ pub struct Schema {
     pub r#ref: Option<String>,
 
     // ODF Extensions
-    pub format: Option<String>,
+    pub format: Option<Format>,
 
     /// Specifies the default value that all implementations must fall back onto if the property is not defined.
     /// Codegen will still output the field as optional because we want to round-trip serialization to output same data as inputed.
@@ -53,7 +53,7 @@ pub struct Schema {
     pub tag: Option<u32>,
 
     /// Code generation hints per language
-    pub codegen: Option<IndexMap<String, IndexMap<String, String>>>,
+    pub codegen: Option<IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>>,
 
     /// Marks schema as deprecated
     pub deprecated: Option<bool>,
@@ -269,4 +269,76 @@ enum Ref {
         subschema_def: Option<String>,
     },
     Def(String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Type {
+    Boolean,
+    Integer,
+    Number,
+    String,
+    Array,
+    Object,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Format {
+    // Scalars
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    #[serde(rename = "uint8")]
+    UInt8,
+    #[serde(rename = "uint16")]
+    UInt16,
+    #[serde(rename = "uint32")]
+    UInt32,
+    #[serde(rename = "uint64")]
+    UInt64,
+    DateTime,
+    Multicodec,
+    Multihash,
+    Path,
+    Regex,
+    Url,
+
+    // Identity and references
+    AccountId,
+    AccountName,
+
+    DatasetId,
+    DatasetName,
+    DatasetAlias, // TODO: Should this be replaced by DatasetRef everywhere?
+    DatasetRef,
+
+    ResourceContext,
+    ResourceKind,
+    ResourceId,
+    ResourceName,
+
+    // Embedding
+    Flatbuffers,
+    Fragment,
+
+    // Markers
+    UnionOrString,
+    StructOrString,
+}
+
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum CodegenLanguage {
+    Flatbuffers,
+    Rust,
+}
+
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CodegenHint {
+    Container,
+    DtoType,
+    MapFormat,
 }

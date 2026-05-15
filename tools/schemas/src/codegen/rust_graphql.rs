@@ -1,4 +1,8 @@
-use crate::{codegen::rust_common::format_ident, model};
+use crate::{
+    codegen::rust_common::format_ident,
+    json_schema::{CodegenHint, CodegenLanguage},
+    model,
+};
 
 const SPEC_URL: &str =
     "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
@@ -661,6 +665,16 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
+        if typ
+            .codegen_hints()
+            .get(&CodegenLanguage::Rust)
+            .and_then(|h| h.get(&CodegenHint::DtoType))
+            .is_some()
+        {
+            // Externally defined type
+            continue;
+        }
+
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -681,7 +695,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 model::TypeDefinition::Struct(t) => render_struct(t, w)?,
                 model::TypeDefinition::Union(t) => render_union(t, w)?,
                 model::TypeDefinition::Enum(t) => render_enum(t, w)?,
-                model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
+                model::TypeDefinition::Map(t) => render_map(t, w)?,
             }
         }
         writeln!(w)?;
@@ -693,6 +707,14 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 
 fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let name = typ.id.join("");
+    let generics = format!(
+        "<{}>",
+        typ.generics
+            .iter()
+            .map(|_| "serde_json::Value".to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
 
     writeln!(w, "#[derive(SimpleObject, Debug, Clone)]")?;
     writeln!(w, "pub struct {name} {{")?;
@@ -711,8 +733,8 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
         let mut typ = format_type(&field.typ);
         if let Some(container) = field
             .codegen_hints
-            .get("rust")
-            .and_then(|m| m.get("container"))
+            .get(&CodegenLanguage::Rust)
+            .and_then(|m| m.get(&CodegenHint::Container))
         {
             typ = format!("{container}<{typ}>");
         }
@@ -723,9 +745,13 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     }
 
     writeln!(w, "}}")?;
+
     writeln!(w)?;
-    writeln!(w, "impl From<odf::metadata::{name}> for {name} {{")?;
-    writeln!(w, "fn from(v: odf::metadata::{name}) -> Self {{")?;
+    writeln!(
+        w,
+        "impl From<odf::metadata::{name}{generics}> for {name} {{"
+    )?;
+    writeln!(w, "fn from(v: odf::metadata::{name}{generics}) -> Self {{")?;
     writeln!(w, "Self {{")?;
 
     if typ.fields.is_empty() {
@@ -737,8 +763,8 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
         let container = field
             .codegen_hints
-            .get("rust")
-            .and_then(|m| m.get("container"));
+            .get(&CodegenLanguage::Rust)
+            .and_then(|m| m.get(&CodegenHint::Container));
 
         let convert = match &field.typ {
             model::Type::Array(_) => {
@@ -808,30 +834,12 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
     let name = typ.id.join("");
 
     writeln!(w, "#[derive(Enum, Debug, Clone, Copy, PartialEq, Eq)]")?;
+    writeln!(w, "#[graphql(remote = \"odf::metadata::{name}\")]")?;
+
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
     for variant in &typ.variants {
         writeln!(w, "{variant},")?;
     }
-    writeln!(w, "}}")?;
-    writeln!(w)?;
-    writeln!(w, "impl From<odf::metadata::{name}> for {name} {{")?;
-    writeln!(w, "fn from(v: odf::metadata::{name}) -> Self {{")?;
-    writeln!(w, "match v {{")?;
-    for variant in &typ.variants {
-        writeln!(w, "odf::metadata::{name}::{variant} => Self::{variant},")?;
-    }
-    writeln!(w, "}}")?;
-    writeln!(w, "}}")?;
-    writeln!(w, "}}")?;
-    writeln!(w)?;
-    writeln!(w, "impl Into<odf::metadata::{name}> for {name} {{")?;
-    writeln!(w, "fn into(self) -> odf::metadata::{name} {{")?;
-    writeln!(w, "match self {{")?;
-    for variant in &typ.variants {
-        writeln!(w, "Self::{variant} => odf::metadata::{name}::{variant},")?;
-    }
-    writeln!(w, "}}")?;
-    writeln!(w, "}}")?;
     writeln!(w, "}}")?;
 
     Ok(())
@@ -839,49 +847,26 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_extensions(
-    typ: &model::Extensions,
-    w: &mut dyn std::io::Write,
-) -> Result<(), std::io::Error> {
-    let typ = typ.id.join("");
+// We represent all maps as JSON scalars
+fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let name = typ.id.join("");
 
     writeln!(
         w,
         r#"
-        #[nutype::nutype(derive(AsRef, Clone, Debug, Into))]
-        pub struct {typ}(serde_json::Map<String, serde_json::Value>);
-        impl Default for {typ} {{
-            fn default() -> Self {{
-                Self::new(Default::default())
-            }}
-        }}
-        impl From<odf::metadata::{typ}> for {typ} {{
-            fn from(value: odf::metadata::{typ}) -> Self {{
-                Self::new(value.attributes)
-            }}
-        }}
+        #[nutype::nutype(derive(AsRef, Clone, Debug, From, Into))]
+        pub struct {name}(odf::metadata::{name});
+        
         #[async_graphql::Scalar]
-        impl async_graphql::ScalarType for {typ} {{
-            fn parse(gql_value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {{
-                let async_graphql::Value::Object(gql_map) = &gql_value else {{
-                    return Err(async_graphql::InputValueError::custom(format!(
-                        "Invalid {typ} value: '{{gql_value}}'"
-                    )));
-                }};
-                let json_value = serde_json::to_value(gql_map)?;
-
-                let serde_json::Value::Object(json_map) = json_value else {{
-                    unreachable!()
-                }};
-
-                Ok(Self::new(json_map))
+        impl async_graphql::ScalarType for {name} {{
+            fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {{
+                let value: odf::metadata::serde::yaml::{name} = async_graphql::from_value(value)?;
+                Ok(Self::new(value.into()))
             }}
 
             fn to_value(&self) -> async_graphql::Value {{
-                match async_graphql::Value::from_json(serde_json::Value::Object(self.as_ref().clone())) {{
-                    Ok(v) => v,
-                    Err(e) => unreachable!("{{e}}"),
-                }}
+                let value: odf::metadata::serde::yaml::{name} = self.as_ref().clone().into();
+                async_graphql::to_value(&value).unwrap()
             }}
         }}
         "#
@@ -913,8 +898,16 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Path => format!("OSPath"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
+        model::Type::Generic(_) => format!("serde_json::Value"),
         model::Type::Array(t) => format!("Vec<{}>", format_type(&t.item_type)),
         model::Type::Custom(name) => name.join("").to_string(),
+        model::Type::AnyJson => format!("serde_json::Value"),
+        model::Type::AccountId => format!("AccountID<'static>"),
+        model::Type::AccountName => format!("AccountName<'static>"),
+        model::Type::ResourceContext => format!("ResourceContext<'static>"),
+        model::Type::ResourceKind => format!("ResourceKind<'static>"),
+        model::Type::ResourceId => format!("ResourceID<'static>"),
+        model::Type::ResourceName => format!("ResourceName<'static>"),
     }
 }
 

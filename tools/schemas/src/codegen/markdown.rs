@@ -206,7 +206,7 @@ fn render_type(
         model::TypeDefinition::Struct(t) => render_struct(t, lvl, w)?,
         model::TypeDefinition::Union(t) => render_union(t, lvl, model, w)?,
         model::TypeDefinition::Enum(t) => render_enum(t, lvl, w)?,
-        model::TypeDefinition::Extensions(t) => render_extensions(t, lvl, w)?,
+        model::TypeDefinition::Map(t) => render_map(t, lvl, w)?,
     }
     Ok(())
 }
@@ -339,8 +339,8 @@ fn render_enum(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_extensions(
-    typ: &model::Extensions,
+fn render_map(
+    typ: &model::Map,
     lvl: usize,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
@@ -421,11 +421,19 @@ fn as_json_type(typ: &model::Type) -> String {
         | model::Type::Path
         | model::Type::Regex
         | model::Type::Url
+        | model::Type::AccountId
+        | model::Type::AccountName
+        | model::Type::ResourceContext
+        | model::Type::ResourceKind
+        | model::Type::ResourceId
+        | model::Type::ResourceName
         | model::Type::String => format!("`string`"),
+        model::Type::Generic(_) => format!("`object`"),
         model::Type::Array(t) => format!("array({})", as_json_type(&*t.item_type)),
         model::Type::Custom(t) => {
             format!("[{}](#{})", t.join("::"), schema_id(t.join("::").as_str()))
         }
+        model::Type::AnyJson => format!("`any`"),
     }
 }
 
@@ -451,8 +459,17 @@ fn as_format(typ: &model::Type) -> String {
         model::Type::Path => format!("`path`"),
         model::Type::Regex => format!("`regex`"),
         model::Type::Url => format!("`url`"),
+        model::Type::Generic(_) => format!("`generic`"),
         model::Type::Array(_) => String::new(),
         model::Type::Custom(_) => String::new(),
+        model::Type::AnyJson => String::new(),
+        // TODO: Link to the spec section
+        model::Type::AccountId => String::new(),
+        model::Type::AccountName => String::new(),
+        model::Type::ResourceContext => String::new(),
+        model::Type::ResourceKind => String::new(),
+        model::Type::ResourceId => String::new(),
+        model::Type::ResourceName => String::new(),
     }
 }
 

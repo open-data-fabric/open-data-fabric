@@ -23,6 +23,13 @@ fn lint(_cmd: cli::Lint, schemas_dir: &Path) {
     json_schema::check_referential_integrity(
         &schemas,
         &[
+            // Resources
+            "Resource".to_string(),
+            // TODO: Remove these once in use
+            "ResourceRef".to_string(),
+            "SecretSet".to_string(),
+            "VariableSet".to_string(),
+            // Manifests
             "Manifest".to_string(),
             "DatasetSnapshot".to_string(),
             "MetadataBlock".to_string(),

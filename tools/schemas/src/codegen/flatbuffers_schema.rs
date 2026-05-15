@@ -1,5 +1,6 @@
 use indexmap::IndexMap;
 
+use crate::json_schema::{CodegenHint, CodegenLanguage};
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::collections::HashSet;
@@ -15,6 +16,8 @@ const PREAMBLE: &str = indoc::indoc!(
     // WARNING: This file is auto-generated from Open Data Fabric Schemas
     // See: http://opendatafabric.org/
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    attribute "json";
 
     struct Timestamp {
       year: int32;
@@ -66,7 +69,7 @@ fn render_impl(
             model::TypeDefinition::Struct(t) => render_struct(t, &model, w)?,
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
-            model::TypeDefinition::Extensions(t) => render_extensions(t, w)?,
+            model::TypeDefinition::Map(t) => render_map(t, w)?,
         }
         writeln!(w, "")?;
     }
@@ -119,7 +122,10 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                             codegen_hints: Default::default(),
                         },
                     )]),
+                    generics: Vec::new(),
                     description: String::new(),
+                    from_string: false,
+                    codegen_hints: Default::default(),
                     src: PathBuf::new(),
                 });
 
@@ -206,7 +212,10 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
                     codegen_hints: Default::default(),
                 },
             )]),
+            generics: Vec::new(),
             description: String::new(),
+            from_string: false,
+            codegen_hints: Default::default(),
             src: PathBuf::new(),
         });
 
@@ -266,7 +275,7 @@ fn in_dependency_order_rec(
                 )
             }
         }
-        model::TypeDefinition::Enum(_) | model::TypeDefinition::Extensions(_) => {
+        model::TypeDefinition::Enum(_) | model::TypeDefinition::Map(_) => {
             res.push(typ.clone());
         }
     }
@@ -417,15 +426,64 @@ fn render_enum(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn render_extensions(
-    typ: &model::Extensions,
+fn render_map(
+    typ: &model::Map,
+    w: &mut IndentWriter<&mut dyn std::io::Write>,
+) -> Result<(), std::io::Error> {
+    if let Some(format) = typ
+        .codegen_hints
+        .get(&CodegenLanguage::Flatbuffers)
+        .and_then(|h| h.get(&CodegenHint::MapFormat))
+    {
+        if format == "json-encoded-string" {
+            render_map_json_encoded_string(typ, w)
+        } else {
+            panic!("Unknown map format: {format} in {:?}", typ.id);
+        }
+    } else {
+        render_map_with_entry_table(typ, w)
+    }
+}
+
+fn render_map_with_entry_table(
+    typ: &model::Map,
+    w: &mut IndentWriter<&mut dyn std::io::Write>,
+) -> Result<(), std::io::Error> {
+    let name = typ.id.join("");
+    let value_type = format_type(&typ.value_type);
+
+    writeln!(w, "table {name}Entry {{")?;
+    {
+        let mut i = w.indent();
+        writeln!(i, "key: string (key);")?;
+        match &typ.value_type {
+            model::Type::AnyJson => writeln!(i, "// JSON encoded")?,
+            _ => (),
+        }
+        writeln!(i, "value: {value_type};")?;
+    }
+    writeln!(w, "}}")?;
+
+    writeln!(w, "table {name} {{")?;
+    {
+        let mut i = w.indent();
+        writeln!(i, "// Key-value map")?;
+        writeln!(i, "entries: [{name}Entry];")?;
+    }
+    writeln!(w, "}}")?;
+
+    Ok(())
+}
+
+fn render_map_json_encoded_string(
+    typ: &model::Map,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
     writeln!(w, "table {} {{", typ.id.join(""))?;
     {
         let mut i = w.indent();
         writeln!(i, "// JSON encoded")?;
-        writeln!(i, "attributes: string;")?;
+        writeln!(i, "entries: string;")?;
     }
     writeln!(w, "}}")?;
     Ok(())
@@ -445,19 +503,29 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::UInt32 => format!("uint32"),
         model::Type::UInt64 => format!("uint64"),
         model::Type::String => format!("string"),
-        model::Type::DatasetAlias => format!("string"),
-        model::Type::DatasetId => format!("[ubyte]"),
-        model::Type::DatasetRef => format!("string"),
         model::Type::DateTime => format!("Timestamp"),
-        model::Type::Flatbuffers => format!("[ubyte]"),
-        // TODO: Should be uint64 - change in hte next breaking cycle
+        // TODO: Should be uint64 - change in the next breaking cycle
         model::Type::Multicodec => format!("int64"),
         model::Type::Multihash => format!("[ubyte]"),
         model::Type::Path => format!("string"),
         model::Type::Regex => format!("string"),
         model::Type::Url => format!("string"),
+
+        model::Type::AccountId => format!("[ubyte]"),
+        model::Type::AccountName => format!("string"),
+        model::Type::DatasetAlias => format!("string"),
+        model::Type::DatasetId => format!("[ubyte]"),
+        model::Type::DatasetRef => format!("string"),
+        model::Type::ResourceContext => format!("string"),
+        model::Type::ResourceKind => format!("string"),
+        model::Type::ResourceId => format!("[ubyte]"),
+        model::Type::ResourceName => format!("string"),
+
+        model::Type::Flatbuffers => format!("[ubyte]"),
+        model::Type::Generic(_) => format!("[ubyte]"),
         model::Type::Array(t) => format!("[{}]", format_type(&t.item_type)),
         model::Type::Custom(name) => name.join("").to_string(),
+        model::Type::AnyJson => format!("string (json)"),
     }
 }
 
