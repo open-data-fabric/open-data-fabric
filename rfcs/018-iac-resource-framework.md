@@ -5,7 +5,7 @@
 
 **Start Date**: 2025-06-14
 
-**Published Date**: 2025-08-25
+**Published Date**: 2026-06-20
 
 **Authors**:
 - [Sergiy Zaychenko](mailto:sergiy.zaychenko@kamu.dev), [Kamu](https://kamu.dev)
@@ -63,16 +63,8 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
 - [Unresolved questions](#unresolved-questions)
 - [Future possibilities](#future-possibilities)
 - [Appendix A: Example Manifests](#appendix-a-example-manifests)
-  - [Dataset](#dataset)
-  - [Storage](#storage)
-  - [Source](#source)
-  - [Ingress](#ingress)
-  - [Push/PullAlias](#pushpullalias)
-  - [Flow](#flow)
   - [VariableSet](#variableset)
-  - [RebacSet](#rebacset)
-  - [MaterializedView](#materializedview)
-  - [Data Test](#data-test)
+  - [SecretSet](#secretset)
 
 
 # Motivation
@@ -141,7 +133,7 @@ In ODF we propose a format like this:
 ```yaml
 context: secrets.opendatafabric.org/v1
 kind: SecretSet
-header: {}
+headers: {}
 spec: {}
 status: {}
 ```
@@ -169,7 +161,7 @@ Resources can explicitly define which `account` they belong to:
 ```yaml
 context: secrets.opendatafabric.org/v1
 kind: SecretSet
-header:
+headers:
   account: alice  # Short form can parse DID or name
   account:  # Full form
     id: did:odf:123..321
@@ -186,7 +178,7 @@ A manifest file will usually only define the `name`:
 ```yaml
 context: secrets.opendatafabric.org/v1
 kind: SecretSet
-header:
+headers:
   name: my-secrets
 spec: {}
 ```
@@ -198,7 +190,7 @@ The ODF node will assign a unique `id` (UUID v4) to resources upon creation:
 ```yaml
 context: secrets.opendatafabric.org/v1
 kind: SecretSet
-header:
+headers:
   id: 6767a4ee-d74d-436e-84f9-709407869a26
   name: my-secrets
 spec: {}
@@ -214,7 +206,7 @@ A resource can specify custom labels and annotations. Both are maps of string ke
 ```yaml
 context: secrets.opendatafabric.org/v1
 kind: SecretSet
-header:
+headers:
   name: my-secrets
   labels:
     env: prod
@@ -245,7 +237,7 @@ Example:
 ```yaml
 context: datasets.opendatafabric.org/v1
 kind: Dataset
-header:
+headers:
   name: my-dataset
 spec:
   storage: my-bucket  # Short form reference can parse IDs and aliases
@@ -263,7 +255,7 @@ Multiple resources can be referenced at once using **selectors**.
 ```yaml
 context: flows.opendatafabric.org/v1
 kind: Flow
-header:
+headers:
   name: periodic-compaction
 spec:
   triggers:
@@ -287,7 +279,7 @@ When an object is created by another higher-level object it can write the associ
 ```yaml
 context: ingest.opendatafabric.org/v1
 kind: Buffer
-header:
+headers:
   name: buffer-aabbcc
   ownerReferences:
   - id: c27331ce-ce88-4ff9-8c5a-4ce8107cc03f
@@ -352,8 +344,8 @@ Problems with Kubernetes REST API:
 * Objects are addressed by names \- it’s not possible to use `uid`  
   * The names in k8s are immutable, but in Kamu they can not only be changed within a node, but also be different across nodes
 
-### REST API strategy
 
+### REST API strategy
 The core idea is to introduce another core REST API protocol group: **Object protocol**.
 
 * Object protocol will define how to list, create, update, delete, and get the state of various objects in an ODF system  
@@ -382,8 +374,8 @@ Kubernetes compatibility can be achieved by:
 * Replacing `accounts` as `namespaces` \- i.e. in Kamu it’s as if every account has its own namespace and shared namespaces can be created through organization accounts  
 * Projects like [kcp.io](http://kcp.io) that explore adding ReBAC support to K8s may in future allow us to completely blur the line between Kamu and K8s models
 
-### GraphQL strategy
 
+### GraphQL strategy
 We already generate GraphQL types for all ODF manifests. We will continue and expand on this strategy moving forward. Manifest schemas will be defined in one place - the ODF spec and code generation will be used for REST and GraphQL representations.
 
 To make use of the graph nature of the GraphQL protocol we will introduce a special treatment for cross-object references where, for example a manifest like this one:
@@ -433,6 +425,8 @@ Details on compatibility of these changes.
 Why should we *not* do this?
 -->
 
+- `context` will not pull up the correct JSON schema automatically in editors?
+
 
 # Prior art
 <!--
@@ -448,6 +442,7 @@ This section is intended to encourage you as an author to think about the lesson
 If there is no prior art, that is fine - your ideas are interesting to us whether they are brand new or if it is an adaptation from other technologies.
 -->
 
+
 ## Kubernetes Design Notes
 * [Generated Object API Reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#api-overview)  
 * OpenAPI Spec
@@ -458,7 +453,6 @@ If there is no prior art, that is fine - your ideas are interesting to us whethe
 * [kube.rs](http://kube.rs)  
 * [https://github.com/Arnavion/k8s-openapi](https://github.com/Arnavion/k8s-openapi)  
 * [Kubernetes API Groups](https://github.com/kubernetes/design-proposals-archive/blob/main/api-machinery/api-group.md) (api-based versioning instead of resource-based)
-
 
 
 # Rationale and alternatives
@@ -530,15 +524,10 @@ We are strongly [considering using JSON-LD](https://github.com/open-data-fabric/
 "@context": https://opendatafabric.org/core/v1/context.jsonld
 "@type": odf:SecretSet
 "@id": https://cluster.example.com/resources/8f3b2c1a-4d5e-6f7a-8b9c-0d1e2f3a4b5c
-header: {}
+headers: {}
 spec: {}
 status: {}
 ```
-
-------------------------------------------
-
-------------------------------------------
-
 
 
 # Appendix A: Example Manifests
@@ -547,596 +536,45 @@ status: {}
 
 Manifests in this section are not meant to be final but are here to illustrate the direction and the granularity of decompositions we want to achieve.
 
-## Dataset
-
-Represent the desired state of dataset metadata.
-
-**Applying:**  
-If the referenced dataset is absent \- it will be created with the specified metadata events in the chain.
-
-If the referenced dataset exists \- the differences between its current and desired state will be reconciled, which can include:
-
-* Setting / unsetting certain events  
-* Schema migrations  
-* Operation migrations
-
-**Old:**:
-
-```
-kind: DatasetSnapshot
-version: 1
-content:
-  name: etherscan.transactions
-  kind: Root
-  metadata:
-    - kind: SetPollingSource  # moves to Source manifest
-      fetch:
-        kind: Url
-        url: https://api.etherscan.io/api/...
-      read:
-        kind: Json
-        subPath: result
-      merge:                 # moves to Flow manifest
-        kind: Ledger
-        primaryKey:
-          - transaction_hash    - kind: SetVocab      eventTimeColumn: block_time    - kind: SetLicense
-      shortName: apache-2.0
-```
-
-**New:**
-
-```
-kind: Dataset
-apiVersion: odf/v1
-metadata:
-  name: etherscan.transactions
-spec:
-  kind: Root
-  events:    - kind: SetVocab      eventTimeColumn: block_time
-    - kind: SetLicense
-      shortName: apache-2.0
-  storageRef:
-    alias: sergiimk/my-s3-bucket
-```
-
-TODO: where and when schema is defined? Do we allow schema inference upon the first write?
-
-TODO: where the merge strategy belongs? At the source / dataset / or whatever connects the two?
-
-TODO: should we treat these as  templates? (similarly to pod templates in k8s)
-
-TODO: what the future interplay with templating will be? (e.g. helm and dbt’s ninja SQL)
-
-## Storage
-
-Currently the `DatasetRepository` implementation defines where datasets will be stored (e.g. S3, or LocalFS).
-
-Our public platform will need to allow users to specify per dataset where they would like them to be stored. 
-
-Kamu platform will provide several built-in storages to choose from, e.g. S3 / GCS / Azur and some IPFS/Filecoin onramps. We will also support “bring your own” (BYO) where users can specify location and access keys of their own private storage. This means that **storage also becomes an object with its own access scope and permissions**.
-
-**New:**
-
-```
-kind: Storage
-apiVersion: odf/v1
-metadata:
-  account:
-    name: sergiimk
-  name: my-s3-bucket
-spec:
-  config:
-    kind: S3
-    bucketId: my-s3-bucket
-    region: us-west-2
-    accessKey:
-      kind: secretRef
-      alias: sergiimk/my-s3-key
-```
-
-TODO: Here is the need for account-scoped secrets\!
-
-TODO: When pushing a local dataset to a node, how can we specify which storage to use? Is dataset-to-storage association managed outside of manifests? There seems to be a general problem of manifest transferability \- we are not pushing manifests \- we push objects and it’s ok if they result in a different manifest.
-
-## Source
-
-Sources replace `SetPollingSource` / `AddPushSource` events to define where data is ingested from.
-
-With separation of sources, datasets become just collections of data (root) or transformation code and results (deriv). Root datasets will be agnostic of where the data comes from, their job is to only maintain data integrity. This will make the core ODF format a lot leaner, simpler, and closer to existing competitors like Iceberg.
-
-**Object interface:**
-
-```c
-trait Source {
-  /// Initial configuration of the source
-  fn config(&self) -> Config;
-
-  /// Inspect the state of the source before reading
-  async fn peek(&self) -> Result<Peek, PeekError>;
-
-  /// Read the next set of records
-  async fn read(&self, state: Option<State>, params: ReadParams)
-    -> Result<ReadResult, ReadError>;
-}
-
-struct Peek {
-  /// Number of records ready to be read
-  pending_records: Option<usize>,
-}
-
-struct ReadParams {
-  /// Recommended size of the record batch
-  target_batch_size: usize,
-  /// Time to wait for data before considering the source exhausted
-  polling_timeout: Duration,
-  /// Whether to force-fetch the data ignoring the caching state
-  fetch_uncacheable: bool,
-}
-
-enum ReadResult {
-  UpToDate {
-    /// Set if source cannot determine the cache validity
-    uncacheable: bool,
-  },
-  Updated {
-    /// Raw data read, if any
-    data: Option<DataFrame>,
-    /// Watermark state after the returned chunk of data
-    watermark: Option<DateTime<Utc>>
-    /// New state, if advanced
-    new_state: Option<SourceState>,
-  }
-}
-```
-
-TODO: non-resumable sources???
-
-Note that such an interface **removes the distinction between polling and push sources**, making it simply a resumable batch iterator of records (*more on push sources below*).
-
-TODO: consider source partitioning
-
-**State:**
-
-Sources need to maintain a state to be cacheable and resumable. Currently this state is stored directly in the dataset metadata chain as part of `AddData` events.
-
-Sources, however, are node-local entities, so:
-
-* State may contain internal sensitive information  
-  * *e.g. last update date of an internal database, or an offset of internal kafka topic may let an outsider infer the volume of company sales*  
-* Moving a dataset to another node will involve re-creating the source which might not be able to resume from the same state  
-  * *e.g. a blockchain source would be able to reuse the same state because block numbers are global, but a Kafka source like the one we’ll have for buffering push ingest may have completely different offsets*
-
-For these reasons we will extract the source state out of the metadata chain. Removing frequent source updates will also lessen the write load on the metadata chain.
-
-TODO: How to move a dataset with a source from local workspace to a node, or from one node to another? Do we support the “kamu push” operation for sources to transfer the state?
-
-TODO: With this change we will lose a nice ability to reset the dataset and have the source state roll back along with it…
-
-**Applying:** ???
-
-* What parts are mutable and what aren’t  
-* Whether / when / how do we reset the state
-
-TODO: Do we create sources per dataset? Or have a pool of sources multiple datasets can read from?
-
-TODO: How does a dataset get connected to a source? Through a flow? Separate ingest object? This connection will need to be **stateful**\!
-
-**Previously:**:
-
-```
-kind: DatasetSnapshot
-version: 1
-content:
-  name: etherscan.transactions
-  kind: Root
-  metadata:
-    - kind: SetPollingSource
-      fetch:
-        kind: Url
-        url: https://api.etherscan.io/api/...
-      read:
-        kind: Json
-        subPath: result        schema: [..]
-      merge:
-        kind: Ledger
-        primaryKey:
-          - transaction_hash    - kind: SetVocab      eventTimeColumn: block_time
-```
-
-**New: Dataset with a polling source that is stored in the default storage and ingested on a schedule**
-
-```
-kind: Dataset
-apiVersion: odf/v1
-metadata:
-  name: etherscan.transactions
-spec:  events:
-    - kind: SetVocab      eventTimeColumn: block_time    - kind: SetDataSchema      schemaArrow:        ...  storageRef:    alias: default
-
-# NOTE: The rest of manifests are provided for completenes
-# and are explained in detail in further sections
-
----
-
-kind: Storage
-apiVersion: odf/v1
-metadata:
-  name: default
-spec:
-  config:
-    kind: LocalFS
-    path: ./datasets/
-
----
-
-kind: Source
-apiVersion: odf/v1
-metadata:
-  name: etherscan.transactions
-spec:
-  config:
-    fetch:
-      kind: Url
-      url: https://api.etherscan.io/api/...
-    prepare:
-      ...
-    schema:
-      ...
-    read:
-      kind: Json
-      subPath: result
-      readSchema:
-        - block_number BIGINT
-        ...
-    preprocess:  ??? does this belong here or next to merge strategy or both
-      kind: Sql
-      engine: datafusion
-      query: select * from input  # Optional initial state
-  # This will allow both declaring initial configuration
-  # and to export/transfer sources and their states betwen nodes
-  # TODO: Transactional push of dataset & source ?????
-state:
-  etag: 12345@feda..18df
-
----
-
-kind: Flow
-apiVersion: odf/v1
-metadata:
-  name: ingest
-  dataset:     # scoped under a dataset
-    alias: etherscan.transactions
-content:
-  tasks:
-    - kind: Ingest
-      sourceRef:
-        alias: etherscan.transactions
-      sourceParams:
-        targetBatchSize: 10_000
-      merge:
-        kind: Ledger
-        primaryKey:
-          - transaction_hash
-  triggers:
-    - kind: Schedule
-      schedule:
-        kind: cron5
-        cron: "*/30 * * * *"
-```
-
-In the example above:
-
-* An empty `etherscan.transactions` root dataset is created, with metadata only renaming the `event_time` column  
-* An `etherscan.transactions` source is created with configuration of where to pull data from and how to read and pre-process it  
-* An `ingest` flow of type `Ingest` is created that ties the source to a target dataset, defines how to merge raw data into the dataset, and sets up a cron trigger
-
-## Ingress
-
-Currently to allow writing data directly into a dataset we use `AddPushSource` metadata events. Push sources act like named endpoints that receive data in certain formats and define how it should be read and merged into the target dataset. They are a vague concept, especially when we see sources like MQTT that are more seen as “push” protocols actually using “pull” in kamu.
-
-**Previously:**
-
-```
-kind: DatasetSnapshot
-version: 1
-content:
-  kind: Root
-  name: temp.sensor
-  metadata:
-    - kind: AddPushSource
-      sourceName: default
-      read:
-        kind: NdJson
-        schema:
-          - t TIMESTAMP
-          - long DOUBLE
-          - lat DOUBLE
-      merge:
-        kind: Append
-```
-
-New approach introduces `Ingress` objects and manifests. Ingresses represent actual infrastructure components that need to be deployed or configured to provide a write interface for a dataset.
-
-**New: Immediate ingress**
-
-```
-kind: Dataset
-apiVersion: odf/v1
-metadata:
-  name: temp.sensor
-spec:
-  kind: Root
-
----
-
-kind: Ingress
-apiVersion: odf/v1
-metadata:
-  name: temp.sensor.api
-  dataset:
-    alias: temp.sensor
-spec:
-  frontend:
-    kind: RestApi
-    read:
-      kind: NdJson
-      schema:
-        - t TIMESTAMP
-        - temp DOUBLE
-  backend:
-    kind: Immediate
-    merge:
-      kind: Append
-```
-
-TODO: Where the schema should be defined? If the ingress API doesn’t need any schema coercion / preprocessing could we declare the schema on a dataset and have ingress automatically enforce it? This would mean ingresses are inseparable from datasets.
-
-Above we create a `temp.sensor.api` Ingress object that represents provisionment of a `RestApi` endpoint. This could alternatively be Kafka, WebSocket, MQTT and other types of write APIs.
-
-The `frontend` section specifies how data should be read, similarly to a `Source`. 
-
-The `backend` section \- how it should be added to the dataset. The `Immediate` backend means that on every call to the API we will attempt to write data directly into the dataset.
-
-**New: Buffered ingress**
-
-```
-kind: Ingress
-apiVersion: odf/v1
-metadata:
-  name: temp.sensor.api
-  dataset:
-    alias: temp.sensor
-spec:
-  frontend:
-    kind: RestApi
-    read:
-      kind: NdJson
-      schema:
-        - t TIMESTAMP
-        - temp DOUBLE
-  backend:
-    kind: Buffered
-    bufferSize: 1000
-    overflowPolicy:
-      kind: Reject
-  flow:
-    triggers:
-      - kind: Source
-        minRecordsToAwait: 100
-        maxAwaitIterval: 1h
-```
-
-This example shows a `Buffered` backend that will provision and accumulate records in a queue (e.g. Kafka). This essentially creates an internal data storage which we could declare a `Source` for to consume from. However, for convenience, we let `Ingest` to automatically provision a `Source` and a `Flow` with a trigger.
-
-In other words `Ingress` is a higher-level manifest that can provision:
-
-* API endpoints  
-* Queues  
-* Sources  
-* and Flows
-
-TODO: Do we want to decouple ingest from datasets? Probably not, as we want ELT and as little fallible extra steps between data arriving and being written into a dataset.
-
-## Push/PullAlias
-
-TODO: What are we doing with `kamu repo **` commands?
-
-TODO: How do we express `Remote(Root/Derivative)` datasets in the new system?
-
-## Flow
-
-A `Flow` is a template from which individual `FlowRuns` are created. A `FlowRun` is a collection of steps that spawn `Tasks`.
-
-In other words:
-
-* Tasks are a unit of work \- they contain a plan which gets executed by TaskExecutors  
-* FlowRuns are a higher-level workflow that contain parameters for spawning tasks \- they are scheduled and driven to completion by the FlowSystem  
-* Flows are configuration blueprints for creating FlowRuns.
-
-**New: Ingest flow connecting a source with a dataset**
-
-```
-kind: Flow
-apiVersion: odf/v1
-metadata:
-  name: ingest
-  dataset:
-    alias: etherscan.transactions
-spec:
-  task:
-    kind: Ingest
-    sourceRef:
-      alias: etherscan.transactions
-    sourceParams:
-      targetBatchSize: 10_000
-    merge:
-      kind: Ledger
-      primaryKey:
-        - transaction_hash
-  triggers:
-    - kind: Schedule
-      schedule:
-        kind: cron5
-        cron: "*/15 * * * *"
-```
-
-TODO: Do we want flows to always be scoped under a dataset? Or should we have account / organization scope flows too? This seems to fit the idea of system flows (scoped under system account).
-
-**New: Transform flow that batches derivative input updates**
-
-```
-kind: Flow
-apiVersion: odf/v1
-metadata:
-  name: transform-123
-  dataset:
-    alias: foobar
-spec:
-  task:
-    kind: Transform
-  triggers:
-    - kind: Batching
-      minRecordsToAwait: 1000
-      maxAwaitInterval: 10m
-```
-
-**New: Transform flow runs compactions on all root datasets in the account**
-
-```
-kind: Flow
-apiVersion: odf/v1
-metadata:
-  name: compact-all
-  # note no `dataset` - this flow is scoped under entire account
-spec:
-  datasetSelector:
-    pattern: %
-    kind: Root
-  task:
-    kind: Compaction
-    hard: false
-    maxSliceSize: 100MiB
-    maxSliceRecords: 10_000
-  triggers:
-    - kind: Schedule
-      schedule:
-        kind: cron5
-        cron: @daily
-```
-
-**New: GC system flow**
-
-```
-kind: Flow
-apiVersion: odf/v1
-metadata:
-  name: gc
-  account:
-    name: kamu  # Scoped to an admin account
-spec:
-  datasetSelector:
-    pattern: %/%        # All datasets of all accounts
-    kind: Root
-  task:
-    kind: GarbageCollect
-  triggers:
-    - kind: Schedule
-      schedule:
-        kind: cron5
-        cron: @weekly
-```
-
-TODO: Will such flows be shown to the dataset owner as scheduled?
 
 ## VariableSet
-
-```
-kind: VariableSet  /// Config /// Secret
-apiVersion: odf/v1
-metadata:
+```yaml
+context: config.opendatafabric.org/v1alpha1
+kind: VariableSet
+headers:
   name: my-vars
-  dataset:
-    alias: my-dataset # Scoped to dataset
 spec:
   variables:
-    A: B
-    C: D
+    host: postgres
+    port: "5113"
+```
+
+
+## SecretSet
+A raw unencrypted secret:
+```yaml
+context: config.opendatafabric.org/v1alpha1
+kind: SecretSet
+headers:
+  name: my-secrets
+spec:
   secrets:
-    E: F  # ?????? encryption
+    password: "postgres-staging-password"
+    api_key: "internal-api-key-123"
 ```
 
-TODO: Do we need variables for anything but ingest parametrization? Perhaps parametrizing flows, although why not simply mutate them?
-
-TODO: How do we encrypt secrets?
-
-## RebacSet
-
-```
-kind: RebacSet
-apiVersion: odf/v1
-metadata:
-  name: my-rebac-set # ???
+Upon loading into the system it will get encrypted and the spec will look like this:
+```yaml
+context: config.opendatafabric.org/v1alpha1
+kind: SecretSet
+headers:
+  name: my-secrets
 spec:
-  relations:
-    - subject:
-        accountId: did:key:...
-      name: role
-      value: maintain
-      object:
-        kind: datasetRef
-        alias: foo
-    - subject:
-        accountRef:
-          alias: sergiimk
-      name: role
-      value: reader
-      object:
-        kind: datasetRef
-        alias: bar
-  properties:
-    - object:
-        kind: datasetRef
-        alias: foo
-      name: allowPublicRead
-      value: true
-    - object:
-        kind: datasetRef
-        alias: bar
-      name: allowAnonymousRead
-      value: false
+  secrets:
+    password:
+      value: eyJh..dN5oc
+      contentEncoding: jwe
+    api_key:
+      value: eyJh..dN5oc
+      contentEncoding: jwe
 ```
-
-## MaterializedView
-
-```
-kind: MaterializedView
-apiVersion: odf/v1
-metadata:
-  name: current-rates
-spec:
-  inputs:
-    - datasetRef:
-        alias: exchange-rates
-  transform:
-    kind: Sql
-    engine: risingwave
-    query: |
-      select
-        currency_from,
-        currency_to,
-        last(rate) over (
-          partition by currency_from, currency_to
-          order by event_time desc
-        ) as rate
-      from "exchange-rates"
-  lazy: true
-```
-
-## Data Test
-
-```
-post ingest / pre-commit QA
-```
-
-
-

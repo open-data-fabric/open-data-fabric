@@ -1,0 +1,16 @@
+context: config.opendatafabric.org/v1alpha1
+kind: SecretSet
+headers:
+  name: my-secrets
+  account: sergiimk
+  labels:
+    env: prod
+  annotations:
+    repo:
+      hash: aaabbcc
+      url: https://github.com/open-data-fabric
+spec:
+  secrets:
+    password: "postgres-staging-password"
+    api_key: "internal-api-key-123"
+

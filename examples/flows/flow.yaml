@@ -1,0 +1,7 @@
+context: flows.opendatafabric.org/v1alpha1
+kind: Flow
+headers:
+  name: flow-compaction
+spec:
+  tasks:
+    - {}

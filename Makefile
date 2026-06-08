@@ -56,7 +56,12 @@ codegen:
 	$(RUSTFMT) tools/schemas/output/rust-serde.rs
 	$(RUSTFMT) tools/schemas/output/rust-serde-flatbuffers.rs
 	$(RUSTFMT) tools/schemas/output/rust-graphql.rs
-	
+
+
+.PHONY: test-examples
+test-examples:
+	cargo test
+
 
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
