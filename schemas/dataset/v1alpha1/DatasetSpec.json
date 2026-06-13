@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DatasetSpec",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a desired state of the dataset metadata.",
   "type": "object",
@@ -9,13 +9,13 @@
   ],
   "properties": {
     "kind": {
-      "$ref": "/schemas/DatasetKind",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind.json",
       "description": "Type of the dataset."
     },
     "metadata": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/MetadataEvent",
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json",
         "unevaluatedProperties": false
       },
       "description": "An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc."

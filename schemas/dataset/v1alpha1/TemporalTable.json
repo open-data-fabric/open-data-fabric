@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/TemporalTable",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/TemporalTable.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Temporary Flink-specific extension for creating temporal tables from streams.",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ResourcePhase",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourcePhase.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents the lifecycle stage of a resource.",
   "type": "string",

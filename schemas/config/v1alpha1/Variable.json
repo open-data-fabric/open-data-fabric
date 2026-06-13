@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Variable",
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/Variable.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Individual variable.",
   "format": "struct-or-string",

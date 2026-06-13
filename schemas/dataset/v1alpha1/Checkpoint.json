@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Checkpoint",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Checkpoint.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes a checkpoint produced by an engine",
   "type": "object",

@@ -1,4 +1,4 @@
-$schema: http://open-data-fabric.github.com/schemas/SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   name: my-secrets
   account: sergiimk

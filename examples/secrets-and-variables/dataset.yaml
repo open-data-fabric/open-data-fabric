@@ -1,4 +1,4 @@
-$schema: http://open-data-fabric.github.com/schemas/Dataset
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
 headers:
   name: my-dataset
 spec:

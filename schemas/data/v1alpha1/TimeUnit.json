@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/TimeUnit",
+  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the unit of measurement of time",
   "type": "string",

@@ -75,12 +75,12 @@ fn schemas() -> Schemas {
     Schemas::load(&repo_root.join("schemas"))
 }
 
-const VARIABLE_SET: &str = "http://open-data-fabric.github.com/schemas/VariableSet";
-const DATASET: &str = "http://open-data-fabric.github.com/schemas/Dataset";
+const VARIABLE_SET: &str = "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json";
+const DATASET: &str = "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json";
 
 fn valid_variable_set() -> Value {
     json!({
-        "$schema": "http://open-data-fabric.github.com/schemas/VariableSet",
+        "$schema": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json",
         "headers": { "name": "my-vars" },
         "spec": {
             "variables": { "KEY": "value" }
@@ -90,7 +90,7 @@ fn valid_variable_set() -> Value {
 
 fn valid_dataset() -> Value {
     json!({
-        "$schema": "http://open-data-fabric.github.com/schemas/Dataset",
+        "$schema": "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json",
         "headers": { "name": "my-dataset" },
         "spec": {
             "kind": "Root",

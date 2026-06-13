@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/SetDataSchema",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetDataSchema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specifies the complete schema of Data Slices added to the Dataset following this event.",
   "type": "object",
@@ -14,7 +14,7 @@
     },
     "schema": {
       "tag": 1,
-      "$ref": "/schemas/DataSchema",
+      "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
       "description": "Defines the logical schema of the data files that follow this event. Will become a required field after migration.",
       "unevaluatedProperties": false
     }

@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Resource",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.",
   "type": "object",
@@ -16,7 +16,7 @@
       "description": "Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`."
     },
     "headers": {
-      "$ref": "/schemas/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
@@ -26,7 +26,7 @@
       "description": "Specifies the desired state of a resource."
     },
     "status": {
-      "$ref": "/schemas/ResourceStatus",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
       "description": "Resource lifecycle and reconciliation inforamtion.",
       "unevaluatedProperties": false
     }

@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Task",
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/Task.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "An individual work item to be executed.",
   "type": "object",
@@ -12,20 +12,20 @@
     "$schema": {
       "type": "string",
       "format": "uri",
-      "const": "http://open-data-fabric.github.com/schemas/Task"
+      "const": "https://opendatafabric.org/schemas/flow/v1alpha1/Task.json"
     },
     "headers": {
-      "$ref": "/schemas/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "/schemas/TaskSpec",
+      "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec.json",
       "description": "Specifies the desired state of the task.",
       "unevaluatedProperties": false
     },
     "status": {
-      "$ref": "/schemas/ResourceStatus",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
       "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }

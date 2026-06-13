@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Flow",
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
   "type": "object",
@@ -13,20 +13,20 @@
     "$schema": {
       "type": "string",
       "format": "uri",
-      "const": "http://open-data-fabric.github.com/schemas/Flow"
+      "const": "https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json"
     },
     "headers": {
-      "$ref": "/schemas/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "/schemas/FlowSpec",
+      "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpec.json",
       "description": "Specifies the desired state of the flow.",
       "unevaluatedProperties": false
     },
     "status": {
-      "$ref": "/schemas/ResourceStatus",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
       "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }

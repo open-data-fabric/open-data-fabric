@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DataField",
+  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a named field (column) in a root or nested struct schema",
   "type": "object",
@@ -13,12 +13,12 @@
       "description": "Name of the field"
     },
     "type": {
-      "$ref": "/schemas/DataType",
+      "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
       "description": "Logical type of the field that defines its semantic behavior and value ranges",
       "unevaluatedProperties": false
     },
     "extra": {
-      "$ref": "/schemas/ExtraAttributes",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExtraAttributes.json",
       "description": "ODF extensions",
       "unevaluatedProperties": false
     }

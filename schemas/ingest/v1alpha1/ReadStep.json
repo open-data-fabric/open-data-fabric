@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ReadStep",
+  "$id": "https://opendatafabric.org/schemas/ingest/v1alpha1/ReadStep.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines how raw data should be read into the structured form.",
   "$defs": {
@@ -69,7 +69,7 @@
           "default": "rfc3339"
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }
@@ -107,7 +107,7 @@
           "default": "rfc3339"
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }
@@ -141,7 +141,7 @@
           "default": "rfc3339"
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }
@@ -160,7 +160,7 @@
           "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }
@@ -179,7 +179,7 @@
           "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }
@@ -202,7 +202,7 @@
           "description": "If the ZIP archive contains multiple shapefiles use this field to specify a sub-path to the desired `.shp` file. Can contain glob patterns to act as a filter."
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }
@@ -221,7 +221,7 @@
           "description": "DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types."
         },
         "schema": {
-          "$ref": "/schemas/DataSchema",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
           "description": "Schema used to coerce values into more appropriate data types."
         }
       }

@@ -1,4 +1,4 @@
-$schema: http://open-data-fabric.github.com/schemas/VariableSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json
 headers:
   name: my-vars
 spec:

@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/MetadataBlock",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataBlock.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
   "type": "object",
@@ -25,7 +25,7 @@
       "description": "Block sequence number, starting from zero at the seed block."
     },
     "event": {
-      "$ref": "/schemas/MetadataEvent",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json",
       "description": "Event data.",
       "unevaluatedProperties": false
     }

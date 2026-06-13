@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/AddData",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AddData.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Indicates that data has been ingested into a root dataset.",
   "type": "object",
@@ -16,12 +16,12 @@
       "description": "Last offset of the previous data slice, if any. Must be equal to the last non-empty `newData.offsetInterval.end`."
     },
     "newData": {
-      "$ref": "/schemas/DataSlice",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DataSlice.json",
       "description": "Describes output data written during this transaction, if any.",
       "unevaluatedProperties": false
     },
     "newCheckpoint": {
-      "$ref": "/schemas/Checkpoint",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Checkpoint.json",
       "description": "Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified.",
       "unevaluatedProperties": false
     },
@@ -31,12 +31,12 @@
       "description": "Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one. Thus, watermarks are monotonically non-decreasing."
     },
     "newSourceState": {
-      "$ref": "/schemas/SourceState",
+      "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceState.json",
       "description": "The state of the source the data was added from to allow fast resuming. If the state did not change but is still relevant for subsequent runs it should be carried, i.e. only the last state per source is considered when resuming.",
       "unevaluatedProperties": false
     },
     "extra": {
-      "$ref": "/schemas/ExtraAttributes",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExtraAttributes.json",
       "description": "ODF extensions.",
       "unevaluatedProperties": false
     }

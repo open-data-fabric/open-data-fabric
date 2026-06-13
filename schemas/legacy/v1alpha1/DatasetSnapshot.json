@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DatasetSnapshot",
+  "$id": "https://opendatafabric.org/schemas/legacy/v1alpha1/DatasetSnapshot.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a projection of the dataset metadata at a single point in time.\nThis type is typically used for defining new datasets and changing the existing ones.",
   "type": "object",
@@ -15,13 +15,13 @@
       "description": "Alias of the dataset."
     },
     "kind": {
-      "$ref": "/schemas/DatasetKind",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind.json",
       "description": "Type of the dataset."
     },
     "metadata": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/MetadataEvent"
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json"
       },
       "description": "An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc."
     }

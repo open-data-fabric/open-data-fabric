@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/TransformRequestInput",
+  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequestInput.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent as part of the engine transform request operation to describe the input",
   "type": "object",
@@ -28,12 +28,12 @@
       "description": "An alias of this input to be used in queries."
     },
     "vocab": {
-      "$ref": "/schemas/DatasetVocabulary",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary.json",
       "description": "Vocabulary of the input dataset.",
       "unevaluatedProperties": false
     },
     "offsetInterval": {
-      "$ref": "/schemas/OffsetInterval",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval.json",
       "description": "Subset of data that goes into this transaction.",
       "unevaluatedProperties": false
     },
@@ -53,7 +53,7 @@
     "explicitWatermarks": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/Watermark"
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Watermark.json"
       },
       "description": "Watermarks that should be injected into the stream to separate micro batches for reproducibility."
     }

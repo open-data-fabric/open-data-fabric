@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/VariableSetSpec",
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSetSpec.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.",
   "type": "object",
@@ -8,7 +8,7 @@
   ],
   "properties": {
     "variables": {
-      "$ref": "/schemas/Variables",
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Variables.json",
       "description": "Key value pairs of variables.",
       "unevaluatedProperties": false
     }

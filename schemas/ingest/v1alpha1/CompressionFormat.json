@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/CompressionFormat",
+  "$id": "https://opendatafabric.org/schemas/ingest/v1alpha1/CompressionFormat.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a compression algorithm.",
   "type": "string",

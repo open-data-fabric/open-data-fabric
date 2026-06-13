@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/SetTransform",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetTransform.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a transformation that produces data in a derivative dataset.",
   "type": "object",
@@ -11,12 +11,12 @@
     "inputs": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/TransformInput"
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput.json"
       },
       "description": "Datasets that will be used as sources."
     },
     "transform": {
-      "$ref": "/schemas/Transform",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform.json",
       "description": "Transformation that will be applied to produce new data.",
       "unevaluatedProperties": false
     }

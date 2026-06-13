@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/SetVocab",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetVocab.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Lets you manipulate names of the system columns to avoid conflicts.",
   "type": "object",

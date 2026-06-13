@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/FetchStep",
+  "$id": "https://opendatafabric.org/schemas/ingest/v1alpha1/FetchStep.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the external source of data.",
   "$defs": {
@@ -16,17 +16,17 @@
           "description": "URL of the data source"
         },
         "eventTime": {
-          "$ref": "/schemas/EventTimeSource",
+          "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EventTimeSource.json",
           "description": "Describes how event time is extracted from the source metadata."
         },
         "cache": {
-          "$ref": "/schemas/SourceCaching",
+          "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceCaching.json",
           "description": "Describes the caching settings used for this source."
         },
         "headers": {
           "type": "array",
           "items": {
-            "$ref": "/schemas/RequestHeader"
+            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/RequestHeader.json"
           },
           "description": "Headers to pass during the request (e.g. HTTP Authorization)"
         }
@@ -44,15 +44,15 @@
           "description": "Path with a glob pattern."
         },
         "eventTime": {
-          "$ref": "/schemas/EventTimeSource",
+          "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EventTimeSource.json",
           "description": "Describes how event time is extracted from the source metadata."
         },
         "cache": {
-          "$ref": "/schemas/SourceCaching",
+          "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceCaching.json",
           "description": "Describes the caching settings used for this source."
         },
         "order": {
-          "$ref": "/schemas/SourceOrdering",
+          "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceOrdering.json",
           "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark."
         }
       }
@@ -85,7 +85,7 @@
         "env": {
           "type": "array",
           "items": {
-            "$ref": "/schemas/EnvVar"
+            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EnvVar.json"
           },
           "description": "Environment variables to propagate into or set in the container."
         }
@@ -120,7 +120,7 @@
         "topics": {
           "type": "array",
           "items": {
-            "$ref": "/schemas/MqttTopicSubscription"
+            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/MqttTopicSubscription.json"
           },
           "description": "List of topic subscription parameters."
         }

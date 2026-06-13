@@ -1,11 +1,11 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Variables",
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/Variables.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Container for key-value variables. Every key must be a string. Values may be raw strings or objects that incorporate the encoding.",
   "type": "object",
   "patternProperties": {
     ".*": {
-      "$ref": "/schemas/Variable"
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Variable.json"
     }
   }
 }

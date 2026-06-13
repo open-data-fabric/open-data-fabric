@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/SetInfo",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetInfo.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Provides basic human-readable information about a dataset.",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/TransformResponse",
+  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent by an engine to coordinator when performing the data transformation",
   "$defs": {
@@ -14,7 +14,7 @@
       "required": [],
       "properties": {
         "newOffsetInterval": {
-          "$ref": "/schemas/OffsetInterval",
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval.json",
           "description": "Data slice produced by the transaction, if any."
         },
         "newWatermark": {

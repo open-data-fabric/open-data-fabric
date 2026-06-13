@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/VariableSet",
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a set of variables stored and managed by the ODF node.",
   "type": "object",
@@ -13,20 +13,20 @@
     "$schema": {
       "type": "string",
       "format": "uri",
-      "const": "http://open-data-fabric.github.com/schemas/VariableSet"
+      "const": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json"
     },
     "headers": {
-      "$ref": "/schemas/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "/schemas/VariableSetSpec",
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSetSpec.json",
       "description": "Specifies the desired state of the variable set.",
       "unevaluatedProperties": false
     },
     "status": {
-      "$ref": "/schemas/ResourceStatus",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
       "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }

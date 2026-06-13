@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/TransformInput",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes a derivative transformation input",
   "type": "object",

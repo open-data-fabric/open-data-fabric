@@ -1,4 +1,4 @@
-$schema: http://open-data-fabric.github.com/schemas/Flow
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
 headers:
   name: flow-compaction
 spec:

@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ExecuteTransformInput",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransformInput.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes a slice of the input dataset used during a transformation",
   "type": "object",

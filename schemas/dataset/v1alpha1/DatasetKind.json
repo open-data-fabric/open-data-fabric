@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DatasetKind",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents type of the dataset.",
   "type": "string",

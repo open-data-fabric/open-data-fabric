@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ResourceStatus",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Resource lifecycle and reconciliation inforamtion.",
   "type": "object",
@@ -8,7 +8,7 @@
   ],
   "properties": {
     "phase": {
-      "$ref": "/schemas/ResourcePhase",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourcePhase.json",
       "description": "Represents the lifecycle stage of a resource."
     },
     "observedGeneration": {
@@ -22,7 +22,7 @@
       "description": "Time when the controller last reconciled the desired resource state as defined in `observedGeneration`."
     },
     "conditions": {
-      "$ref": "/schemas/ResourceConditions",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceConditions.json",
       "description": "Detailed conditions describing the state of the resource that are added by controllers.",
       "unevaluatedProperties": false
     }

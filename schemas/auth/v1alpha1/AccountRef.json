@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/AccountRef",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Reference to an account.",
   "format": "struct-or-string",

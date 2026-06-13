@@ -1,5 +1,5 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/ResourceRef",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Reference to another resource.",
   "type": "object",
@@ -14,7 +14,7 @@
   ],
   "properties": {
     "account": {
-      "$ref": "/schemas/AccountRef",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef.json",
       "description": "Reference to an account that owns the target resource.",
       "unevaluatedProperties": false
     },
