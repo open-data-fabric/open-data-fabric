@@ -1,6 +1,6 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/AccountRef",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Reference to an account.",
   "format": "struct-or-string",
   "required": [],
@@ -15,7 +15,6 @@
           "dtoType": "AccountRef"
         }
       },
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "id": {

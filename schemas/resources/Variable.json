@@ -1,6 +1,6 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/Variable",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Individual variable.",
   "format": "struct-or-string",
   "oneOf": [
@@ -9,7 +9,6 @@
     },
     {
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "value"
       ],

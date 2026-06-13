@@ -1,12 +1,11 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/ReadStep",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines how raw data should be read into the structured form.",
   "$defs": {
     "Csv": {
       "description": "Reader for comma-separated files.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "ddlSchema": {
@@ -78,7 +77,6 @@
     "Json": {
       "description": "Reader for JSON files that contain an array of objects within them.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "subPath": {
@@ -117,7 +115,6 @@
     "NdJson": {
       "description": "Reader for files containing multiple newline-delimited JSON objects with the same schema.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "ddlSchema": {
@@ -152,7 +149,6 @@
     "GeoJson": {
       "description": "Reader for GeoJSON files. It expects one `FeatureCollection` object in the root and will create a record per each `Feature` inside it extracting the properties into individual columns and leaving the feature geometry in its own column.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "ddlSchema": {
@@ -172,7 +168,6 @@
     "NdGeoJson": {
       "description": "Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format but instead of `FeatureCollection` object in the root it expects every individual feature object to appear on its own line.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "ddlSchema": {
@@ -192,7 +187,6 @@
     "EsriShapefile": {
       "description": "Reader for ESRI Shapefile format.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "ddlSchema": {
@@ -216,7 +210,6 @@
     "Parquet": {
       "description": "Reader for Apache Parquet format.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "ddlSchema": {

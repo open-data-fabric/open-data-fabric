@@ -1,9 +1,8 @@
 {
     "$id": "http://open-data-fabric.github.com/schemas/MqttTopicSubscription",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "description": "MQTT topic subscription parameters.",
     "type": "object",
-    "additionalProperties": false,
     "required": [
         "path"
     ],

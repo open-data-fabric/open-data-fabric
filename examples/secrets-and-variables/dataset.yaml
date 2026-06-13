@@ -1,0 +1,26 @@
+context: datasets.opendatafabric.org/v1alpha1
+kind: Dataset
+headers:
+  name: my-dataset
+spec:
+  kind: Root
+  metadata:
+    - kind: SetPollingSource
+      fetch:
+        kind: Container
+        image: "ghcr.io/some/image:0.1.0"
+        args:
+          - --access-token
+          - ${{ env.GH_TOKEN }}
+          - --batch-size
+          - ${{ env.BATCH_SIZE }}
+      read:
+        kind: NdJson
+      merge:
+        kind: Ledger
+        primaryKey:
+          - id
+  # secrets:
+  #   - ref: my-secrets
+  # variables:
+  #   - ref: my-vars

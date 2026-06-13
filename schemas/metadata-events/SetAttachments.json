@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/SetAttachments",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Associates a set of files with this dataset.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "attachments"
   ],

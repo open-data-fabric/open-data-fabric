@@ -1,18 +1,16 @@
 {
     "$id": "http://open-data-fabric.github.com/schemas/RawQueryResponse",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "description": "Sent by an engine to coordinator when performing the raw query operation",
     "$defs": {
         "Progress": {
             "type": "object",
-            "additionalProperties": false,
             "required": [],
             "properties": {},
             "description": "Reports query progress"
         },
         "Success": {
             "type": "object",
-            "additionalProperties": false,
             "required": [
                 "numRecords"
             ],
@@ -27,7 +25,6 @@
         },
         "InvalidQuery": {
             "type": "object",
-            "additionalProperties": false,
             "required": [
                 "message"
             ],
@@ -41,7 +38,6 @@
         },
         "InternalError": {
             "type": "object",
-            "additionalProperties": false,
             "required": [
                 "message"
             ],

@@ -1,9 +1,8 @@
 {
     "$id": "http://open-data-fabric.github.com/schemas/RawQueryRequest",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "description": "Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step",
     "type": "object",
-    "additionalProperties": false,
     "required": [
         "inputDataPaths",
         "transform",

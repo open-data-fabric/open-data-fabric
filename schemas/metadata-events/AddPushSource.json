@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/AddPushSource",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes how to ingest data into a root dataset from a certain logical source.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "sourceName",
     "read",

@@ -1,12 +1,12 @@
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{collections::HashMap, path::Path};
 
-use jsonschema::{Retrieve, Uri, Validator};
+use jsonschema::{Resource, Validator};
 use serde_json::Value;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct Schemas {
-    by_id: Arc<HashMap<String, Value>>,
+    by_id: HashMap<String, Value>,
 }
 
 impl Schemas {
@@ -20,9 +20,7 @@ impl Schemas {
                 by_id.insert(id.to_string(), value);
             }
         }
-        Self {
-            by_id: Arc::new(by_id),
-        }
+        Self { by_id }
     }
 
     fn validator_for(&self, schema_id: &str) -> Validator {
@@ -31,28 +29,15 @@ impl Schemas {
             .get(schema_id)
             .unwrap_or_else(|| panic!("Schema not found: {schema_id}"));
 
-        let retriever = ArcRetriever(Arc::clone(&self.by_id));
+        let resources = self.by_id.iter().filter_map(|(id, value)| {
+            let resource = Resource::from_contents(value.clone()).ok()?;
+            Some((id.clone(), resource))
+        });
+
         jsonschema::options()
-            .with_retriever(retriever)
+            .with_resources(resources)
             .build(schema)
             .unwrap_or_else(|e| panic!("Failed to compile schema {schema_id}: {e}"))
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-struct ArcRetriever(Arc<HashMap<String, Value>>);
-
-impl Retrieve for ArcRetriever {
-    fn retrieve(
-        &self,
-        uri: &Uri<&str>,
-    ) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
-        let uri_str = uri.as_str();
-        self.0
-            .get(uri_str)
-            .cloned()
-            .ok_or_else(|| format!("Schema not found: {uri_str}").into())
     }
 }
 

@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/EnvVar",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines an environment variable passed into some job.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "name"
   ],

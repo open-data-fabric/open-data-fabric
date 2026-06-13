@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/DataSlice",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes a slice of data added to a dataset or produced via transformation",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "logicalHash",
     "physicalHash",

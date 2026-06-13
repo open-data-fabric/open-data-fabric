@@ -1,6 +1,6 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/ResourcePhase",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents the lifecycle stage of a resource.",
   "type": "string",
   "enum": [

@@ -1,12 +1,11 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/FetchStep",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the external source of data.",
   "$defs": {
     "Url": {
       "description": "Pulls data from one of the supported sources by its URL.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "url"
       ],
@@ -36,7 +35,6 @@
     "FilesGlob": {
       "description": "Uses glob operator to match files on the local file system.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "path"
       ],
@@ -62,7 +60,6 @@
     "Container": {
       "description": "Runs the specified OCI container to fetch data from an arbitrary source.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "image"
       ],
@@ -97,7 +94,6 @@
     "Mqtt": {
       "description": "Connects to an MQTT broker to fetch events from the specified topic.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "host",
         "port",
@@ -133,7 +129,6 @@
     "EthereumLogs": {
       "description": "Connects to an Ethereum node to stream transaction logs.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "chainId": {

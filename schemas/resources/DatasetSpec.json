@@ -1,19 +1,13 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/DatasetSnapshot",
+  "$id": "http://open-data-fabric.github.com/schemas/DatasetSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Represents a projection of the dataset metadata at a single point in time.\nThis type is typically used for defining new datasets and changing the existing ones.",
+  "description": "Represents a desired state of the dataset metadata.",
   "type": "object",
   "required": [
-    "name",
     "kind",
     "metadata"
   ],
   "properties": {
-    "name": {
-      "type": "string",
-      "format": "dataset-alias",
-      "description": "Alias of the dataset."
-    },
     "kind": {
       "$ref": "/schemas/DatasetKind",
       "description": "Type of the dataset."

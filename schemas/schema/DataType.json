@@ -1,12 +1,11 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/DataType",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a logical type of the field. Logical type determines the semantics and boudaries of a type and how it can be operated on, without a concern about encoding and physical layout of the data in chunks.",
   "$defs": {
     "Binary": {
       "description": "A sequence of bytes. Used for arbitrary binary data.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "fixedLength": {
@@ -19,21 +18,18 @@
     "Bool": {
       "description": "A boolean value representing true or false.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Date": {
       "description": "A calendar date.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Decimal": {
       "description": "A fixed-point decimal number with a specified precision and scale.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "precision",
         "scale"
@@ -54,7 +50,6 @@
     "Duration": {
       "description": "An elapsed time interval with a specified time unit.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "unit": {
@@ -67,84 +62,72 @@
     "Float16": {
       "description": "A floating-point number.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Float32": {
       "description": "A floating-point number.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Float64": {
       "description": "A floating-point number.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Int8": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Int16": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Int32": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Int64": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "UInt8": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "UInt16": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "UInt32": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "UInt64": {
       "description": "An integer value.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "List": {
       "description": "A list of values, all having the same data type.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "itemType"
       ],
@@ -168,7 +151,6 @@
     "Map": {
       "description": "A map of key-value pairs, represented as a list of entries (structs with key and value fields).",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "keyType",
         "valueType"
@@ -201,14 +183,12 @@
     "Null": {
       "description": "A type representing the absence of a value (null).",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "Option": {
       "description": "A type representing an optional (nullable) value of another data type.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "inner"
       ],
@@ -227,7 +207,6 @@
     "Struct": {
       "description": "A collection of named fields, each with its own data type.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "fields"
       ],
@@ -244,7 +223,6 @@
     "Time": {
       "description": "A time of day value, without a date, with a specified unit of granularity.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "unit": {
@@ -257,7 +235,6 @@
     "Timestamp": {
       "description": "A point in time, represented as an offset from the Unix epoch in a specific timezone.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {
         "unit": {
@@ -275,7 +252,6 @@
     "String": {
       "description": "A Unicode string.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     }

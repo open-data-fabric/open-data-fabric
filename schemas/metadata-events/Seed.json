@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/Seed",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Establishes the identity of the dataset. Always the first metadata event in the chain.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "datasetId",
     "datasetKind"

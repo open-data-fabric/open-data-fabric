@@ -120,6 +120,46 @@ read:
 
 The standard union tag name is `kind`.
 
+When defining a union use the following form:
+```json
+{
+  "oneOf": [
+    { "$ref": "#/$defs/A" },
+    { "$ref": "#/$defs/B" }
+  ],
+  "$defs": {
+    "A": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "format": "enum-tag",
+          "const": "A"
+        }
+      }
+    },
+    "B": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "format": "enum-tag",
+          "const": "B"
+        }
+      }
+    }
+  }
+}
+```
+
+Note how every definition of the union variant must include `kind` with the special format `enum-tag` and the name of the variant `const` as its first propety.
+
 
 ### Short-form Structs
 Some frequently used structs may have a well-defined way of initializing from a string.

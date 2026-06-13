@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/MetadataBlock",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "An individual block in the metadata chain that captures the history of modifications of a dataset.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "systemTime",
     "event",

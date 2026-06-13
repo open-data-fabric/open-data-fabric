@@ -1,6 +1,6 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/ResourceRef",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Reference to another resource.",
   "type": "object",
   "codegen": {
@@ -8,7 +8,6 @@
       "dtoType": "ResourceRef"
     }
   },
-  "additionalProperties": false,
   "required": [
     "context",
     "kind"

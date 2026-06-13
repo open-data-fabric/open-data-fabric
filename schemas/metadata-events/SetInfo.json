@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/SetInfo",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Provides basic human-readable information about a dataset.",
   "type": "object",
-  "additionalProperties": false,
   "required": [],
   "properties": {
     "description": {

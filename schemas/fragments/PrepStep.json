@@ -1,12 +1,11 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/PrepStep",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the steps to prepare raw data for ingestion.",
   "$defs": {
     "Decompress": {
       "description": "Pulls data from one of the supported sources by its URL.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "format"
       ],
@@ -24,7 +23,6 @@
     "Pipe": {
       "description": "Executes external command to process the data using piped input/output.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "command"
       ],

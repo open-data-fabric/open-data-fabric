@@ -1,26 +1,23 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/EventTimeSource",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the external source of data.",
   "$defs": {
     "FromMetadata": {
       "description": "Extracts event time from the source's metadata.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "FromSystemTime": {
       "description": "Assigns event time from the system time source.",
       "type": "object",
-      "additionalProperties": false,
       "required": [],
       "properties": {}
     },
     "FromPath": {
       "description": "Extracts event time from the path component of the source.",
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "pattern"
       ],

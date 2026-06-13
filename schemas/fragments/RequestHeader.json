@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/RequestHeader",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a header (e.g. HTTP) to be passed into some request.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "name",
     "value"

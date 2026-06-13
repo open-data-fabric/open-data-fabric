@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/ResourceHeaders",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Container for identity and ownership information of a resource.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "name"
   ],

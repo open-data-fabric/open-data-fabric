@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/Manifest",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "An object that wraps the metadata resources providing versioning and type identification. All root-level resources are wrapped with a manifest when serialized to disk.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "kind",
     "version",

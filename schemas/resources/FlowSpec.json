@@ -1,9 +1,8 @@
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Flow",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://open-data-fabric.github.com/schemas/FlowSpec",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "tasks"
   ],
@@ -11,7 +10,7 @@
     "tasks": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/Task"
+        "$ref": "/schemas/TaskSpec"
       },
       "description": "List of tasks to run consecutively."
     }

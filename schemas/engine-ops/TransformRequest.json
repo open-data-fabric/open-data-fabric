@@ -1,9 +1,8 @@
 {
     "$id": "http://open-data-fabric.github.com/schemas/TransformRequest",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
     "type": "object",
-    "additionalProperties": false,
     "required": [
         "datasetId",
         "datasetAlias",

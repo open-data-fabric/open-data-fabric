@@ -1,9 +1,9 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/Resource",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.",
   "type": "object",
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "required": [
     "context",
     "kind",
@@ -26,8 +26,7 @@
       "description": "Container for identity and ownership information of a resource."
     },
     "spec": {
-      "type": "object",
-      "format": "fragment",
+      "$ref": "/schemas/ResourceSpec",
       "description": "Specifies the desired state of a resource."
     },
     "status": {

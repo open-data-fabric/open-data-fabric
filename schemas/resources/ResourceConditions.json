@@ -1,9 +1,8 @@
 {
   "$id": "http://open-data-fabric.github.com/schemas/ResourceConditions",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of `{controller-name}/{condition-name}`.",
   "type": "object",
-  "additionalProperties": false,
   "patternProperties": {
     ".*": {
       "$ref": "/schemas/ResourceCondition"
