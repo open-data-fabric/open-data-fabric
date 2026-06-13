@@ -39,10 +39,40 @@
   },
   "oneOf": [
     {
-      "$ref": "#/$defs/Decompress"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Decompress"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Decompress"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Pipe"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Pipe"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Pipe"
+        }
+      ]
     }
   ]
 }

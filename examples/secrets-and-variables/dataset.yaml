@@ -1,5 +1,4 @@
-context: datasets.opendatafabric.org/v1alpha1
-kind: Dataset
+$schema: http://open-data-fabric.github.com/schemas/Dataset
 headers:
   name: my-dataset
 spec:

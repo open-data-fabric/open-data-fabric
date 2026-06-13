@@ -1,59 +1,59 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/TransformRequestInput",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Sent as part of the engine transform request operation to describe the input",
-    "type": "object",
-    "required": [
-        "datasetId",
-        "datasetAlias",
-        "queryAlias",
-        "vocab",
-        "dataPaths",
-        "schemaFile",
-        "explicitWatermarks"
-    ],
-    "properties": {
-        "datasetId": {
-            "type": "string",
-            "format": "dataset-id",
-            "description": "Unique identifier of the dataset."
-        },
-        "datasetAlias": {
-            "type": "string",
-            "format": "dataset-alias",
-            "description": "Alias of the output dataset, for logging purposes only."
-        },
-        "queryAlias": {
-            "type": "string",
-            "description": "An alias of this input to be used in queries."
-        },
-        "vocab": {
-            "$ref": "/schemas/DatasetVocabulary",
-            "description": "Vocabulary of the input dataset."
-        },
-        "offsetInterval": {
-            "$ref": "/schemas/OffsetInterval",
-            "description": "Subset of data that goes into this transaction."
-        },
-        "dataPaths": {
-            "type": "array",
-            "description": "TODO: This will be removed when coordinator will be slicing data for the engine.",
-            "items": {
-                "type": "string",
-                "format": "path"
-            }
-        },
-        "schemaFile": {
-            "type": "string",
-            "format": "path",
-            "description": "TODO: replace with actual DDL or Parquet schema."
-        },
-        "explicitWatermarks": {
-            "type": "array",
-            "items": {
-                "$ref": "/schemas/Watermark"
-            },
-            "description": "Watermarks that should be injected into the stream to separate micro batches for reproducibility."
-        }
+  "$id": "http://open-data-fabric.github.com/schemas/TransformRequestInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Sent as part of the engine transform request operation to describe the input",
+  "type": "object",
+  "required": [
+    "datasetId",
+    "datasetAlias",
+    "queryAlias",
+    "vocab",
+    "dataPaths",
+    "schemaFile",
+    "explicitWatermarks"
+  ],
+  "properties": {
+    "datasetId": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "Unique identifier of the dataset."
+    },
+    "datasetAlias": {
+      "type": "string",
+      "format": "dataset-alias",
+      "description": "Alias of the output dataset, for logging purposes only."
+    },
+    "queryAlias": {
+      "type": "string",
+      "description": "An alias of this input to be used in queries."
+    },
+    "vocab": {
+      "$ref": "/schemas/DatasetVocabulary",
+      "description": "Vocabulary of the input dataset."
+    },
+    "offsetInterval": {
+      "$ref": "/schemas/OffsetInterval",
+      "description": "Subset of data that goes into this transaction."
+    },
+    "dataPaths": {
+      "type": "array",
+      "description": "TODO: This will be removed when coordinator will be slicing data for the engine.",
+      "items": {
+        "type": "string",
+        "format": "path"
+      }
+    },
+    "schemaFile": {
+      "type": "string",
+      "format": "path",
+      "description": "TODO: replace with actual DDL or Parquet schema."
+    },
+    "explicitWatermarks": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/Watermark"
+      },
+      "description": "Watermarks that should be injected into the stream to separate micro batches for reproducibility."
     }
+  }
 }

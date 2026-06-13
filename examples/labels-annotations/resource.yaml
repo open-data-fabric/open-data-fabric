@@ -1,5 +1,4 @@
-context: config.opendatafabric.org/v1alpha1
-kind: SecretSet
+$schema: http://open-data-fabric.github.com/schemas/SecretSet
 headers:
   name: my-secrets
   account: sergiimk
@@ -13,4 +12,3 @@ spec:
   secrets:
     password: "postgres-staging-password"
     api_key: "internal-api-key-123"
-

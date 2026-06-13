@@ -1,0 +1,30 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/Task",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "An individual work item to be executed.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "const": "http://open-data-fabric.github.com/schemas/Task"
+    },
+    "headers": {
+      "$ref": "/schemas/ResourceHeaders",
+      "description": "Container for identity and ownership information of a resource."
+    },
+    "spec": {
+      "$ref": "/schemas/TaskSpec",
+      "description": "Specifies the desired state of the task."
+    },
+    "status": {
+      "$ref": "/schemas/ResourceStatus",
+      "description": "Resource lifecycle and reconciliation information."
+    }
+  }
+}

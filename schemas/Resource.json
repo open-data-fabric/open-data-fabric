@@ -5,28 +5,23 @@
   "type": "object",
   "unevaluatedProperties": false,
   "required": [
-    "context",
-    "kind",
+    "$schema",
     "headers",
     "spec"
   ],
   "properties": {
-    "context": {
+    "$schema": {
       "type": "string",
-      "format": "resource-context",
+      "format": "uri",
       "description": "Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`."
-    },
-    "kind": {
-      "type": "string",
-      "format": "resource-kind",
-      "description": "Type name of the resource which is unique within a given context."
     },
     "headers": {
       "$ref": "/schemas/ResourceHeaders",
       "description": "Container for identity and ownership information of a resource."
     },
     "spec": {
-      "$ref": "/schemas/ResourceSpec",
+      "type": "object",
+      "format": "fragment",
       "description": "Specifies the desired state of a resource."
     },
     "status": {

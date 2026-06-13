@@ -157,19 +157,94 @@
   },
   "oneOf": [
     {
-      "$ref": "#/$defs/Url"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Url"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Url"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/FilesGlob"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FilesGlob"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FilesGlob"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Container"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Container"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Container"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Mqtt"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Mqtt"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Mqtt"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/EthereumLogs"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "EthereumLogs"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/EthereumLogs"
+        }
+      ]
     }
   ]
 }

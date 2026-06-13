@@ -229,25 +229,130 @@
   },
   "oneOf": [
     {
-      "$ref": "#/$defs/Csv"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Csv"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Csv"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/GeoJson"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "GeoJson"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/GeoJson"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/EsriShapefile"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "EsriShapefile"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/EsriShapefile"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Parquet"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Parquet"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Parquet"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Json"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Json"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Json"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/NdJson"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "NdJson"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/NdJson"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/NdGeoJson"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "NdGeoJson"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/NdGeoJson"
+        }
+      ]
     }
   ]
 }

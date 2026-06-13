@@ -14,10 +14,27 @@
   "oneOf": [
     {
       "type": "string",
-      "enum": ["Forever"]
+      "enum": [
+        "Forever"
+      ]
     },
     {
-      "$ref": "#/$defs/Forever"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Forever"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Forever"
+        }
+      ]
     }
   ]
 }

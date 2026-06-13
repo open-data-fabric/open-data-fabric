@@ -22,7 +22,22 @@
   },
   "oneOf": [
     {
-      "$ref": "#/$defs/Embedded"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Embedded"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Embedded"
+        }
+      ]
     }
   ]
 }

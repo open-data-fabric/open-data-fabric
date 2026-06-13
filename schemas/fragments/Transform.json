@@ -41,7 +41,22 @@
   },
   "oneOf": [
     {
-      "$ref": "#/$defs/Sql"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Sql"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Sql"
+        }
+      ]
     }
   ]
 }

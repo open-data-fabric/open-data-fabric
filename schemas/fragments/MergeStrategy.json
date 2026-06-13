@@ -83,19 +83,94 @@
   },
   "oneOf": [
     {
-      "$ref": "#/$defs/Append"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Append"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Append"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Ledger"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Ledger"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Ledger"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/Snapshot"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Snapshot"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Snapshot"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/ChangelogStream"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "ChangelogStream"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/ChangelogStream"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/UpsertStream"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "UpsertStream"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/UpsertStream"
+        }
+      ]
     }
   ]
 }

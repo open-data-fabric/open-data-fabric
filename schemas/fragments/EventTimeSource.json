@@ -45,13 +45,58 @@
       ]
     },
     {
-      "$ref": "#/$defs/FromMetadata"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FromMetadata"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FromMetadata"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/FromPath"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FromPath"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FromPath"
+        }
+      ]
     },
     {
-      "$ref": "#/$defs/FromSystemTime"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FromSystemTime"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FromSystemTime"
+        }
+      ]
     }
   ]
 }

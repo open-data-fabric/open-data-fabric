@@ -4,43 +4,238 @@
   "description": "Represents a transaction that occurred on a dataset.",
   "oneOf": [
     {
-      "$ref": "/schemas/AddData"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "AddData"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/AddData"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/ExecuteTransform"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "ExecuteTransform"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/ExecuteTransform"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/Seed"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Seed"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/Seed"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetPollingSource"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetPollingSource"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetPollingSource"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetTransform"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetTransform"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetTransform"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetVocab"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetVocab"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetVocab"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetAttachments"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetAttachments"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetAttachments"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetInfo"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetInfo"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetInfo"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetLicense"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetLicense"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetLicense"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/SetDataSchema"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SetDataSchema"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/SetDataSchema"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/AddPushSource"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "AddPushSource"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/AddPushSource"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/DisablePushSource"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "DisablePushSource"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/DisablePushSource"
+        }
+      ]
     },
     {
-      "$ref": "/schemas/DisablePollingSource"
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "DisablePollingSource"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "/schemas/DisablePollingSource"
+        }
+      ]
     }
   ]
 }

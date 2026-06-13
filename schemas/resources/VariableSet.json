@@ -1,0 +1,31 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/VariableSet",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines a set of variables stored and managed by the ODF node.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "const": "http://open-data-fabric.github.com/schemas/VariableSet"
+    },
+    "headers": {
+      "$ref": "/schemas/ResourceHeaders",
+      "description": "Container for identity and ownership information of a resource."
+    },
+    "spec": {
+      "$ref": "/schemas/VariableSetSpec",
+      "description": "Specifies the desired state of the variable set."
+    },
+    "status": {
+      "$ref": "/schemas/ResourceStatus",
+      "description": "Resource lifecycle and reconciliation information."
+    }
+  }
+}

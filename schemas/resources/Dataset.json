@@ -1,0 +1,31 @@
+{
+  "$id": "http://open-data-fabric.github.com/schemas/Dataset",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Represents a desired state of a dataset.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "const": "http://open-data-fabric.github.com/schemas/Dataset"
+    },
+    "headers": {
+      "$ref": "/schemas/ResourceHeaders",
+      "description": "Container for identity and ownership information of a resource."
+    },
+    "spec": {
+      "$ref": "/schemas/DatasetSpec",
+      "description": "Specifies the desired state of the dataset."
+    },
+    "status": {
+      "$ref": "/schemas/ResourceStatus",
+      "description": "Resource lifecycle and reconciliation information."
+    }
+  }
+}

@@ -5,9 +5,9 @@
   "type": "string",
   "format": "int16",
   "enum": [
-    "Second", 
-    "Millisecond", 
-    "Microsecond", 
+    "Second",
+    "Millisecond",
+    "Microsecond",
     "Nanosecond"
   ]
 }

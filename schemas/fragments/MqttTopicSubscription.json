@@ -1,20 +1,20 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/MqttTopicSubscription",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "MQTT topic subscription parameters.",
-    "type": "object",
-    "required": [
-        "path"
-    ],
-    "properties": {
-        "path": {
-            "type": "string",
-            "description": "Name of the topic (may include patterns)."
-        },
-        "qos": {
-            "$ref": "/schemas/MqttQos",
-            "description": "Quality of service class.",
-            "default": "AtMostOnce"
-        }
+  "$id": "http://open-data-fabric.github.com/schemas/MqttTopicSubscription",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "MQTT topic subscription parameters.",
+  "type": "object",
+  "required": [
+    "path"
+  ],
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Name of the topic (may include patterns)."
+    },
+    "qos": {
+      "$ref": "/schemas/MqttQos",
+      "description": "Quality of service class.",
+      "default": "AtMostOnce"
     }
+  }
 }

@@ -1,69 +1,69 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/TransformRequest",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
-    "type": "object",
-    "required": [
-        "datasetId",
-        "datasetAlias",
-        "systemTime",
-        "vocab",
-        "transform",
-        "queryInputs",
-        "nextOffset",
-        "newCheckpointPath",
-        "newDataPath"
-    ],
-    "properties": {
-        "datasetId": {
-            "type": "string",
-            "format": "dataset-id",
-            "description": "Unique identifier of the output dataset."
-        },
-        "datasetAlias": {
-            "type": "string",
-            "format": "dataset-alias",
-            "description": "Alias of the output dataset, for logging purposes only."
-        },
-        "systemTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "System time to use for new records."
-        },
-        "vocab": {
-            "$ref": "/schemas/DatasetVocabulary",
-            "description": "Vocabulary of the output dataset."
-        },
-        "transform": {
-            "$ref": "/schemas/Transform",
-            "description": "Transformation that will be applied to produce new data."
-        },
-        "queryInputs": {
-            "type": "array",
-            "items": {
-                "$ref": "/schemas/TransformRequestInput"
-            },
-            "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
-        },
-        "nextOffset": {
-            "type": "integer",
-            "format": "uint64",
-            "description": "Starting offset to use for new data records."
-        },
-        "prevCheckpointPath": {
-            "type": "string",
-            "format": "path",
-            "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
-        },
-        "newCheckpointPath": {
-            "type": "string",
-            "format": "path",
-            "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
-        },
-        "newDataPath": {
-            "type": "string",
-            "format": "path",
-            "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
-        }
+  "$id": "http://open-data-fabric.github.com/schemas/TransformRequest",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
+  "type": "object",
+  "required": [
+    "datasetId",
+    "datasetAlias",
+    "systemTime",
+    "vocab",
+    "transform",
+    "queryInputs",
+    "nextOffset",
+    "newCheckpointPath",
+    "newDataPath"
+  ],
+  "properties": {
+    "datasetId": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "Unique identifier of the output dataset."
+    },
+    "datasetAlias": {
+      "type": "string",
+      "format": "dataset-alias",
+      "description": "Alias of the output dataset, for logging purposes only."
+    },
+    "systemTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "System time to use for new records."
+    },
+    "vocab": {
+      "$ref": "/schemas/DatasetVocabulary",
+      "description": "Vocabulary of the output dataset."
+    },
+    "transform": {
+      "$ref": "/schemas/Transform",
+      "description": "Transformation that will be applied to produce new data."
+    },
+    "queryInputs": {
+      "type": "array",
+      "items": {
+        "$ref": "/schemas/TransformRequestInput"
+      },
+      "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
+    },
+    "nextOffset": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Starting offset to use for new data records."
+    },
+    "prevCheckpointPath": {
+      "type": "string",
+      "format": "path",
+      "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
+    },
+    "newCheckpointPath": {
+      "type": "string",
+      "format": "path",
+      "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
+    },
+    "newDataPath": {
+      "type": "string",
+      "format": "path",
+      "description": "TODO: This will be removed when coordinator will be speaking to engines purely through Arrow."
     }
+  }
 }

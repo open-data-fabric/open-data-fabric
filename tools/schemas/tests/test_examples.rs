@@ -43,8 +43,6 @@ impl Schemas {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const SCHEMA_BASE: &str = "http://open-data-fabric.github.com/schemas/";
-
 #[test]
 fn test_examples() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -54,7 +52,6 @@ fn test_examples() {
         .unwrap();
 
     let schemas = Schemas::load(&repo_root.join("schemas"));
-    let resource_validator = schemas.validator_for(&format!("{SCHEMA_BASE}Resource"));
 
     let examples_dir = repo_root.join("examples");
     let yaml_files: Vec<_> =
@@ -76,30 +73,16 @@ fn test_examples() {
         let value: Value = serde_yaml::from_str(&content)
             .unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
 
-        // Validate the top-level Resource envelope
-        let errors: Vec<_> = resource_validator.iter_errors(&value).collect();
+        let schema_id = value["$schema"]
+            .as_str()
+            .unwrap_or_else(|| panic!("Missing $schema field in {}", path.display()));
+
+        let validator = schemas.validator_for(schema_id);
+
+        let errors: Vec<_> = validator.iter_errors(&value).collect();
         if !errors.is_empty() {
             failed = true;
-            eprintln!("Resource validation failed for {}:", path.display());
-            for err in &errors {
-                eprintln!("  - {err} (path: {})", err.instance_path);
-            }
-            continue;
-        }
-
-        // Validate spec against the kind-specific schema
-        let kind = value["kind"].as_str().unwrap();
-        let spec = &value["spec"];
-        let spec_schema_id = format!("{SCHEMA_BASE}{kind}");
-        let spec_validator = schemas.validator_for(&spec_schema_id);
-
-        let errors: Vec<_> = spec_validator.iter_errors(spec).collect();
-        if !errors.is_empty() {
-            failed = true;
-            eprintln!(
-                "Spec validation failed for {} (kind: {kind}):",
-                path.display()
-            );
+            eprintln!("Validation failed for {} ($schema: {schema_id}):", path.display());
             for err in &errors {
                 eprintln!("  - {err} (path: {})", err.instance_path);
             }

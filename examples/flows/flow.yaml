@@ -1,5 +1,4 @@
-context: flows.opendatafabric.org/v1alpha1
-kind: Flow
+$schema: http://open-data-fabric.github.com/schemas/Flow
 headers:
   name: flow-compaction
 spec:

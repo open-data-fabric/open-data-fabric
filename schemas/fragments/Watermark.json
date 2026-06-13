@@ -1,22 +1,22 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/Watermark",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Represents a watermark in the event stream.",
-    "type": "object",
-    "required": [
-        "systemTime",
-        "eventTime"
-    ],
-    "properties": {
-        "systemTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Moment in processing time when watermark was emitted."
-        },
-        "eventTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Moment in event time which watermark has reached."
-        }
+  "$id": "http://open-data-fabric.github.com/schemas/Watermark",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Represents a watermark in the event stream.",
+  "type": "object",
+  "required": [
+    "systemTime",
+    "eventTime"
+  ],
+  "properties": {
+    "systemTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Moment in processing time when watermark was emitted."
+    },
+    "eventTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Moment in event time which watermark has reached."
     }
+  }
 }

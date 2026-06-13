@@ -1,73 +1,133 @@
 {
-    "$id": "http://open-data-fabric.github.com/schemas/TransformResponse",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Sent by an engine to coordinator when performing the data transformation",
-    "$defs": {
-        "Progress": {
-            "type": "object",
-            "required": [],
-            "properties": {},
-            "description": "Reports query progress"
-        },
-        "Success": {
-            "type": "object",
-            "required": [],
-            "properties": {
-                "newOffsetInterval": {
-                    "$ref": "/schemas/OffsetInterval",
-                    "description": "Data slice produced by the transaction, if any."
-                },
-                "newWatermark": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Watermark advanced by the transaction, if any."
-                }
-            },
-            "description": "Query executed successfully"
-        },
-        "InvalidQuery": {
-            "type": "object",
-            "required": [
-                "message"
-            ],
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "description": "Explanation of an error"
-                }
-            },
-            "description": "Query did not pass validation"
-        },
-        "InternalError": {
-            "type": "object",
-            "required": [
-                "message"
-            ],
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "description": "Brief description of an error"
-                },
-                "backtrace": {
-                    "type": "string",
-                    "description": "Details of an error (e.g. a backtrace)"
-                }
-            },
-            "description": "Internal error during query execution"
-        }
+  "$id": "http://open-data-fabric.github.com/schemas/TransformResponse",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Sent by an engine to coordinator when performing the data transformation",
+  "$defs": {
+    "Progress": {
+      "type": "object",
+      "required": [],
+      "properties": {},
+      "description": "Reports query progress"
     },
-    "oneOf": [
-        {
-            "$ref": "#/$defs/Progress"
+    "Success": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "newOffsetInterval": {
+          "$ref": "/schemas/OffsetInterval",
+          "description": "Data slice produced by the transaction, if any."
         },
-        {
-            "$ref": "#/$defs/Success"
-        },
-        {
-            "$ref": "#/$defs/InvalidQuery"
-        },
-        {
-            "$ref": "#/$defs/InternalError"
+        "newWatermark": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Watermark advanced by the transaction, if any."
         }
-    ]
+      },
+      "description": "Query executed successfully"
+    },
+    "InvalidQuery": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Explanation of an error"
+        }
+      },
+      "description": "Query did not pass validation"
+    },
+    "InternalError": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Brief description of an error"
+        },
+        "backtrace": {
+          "type": "string",
+          "description": "Details of an error (e.g. a backtrace)"
+        }
+      },
+      "description": "Internal error during query execution"
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Progress"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Progress"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Success"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Success"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "InvalidQuery"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/InvalidQuery"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "InternalError"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/InternalError"
+        }
+      ]
+    }
+  ]
 }
