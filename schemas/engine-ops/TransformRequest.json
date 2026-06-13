@@ -32,11 +32,13 @@
     },
     "vocab": {
       "$ref": "/schemas/DatasetVocabulary",
-      "description": "Vocabulary of the output dataset."
+      "description": "Vocabulary of the output dataset.",
+      "unevaluatedProperties": false
     },
     "transform": {
       "$ref": "/schemas/Transform",
-      "description": "Transformation that will be applied to produce new data."
+      "description": "Transformation that will be applied to produce new data.",
+      "unevaluatedProperties": false
     },
     "queryInputs": {
       "type": "array",

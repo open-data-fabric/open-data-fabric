@@ -16,15 +16,18 @@
     },
     "headers": {
       "$ref": "/schemas/ResourceHeaders",
-      "description": "Container for identity and ownership information of a resource."
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
     },
     "spec": {
       "$ref": "/schemas/TaskSpec",
-      "description": "Specifies the desired state of the task."
+      "description": "Specifies the desired state of the task.",
+      "unevaluatedProperties": false
     },
     "status": {
       "$ref": "/schemas/ResourceStatus",
-      "description": "Resource lifecycle and reconciliation information."
+      "description": "Resource lifecycle and reconciliation information.",
+      "unevaluatedProperties": false
     }
   }
 }

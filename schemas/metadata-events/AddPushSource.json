@@ -15,15 +15,18 @@
     },
     "read": {
       "$ref": "/schemas/ReadStep",
-      "description": "Defines how data is read into structured format."
+      "description": "Defines how data is read into structured format.",
+      "unevaluatedProperties": false
     },
     "preprocess": {
       "$ref": "/schemas/Transform",
-      "description": "Pre-processing query that shapes the data."
+      "description": "Pre-processing query that shapes the data.",
+      "unevaluatedProperties": false
     },
     "merge": {
       "$ref": "/schemas/MergeStrategy",
-      "description": "Determines how newly-ingested data should be merged with existing history."
+      "description": "Determines how newly-ingested data should be merged with existing history.",
+      "unevaluatedProperties": false
     }
   }
 }

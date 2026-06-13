@@ -15,7 +15,8 @@
   "properties": {
     "account": {
       "$ref": "/schemas/AccountRef",
-      "description": "Reference to an account that owns the target resource."
+      "description": "Reference to an account that owns the target resource.",
+      "unevaluatedProperties": false
     },
     "context": {
       "type": "string",

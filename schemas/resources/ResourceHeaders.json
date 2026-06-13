@@ -19,15 +19,18 @@
     },
     "account": {
       "$ref": "/schemas/AccountRef",
-      "description": "Reference to an account that owns the resource."
+      "description": "Reference to an account that owns the resource.",
+      "unevaluatedProperties": false
     },
     "labels": {
       "$ref": "/schemas/ResourceLabels",
-      "description": "Map of string keys and values that can be used to organize, categorize, and query resources."
+      "description": "Map of string keys and values that can be used to organize, categorize, and query resources.",
+      "unevaluatedProperties": false
     },
     "annotations": {
       "$ref": "/schemas/ResourceAnnotations",
-      "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by."
+      "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.",
+      "unevaluatedProperties": false
     },
     "generation": {
       "type": "integer",

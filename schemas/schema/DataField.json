@@ -14,11 +14,13 @@
     },
     "type": {
       "$ref": "/schemas/DataType",
-      "description": "Logical type of the field that defines its semantic behavior and value ranges"
+      "description": "Logical type of the field that defines its semantic behavior and value ranges",
+      "unevaluatedProperties": false
     },
     "extra": {
       "$ref": "/schemas/ExtraAttributes",
-      "description": "ODF extensions"
+      "description": "ODF extensions",
+      "unevaluatedProperties": false
     }
   }
 }

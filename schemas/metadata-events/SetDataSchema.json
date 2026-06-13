@@ -15,7 +15,8 @@
     "schema": {
       "tag": 1,
       "$ref": "/schemas/DataSchema",
-      "description": "Defines the logical schema of the data files that follow this event. Will become a required field after migration."
+      "description": "Defines the logical schema of the data files that follow this event. Will become a required field after migration.",
+      "unevaluatedProperties": false
     }
   }
 }

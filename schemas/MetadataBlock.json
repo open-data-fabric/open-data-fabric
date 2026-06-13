@@ -26,7 +26,8 @@
     },
     "event": {
       "$ref": "/schemas/MetadataEvent",
-      "description": "Event data."
+      "description": "Event data.",
+      "unevaluatedProperties": false
     }
   }
 }

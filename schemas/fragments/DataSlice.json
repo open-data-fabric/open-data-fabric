@@ -22,7 +22,8 @@
     },
     "offsetInterval": {
       "$ref": "/schemas/OffsetInterval",
-      "description": "Data slice produced by the transaction."
+      "description": "Data slice produced by the transaction.",
+      "unevaluatedProperties": false
     },
     "size": {
       "type": "integer",

@@ -17,15 +17,18 @@
     },
     "headers": {
       "$ref": "/schemas/ResourceHeaders",
-      "description": "Container for identity and ownership information of a resource."
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
     },
     "spec": {
       "$ref": "/schemas/VariableSetSpec",
-      "description": "Specifies the desired state of the variable set."
+      "description": "Specifies the desired state of the variable set.",
+      "unevaluatedProperties": false
     },
     "status": {
       "$ref": "/schemas/ResourceStatus",
-      "description": "Resource lifecycle and reconciliation information."
+      "description": "Resource lifecycle and reconciliation information.",
+      "unevaluatedProperties": false
     }
   }
 }

@@ -29,11 +29,13 @@
     },
     "vocab": {
       "$ref": "/schemas/DatasetVocabulary",
-      "description": "Vocabulary of the input dataset."
+      "description": "Vocabulary of the input dataset.",
+      "unevaluatedProperties": false
     },
     "offsetInterval": {
       "$ref": "/schemas/OffsetInterval",
-      "description": "Subset of data that goes into this transaction."
+      "description": "Subset of data that goes into this transaction.",
+      "unevaluatedProperties": false
     },
     "dataPaths": {
       "type": "array",

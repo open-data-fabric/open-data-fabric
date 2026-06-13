@@ -17,7 +17,8 @@
     },
     "headers": {
       "$ref": "/schemas/ResourceHeaders",
-      "description": "Container for identity and ownership information of a resource."
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
     },
     "spec": {
       "type": "object",
@@ -26,7 +27,8 @@
     },
     "status": {
       "$ref": "/schemas/ResourceStatus",
-      "description": "Resource lifecycle and reconciliation inforamtion."
+      "description": "Resource lifecycle and reconciliation inforamtion.",
+      "unevaluatedProperties": false
     }
   }
 }

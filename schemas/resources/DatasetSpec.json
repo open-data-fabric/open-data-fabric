@@ -15,7 +15,8 @@
     "metadata": {
       "type": "array",
       "items": {
-        "$ref": "/schemas/MetadataEvent"
+        "$ref": "/schemas/MetadataEvent",
+        "unevaluatedProperties": false
       },
       "description": "An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc."
     }

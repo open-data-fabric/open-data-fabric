@@ -26,11 +26,13 @@
     },
     "newData": {
       "$ref": "/schemas/DataSlice",
-      "description": "Describes output data written during this transaction, if any."
+      "description": "Describes output data written during this transaction, if any.",
+      "unevaluatedProperties": false
     },
     "newCheckpoint": {
       "$ref": "/schemas/Checkpoint",
-      "description": "Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified."
+      "description": "Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified.",
+      "unevaluatedProperties": false
     },
     "newWatermark": {
       "type": "string",

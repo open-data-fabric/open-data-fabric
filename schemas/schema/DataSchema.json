@@ -16,7 +16,8 @@
     },
     "extra": {
       "$ref": "/schemas/ExtraAttributes",
-      "description": "ODF extensions"
+      "description": "ODF extensions",
+      "unevaluatedProperties": false
     }
   }
 }

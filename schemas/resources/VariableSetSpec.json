@@ -9,7 +9,8 @@
   "properties": {
     "variables": {
       "$ref": "/schemas/Variables",
-      "description": "Key value pairs of variables."
+      "description": "Key value pairs of variables.",
+      "unevaluatedProperties": false
     }
   }
 }

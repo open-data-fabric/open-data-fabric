@@ -9,7 +9,8 @@
   "properties": {
     "attachments": {
       "$ref": "/schemas/Attachments",
-      "description": "One of the supported attachment sources."
+      "description": "One of the supported attachment sources.",
+      "unevaluatedProperties": false
     }
   }
 }

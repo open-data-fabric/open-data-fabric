@@ -23,7 +23,8 @@
     },
     "conditions": {
       "$ref": "/schemas/ResourceConditions",
-      "description": "Detailed conditions describing the state of the resource that are added by controllers."
+      "description": "Detailed conditions describing the state of the resource that are added by controllers.",
+      "unevaluatedProperties": false
     }
   }
 }
