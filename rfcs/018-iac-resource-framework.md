@@ -131,36 +131,35 @@ status: {}
 
 In ODF we propose a format like this:
 ```yaml
-context: secrets.opendatafabric.org/v1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers: {}
 spec: {}
 status: {}
 ```
 
 Here:
-- `context` represents the "bounded context" of the resource, similar to JSON-LD `@context`
-  - `context` is used instead of `apiVersion` in K8s as latter is a REST-level concept and is too narrow compared to what we're trying to represent
-- `kind` is used for consistency with k8s and the current ODF enums
-- `header` contains identity and ownership information
-  - `header` is used instead of `metadata` because the latter is already an overloaded term in ODF and is generic to the point of being meaningless
+- `$schema` identifies the type and version of the resource using a resolvable URL that points to the JSON Schema file
+  - This replaces separate `apiVersion`/`kind` fields (as in K8s) with a single self-describing identifier
+  - The URL encodes both the bounded context (domain) and version: `{base-url}/{context}/{version}/{Name}.json`
+  - IDE tools can fetch the schema directly from this URL to provide validation and autocomplete
+- `headers` contains identity and ownership information
+  - `headers` is used instead of `metadata` because the latter is already an overloaded term in ODF and is generic to the point of being meaningless
 - `spec` defines the desired state of the resource
 - `status` contains information about the current state and the reconciliation process
 
 
 ### Versioning
-Version suffix is part of the `context` in the form of `v1` or `v1alpha1`.
+Version is part of the `$schema` URL in the form of `v1` or `v1alpha1`.
 
 - Version should NOT be thought of only as manifest schema. It captures both how resource is defined and the semantics of how it behaves, i.e. version may be incremented if resource behavior changes significantly even when the schema stays the same.
-- Versions apply to the level of entire bounded context, not an individual resource, so if one domain contains multiple releated resources a version bump would apply to all of them.
+- Versions apply to the level of entire bounded context, not an individual resource, so if one domain contains multiple related resources a version bump would apply to all of them.
 
 
 ### Multi-tenancy
 Resources can explicitly define which `account` they belong to:
 
 ```yaml
-context: secrets.opendatafabric.org/v1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   account: alice  # Short form can parse DID or name
   account:  # Full form
@@ -176,8 +175,7 @@ Unlike Kubernetes that uses RBAC and `namespace`-based isolation - ODF is based 
 A manifest file will usually only define the `name`:
 
 ```yaml
-context: secrets.opendatafabric.org/v1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   name: my-secrets
 spec: {}
@@ -188,8 +186,7 @@ Resource **names are immutable** - changing the name requires deleting and re-cr
 The ODF node will assign a unique `id` (UUID v4) to resources upon creation:
 
 ```yaml
-context: secrets.opendatafabric.org/v1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   id: 6767a4ee-d74d-436e-84f9-709407869a26
   name: my-secrets
@@ -204,8 +201,7 @@ Including `id` in the manifest can be used to ensure the manifest applies to exa
 A resource can specify custom labels and annotations. Both are maps of string keys to any JSON values, but only labels get indexed and can be used for querying:
 
 ```yaml
-context: secrets.opendatafabric.org/v1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   name: my-secrets
   labels:
@@ -235,8 +231,7 @@ A `context` and `kind` can be included for additional validation.
 Example:
 
 ```yaml
-context: datasets.opendatafabric.org/v1
-kind: Dataset
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
 headers:
   name: my-dataset
 spec:
@@ -244,8 +239,6 @@ spec:
   storage:  # Long form reference
     id: 6767a4ee-d74d-436e-84f9-709407869a26
     alias: my-account/my-bucket
-    context: storage.opendatafabric.org/v1
-    kind: Storage
 ```
 
 
@@ -253,8 +246,7 @@ spec:
 Multiple resources can be referenced at once using **selectors**.
 
 ```yaml
-context: flows.opendatafabric.org/v1
-kind: Flow
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
 headers:
   name: periodic-compaction
 spec:
@@ -277,15 +269,12 @@ spec:
 When an object is created by another higher-level object it can write the association into header as `ownerReferece`. This creation provenance trail can be used for automatic cascading deletion and garbage collection.
 
 ```yaml
-context: ingest.opendatafabric.org/v1
-kind: Buffer
+$schema: https://opendatafabric.org/schemas/ingest/v1alpha1/Buffer.json
 headers:
   name: buffer-aabbcc
   ownerReferences:
   - id: c27331ce-ce88-4ff9-8c5a-4ce8107cc03f
     name: ingest-f76666445
-    context: ingest.opendatafabric.org/v1
-    kind: Ingest
 spec: {}
 ```
 
@@ -381,18 +370,17 @@ We already generate GraphQL types for all ODF manifests. We will continue and ex
 To make use of the graph nature of the GraphQL protocol we will introduce a special treatment for cross-object references where, for example a manifest like this one:
 
 ```yaml
-kind: Dataset
-apiVersion: odf/v1
-metadata:
-  uid: did:odf:123..321
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+headers:
+  id: did:odf:123..321
   name: foo
-  owner:
+  account:
     id: did:key:123
     name: sergiimk
 spec:
   storageRef:
     id: 123-a122-1231
-    alias: sergiimk/my-s3-bucket  # Resoved for human readability only
+    alias: sergiimk/my-s3-bucket  # Resolved for human readability only
 ```
 
 Will allow navigation of reference as:
@@ -425,7 +413,7 @@ Details on compatibility of these changes.
 Why should we *not* do this?
 -->
 
-- `context` will not pull up the correct JSON schema automatically in editors?
+- Using `$schema` URL for type identification is non-standard in YAML — editors require either explicit schema associations in workspace settings or per-file `# yaml-language-server: $schema=...` comments to enable validation and autocomplete.
 
 
 # Prior art
@@ -539,8 +527,7 @@ Manifests in this section are not meant to be final but are here to illustrate t
 
 ## VariableSet
 ```yaml
-context: config.opendatafabric.org/v1alpha1
-kind: VariableSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json
 headers:
   name: my-vars
 spec:
@@ -553,8 +540,7 @@ spec:
 ## SecretSet
 A raw unencrypted secret:
 ```yaml
-context: config.opendatafabric.org/v1alpha1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   name: my-secrets
 spec:
@@ -565,8 +551,7 @@ spec:
 
 Upon loading into the system it will get encrypted and the spec will look like this:
 ```yaml
-context: config.opendatafabric.org/v1alpha1
-kind: SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
 headers:
   name: my-secrets
 spec:

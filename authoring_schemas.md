@@ -4,7 +4,7 @@
 - [Core Properties](#core-properties)
   - [Human authoring](#human-authoring)
   - [Roundtrip stability](#roundtrip-stability)
-- [Resource Domains](#resource-domains)
+- [Resource Contexts](#resource-contexts)
 - [Schema Patterns \& Extensions](#schema-patterns--extensions)
   - [Extended Formats](#extended-formats)
   - [Default Values](#default-values)
@@ -12,6 +12,7 @@
   - [Short-form Structs](#short-form-structs)
   - [Short-form Unions](#short-form-unions)
 - [Maps](#maps)
+- [Strict Validation \& Composability](#strict-validation--composability)
 - [Generic Fragments](#generic-fragments)
 - [Future Ideas](#future-ideas)
 
@@ -38,29 +39,31 @@ Exceptions:
 - Comments
 
 
-## Resource Domains
+## Resource Contexts
 `Resource` is a top-level envelope that describes a desired state of a resource instance in ODF.
 
-The `context` and `kind` properties identify the bounded context and type of the resource contained in the enelope:
+The `$schema` property identifies the type and version of the resource. It doubles as a resolvable URL where the schema file is hosted:
 
 ```yaml
-context: config.opendatafabric.org/v1
-kind: SecretSet
-header: {}
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+headers: {}
 spec: {}
 ```
 
-Core ODF domains include:
+Schema URL must follow the pattern `{base-url}/{context}/{version}/{Name}.json`.
+
+In case of the core ODF spec the `base-url` is `https://opendatafabric.org/schemas` and contexts are:
 
 | Context | Description |
 | --- | --- |
-| `auth.opendatafabric.org/v1alpha` | Accounts, relationships, permissions |
-| `config.opendatafabric.org/v1alpha` | Secrets and variables |
-| `datasets.opendatafabric.org/v1alpha` | Root and derivative datasets, ingestion, processing, views |
-| `flows.opendatafabric.org/v1alpha` | Triggers and complex workflows that spawn tasks |
-| `storage.opendatafabric.org/v1alpha` | Storage classes and volumes |
-| `tasks.opendatafabric.org/v1alpha` | Executors, tasks, capacity, prioritization |
-| `webhooks.opendatafabric.org/v1alpha` | Events and push notiffications |
+| `auth` | Accounts, relationships, permissions |
+| `config` | Secrets and variables |
+| `data` | Data types and schema definitions |
+| `dataset` | Root and derivative datasets, metadata events |
+| `engine` | Engine RPC protocol |
+| `flow` | Triggers and complex workflows that spawn tasks |
+| `ingest` | Polling and push sources, fetch/read/merge steps |
+| `resource` | Generic resource envelope and shared headers/status |
 
 
 ## Schema Patterns & Extensions
@@ -83,16 +86,15 @@ Example `Timestamp` data type schema with two default properties:
 ```json
 {
     "type": "object",
-    "additionalProperties": false,
     "required": [],
     "properties": {
         "unit": {
-            "$ref": "/schemas/TimeUnit",
-            "default": "Millisecond",
+            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
+            "default": "Millisecond"
         },
         "timezone": {
             "type": "string",
-            "default": "UTC",
+            "default": "UTC"
         }
     }
 }
@@ -120,45 +122,28 @@ read:
 
 The standard union tag name is `kind`.
 
-When defining a union use the following form:
+Each variant is a separate schema file. The union schema references them via `allOf + kind const`:
+
 ```json
 {
   "oneOf": [
-    { "$ref": "#/$defs/A" },
-    { "$ref": "#/$defs/B" }
-  ],
-  "$defs": {
-    "A": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind"],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "format": "enum-tag",
-          "const": "A"
-        }
-      }
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "A" } }, "required": ["kind"] },
+        { "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/A.json" }
+      ]
     },
-    "B": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "format": "enum-tag",
-          "const": "B"
-        }
-      }
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "B" } }, "required": ["kind"] },
+        { "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/B.json" }
+      ]
     }
-  }
+  ]
 }
 ```
 
-Note how every definition of the union variant must include `kind` with the special format `enum-tag` and the name of the variant `const` as its first propety.
+The `kind` discriminator lives at the union level — variant schemas (`A.json`, `B.json`) do not include `kind`. This keeps variant schemas usable outside of a union context and avoids duplication.
 
 
 ### Short-form Structs
@@ -260,7 +245,6 @@ To express key-value maps you can use the following schema patterns.
 ```json
 {
   "type": "object",
-  "additionalProperties": false,
   "patternProperties": {
     ".*": { "type": "string" }
   }
@@ -271,10 +255,9 @@ To express key-value maps you can use the following schema patterns.
 ```json
 {
   "type": "object",
-  "additionalProperties": false,
   "patternProperties": {
     ".*": {
-      "$ref": "/schemas/Fragment"
+      "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/Fragment.json"
     }
   }
 }
@@ -284,7 +267,6 @@ To express key-value maps you can use the following schema patterns.
 ```json
 {
   "type": "object",
-  "additionalProperties": false,
   "patternProperties": {
     ".*": {}
   }
@@ -300,13 +282,46 @@ Codegen notes:
 - GraphQL also doesn't have a map type, so all maps are returned as JSON scalars
 
 
+## Strict Validation & Composability
+
+Schemas use `unevaluatedProperties: false` (JSON Schema 2020-12) rather than `additionalProperties: false` to catch unknown fields while remaining composable via `allOf`.
+
+**Rule:** `unevaluatedProperties: false` is placed only on **top-level resource schemas** (e.g. `Dataset.json`, `VariableSet.json`). Fragment schemas never carry it at their root — doing so would cause `allOf`-based composition to incorrectly reject `kind` and other sibling properties evaluated by other branches.
+
+To extend strict validation into **nested object properties**, add `unevaluatedProperties: false` at the call site alongside the `$ref`:
+
+```json
+{
+  "properties": {
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
+      "unevaluatedProperties": false
+    }
+  }
+}
+```
+
+This works because `unevaluatedProperties` governs the object it is declared on. A `$ref` inside `properties` validates a child object in a new evaluation scope, so the parent's `unevaluatedProperties` cannot reach into it — the call-site annotation closes that gap.
+
+The same pattern applies to `items` in arrays:
+
+```json
+{
+  "items": {
+    "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json",
+    "unevaluatedProperties": false
+  }
+}
+```
+
+
 ## Generic Fragments
 Some schemas like `Resource` may need to embed fragments of any type.
 
 This is represented as:
 ```json
 {
-  "$id": "http://open-data-fabric.github.com/schemas/Resource",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource.json",
   "properties": {
     "spec": {
       "type": "object",
