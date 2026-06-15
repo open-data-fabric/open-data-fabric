@@ -557,6 +557,19 @@ pub struct DatasetSnapshot {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Represents a desired state of the dataset metadata.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetspec-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DatasetSpec {
+    /// Type of the dataset.
+    pub kind: DatasetKind,
+    /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
+    pub metadata: Vec<MetadataEvent>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Specifies the mapping of system columns onto dataset schema.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetvocabulary-schema
@@ -813,6 +826,17 @@ pub struct FetchStepUrl {
     pub cache: Option<SourceCaching>,
     /// Headers to pass during the request (e.g. HTTP Authorization)
     pub headers: Option<Vec<RequestHeader>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Defines a sequence of tasks to be executed upon certain trigger conditions.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FlowSpec {
+    /// List of tasks to run consecutively.
+    pub tasks: Vec<TaskSpec>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1644,10 +1668,8 @@ pub struct RequestHeader {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resource-schema
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Resource<SpecT> {
-    /// Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`.
-    pub context: ResourceContext,
-    /// Type name of the resource which is unique within a given context.
-    pub kind: ResourceKind,
+    /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`.
+    pub schema: ResourceTypeUri,
     /// Container for identity and ownership information of a resource.
     pub headers: ResourceHeaders,
     /// Specifies the desired state of a resource.
@@ -1779,9 +1801,9 @@ pub struct Secret {
 
 /// Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
 ///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretset-schema
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretsetspec-schema
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SecretSet {
+pub struct SecretSetSpec {
     /// Key value pairs of secrets.
     pub secrets: Secrets,
 }
@@ -1971,6 +1993,14 @@ pub struct SqlQueryStep {
     /// SQL query the result of which will be exposed under the alias.
     pub query: String,
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// An individual work item to be executed.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct TaskSpec {}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2180,9 +2210,9 @@ pub struct Variable {
 
 /// Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
 ///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variableset-schema
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variablesetspec-schema
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VariableSet {
+pub struct VariableSetSpec {
     /// Key value pairs of variables.
     pub variables: Variables,
 }

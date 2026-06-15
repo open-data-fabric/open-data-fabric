@@ -3,6 +3,7 @@ use indexmap::IndexMap;
 use crate::json_schema::{CodegenHint, CodegenLanguage};
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
@@ -45,6 +46,11 @@ fn render_impl(
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in in_dependency_order(&model) {
+        if typ.is_resource_variant() {
+            // Resource variants are covered by Resource<SpecT> type
+            continue;
+        }
+
         if !wrappers.contains(typ.id()) && !roots.contains(typ.id()) {
             writeln!(
                 w,
@@ -371,7 +377,7 @@ fn render_struct(
             writeln!(
                 i,
                 "{}: {}{}{};",
-                field.name,
+                format_ident(&field.name),
                 format_type(&field.typ),
                 optionality_modifier,
                 attributes,
@@ -491,6 +497,12 @@ fn render_map_json_encoded_string(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn format_ident(name: &str) -> Cow<'_, str> {
+    Cow::Borrowed(name.trim_start_matches("$"))
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 fn format_type(typ: &model::Type) -> String {
     match typ {
         model::Type::Boolean => format!("bool"),
@@ -516,10 +528,11 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::DatasetAlias => format!("string"),
         model::Type::DatasetId => format!("[ubyte]"),
         model::Type::DatasetRef => format!("string"),
-        model::Type::ResourceContext => format!("string"),
-        model::Type::ResourceKind => format!("string"),
         model::Type::ResourceId => format!("[ubyte]"),
         model::Type::ResourceName => format!("string"),
+        model::Type::ResourceTypeUri => format!("string"),
+        model::Type::ResourceTypeName => format!("string"),
+        model::Type::ResourceTypeRef => format!("string"),
 
         model::Type::Flatbuffers => format!("[ubyte]"),
         model::Type::Generic(_) => format!("[ubyte]"),

@@ -14,7 +14,8 @@
     "qos": {
       "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/MqttQos.json",
       "description": "Quality of service class.",
-      "default": "AtMostOnce"
+      "default": "AtMostOnce",
+      "unevaluatedProperties": false
     }
   }
 }

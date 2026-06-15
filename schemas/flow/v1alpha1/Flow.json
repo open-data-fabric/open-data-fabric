@@ -12,8 +12,9 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "format": "uri",
-      "const": "https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json"
+      "format": "resource-type-uri",
+      "const": "https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json",
+      "description": "Identifies this resource type."
     },
     "headers": {
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",

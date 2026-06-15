@@ -16,7 +16,7 @@ pub fn format_ident<'a>(ident: &'a str) -> Cow<'a, str> {
     if reserved.contains(ident) {
         Cow::Owned(format!("r#{ident}"))
     } else {
-        Cow::Borrowed(ident)
+        Cow::Borrowed(ident.trim_start_matches("$"))
     }
 }
 

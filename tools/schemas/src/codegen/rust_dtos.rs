@@ -46,6 +46,11 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
+        if typ.is_resource_variant() {
+            // Resource variants are covered by Resource<SpecT> type
+            continue;
+        }
+
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -286,10 +291,11 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::DatasetAlias => format!("DatasetAlias"),
         model::Type::DatasetRef => format!("DatasetRef"),
         model::Type::DatasetId => format!("DatasetID"),
-        model::Type::ResourceContext => format!("ResourceContext"),
-        model::Type::ResourceKind => format!("ResourceKind"),
         model::Type::ResourceId => format!("ResourceID"),
         model::Type::ResourceName => format!("ResourceName"),
+        model::Type::ResourceTypeUri => format!("ResourceTypeUri"),
+        model::Type::ResourceTypeName => format!("ResourceTypeName"),
+        model::Type::ResourceTypeRef => format!("ResourceTypeRef"),
 
         model::Type::Flatbuffers => format!("Vec<u8>"),
         model::Type::Generic(name) => name.clone(),

@@ -10,7 +10,8 @@
     "tasks": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec.json"
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec.json",
+        "unevaluatedProperties": false
       },
       "description": "List of tasks to run consecutively."
     }

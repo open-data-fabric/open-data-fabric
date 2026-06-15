@@ -83,7 +83,11 @@ fn valid_variable_set() -> Value {
         "$schema": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json",
         "headers": { "name": "my-vars" },
         "spec": {
-            "variables": { "KEY": "value" }
+            "variables": {
+                "var": {
+                    "value": "val"
+                }
+            }
         }
     })
 }
@@ -166,6 +170,14 @@ fn test_unknown_property_in_headers() {
 fn test_unknown_property_in_spec() {
     let mut instance = valid_variable_set();
     instance["spec"]["unknown_field"] = json!("bad");
+    schemas().assert_invalid(VARIABLE_SET, instance);
+}
+
+// Unknown property inside patternProperties
+#[test]
+fn test_unknown_property_in_pattern_properties() {
+    let mut instance = valid_variable_set();
+    instance["spec"]["variables"]["var"]["unknown_field"] = json!("bad");
     schemas().assert_invalid(VARIABLE_SET, instance);
 }
 

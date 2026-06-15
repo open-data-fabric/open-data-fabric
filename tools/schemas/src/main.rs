@@ -19,24 +19,28 @@ fn main() {
 fn lint(_cmd: cli::Lint, schemas_dir: &Path) {
     let schemas = json_schema::load_schemas(schemas_dir);
 
-    // TODO: Replace concrete names with a directory structure
+    // TODO: Replace concrete names with a directory structure or a tag
     json_schema::check_referential_integrity(
         &schemas,
         &[
             // Resources
-            "Resource".to_string(),
-            // TODO: Remove these once in use
-            "ResourceRef".to_string(),
-            "SecretSet".to_string(),
-            "VariableSet".to_string(),
+            "Resource",
+            "Dataset",
+            "Flow",
+            "SecretSet",
+            "Task",
+            "VariableSet",
+            // TODO: Remove this once in use
+            "ResourceRef",
             // Manifests
-            "Manifest".to_string(),
-            "DatasetSnapshot".to_string(),
-            "MetadataBlock".to_string(),
-            "RawQueryRequest".to_string(),
-            "RawQueryResponse".to_string(),
-            "TransformRequest".to_string(),
-            "TransformResponse".to_string(),
+            "Manifest",
+            "DatasetSnapshot",
+            "MetadataBlock",
+            // Engine
+            "RawQueryRequest",
+            "RawQueryResponse",
+            "TransformRequest",
+            "TransformResponse",
         ],
     );
 

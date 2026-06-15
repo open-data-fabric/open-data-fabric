@@ -26,14 +26,16 @@
           "type": "array",
           "description": "Specifies multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`. Last query in the array should have no alias and will be treated as an output.",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SqlQueryStep.json"
+            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SqlQueryStep.json",
+            "unevaluatedProperties": false
           }
         },
         "temporalTables": {
           "type": "array",
           "description": "Temporary Flink-specific extension for creating temporal tables from streams.",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TemporalTable.json"
+            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TemporalTable.json",
+            "unevaluatedProperties": false
           }
         }
       }

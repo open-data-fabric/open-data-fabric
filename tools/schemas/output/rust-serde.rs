@@ -1528,6 +1528,44 @@ impl From<DatasetSnapshot> for dtos::DatasetSnapshot {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DatasetSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct DatasetSpec {
+    pub kind: DatasetKind,
+    pub metadata: Vec<MetadataEvent>,
+}
+
+impl IntoDto for DatasetSpec {
+    type Dto = dtos::DatasetSpec;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::DatasetSpec> for DatasetSpec {
+    fn from(v: dtos::DatasetSpec) -> Self {
+        Self {
+            kind: v.kind.into(),
+            metadata: v.metadata.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<DatasetSpec> for dtos::DatasetSpec {
+    fn from(v: DatasetSpec) -> Self {
+        Self {
+            kind: v.kind.into(),
+            metadata: v.metadata.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DatasetVocabulary
 // https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetvocabulary-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2276,6 +2314,41 @@ impl From<FetchStepUrl> for dtos::FetchStepUrl {
             event_time: v.event_time.map(|v| v.into()),
             cache: v.cache.map(|v| v.into()),
             headers: v.headers.map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct FlowSpec {
+    pub tasks: Vec<TaskSpec>,
+}
+
+impl IntoDto for FlowSpec {
+    type Dto = dtos::FlowSpec;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::FlowSpec> for FlowSpec {
+    fn from(v: dtos::FlowSpec) -> Self {
+        Self {
+            tasks: v.tasks.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<FlowSpec> for dtos::FlowSpec {
+    fn from(v: FlowSpec) -> Self {
+        Self {
+            tasks: v.tasks.into_iter().map(Into::into).collect(),
         }
     }
 }
@@ -3666,8 +3739,8 @@ impl From<RequestHeader> for dtos::RequestHeader {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct Resource<SpecT> {
-    pub context: ResourceContext,
-    pub kind: ResourceKind,
+    #[serde(rename = "$schema")]
+    pub schema: ResourceTypeUri,
     pub headers: ResourceHeaders,
     pub spec: SpecT,
     #[serde(default)]
@@ -3692,8 +3765,7 @@ where
 {
     fn from(v: dtos::Resource<SpecTFrom>) -> Self {
         Self {
-            context: v.context,
-            kind: v.kind,
+            schema: v.schema,
             headers: v.headers.into(),
             spec: v.spec.into(),
             status: v.status.map(|v| v.into()),
@@ -3707,8 +3779,7 @@ where
 {
     fn from(v: Resource<SpecTFrom>) -> Self {
         Self {
-            context: v.context,
-            kind: v.kind,
+            schema: v.schema,
             headers: v.headers.into(),
             spec: v.spec.into(),
             status: v.status.map(|v| v.into()),
@@ -4005,8 +4076,7 @@ pub struct ResourceRef {
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub account: Option<StructOrString<AccountRef>>,
-    pub context: ResourceContext,
-    pub kind: ResourceKind,
+    pub r#type: ResourceTypeRef,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<ResourceID>,
@@ -4125,34 +4195,34 @@ impl From<Secret> for dtos::Secret {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SecretSet
-// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretset-schema
+// SecretSetSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretsetspec-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
-pub struct SecretSet {
+pub struct SecretSetSpec {
     pub secrets: Secrets,
 }
 
-impl IntoDto for SecretSet {
-    type Dto = dtos::SecretSet;
+impl IntoDto for SecretSetSpec {
+    type Dto = dtos::SecretSetSpec;
     fn into_dto(self) -> Self::Dto {
         self.into()
     }
 }
 
-impl From<dtos::SecretSet> for SecretSet {
-    fn from(v: dtos::SecretSet) -> Self {
+impl From<dtos::SecretSetSpec> for SecretSetSpec {
+    fn from(v: dtos::SecretSetSpec) -> Self {
         Self {
             secrets: v.secrets.into(),
         }
     }
 }
 
-impl From<SecretSet> for dtos::SecretSet {
-    fn from(v: SecretSet) -> Self {
+impl From<SecretSetSpec> for dtos::SecretSetSpec {
+    fn from(v: SecretSetSpec) -> Self {
         Self {
             secrets: v.secrets.into(),
         }
@@ -4735,6 +4805,35 @@ impl From<SqlQueryStep> for dtos::SqlQueryStep {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct TaskSpec {}
+
+impl IntoDto for TaskSpec {
+    type Dto = dtos::TaskSpec;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::TaskSpec> for TaskSpec {
+    fn from(v: dtos::TaskSpec) -> Self {
+        Self {}
+    }
+}
+
+impl From<TaskSpec> for dtos::TaskSpec {
+    fn from(v: TaskSpec) -> Self {
+        Self {}
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TemporalTable
 // https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#temporaltable-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5311,34 +5410,34 @@ impl From<Variable> for dtos::Variable {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// VariableSet
-// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variableset-schema
+// VariableSetSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variablesetspec-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
-pub struct VariableSet {
+pub struct VariableSetSpec {
     pub variables: Variables,
 }
 
-impl IntoDto for VariableSet {
-    type Dto = dtos::VariableSet;
+impl IntoDto for VariableSetSpec {
+    type Dto = dtos::VariableSetSpec;
     fn into_dto(self) -> Self::Dto {
         self.into()
     }
 }
 
-impl From<dtos::VariableSet> for VariableSet {
-    fn from(v: dtos::VariableSet) -> Self {
+impl From<dtos::VariableSetSpec> for VariableSetSpec {
+    fn from(v: dtos::VariableSetSpec) -> Self {
         Self {
             variables: v.variables.into(),
         }
     }
 }
 
-impl From<VariableSet> for dtos::VariableSet {
-    fn from(v: VariableSet) -> Self {
+impl From<VariableSetSpec> for dtos::VariableSetSpec {
+    fn from(v: VariableSetSpec) -> Self {
         Self {
             variables: v.variables.into(),
         }
@@ -5459,6 +5558,7 @@ implement_serde_as!(dtos::DataTypeUInt64, DataTypeUInt64);
 implement_serde_as!(dtos::DataTypeUInt8, DataTypeUInt8);
 implement_serde_as!(dtos::DatasetKind, DatasetKind);
 implement_serde_as!(dtos::DatasetSnapshot, DatasetSnapshot);
+implement_serde_as!(dtos::DatasetSpec, DatasetSpec);
 implement_serde_as!(dtos::DatasetVocabulary, DatasetVocabulary);
 implement_serde_as!(dtos::DisablePollingSource, DisablePollingSource);
 implement_serde_as!(dtos::DisablePushSource, DisablePushSource);
@@ -5482,6 +5582,7 @@ implement_serde_as!(dtos::FetchStepEthereumLogs, FetchStepEthereumLogs);
 implement_serde_as!(dtos::FetchStepFilesGlob, FetchStepFilesGlob);
 implement_serde_as!(dtos::FetchStepMqtt, FetchStepMqtt);
 implement_serde_as!(dtos::FetchStepUrl, FetchStepUrl);
+implement_serde_as!(dtos::FlowSpec, FlowSpec);
 implement_serde_as!(dtos::MergeStrategy, MergeStrategy);
 implement_serde_as!(dtos::MergeStrategyAppend, MergeStrategyAppend);
 implement_serde_as!(
@@ -5529,7 +5630,7 @@ implement_serde_as!(dtos::ResourcePhase, ResourcePhase);
 implement_serde_as!(dtos::ResourceRef, ResourceRef);
 implement_serde_as!(dtos::ResourceStatus, ResourceStatus);
 implement_serde_as!(dtos::Secret, Secret);
-implement_serde_as!(dtos::SecretSet, SecretSet);
+implement_serde_as!(dtos::SecretSetSpec, SecretSetSpec);
 implement_serde_as!(dtos::Secrets, Secrets);
 implement_serde_as!(dtos::Seed, Seed);
 implement_serde_as!(dtos::SetAttachments, SetAttachments);
@@ -5544,6 +5645,7 @@ implement_serde_as!(dtos::SourceCachingForever, SourceCachingForever);
 implement_serde_as!(dtos::SourceOrdering, SourceOrdering);
 implement_serde_as!(dtos::SourceState, SourceState);
 implement_serde_as!(dtos::SqlQueryStep, SqlQueryStep);
+implement_serde_as!(dtos::TaskSpec, TaskSpec);
 implement_serde_as!(dtos::TemporalTable, TemporalTable);
 implement_serde_as!(dtos::TimeUnit, TimeUnit);
 implement_serde_as!(dtos::Transform, Transform);
@@ -5563,6 +5665,6 @@ implement_serde_as!(
 implement_serde_as!(dtos::TransformResponseProgress, TransformResponseProgress);
 implement_serde_as!(dtos::TransformResponseSuccess, TransformResponseSuccess);
 implement_serde_as!(dtos::Variable, Variable);
-implement_serde_as!(dtos::VariableSet, VariableSet);
+implement_serde_as!(dtos::VariableSetSpec, VariableSetSpec);
 implement_serde_as!(dtos::Variables, Variables);
 implement_serde_as!(dtos::Watermark, Watermark);

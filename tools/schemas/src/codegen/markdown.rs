@@ -11,46 +11,12 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 
     writeln!(w)?;
 
-    render_section(
-        &model,
-        "Data Schema",
-        model::TypeCategory::DataSchema,
-        vec!["DataSchema"],
-        lvl,
-        w,
-    )?;
-    render_section(
-        &model,
-        "Manifests",
-        model::TypeCategory::Root,
-        vec!["Manifest"],
-        lvl,
-        w,
-    )?;
-    render_section(
-        &model,
-        "Metadata Events",
-        model::TypeCategory::MetadataEvent,
-        vec!["MetadataEvent"],
-        lvl,
-        w,
-    )?;
-    render_section(
-        &model,
-        "Engine Protocol",
-        model::TypeCategory::EngineProtocol,
-        vec![],
-        lvl,
-        w,
-    )?;
-    render_section(
-        &model,
-        "Fragments",
-        model::TypeCategory::Fragment,
-        vec![],
-        lvl,
-        w,
-    )?;
+    let contexts: std::collections::BTreeSet<&str> =
+        model.types.values().map(|t| t.context()).collect();
+
+    for context in contexts {
+        render_section(&model, context, lvl, w)?;
+    }
 
     Ok(())
 }
@@ -65,24 +31,12 @@ fn schema_id(name: &str) -> String {
     format!("{}-schema", name.to_lowercase().replace("::", "-"))
 }
 
-fn types_by_category<'a>(
-    model: &'a model::Model,
-    category: model::TypeCategory,
-    priority: Vec<&'static str>,
-) -> Vec<&'a model::TypeDefinition> {
-    let mut types: Vec<_> = model
+fn types_by_context<'a>(model: &'a model::Model, context: &str) -> Vec<&'a model::TypeDefinition> {
+    let types: Vec<_> = model
         .types
         .values()
-        .filter(|t| t.category() == category)
+        .filter(|t| t.context() == context)
         .collect();
-
-    types.sort_by_key(|t| {
-        if priority.contains(&t.id().name.as_str()) {
-            0
-        } else {
-            1
-        }
-    });
 
     types
 }
@@ -109,48 +63,24 @@ fn render_table(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_toc(model: &model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    render_toc_section(
-        "Manifests",
-        model::TypeCategory::Root,
-        vec!["Manifest"],
-        model,
-        w,
-    )?;
-    render_toc_section(
-        "Metadata Events",
-        model::TypeCategory::MetadataEvent,
-        vec!["MetadataEvent"],
-        model,
-        w,
-    )?;
-    render_toc_section(
-        "Data Schema",
-        model::TypeCategory::DataSchema,
-        vec![],
-        model,
-        w,
-    )?;
-    render_toc_section(
-        "Engine Protocol",
-        model::TypeCategory::EngineProtocol,
-        vec![],
-        model,
-        w,
-    )?;
-    render_toc_section("Fragments", model::TypeCategory::Fragment, vec![], model, w)?;
+    let contexts: std::collections::BTreeSet<&str> =
+        model.types.values().map(|t| t.context()).collect();
+
+    for context in contexts {
+        render_toc_section(context, model, w)?;
+    }
+
     Ok(())
 }
 
 fn render_toc_section(
-    name: &str,
-    category: model::TypeCategory,
-    priority: Vec<&'static str>,
+    context: &str,
     model: &model::Model,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
-    let id = section_id(name);
-    writeln!(w, "- [{name}](#{id})")?;
-    for typ in types_by_category(model, category, priority) {
+    let id = section_id(context);
+    writeln!(w, "- [{context}](#{id})")?;
+    for typ in types_by_context(model, context) {
         if typ.id().parent.is_some() {
             continue;
         }
@@ -165,14 +95,12 @@ fn render_toc_section(
 
 fn render_section(
     model: &model::Model,
-    name: &str,
-    category: model::TypeCategory,
-    priority: Vec<&'static str>,
+    context: &str,
     lvl: usize,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
-    render_header(name, None, lvl, w)?;
-    for typ in types_by_category(model, category, priority) {
+    render_header(context, None, lvl, w)?;
+    for typ in types_by_context(model, context) {
         render_type(typ, lvl + 1, model, w)?;
         writeln!(w)?;
     }
@@ -423,10 +351,11 @@ fn as_json_type(typ: &model::Type) -> String {
         | model::Type::Url
         | model::Type::AccountId
         | model::Type::AccountName
-        | model::Type::ResourceContext
-        | model::Type::ResourceKind
         | model::Type::ResourceId
         | model::Type::ResourceName
+        | model::Type::ResourceTypeUri
+        | model::Type::ResourceTypeName
+        | model::Type::ResourceTypeRef
         | model::Type::String => format!("`string`"),
         model::Type::Generic(_) => format!("`object`"),
         model::Type::Array(t) => format!("array({})", as_json_type(&*t.item_type)),
@@ -466,10 +395,11 @@ fn as_format(typ: &model::Type) -> String {
         // TODO: Link to the spec section
         model::Type::AccountId => String::new(),
         model::Type::AccountName => String::new(),
-        model::Type::ResourceContext => String::new(),
-        model::Type::ResourceKind => String::new(),
         model::Type::ResourceId => String::new(),
         model::Type::ResourceName => String::new(),
+        model::Type::ResourceTypeUri => String::new(),
+        model::Type::ResourceTypeName => String::new(),
+        model::Type::ResourceTypeRef => String::new(),
     }
 }
 

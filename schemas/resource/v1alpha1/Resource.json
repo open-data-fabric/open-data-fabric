@@ -12,8 +12,8 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "format": "uri",
-      "description": "Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`."
+      "format": "resource-type-uri",
+      "description": "Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`."
     },
     "headers": {
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",

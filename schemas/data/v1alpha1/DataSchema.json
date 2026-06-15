@@ -10,7 +10,8 @@
     "fields": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json"
+        "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json",
+        "unevaluatedProperties": false
       },
       "description": "Top-level fields (columns) of the schema."
     },

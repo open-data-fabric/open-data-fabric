@@ -12,21 +12,24 @@
       "properties": {
         "url": {
           "type": "string",
-          "format": "url",
+          "format": "uri",
           "description": "URL of the data source"
         },
         "eventTime": {
           "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EventTimeSource.json",
-          "description": "Describes how event time is extracted from the source metadata."
+          "description": "Describes how event time is extracted from the source metadata.",
+          "unevaluatedProperties": false
         },
         "cache": {
           "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceCaching.json",
-          "description": "Describes the caching settings used for this source."
+          "description": "Describes the caching settings used for this source.",
+          "unevaluatedProperties": false
         },
         "headers": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/RequestHeader.json"
+            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/RequestHeader.json",
+            "unevaluatedProperties": false
           },
           "description": "Headers to pass during the request (e.g. HTTP Authorization)"
         }
@@ -45,15 +48,18 @@
         },
         "eventTime": {
           "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EventTimeSource.json",
-          "description": "Describes how event time is extracted from the source metadata."
+          "description": "Describes how event time is extracted from the source metadata.",
+          "unevaluatedProperties": false
         },
         "cache": {
           "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceCaching.json",
-          "description": "Describes the caching settings used for this source."
+          "description": "Describes the caching settings used for this source.",
+          "unevaluatedProperties": false
         },
         "order": {
           "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceOrdering.json",
-          "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark."
+          "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -85,7 +91,8 @@
         "env": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EnvVar.json"
+            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/EnvVar.json",
+            "unevaluatedProperties": false
           },
           "description": "Environment variables to propagate into or set in the container."
         }
@@ -120,7 +127,8 @@
         "topics": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/MqttTopicSubscription.json"
+            "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/MqttTopicSubscription.json",
+            "unevaluatedProperties": false
           },
           "description": "List of topic subscription parameters."
         }
@@ -138,7 +146,7 @@
         },
         "nodeUrl": {
           "type": "string",
-          "format": "url",
+          "format": "uri",
           "description": "Url of the node."
         },
         "filter": {

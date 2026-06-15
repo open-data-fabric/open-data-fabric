@@ -23,7 +23,7 @@
     },
     "websiteUrl": {
       "type": "string",
-      "format": "url",
+      "format": "uri",
       "description": "URL where licensing terms can be found."
     }
   }

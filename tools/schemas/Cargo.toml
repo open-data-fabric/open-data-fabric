@@ -9,6 +9,7 @@ convert_case = { version = "0.7" }
 glob = { version = "0.3" }
 indexmap = { version = "2", features = ["serde"] }
 indoc = { version = "2" }
+regex = { version = "1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 serde_with = { version = "3" }

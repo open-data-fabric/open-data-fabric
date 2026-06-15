@@ -43,7 +43,8 @@
     "queryInputs": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequestInput.json"
+        "$ref": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequestInput.json",
+        "unevaluatedProperties": false
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
     },

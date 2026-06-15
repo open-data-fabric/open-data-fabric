@@ -5,7 +5,8 @@
   "type": "object",
   "patternProperties": {
     ".*": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition.json"
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition.json",
+      "unevaluatedProperties": false
     }
   }
 }

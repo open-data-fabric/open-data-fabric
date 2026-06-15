@@ -889,6 +889,68 @@ enum CompressionFormat: int32 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceLabels
+// Map of string keys and values that can be used to organize, categorize, and query resources.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcelabels-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceLabelsEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table ResourceLabels {
+  // Key-value map
+  entries: [ResourceLabelsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceAnnotations
+// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceannotations-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceAnnotationsEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table ResourceAnnotations {
+  // Key-value map
+  entries: [ResourceAnnotationsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceHeaders
+// Container for identity and ownership information of a resource.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceheaders-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceHeaders {
+  // Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation.
+  id: [ubyte];
+  // Symbolic name of a resource that identifies it within a scope of an onwing account.
+  name: string;
+  // Reference to an account that owns the resource.
+  account: AccountRef;
+  // Map of string keys and values that can be used to organize, categorize, and query resources.
+  labels: ResourceLabels;
+  // Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
+  annotations: ResourceAnnotations;
+  // A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
+  generation: uint64 = null;
+  // Time when the resource was first applied and assigned an identity.
+  created_at: Timestamp;
+  // Time when the resource was last updated, including header, spec, and status updates.
+  updated_at: Timestamp;
+  // Time when the resource was deleted.
+  deleted_at: Timestamp;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DatasetKind
 // Represents type of the dataset.
 //
@@ -1421,6 +1483,68 @@ table MetadataEventWrapper {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DatasetSpec
+// Represents a desired state of the dataset metadata.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table DatasetSpec {
+  // Type of the dataset.
+  kind: DatasetKind;
+  // An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
+  metadata: [MetadataEventWrapper];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourcePhase
+// Represents the lifecycle stage of a resource.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcephase-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum ResourcePhase: int32 {
+  Pending,
+  Reconciling,
+  Ready,
+  Failed,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceConditions
+// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of `{controller-name}/{condition-name}`.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceconditions-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceConditionsEntry {
+  key: string (key);
+  value: ResourceCondition;
+}
+table ResourceConditions {
+  // Key-value map
+  entries: [ResourceConditionsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceStatus
+// Resource lifecycle and reconciliation inforamtion.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcestatus-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceStatus {
+  // Represents the lifecycle stage of a resource.
+  phase: ResourcePhase;
+  // Resource generation that was last processed by the main resource controller.
+  observed_generation: uint64 = null;
+  // Time when the controller last reconciled the desired resource state as defined in `observedGeneration`.
+  reconciled_at: Timestamp;
+  // Detailed conditions describing the state of the resource that are added by controllers.
+  conditions: ResourceConditions;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DatasetSnapshot
 // Represents a projection of the dataset metadata at a single point in time.
 // This type is typically used for defining new datasets and changing the existing ones.
@@ -1453,6 +1577,28 @@ table DatasetVocabulary {
   system_time_column: string;
   // Name of the event time column.
   event_time_column: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpec
+// An individual work item to be executed.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpec {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowSpec
+// Defines a sequence of tasks to be executed upon certain trigger conditions.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowSpec {
+  // List of tasks to run consecutively.
+  tasks: [TaskSpec];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1571,116 +1717,6 @@ table RawQueryResponseRoot {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceLabels
-// Map of string keys and values that can be used to organize, categorize, and query resources.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcelabels-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceLabelsEntry {
-  key: string (key);
-  // JSON encoded
-  value: string (json);
-}
-table ResourceLabels {
-  // Key-value map
-  entries: [ResourceLabelsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceAnnotations
-// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceannotations-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceAnnotationsEntry {
-  key: string (key);
-  // JSON encoded
-  value: string (json);
-}
-table ResourceAnnotations {
-  // Key-value map
-  entries: [ResourceAnnotationsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceHeaders
-// Container for identity and ownership information of a resource.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceheaders-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceHeaders {
-  // Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation.
-  id: [ubyte];
-  // Symbolic name of a resource that identifies it within a scope of an onwing account.
-  name: string;
-  // Reference to an account that owns the resource.
-  account: AccountRef;
-  // Map of string keys and values that can be used to organize, categorize, and query resources.
-  labels: ResourceLabels;
-  // Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
-  annotations: ResourceAnnotations;
-  // A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
-  generation: uint64 = null;
-  // Time when the resource was first applied and assigned an identity.
-  created_at: Timestamp;
-  // Time when the resource was last updated, including header, spec, and status updates.
-  updated_at: Timestamp;
-  // Time when the resource was deleted.
-  deleted_at: Timestamp;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourcePhase
-// Represents the lifecycle stage of a resource.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcephase-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-enum ResourcePhase: int32 {
-  Pending,
-  Reconciling,
-  Ready,
-  Failed,
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceConditions
-// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of `{controller-name}/{condition-name}`.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceconditions-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceConditionsEntry {
-  key: string (key);
-  value: ResourceCondition;
-}
-table ResourceConditions {
-  // Key-value map
-  entries: [ResourceConditionsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceStatus
-// Resource lifecycle and reconciliation inforamtion.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcestatus-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceStatus {
-  // Represents the lifecycle stage of a resource.
-  phase: ResourcePhase;
-  // Resource generation that was last processed by the main resource controller.
-  observed_generation: uint64 = null;
-  // Time when the controller last reconciled the desired resource state as defined in `observedGeneration`.
-  reconciled_at: Timestamp;
-  // Detailed conditions describing the state of the resource that are added by controllers.
-  conditions: ResourceConditions;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Resource
 // Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.
 //
@@ -1688,10 +1724,8 @@ table ResourceStatus {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Resource {
-  // Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`.
-  context: string;
-  // Type name of the resource which is unique within a given context.
-  kind: string;
+  // Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`.
+  schema: string;
   // Container for identity and ownership information of a resource.
   headers: ResourceHeaders;
   // Specifies the desired state of a resource.
@@ -1730,10 +1764,8 @@ table ResourceCondition {
 table ResourceRef {
   // Reference to an account that owns the target resource.
   account: AccountRef;
-  // Bounded domain of the target resource e.g. `secrets.opendatafabric.org/v1`.
-  context: string;
-  // Type of the target resource e.g. `SecretSet`.
-  kind: string;
+  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`.
+  type: string;
   // ID of a resource.
   id: [ubyte];
   // Name of a resource.
@@ -1771,13 +1803,13 @@ table Secrets {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SecretSet
+// SecretSetSpec
 // Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretset-schema
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretsetspec-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table SecretSet {
+table SecretSetSpec {
   // Key value pairs of secrets.
   secrets: Secrets;
 }
@@ -1948,13 +1980,13 @@ table Variables {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// VariableSet
+// VariableSetSpec
 // Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variableset-schema
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variablesetspec-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table VariableSet {
+table VariableSetSpec {
   // Key value pairs of variables.
   variables: Variables;
 }

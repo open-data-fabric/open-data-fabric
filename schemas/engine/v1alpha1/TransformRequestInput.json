@@ -53,7 +53,8 @@
     "explicitWatermarks": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Watermark.json"
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Watermark.json",
+        "unevaluatedProperties": false
       },
       "description": "Watermarks that should be injected into the stream to separate micro batches for reproducibility."
     }

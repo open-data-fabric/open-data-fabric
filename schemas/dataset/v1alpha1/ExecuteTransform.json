@@ -10,7 +10,8 @@
     "queryInputs": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransformInput.json"
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransformInput.json",
+        "unevaluatedProperties": false
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
     },

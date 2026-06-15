@@ -41,6 +41,7 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
 - [Terminology](#terminology)
 - [Proposal](#proposal)
   - [Resource Manifests](#resource-manifests)
+    - [Type Identification](#type-identification)
     - [Versioning](#versioning)
     - [Multi-tenancy](#multi-tenancy)
     - [Identity](#identity)
@@ -138,14 +139,30 @@ status: {}
 ```
 
 Here:
-- `$schema` identifies the type and version of the resource using a resolvable URL that points to the JSON Schema file
+- `$schema` identifies the type of the resource using a resolvable URL that points to the JSON Schema file
   - This replaces separate `apiVersion`/`kind` fields (as in K8s) with a single self-describing identifier
-  - The URL encodes both the bounded context (domain) and version: `{base-url}/{context}/{version}/{Name}.json`
-  - IDE tools can fetch the schema directly from this URL to provide validation and autocomplete
 - `headers` contains identity and ownership information
   - `headers` is used instead of `metadata` because the latter is already an overloaded term in ODF and is generic to the point of being meaningless
 - `spec` defines the desired state of the resource
 - `status` contains information about the current state and the reconciliation process
+
+
+### Type Identification
+We use `$schema` URL to identify resource types:
+
+```yaml
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+```
+
+The `$schema` URL is formatted as `{base-url}/{context}/{version}/{Name}.json` and carries:
+- Controlling organization domain (e.g. `opendatafabric.org`)
+- Bounded context (e.g. `config`)
+- Version (e.g. `v1alpha1`)
+- Resource name (e.g. `SecretSet`)
+
+Many IDEs recognize `$schema` field and automatically fetch the associated JSON schema to provide validation and auto-completion.
+
+Resource schemas will be registered within ODF node and, similarly to Kubernetes CRDs, assigned a short resource type name (e.g. `SecretSet`) that can be used instead of the schema.
 
 
 ### Versioning
@@ -183,7 +200,9 @@ spec: {}
 
 Resource **names are immutable** - changing the name requires deleting and re-creating the resource.
 
-The ODF node will assign a unique `id` (UUID v4) to resources upon creation:
+The tuple `(Account, ResourceType, ResourceName)` uniquely identifies the resource within an ODF node (see also [references](#references)). There may be multiple resources of different type under one account with the same name.
+
+The ODF node will additionally assign a unique `id` (UUID v4) to resources upon creation:
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json

@@ -13,7 +13,8 @@
         "items": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded.json"
+            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded.json",
+            "unevaluatedProperties": false
           },
           "description": "List of embedded items."
         }

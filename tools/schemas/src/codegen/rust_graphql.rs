@@ -661,7 +661,12 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         }
 
         // Schemas are represented in GQL via embedded content, so we don't generate types for those
-        if typ.category() == model::TypeCategory::DataSchema {
+        if typ.context() == "data" {
+            continue;
+        }
+
+        // Resource variants are covered by Resource<SpecT> type
+        if typ.is_resource_variant() {
             continue;
         }
 
@@ -904,10 +909,11 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::AnyJson => format!("serde_json::Value"),
         model::Type::AccountId => format!("AccountID<'static>"),
         model::Type::AccountName => format!("AccountName<'static>"),
-        model::Type::ResourceContext => format!("ResourceContext<'static>"),
-        model::Type::ResourceKind => format!("ResourceKind<'static>"),
         model::Type::ResourceId => format!("ResourceID<'static>"),
         model::Type::ResourceName => format!("ResourceName<'static>"),
+        model::Type::ResourceTypeUri => format!("ResourceTypeUri<'static>"),
+        model::Type::ResourceTypeName => format!("ResourceTypeName<'static>"),
+        model::Type::ResourceTypeRef => format!("ResourceTypeRef<'static>"),
     }
 }
 

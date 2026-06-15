@@ -15,7 +15,8 @@
       "properties": {
         "newOffsetInterval": {
           "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval.json",
-          "description": "Data slice produced by the transaction, if any."
+          "description": "Data slice produced by the transaction, if any.",
+          "unevaluatedProperties": false
         },
         "newWatermark": {
           "type": "string",

@@ -70,7 +70,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -108,7 +109,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -142,7 +144,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -161,7 +164,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -180,7 +184,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -203,7 +208,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -222,7 +228,8 @@
         },
         "schema": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
-          "description": "Schema used to coerce values into more appropriate data types."
+          "description": "Schema used to coerce values into more appropriate data types.",
+          "unevaluatedProperties": false
         }
       }
     }

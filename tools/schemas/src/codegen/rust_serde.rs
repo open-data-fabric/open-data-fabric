@@ -84,7 +84,14 @@ const PREAMBLE: &str = indoc::indoc!(
 pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     writeln!(w, "{}", PREAMBLE)?;
 
-    for typ in model.types.values() {
+    // Resource variants are covered by Resource<SpecT> type
+    let types: Vec<_> = model
+        .types
+        .values()
+        .filter(|t| !t.is_resource_variant())
+        .collect();
+
+    for typ in &types {
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -116,7 +123,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     )?;
     writeln!(w)?;
 
-    for typ in model.types.values() {
+    for typ in &types {
         // TODO: Support #[serde_as(as = "X")] for generic types
         match &typ {
             model::TypeDefinition::Struct(t) if !t.generics.is_empty() => continue,
@@ -260,6 +267,12 @@ fn render_field(
     field: &model::Field,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
+    let ident = format_ident(&field.name);
+
+    if ident != field.name && !ident.starts_with("r#") {
+        writeln!(w, "#[serde(rename = \"{}\")]", field.name)?;
+    }
+
     let container = field
         .codegen_hints
         .get(&CodegenLanguage::Rust)
@@ -302,7 +315,7 @@ fn render_field(
         typ = format!("Option<{typ}>");
     }
 
-    writeln!(w, "pub {}: {typ},", format_ident(&field.name))?;
+    writeln!(w, "pub {ident}: {typ},")?;
     Ok(())
 }
 
@@ -357,10 +370,11 @@ fn format_into(typ: &model::Type, ident: &str) -> String {
         | model::Type::Url
         | model::Type::AccountId
         | model::Type::AccountName
-        | model::Type::ResourceContext
-        | model::Type::ResourceKind
         | model::Type::ResourceId
         | model::Type::ResourceName
+        | model::Type::ResourceTypeUri
+        | model::Type::ResourceTypeName
+        | model::Type::ResourceTypeRef
         | model::Type::AnyJson => format!("{ident}"),
         model::Type::Generic(_) | model::Type::Custom(_) => format!("{ident}.into()"),
         model::Type::Array(_) => format!("{ident}.into_iter().map(Into::into).collect()"),
@@ -600,10 +614,11 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::DatasetRef => format!("DatasetRef"),
         model::Type::AccountId => format!("AccountID"),
         model::Type::AccountName => format!("AccountName"),
-        model::Type::ResourceContext => format!("ResourceContext"),
-        model::Type::ResourceKind => format!("ResourceKind"),
         model::Type::ResourceId => format!("ResourceID"),
         model::Type::ResourceName => format!("ResourceName"),
+        model::Type::ResourceTypeUri => format!("ResourceTypeUri"),
+        model::Type::ResourceTypeName => format!("ResourceTypeName"),
+        model::Type::ResourceTypeRef => format!("ResourceTypeRef"),
 
         model::Type::Flatbuffers => format!("Vec<u8>"),
         model::Type::Generic(t) => t.clone(),

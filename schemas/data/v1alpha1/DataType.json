@@ -55,7 +55,8 @@
         "unit": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
           "description": "The unit of the duration measurement.",
-          "default": "Millisecond"
+          "default": "Millisecond",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -135,6 +136,7 @@
         "itemType": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
           "description": "Data type of list items.",
+          "unevaluatedProperties": false,
           "codegen": {
             "rust": {
               "container": "Box"
@@ -159,6 +161,7 @@
         "keyType": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
           "description": "Data type of the map's keys.",
+          "unevaluatedProperties": false,
           "codegen": {
             "rust": {
               "container": "Box"
@@ -168,6 +171,7 @@
         "valueType": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
           "description": "Data type of the map's values.",
+          "unevaluatedProperties": false,
           "codegen": {
             "rust": {
               "container": "Box"
@@ -196,6 +200,7 @@
         "inner": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
           "description": "Inner data type for the optional value.",
+          "unevaluatedProperties": false,
           "codegen": {
             "rust": {
               "container": "Box"
@@ -214,7 +219,8 @@
         "fields": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json"
+            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json",
+            "unevaluatedProperties": false
           },
           "description": "Fields that make up the struct."
         }
@@ -228,7 +234,8 @@
         "unit": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
           "default": "Millisecond",
-          "description": "The unit of the time value."
+          "description": "The unit of the time value.",
+          "unevaluatedProperties": false
         }
       }
     },
@@ -240,7 +247,8 @@
         "unit": {
           "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
           "default": "Millisecond",
-          "description": "The unit of the timestamp value that determines its precision."
+          "description": "The unit of the timestamp value that determines its precision.",
+          "unevaluatedProperties": false
         },
         "timezone": {
           "type": "string",

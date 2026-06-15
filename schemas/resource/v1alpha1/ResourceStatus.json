@@ -9,7 +9,8 @@
   "properties": {
     "phase": {
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourcePhase.json",
-      "description": "Represents the lifecycle stage of a resource."
+      "description": "Represents the lifecycle stage of a resource.",
+      "unevaluatedProperties": false
     },
     "observedGeneration": {
       "type": "integer",

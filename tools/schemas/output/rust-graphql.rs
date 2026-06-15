@@ -241,6 +241,28 @@ impl From<odf::metadata::DatasetSnapshot> for DatasetSnapshot {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Represents a desired state of the dataset metadata.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetspec-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct DatasetSpec {
+    /// Type of the dataset.
+    pub kind: DatasetKind,
+    /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
+    pub metadata: Vec<MetadataEvent>,
+}
+
+impl From<odf::metadata::DatasetSpec> for DatasetSpec {
+    fn from(v: odf::metadata::DatasetSpec) -> Self {
+        Self {
+            kind: v.kind.into(),
+            metadata: v.metadata.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Specifies the mapping of system columns onto dataset schema.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetvocabulary-schema
@@ -657,6 +679,25 @@ impl From<odf::metadata::FetchStepUrl> for FetchStepUrl {
             event_time: v.event_time.map(Into::into),
             cache: v.cache.map(Into::into),
             headers: v.headers.map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Defines a sequence of tasks to be executed upon certain trigger conditions.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct FlowSpec {
+    /// List of tasks to run consecutively.
+    pub tasks: Vec<TaskSpec>,
+}
+
+impl From<odf::metadata::FlowSpec> for FlowSpec {
+    fn from(v: odf::metadata::FlowSpec) -> Self {
+        Self {
+            tasks: v.tasks.into_iter().map(Into::into).collect(),
         }
     }
 }
@@ -1632,10 +1673,8 @@ impl From<odf::metadata::RequestHeader> for RequestHeader {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resource-schema
 #[derive(SimpleObject, Debug, Clone)]
 pub struct Resource {
-    /// Defines a bounded context that this resource belongs to. Context is usually composed of a domain and a version e.g. `datasets.opendatafabric.org/v1`.
-    pub context: ResourceContext<'static>,
-    /// Type name of the resource which is unique within a given context.
-    pub kind: ResourceKind<'static>,
+    /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`.
+    pub schema: ResourceTypeUri<'static>,
     /// Container for identity and ownership information of a resource.
     pub headers: ResourceHeaders,
     /// Specifies the desired state of a resource.
@@ -1647,8 +1686,7 @@ pub struct Resource {
 impl From<odf::metadata::Resource<serde_json::Value>> for Resource {
     fn from(v: odf::metadata::Resource<serde_json::Value>) -> Self {
         Self {
-            context: v.context.into(),
-            kind: v.kind.into(),
+            schema: v.schema.into(),
             headers: v.headers.into(),
             spec: v.spec.into(),
             status: v.status.map(Into::into),
@@ -1866,15 +1904,15 @@ impl From<odf::metadata::Secret> for Secret {
 
 /// Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
 ///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretset-schema
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretsetspec-schema
 #[derive(SimpleObject, Debug, Clone)]
-pub struct SecretSet {
+pub struct SecretSetSpec {
     /// Key value pairs of secrets.
     pub secrets: Secrets,
 }
 
-impl From<odf::metadata::SecretSet> for SecretSet {
-    fn from(v: odf::metadata::SecretSet) -> Self {
+impl From<odf::metadata::SecretSetSpec> for SecretSetSpec {
+    fn from(v: odf::metadata::SecretSetSpec) -> Self {
         Self {
             secrets: v.secrets.into(),
         }
@@ -2194,6 +2232,22 @@ impl From<odf::metadata::SqlQueryStep> for SqlQueryStep {
             alias: v.alias.map(Into::into),
             query: v.query.into(),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// An individual work item to be executed.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct TaskSpec {
+    pub _dummy: Option<String>,
+}
+
+impl From<odf::metadata::TaskSpec> for TaskSpec {
+    fn from(v: odf::metadata::TaskSpec) -> Self {
+        Self { _dummy: None }
     }
 }
 
@@ -2560,15 +2614,15 @@ impl From<odf::metadata::Variable> for Variable {
 
 /// Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
 ///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variableset-schema
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variablesetspec-schema
 #[derive(SimpleObject, Debug, Clone)]
-pub struct VariableSet {
+pub struct VariableSetSpec {
     /// Key value pairs of variables.
     pub variables: Variables,
 }
 
-impl From<odf::metadata::VariableSet> for VariableSet {
-    fn from(v: odf::metadata::VariableSet) -> Self {
+impl From<odf::metadata::VariableSetSpec> for VariableSetSpec {
+    fn from(v: odf::metadata::VariableSetSpec) -> Self {
         Self {
             variables: v.variables.into(),
         }

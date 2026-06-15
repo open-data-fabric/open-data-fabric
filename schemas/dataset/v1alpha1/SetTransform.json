@@ -11,7 +11,8 @@
     "inputs": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput.json"
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput.json",
+        "unevaluatedProperties": false
       },
       "description": "Datasets that will be used as sources."
     },

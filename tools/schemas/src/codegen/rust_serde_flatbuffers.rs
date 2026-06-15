@@ -140,10 +140,11 @@ impl Helpers {
             | model::Type::DatasetRef
             | model::Type::AccountId
             | model::Type::AccountName
-            | model::Type::ResourceContext
-            | model::Type::ResourceKind
             | model::Type::ResourceId
             | model::Type::ResourceName
+            | model::Type::ResourceTypeUri
+            | model::Type::ResourceTypeName
+            | model::Type::ResourceTypeRef
             | model::Type::DateTime
             | model::Type::Flatbuffers
             | model::Type::Multicodec
@@ -188,6 +189,11 @@ fn render_impl(
             || typ.id().name == "DatasetSnapshot"
             || typ.id().name == "Resource"
         {
+            continue;
+        }
+
+        // We don't yet serialize resources to flatbuffers
+        if typ.is_resource_variant() {
             continue;
         }
 
@@ -347,9 +353,10 @@ fn format_pre_ser_type(
         | model::Type::DateTime => (),
         model::Type::String => writeln!(w, "fb.create_string(&{name})")?,
         model::Type::AccountName
-        | model::Type::ResourceContext
-        | model::Type::ResourceKind
         | model::Type::ResourceName
+        | model::Type::ResourceTypeUri
+        | model::Type::ResourceTypeName
+        | model::Type::ResourceTypeRef
         | model::Type::DatasetAlias
         | model::Type::DatasetRef => writeln!(w, "fb.create_string(&{name}.to_string())")?,
         model::Type::AccountId | model::Type::ResourceId => {
@@ -366,9 +373,15 @@ fn format_pre_ser_type(
         model::Type::Array(array) => {
             writeln!(w, "let offsets: Vec<_> = {name}.iter().map(|i| {{")?;
             if helpers.is_union(&array.item_type) {
-                // TODO: This is a dirty hack
+                let model::Type::Custom(type_id) = array.item_type.as_ref() else {
+                    unreachable!()
+                };
                 writeln!(w, "let (value_type, value_offset) = i.serialize(fb);")?;
-                writeln!(w, "let mut builder = fb::PrepStepWrapperBuilder::new(fb);")?;
+                writeln!(
+                    w,
+                    "let mut builder = fb::{}WrapperBuilder::new(fb);",
+                    type_id.join("")
+                )?;
                 writeln!(w, "builder.add_value_type(value_type);")?;
                 writeln!(w, "builder.add_value(value_offset);")?;
                 writeln!(w, "builder.finish()")?;
@@ -405,8 +418,9 @@ fn render_field_ser(
     helpers: &Helpers,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    let name = &field.name;
-    let accessor = format_accessor(name);
+    let ident = format_ident(&field.name);
+    let name = ident.trim_start_matches("r#");
+    let accessor = format_accessor(&field.name);
 
     if preserialized {
         if !field.optional {
@@ -468,10 +482,11 @@ fn render_type_ser(
         | model::Type::Url
         | model::Type::AccountId
         | model::Type::AccountName
-        | model::Type::ResourceContext
-        | model::Type::ResourceKind
         | model::Type::ResourceId
         | model::Type::ResourceName
+        | model::Type::ResourceTypeUri
+        | model::Type::ResourceTypeName
+        | model::Type::ResourceTypeRef
         | model::Type::Generic(_)
         | model::Type::Array(_) => (),
         model::Type::DateTime => writeln!(w, "&datetime_to_fb(&{name})")?,
@@ -603,14 +618,19 @@ fn render_type_de(
             writeln!(w, "odf::AccountID::from_bytes({name}.bytes()).unwrap()")?
         }
         model::Type::AccountName => writeln!(w, "odf::AccountName::try_from({name}).unwrap()")?,
-        model::Type::ResourceContext => {
-            writeln!(w, "odf::ResourceContext::try_from({name}).unwrap()")?
-        }
-        model::Type::ResourceKind => writeln!(w, "odf::ResourceKind::try_from({name}).unwrap()")?,
         model::Type::ResourceId => {
             writeln!(w, "odf::ResourceID::from_bytes({name}.bytes()).unwrap()")?
         }
         model::Type::ResourceName => writeln!(w, "odf::ResourceName::try_from({name}).unwrap()")?,
+        model::Type::ResourceTypeUri => {
+            writeln!(w, "odf::ResourceTypeUri::try_from({name}).unwrap()")?
+        }
+        model::Type::ResourceTypeName => {
+            writeln!(w, "odf::ResourceTypeName::try_from({name}).unwrap()")?
+        }
+        model::Type::ResourceTypeRef => {
+            writeln!(w, "odf::ResourceTypeRef::try_from({name}).unwrap()")?
+        }
     }
     Ok(())
 }
@@ -826,7 +846,7 @@ fn render_map_json_encoded_string(
 fn format_accessor<'a>(ident: &'a str) -> Cow<'a, str> {
     match ident {
         "type" => "type_".into(),
-        _ => Cow::Borrowed(ident),
+        _ => Cow::Borrowed(ident.trim_start_matches("$")),
     }
 }
 

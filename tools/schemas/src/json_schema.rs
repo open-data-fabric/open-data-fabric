@@ -31,7 +31,11 @@ pub struct Schema {
 
     pub additional_properties: Option<bool>,
 
+    pub unevaluated_properties: Option<bool>,
+
     pub one_of: Option<Vec<Schema>>,
+
+    pub all_of: Option<Vec<Schema>>,
 
     pub r#enum: Option<Vec<serde_json::Value>>,
 
@@ -39,6 +43,8 @@ pub struct Schema {
 
     #[serde(rename = "$ref")]
     pub r#ref: Option<String>,
+
+    pub r#const: Option<String>,
 
     // ODF Extensions
     pub format: Option<Format>,
@@ -66,6 +72,10 @@ pub struct Schema {
 impl Schema {
     pub fn display(&self) -> SchemaDisplay<'_> {
         SchemaDisplay(self)
+    }
+
+    pub fn to_value(&self) -> serde_json::Value {
+        serde_json::to_value(self).unwrap()
     }
 }
 
@@ -105,10 +115,7 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
 
         assert_eq!(
             *id,
-            format!(
-                "http://open-data-fabric.github.com/schemas/{}",
-                path.file_stem().unwrap().to_str().unwrap()
-            ),
+            format!("https://opendatafabric.org/{}", path.display()),
             "Schema ID does not correspond to the file name"
         );
 
@@ -120,7 +127,7 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn check_referential_integrity(top_level_schemas: &[Schema], roots: &[String]) {
+pub fn check_referential_integrity(top_level_schemas: &[Schema], roots: &[&str]) {
     let mut schemas = HashMap::new();
 
     // Add top-level schemas
@@ -146,7 +153,7 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema], roots: &[String
 
     // Seed `to_explore` with provided known roots
     for root in roots {
-        let id = crate::model::TypeId::new_root(root);
+        let id = crate::model::TypeId::new_root(root.to_string());
         let schema = schemas
             .get(&id)
             .expect(&format!("Could not find specified root schema: {}", root));
@@ -230,6 +237,12 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
         }
     }
 
+    if let Some(all_of) = &schema.all_of {
+        for variant_schema in all_of {
+            refs.extend(extract_refs(variant_schema));
+        }
+    }
+
     if let Some(item_schema) = &schema.items {
         refs.extend(extract_refs(item_schema));
     }
@@ -243,18 +256,20 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
     refs
 }
 
+// Matches: https://opendatafabric.org/schemas/{context}/{version}/{Name}.json
+// Also matches with an optional #/$defs/{Def} fragment.
+static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+    regex::Regex::new(
+        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)\.json(?:#/\$defs/(?P<def>[^/]+))?$",
+    )
+    .unwrap()
+});
+
 fn decode_ref(reff: &str) -> Ref {
-    if let Some(global) = reff.strip_prefix("/schemas/") {
-        if let Some((global, local)) = global.split_once("#/$defs/") {
-            Ref::Global {
-                schema_id: global.to_string(),
-                subschema_def: Some(local.to_string()),
-            }
-        } else {
-            Ref::Global {
-                schema_id: global.to_string(),
-                subschema_def: None,
-            }
+    if let Some(caps) = SCHEMA_URL_RE.captures(reff) {
+        Ref::Global {
+            schema_id: caps["name"].to_string(),
+            subschema_def: caps.name("def").map(|c| c.as_str().to_string()),
         }
     } else if let Some(local) = reff.strip_prefix("#/$defs/") {
         Ref::Def(local.to_string())
@@ -303,7 +318,7 @@ pub enum Format {
     Multihash,
     Path,
     Regex,
-    Url,
+    Uri,
 
     // Identity and references
     AccountId,
@@ -314,10 +329,11 @@ pub enum Format {
     DatasetAlias, // TODO: Should this be replaced by DatasetRef everywhere?
     DatasetRef,
 
-    ResourceContext,
-    ResourceKind,
     ResourceId,
     ResourceName,
+    ResourceTypeName,
+    ResourceTypeUri,
+    ResourceTypeRef,
 
     // Embedding
     Flatbuffers,

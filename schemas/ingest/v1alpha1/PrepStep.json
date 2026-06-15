@@ -12,7 +12,8 @@
       "properties": {
         "format": {
           "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/CompressionFormat.json",
-          "description": "Name of a compression algorithm used on data."
+          "description": "Name of a compression algorithm used on data.",
+          "unevaluatedProperties": false
         },
         "subPath": {
           "type": "string",
