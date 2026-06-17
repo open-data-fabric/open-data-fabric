@@ -1,0 +1,78 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Condition that causes a flow to be executed.",
+  "$defs": {
+    "Schedule": {
+      "description": "Triggers the flow on a cron schedule.",
+      "type": "object",
+      "required": [
+        "cron"
+      ],
+      "properties": {
+        "cron": {
+          "type": "string",
+          "description": "Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`."
+        }
+      }
+    },
+    "Source": {
+      "description": "Triggers the flow when a source receives new data, with optional batching controls.",
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+          "description": "Reference to the source resource that drives this trigger.",
+          "unevaluatedProperties": false
+        },
+        "minRecordsToAwait": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Minimum number of new records to accumulate before triggering."
+        },
+        "maxAwaitInterval": {
+          "type": "string",
+          "format": "duration",
+          "description": "Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`."
+        }
+      }
+    },
+    "Dataset": {
+      "description": "Triggers the flow when matching datasets are updated.",
+      "type": "object",
+      "required": [
+        "dataset"
+      ],
+      "properties": {
+        "dataset": {
+          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector.json",
+          "description": "Selector that identifies which datasets can trigger this flow.",
+          "unevaluatedProperties": false
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Schedule" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Schedule" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Source" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Source" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Dataset" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Dataset" }
+      ]
+    }
+  ]
+}

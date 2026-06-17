@@ -20,29 +20,7 @@ fn lint(_cmd: cli::Lint, schemas_dir: &Path) {
     let schemas = json_schema::load_schemas(schemas_dir);
 
     // TODO: Replace concrete names with a directory structure or a tag
-    json_schema::check_referential_integrity(
-        &schemas,
-        &[
-            // Resources
-            "Resource",
-            "Dataset",
-            "Flow",
-            "SecretSet",
-            "Task",
-            "VariableSet",
-            // TODO: Remove this once in use
-            "ResourceRef",
-            // Manifests
-            "Manifest",
-            "DatasetSnapshot",
-            "MetadataBlock",
-            // Engine
-            "RawQueryRequest",
-            "RawQueryResponse",
-            "TransformRequest",
-            "TransformResponse",
-        ],
-    );
+    json_schema::check_referential_integrity(&schemas);
 
     let model = model::parse_jsonschema(schemas);
 

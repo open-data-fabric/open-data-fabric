@@ -2,6 +2,7 @@
   "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a desired state of a dataset.",
+  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [
@@ -23,7 +24,7 @@
     },
     "spec": {
       "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec.json",
-      "description": "Specifies the desired state of the dataset.",
+      "description": "Specifies the desired state of the resource.",
       "unevaluatedProperties": false
     },
     "status": {

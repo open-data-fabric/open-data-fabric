@@ -20,6 +20,10 @@ const PREAMBLE: &str = indoc::indoc!(
 
     attribute "json";
 
+    struct Duration {
+      nanoseconds: uint64;
+    }
+
     struct Timestamp {
       year: int32;
       ordinal: uint16;
@@ -345,7 +349,8 @@ fn render_struct(
                     | model::Type::UInt8
                     | model::Type::UInt16
                     | model::Type::UInt32
-                    | model::Type::UInt64,
+                    | model::Type::UInt64
+                    | model::Type::ByteSize,
                 ) => " = null",
                 (true, model::Type::Custom(name)) => match model.types.get(&name).unwrap() {
                     model::TypeDefinition::Enum(_) => " = null",
@@ -515,7 +520,10 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::UInt32 => format!("uint32"),
         model::Type::UInt64 => format!("uint64"),
         model::Type::String => format!("string"),
+
+        model::Type::ByteSize => format!("uint64"),
         model::Type::DateTime => format!("Timestamp"),
+        model::Type::Duration => format!("Duration"),
         // TODO: Should be uint64 - change in the next breaking cycle
         model::Type::Multicodec => format!("int64"),
         model::Type::Multihash => format!("[ubyte]"),

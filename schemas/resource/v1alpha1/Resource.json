@@ -2,6 +2,7 @@
   "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.",
+  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

@@ -1,0 +1,288 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/Ingress.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines the point where data enters the system.",
+  "$defs": {
+    "Url": {
+      "description": "Pulls data from one of the supported sources by its URL.",
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the data source"
+        },
+        "eventTime": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource.json",
+          "description": "Describes how event time is extracted from the source metadata.",
+          "unevaluatedProperties": false
+        },
+        "cache": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching.json",
+          "description": "Describes the caching settings used for this source.",
+          "unevaluatedProperties": false
+        },
+        "headers": {
+          "type": "array",
+          "items": {
+            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/RequestHeader.json",
+            "unevaluatedProperties": false
+          },
+          "description": "Headers to pass during the request (e.g. HTTP Authorization)"
+        }
+      }
+    },
+    "FilesGlob": {
+      "description": "Uses glob operator to match files on the local file system.",
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path with a glob pattern."
+        },
+        "eventTime": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource.json",
+          "description": "Describes how event time is extracted from the source metadata.",
+          "unevaluatedProperties": false
+        },
+        "cache": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching.json",
+          "description": "Describes the caching settings used for this source.",
+          "unevaluatedProperties": false
+        },
+        "order": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceOrdering.json",
+          "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "Container": {
+      "description": "Runs the specified OCI container to fetch data from an arbitrary source.",
+      "type": "object",
+      "required": [
+        "image"
+      ],
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "Image name and and an optional tag."
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specifies the entrypoint. Not executed within a shell. The default OCI image's ENTRYPOINT is used if this is not provided."
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments to the entrypoint. The OCI image's CMD is used if this is not provided."
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EnvVar.json",
+            "unevaluatedProperties": false
+          },
+          "description": "Environment variables to propagate into or set in the container."
+        }
+      }
+    },
+    "Mqtt": {
+      "description": "Connects to an MQTT broker to fetch events from the specified topic.",
+      "type": "object",
+      "required": [
+        "host",
+        "port",
+        "topics"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Hostname of the MQTT broker."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Port of the MQTT broker."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username to use for auth with the broker."
+        },
+        "password": {
+          "type": "string",
+          "description": "Password to use for auth with the broker (can be templated)."
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MqttTopicSubscription.json",
+            "unevaluatedProperties": false
+          },
+          "description": "List of topic subscription parameters."
+        }
+      }
+    },
+    "RestEndpoint": {
+      "description": "Exposes a REST HTTP endpoint that accepts pushed data records.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "buffer": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/IngressBuffer.json",
+          "description": "Buffer configuration for holding records until they are ingested.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "EvmLogs": {
+      "description": "Connects to an EVM (Ethereum) node to stream transaction logs.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "chainId": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain."
+        },
+        "nodeUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Url of the node."
+        },
+        "filter": {
+          "type": "string",
+          "description": "An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.",
+          "examples": [
+            "block_number > 123 and address = X'5fbdb2315678afecb367f032d93f642f64180aa3' and topic1 = X'000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'"
+          ]
+        },
+        "signature": {
+          "type": "string",
+          "description": "Solidity log event signature to use for decoding. Using this field adds `event` to the output containing decoded log as JSON."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Url"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Url"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FilesGlob"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FilesGlob"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Container"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Container"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Mqtt"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Mqtt"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "EvmLogs"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/EvmLogs"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "RestEndpoint"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/RestEndpoint"
+        }
+      ]
+    }
+  ]
+}

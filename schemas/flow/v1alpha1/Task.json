@@ -2,6 +2,7 @@
   "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/Task.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "An individual work item to be executed.",
+  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

@@ -1,0 +1,25 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Selects one or more datasets by name pattern and optional filters.",
+  "type": "object",
+  "required": [
+    "pattern"
+  ],
+  "properties": {
+    "pattern": {
+      "type": "string",
+      "description": "Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all."
+    },
+    "kind": {
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind.json",
+      "description": "Restricts the selector to datasets of a specific kind.",
+      "unevaluatedProperties": false
+    },
+    "labels": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels.json",
+      "description": "Restricts the selector to datasets matching all specified labels.",
+      "unevaluatedProperties": false
+    }
+  }
+}

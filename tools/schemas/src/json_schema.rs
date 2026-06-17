@@ -127,38 +127,37 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn check_referential_integrity(top_level_schemas: &[Schema], roots: &[&str]) {
+pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
     let mut schemas = HashMap::new();
 
-    // Add top-level schemas
-    for s in top_level_schemas {
-        let id = crate::model::schema_id_to_type_id(s.id.as_deref().unwrap_or_default());
-        schemas.insert(id, s);
-    }
-
-    // Add all defs
     for s in top_level_schemas {
         let id = crate::model::schema_id_to_type_id(s.id.as_deref().unwrap_or_default());
 
+        // Add all defs
         if let Some(defs) = &s.defs {
             for (name, ds) in defs {
                 let did = id.subtype(name);
                 schemas.insert(did, ds);
             }
         }
+
+        // Add top-level schema
+        schemas.insert(id, s);
     }
 
     let mut to_explore = Vec::new();
     let mut explored = HashSet::new();
 
-    // Seed `to_explore` with provided known roots
-    for root in roots {
-        let id = crate::model::TypeId::new_root(root.to_string());
-        let schema = schemas
-            .get(&id)
-            .expect(&format!("Could not find specified root schema: {}", root));
-
-        to_explore.push((id, *schema));
+    // Seed `to_explore` with known roots
+    for (id, sch) in schemas.iter().filter(|(id, sch)| {
+        matches!(
+            sch.format,
+            Some(Format::Resource) | Some(Format::RpcMessage)
+        ) || id.name == "Manifest"
+            || id.name == "DatasetSnapshot"
+            || id.name == "MetadataBlock"
+    }) {
+        to_explore.push((id.clone(), *sch));
     }
 
     // Start exploring the reference graph
@@ -300,6 +299,10 @@ pub enum Type {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Format {
+    // Core
+    Email,
+    Uri,
+
     // Scalars
     Int8,
     Int16,
@@ -313,12 +316,13 @@ pub enum Format {
     UInt32,
     #[serde(rename = "uint64")]
     UInt64,
+    ByteSize,
     DateTime,
+    Duration,
     Multicodec,
     Multihash,
     Path,
     Regex,
-    Uri,
 
     // Identity and references
     AccountId,
@@ -329,11 +333,14 @@ pub enum Format {
     DatasetAlias, // TODO: Should this be replaced by DatasetRef everywhere?
     DatasetRef,
 
+    Resource,
     ResourceId,
     ResourceName,
     ResourceTypeName,
     ResourceTypeUri,
     ResourceTypeRef,
+
+    RpcMessage,
 
     // Embedding
     Flatbuffers,

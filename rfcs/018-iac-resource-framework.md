@@ -49,6 +49,8 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
     - [References](#references)
     - [Selectors](#selectors)
     - [Ownership](#ownership)
+    - [Generations](#generations)
+    - [Status](#status)
   - [APIs](#apis)
     - [Current state of ODF APIs](#current-state-of-odf-apis)
     - [Kubernetes API Overview](#kubernetes-api-overview)
@@ -66,6 +68,7 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
 - [Appendix A: Example Manifests](#appendix-a-example-manifests)
   - [VariableSet](#variableset)
   - [SecretSet](#secretset)
+    - [QQQQQQQQQQQQQQQQQQQQQQQQQQ](#qqqqqqqqqqqqqqqqqqqqqqqqqq)
 
 
 # Motivation
@@ -162,7 +165,7 @@ The `$schema` URL is formatted as `{base-url}/{context}/{version}/{Name}.json` a
 
 Many IDEs recognize `$schema` field and automatically fetch the associated JSON schema to provide validation and auto-completion.
 
-Resource schemas will be registered within ODF node and, similarly to Kubernetes CRDs, assigned a short resource type name (e.g. `SecretSet`) that can be used instead of the schema.
+Resource schemas will be registered within ODF node and, similarly to Kubernetes CRDs, assigned a **short resource type name** (e.g. `SecretSet`) that can be used instead of the schema.
 
 
 ### Versioning
@@ -235,17 +238,13 @@ Labels and annotations are **mutable**.
 
 
 ### References
-Resource manifests can link to other resources using **references**. 
-
-Resourecs thus form a DAG. Cyclical references are not allowed - this can enforced by implementation via linters.
+Resource manifests can link to other resources using **references**, forming a DAG. Cyclical references are not allowed - this can enforced by implementation via linters.
 
 Unlike Kubernetes that doesn't specify a common reference format - in ODF all refereces and selectors will have a common format and thus can be easily picked up by linters and other automation uniformly, without knowing the specifics of individual resource schemas.
 
 Resources can be referenced by:
 - ID
-- Alias (`{name}` or `{account-name}/{resource-name}`)
-
-A `context` and `kind` can be included for additional validation.
+- Type and name (optionally including the ower account name)
 
 Example:
 
@@ -254,10 +253,13 @@ $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
 headers:
   name: my-dataset
 spec:
-  storage: my-bucket  # Short form reference can parse IDs and aliases
+  metadata: []
+  storage: PersistentVolume:my-org/my-s3-bucket  # Short form reference
   storage:  # Long form reference
-    id: 6767a4ee-d74d-436e-84f9-709407869a26
-    alias: my-account/my-bucket
+    type: PersistentVolume
+    account:
+      name: my-org
+    name: my-s3-bucket
 ```
 
 
@@ -288,7 +290,7 @@ spec:
 When an object is created by another higher-level object it can write the association into header as `ownerReferece`. This creation provenance trail can be used for automatic cascading deletion and garbage collection.
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/ingest/v1alpha1/Buffer.json
+$schema: https://opendatafabric.org/schemas/source/v1alpha1/Buffer.json
 headers:
   name: buffer-aabbcc
   ownerReferences:
@@ -300,6 +302,48 @@ spec: {}
 See also:
 - [Kubernetes Owners and Dependents](https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/)
 
+
+### Generations
+Resource reconciliation is an **eventually-consistent** process. While a controller is working to reconcile one version of a resource the desired state may be changed by the user. To reflect this lag, a sequential `generation` number is incremented every time the resource header and spec are updated.
+
+```yaml
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+headers:
+  name: my-secrets
+  generation: 4
+  createdAt: 2026-01-01T00:00:00Z
+  updatedAt: 2026-01-04T00:00:00Z
+spec: {}
+status: {}
+```
+
+In the `status` section `observedGeneration` can be used to see what generation the controller had a chance to process.
+
+Note that `generation` does not increment on status changes as it intended to signify changes to the desired state.
+
+
+### Status
+The `status` section of the resource manifest never appears in user-defined manifests. It is maintained by the ODF nodes and writeable only by resource controllers. It is used to provide detailed information about the reconciliation status of the resource.
+
+The main controller of a resource populates the `phase` and associated top-level fields during reconciliation attempts, while the `conditions` field provides a generic mechanism to attach additional information like error codes and messages. The `conditions` can be contributed by multiple controllers
+
+```yaml
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+headers:
+  name: my-secrets
+spec: {}
+status:
+  phase: Failed
+  observedGeneration: 4
+  reconciledAt: 2026-01-01T00:00:00Z
+  conditions:
+    "https://opendatafabric.org/schemas/config/v1/ConditionReady.json":
+      value: false
+      reason: decryption-key-not-found
+      message: "Decryption key X does not exist"
+      lastTransitionTime: 2026-01-01T00:00:00Z
+      observedGeneration: 4
+```
 
 
 ## APIs
@@ -582,3 +626,19 @@ spec:
       value: eyJh..dN5oc
       contentEncoding: jwe
 ```
+
+
+### QQQQQQQQQQQQQQQQQQQQQQQQQQ
+- DID vs ID
+  - will account/dataset have both? should we allow DIDs in references?
+  - or should we only use DIDs?
+    - might be useful for delegation of control in future
+    - but what does it mean for moving pipelines between nodes? 
+- Generate resource types as wrappers over `Resource<SpecT>`
+  - have a trait to link schema ID
+- Specialized `ResourceRef` types (e.g. `SecretRef`, `PersistentVolumeRef`) and generic `ResourceRef<ResT>`?
+  - Can `DatasetRef` fit into this model with extra labels?
+- Get rid of `.json` suffixes in schemas
+- Need ability for operators to add their own labels?
+- Codegen namespaces
+- Start moving event bus events schemas into ODF?

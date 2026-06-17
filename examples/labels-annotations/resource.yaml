@@ -6,9 +6,9 @@ headers:
   labels:
     env: prod
   annotations:
-    repo:
-      hash: aaabbcc
+    repo:  # Nested
       url: https://github.com/open-data-fabric
+      commitHash: 31d318be8a8f1a9ad8f317534a52f37ba89e8771
 spec:
   secrets:
     password: "postgres-staging-password"

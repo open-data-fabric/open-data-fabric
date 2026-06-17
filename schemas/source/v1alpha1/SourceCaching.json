@@ -1,0 +1,40 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines how external data should be cached.",
+  "$defs": {
+    "Forever": {
+      "description": "After source was processed once it will never be ingested again.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  },
+  "format": "union-or-string",
+  "oneOf": [
+    {
+      "type": "string",
+      "enum": [
+        "Forever"
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Forever"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Forever"
+        }
+      ]
+    }
+  ]
+}

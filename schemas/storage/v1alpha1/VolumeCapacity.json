@@ -1,0 +1,14 @@
+{
+  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Storage capacity allocation.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "storage": {
+      "type": "string",
+      "format": "byte-size",
+      "description": "Maximum storage size e.g. `10Gi`."
+    }
+  }
+}

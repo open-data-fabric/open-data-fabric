@@ -2,35 +2,43 @@
   "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Reference to another resource.",
-  "type": "object",
-  "codegen": {
-    "rust": {
-      "dtoType": "ResourceRef"
+  "format": "struct-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "codegen": {
+        "rust": {
+          "dtoType": "ResourceRef"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef.json",
+          "description": "Reference to an account that owns the target resource.",
+          "unevaluatedProperties": false
+        },
+        "type": {
+          "type": "string",
+          "format": "resource-type-ref",
+          "description": "Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`."
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of a resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of a resource."
+        }
+      }
     }
-  },
-  "required": [
-    "type"
-  ],
-  "properties": {
-    "account": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef.json",
-      "description": "Reference to an account that owns the target resource.",
-      "unevaluatedProperties": false
-    },
-    "type": {
-      "type": "string",
-      "format": "resource-type-ref",
-      "description": "Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`."
-    },
-    "id": {
-      "type": "string",
-      "format": "resource-id",
-      "description": "ID of a resource."
-    },
-    "name": {
-      "type": "string",
-      "format": "resource-name",
-      "description": "Name of a resource."
-    }
-  }
+  ]
 }

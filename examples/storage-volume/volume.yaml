@@ -1,0 +1,17 @@
+# $schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume.json
+$schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume.json
+headers:
+  name: my-s3-bucket
+spec:
+  kind: S3 # GCS / ABS / CSI driver / HostPath
+  endpoint: https://s3.amazonaws.com
+  region: us-west-2
+  bucket: my-bucket
+  prefix: some-prefix
+  capacity:
+    storage: 10Gi
+  credentials:
+    accessKey: SecretSet:my-aws-secrets#accessKey
+    secretKey: SecretSet:my-aws-secrets#secretKey
+
+# TODO: Ability to set default storage per account?

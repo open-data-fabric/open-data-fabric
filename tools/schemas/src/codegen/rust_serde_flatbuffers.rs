@@ -31,6 +31,7 @@ const PREAMBLE: &str = indoc::indoc!(
 
     use ::flatbuffers::{FlatBufferBuilder, Table, UnionWIPOffset, WIPOffset};
     use chrono::prelude::*;
+    use setty::types::{ByteSize, DurationString};
 
     pub trait FlatbuffersSerializable<'fb> {
         type OffsetT;
@@ -79,6 +80,14 @@ const FOOTER: &str = indoc::indoc!(
                 .unwrap(),
             );
         Utc.from_local_datetime(&naive_date_time).unwrap()
+    }
+
+    fn duration_to_fb(v: &DurationString) -> fb::Duration {
+        fb::Duration::new(v.as_nanos() as u64)
+    }
+
+    fn fb_to_duration(v: &fb::Duration) -> DurationString {
+        DurationString::new(std::time::Duration::from_nanos(v.nanoseconds()))
     }
     "#
 );
@@ -132,7 +141,8 @@ impl Helpers {
             | model::Type::UInt8
             | model::Type::UInt16
             | model::Type::UInt32
-            | model::Type::UInt64 => true,
+            | model::Type::UInt64
+            | model::Type::ByteSize => true,
             model::Type::Boolean
             | model::Type::String
             | model::Type::DatasetAlias
@@ -146,6 +156,7 @@ impl Helpers {
             | model::Type::ResourceTypeName
             | model::Type::ResourceTypeRef
             | model::Type::DateTime
+            | model::Type::Duration
             | model::Type::Flatbuffers
             | model::Type::Multicodec
             | model::Type::Multihash
@@ -350,7 +361,9 @@ fn format_pre_ser_type(
         | model::Type::UInt16
         | model::Type::UInt32
         | model::Type::UInt64
-        | model::Type::DateTime => (),
+        | model::Type::ByteSize
+        | model::Type::DateTime
+        | model::Type::Duration => (),
         model::Type::String => writeln!(w, "fb.create_string(&{name})")?,
         model::Type::AccountName
         | model::Type::ResourceName
@@ -470,6 +483,7 @@ fn render_type_ser(
         | model::Type::UInt16
         | model::Type::UInt32
         | model::Type::UInt64 => writeln!(w, "{name}")?,
+        model::Type::ByteSize => writeln!(w, "{name}.as_u64()")?,
         model::Type::String
         | model::Type::DatasetAlias
         | model::Type::DatasetId
@@ -490,6 +504,7 @@ fn render_type_ser(
         | model::Type::Generic(_)
         | model::Type::Array(_) => (),
         model::Type::DateTime => writeln!(w, "&datetime_to_fb(&{name})")?,
+        model::Type::Duration => writeln!(w, "&duration_to_fb(&{name})")?,
         model::Type::Custom(type_id) if helpers.is_enum_id(type_id) => {
             writeln!(w, "{name}.into()")?
         }
@@ -570,6 +585,7 @@ fn render_type_de(
         | model::Type::UInt16
         | model::Type::UInt32
         | model::Type::UInt64 => writeln!(w, "{name}")?,
+        model::Type::ByteSize => writeln!(w, "ByteSize::from({name})")?,
         model::Type::String => writeln!(w, "{name}.to_owned()")?,
         model::Type::DatasetAlias => writeln!(w, "odf::DatasetAlias::try_from({name}).unwrap()")?,
         model::Type::DatasetId => {
@@ -577,6 +593,7 @@ fn render_type_de(
         }
         model::Type::DatasetRef => writeln!(w, "odf::DatasetRef::try_from({name}).unwrap()")?,
         model::Type::DateTime => writeln!(w, "fb_to_datetime({name})")?,
+        model::Type::Duration => writeln!(w, "fb_to_duration({name})")?,
         model::Type::Flatbuffers | model::Type::Generic(_) => {
             writeln!(w, "{name}.bytes().to_vec()")?
         }

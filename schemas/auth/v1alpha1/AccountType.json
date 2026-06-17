@@ -1,0 +1,10 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountType.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Represents the type of an account.",
+  "type": "string",
+  "enum": [
+    "User",
+    "Organization"
+  ]
+}

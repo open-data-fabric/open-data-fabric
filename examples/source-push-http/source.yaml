@@ -1,0 +1,27 @@
+# $schema: https://opendatafabric.org/schemas/source/v1alpha1/Source.json
+$schema: https://opendatafabric.org/schemas/source/v1alpha1/Source.json
+headers:
+  name: temp.sensor.http
+spec:
+  ingress:
+    kind: RestEndpoint
+    buffer:
+      kind: Memory
+      bufferSize: 1000
+      overflowPolicy: Reject
+  read:
+    kind: NdJson
+    schema:
+      fields:
+        - name: ts
+          type: Timestamp
+        - name: temp
+          type: Float32
+  preprocess:  # Rename the `ts` column in API to match the `event_time` in dataset schema
+    kind: Sql
+    engine: datafusion
+    query: |
+      select
+        ts as event_time,
+        temp
+      from input

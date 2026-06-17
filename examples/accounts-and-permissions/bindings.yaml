@@ -1,0 +1,22 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Bindings.json
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Bindings.json
+headers:
+  name: alice-bob
+spec:
+  relations:
+    - subject:
+        type: Account
+        name: alice
+      relation: role
+      value: maintainer
+      object:
+        type: Dataset
+        account: bob
+        name: bobs-dataset
+  attributes:
+    - object: Dataset:bob/bobs-dataset # Short form of `{ type: Dataset, account: bob, name: bobs-dataset }`
+      name: allowPublicRead
+      value: true
+    - object: Dataset:bob/bobs-dataset
+      name: allowAnonymousRead
+      value: false

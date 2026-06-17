@@ -23,6 +23,7 @@ const PREAMBLE: &str = indoc::indoc!(
     use ::serde::{Deserialize, Serialize, Serializer, Deserializer};
     use chrono::{DateTime, Utc};
     use multiformats::*;
+    use setty::types::{ByteSize, DurationString};
 
     use super::formats::*;
     use crate::identity::*;
@@ -358,10 +359,12 @@ fn format_into(typ: &model::Type, ident: &str) -> String {
         | model::Type::UInt32
         | model::Type::UInt64
         | model::Type::String
+        | model::Type::ByteSize
         | model::Type::DatasetAlias
         | model::Type::DatasetId
         | model::Type::DatasetRef
         | model::Type::DateTime
+        | model::Type::Duration
         | model::Type::Flatbuffers
         | model::Type::Multicodec
         | model::Type::Multihash
@@ -601,7 +604,9 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::UInt32 => format!("u32"),
         model::Type::UInt64 => format!("u64"),
         model::Type::String => format!("String"),
+        model::Type::ByteSize => format!("ByteSize"),
         model::Type::DateTime => format!("DateTime<Utc>"),
+        model::Type::Duration => format!("DurationString"),
         // model::Type::Multicodec => format!("Multicodec"),
         model::Type::Multicodec => format!("String"),
         model::Type::Multihash => format!("Multihash"),

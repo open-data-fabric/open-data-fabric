@@ -1,0 +1,19 @@
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection.json
+headers:
+  name: latest.bankofcanada.ca
+spec:
+  inputs:
+    - datasetRef: bankofcanada.ca
+  project:
+    kind: Sql
+    engine: datafusion
+    # Provides instant access to the latest exchange rates
+    query: |
+      select
+        latest(event_time) as event_time,
+        latest(fxaudcad) as fxaudcad,
+        latest(fxusdcad) as fxusdcad
+      from `bankofcanada.ca`
+
+# TODO: Need to specify which DB this projection is stored in? Similar to volume ref for datasets?

@@ -5,6 +5,10 @@
 
 attribute "json";
 
+struct Duration {
+  nanoseconds: uint64;
+}
+
 struct Timestamp {
   year: int32;
   ordinal: uint16;
@@ -20,10 +24,168 @@ struct Timestamp {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AccountRef {
-  // DID of an account.
+  // DID of the account.
   id: [ubyte];
-  // Name of an account.
+  // Name of the account.
   name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceLabels
+// Map of string keys and values that can be used to organize, categorize, and query resources.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcelabels-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceLabelsEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table ResourceLabels {
+  // Key-value map
+  entries: [ResourceLabelsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceAnnotations
+// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceannotations-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceAnnotationsEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table ResourceAnnotations {
+  // Key-value map
+  entries: [ResourceAnnotationsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceHeaders
+// Container for identity and ownership information of a resource.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceheaders-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceHeaders {
+  // Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation.
+  id: [ubyte];
+  // Symbolic name of a resource that identifies it within a scope of an onwing account.
+  name: string;
+  // Reference to an account that owns the resource.
+  account: AccountRef;
+  // Map of string keys and values that can be used to organize, categorize, and query resources.
+  labels: ResourceLabels;
+  // Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
+  annotations: ResourceAnnotations;
+  // A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
+  generation: uint64 = null;
+  // Time when the resource was first applied and assigned an identity.
+  created_at: Timestamp;
+  // Time when the resource was last updated, including header, spec, and status updates.
+  updated_at: Timestamp;
+  // Time when the resource was deleted.
+  deleted_at: Timestamp;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AccountType
+// Represents the type of an account.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accounttype-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum AccountType: int32 {
+  User,
+  Organization,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Secret
+// Individual secret in raw or encrypted form.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secret-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table Secret {
+  // A secret value in raw or encoded form.
+  value: string;
+  // Represents the encoding of the value. Typically will be `jwe` after a raw secret gets encrypted.
+  content_encoding: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AccountSpec
+// Predefined account specification.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accountspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table AccountSpec {
+  // Type of the account.
+  //
+  // Defaults to: "User"
+  account_type: AccountType = null;
+  // Human-friendly display name.
+  display_name: string;
+  // Email address of the account.
+  email: string;
+  // URL of the account's avatar image.
+  avatar_url: string;
+  // Password for local authentication. Absent for SSO or DID-based accounts.
+  password: Secret;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourcePhase
+// Represents the lifecycle stage of a resource.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcephase-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum ResourcePhase: int32 {
+  Pending,
+  Reconciling,
+  Ready,
+  Failed,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceConditions
+// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of URL to a schema describing this condition, e.g. `https://opendatafabric.org/schemas/resource/ConditionReady.json`.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceconditions-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceConditionsEntry {
+  key: string (key);
+  value: ResourceCondition;
+}
+table ResourceConditions {
+  // Key-value map
+  entries: [ResourceConditionsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceStatus
+// Resource lifecycle and reconciliation inforamtion.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcestatus-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceStatus {
+  // Represents the lifecycle stage of a resource.
+  phase: ResourcePhase;
+  // Resource generation that was last processed by the main resource controller.
+  observed_generation: uint64 = null;
+  // Time when the controller last reconciled the desired resource state as defined in `observedGeneration`.
+  reconciled_at: Timestamp;
+  // Detailed conditions describing the state of the resource that are added by controllers.
+  conditions: ResourceConditions;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -877,6 +1039,72 @@ table AttachmentsEmbedded {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceRef
+// Reference to another resource.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceref-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceRef {
+  // Reference to an account that owns the target resource.
+  account: AccountRef;
+  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`.
+  type: string;
+  // ID of a resource.
+  id: [ubyte];
+  // Name of a resource.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Attribute
+// A named attribute attached to a resource, used by auth policies for access control decisions.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#attribute-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table Attribute {
+  // The resource this attribute is attached to.
+  object: ResourceRef;
+  // Name of the attribute e.g. `allowPublicRead`.
+  name: string;
+  // Value of the attribute.
+  value: string (json);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Relation
+// A directed relationship between two resources, optionally carrying a typed value.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relation-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table Relation {
+  // The resource that holds the relation.
+  subject: ResourceRef;
+  // Name of the relation e.g. `role`, `member`, `owner`.
+  relation: string;
+  // Optional value associated with the relation e.g. `maintainer` for a `role` relation.
+  value: string (json);
+  // The resource that is the target of the relation.
+  object: ResourceRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// BindingsSpec
+// Specifies resource attributes and relations between resources on which auth policies act upon.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#bindingsspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table BindingsSpec {
+  // Directed relationships between resources.
+  relations: [Relation];
+  // Named attributes attached to resources, used by auth policies for access control decisions.
+  attributes: [Attribute];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CompressionFormat
 // Defines a compression algorithm.
 //
@@ -886,68 +1114,6 @@ table AttachmentsEmbedded {
 enum CompressionFormat: int32 {
   Gzip,
   Zip,
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceLabels
-// Map of string keys and values that can be used to organize, categorize, and query resources.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcelabels-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceLabelsEntry {
-  key: string (key);
-  // JSON encoded
-  value: string (json);
-}
-table ResourceLabels {
-  // Key-value map
-  entries: [ResourceLabelsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceAnnotations
-// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceannotations-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceAnnotationsEntry {
-  key: string (key);
-  // JSON encoded
-  value: string (json);
-}
-table ResourceAnnotations {
-  // Key-value map
-  entries: [ResourceAnnotationsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceHeaders
-// Container for identity and ownership information of a resource.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceheaders-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceHeaders {
-  // Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation.
-  id: [ubyte];
-  // Symbolic name of a resource that identifies it within a scope of an onwing account.
-  name: string;
-  // Reference to an account that owns the resource.
-  account: AccountRef;
-  // Map of string keys and values that can be used to organize, categorize, and query resources.
-  labels: ResourceLabels;
-  // Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
-  annotations: ResourceAnnotations;
-  // A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
-  generation: uint64 = null;
-  // Time when the resource was first applied and assigned an identity.
-  created_at: Timestamp;
-  // Time when the resource was last updated, including header, spec, and status updates.
-  updated_at: Timestamp;
-  // Time when the resource was deleted.
-  deleted_at: Timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1494,54 +1660,24 @@ table DatasetSpec {
   kind: DatasetKind;
   // An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
   metadata: [MetadataEventWrapper];
+  // Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
+  volume: ResourceRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourcePhase
-// Represents the lifecycle stage of a resource.
+// DatasetSelector
+// Selects one or more datasets by name pattern and optional filters.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcephase-schema
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetselector-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum ResourcePhase: int32 {
-  Pending,
-  Reconciling,
-  Ready,
-  Failed,
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceConditions
-// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of `{controller-name}/{condition-name}`.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceconditions-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceConditionsEntry {
-  key: string (key);
-  value: ResourceCondition;
-}
-table ResourceConditions {
-  // Key-value map
-  entries: [ResourceConditionsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceStatus
-// Resource lifecycle and reconciliation inforamtion.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcestatus-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceStatus {
-  // Represents the lifecycle stage of a resource.
-  phase: ResourcePhase;
-  // Resource generation that was last processed by the main resource controller.
-  observed_generation: uint64 = null;
-  // Time when the controller last reconciled the desired resource state as defined in `observedGeneration`.
-  reconciled_at: Timestamp;
-  // Detailed conditions describing the state of the resource that are added by controllers.
-  conditions: ResourceConditions;
+table DatasetSelector {
+  // Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all.
+  pattern: string;
+  // Restricts the selector to datasets of a specific kind.
+  kind: DatasetKind = null;
+  // Restricts the selector to datasets matching all specified labels.
+  labels: ResourceLabels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1570,23 +1706,151 @@ table DatasetSnapshot {
 
 table DatasetVocabulary {
   // Name of the offset column.
+  //
+  // Defaults to: "offset"
   offset_column: string;
   // Name of the operation type column.
+  //
+  // Defaults to: "op"
   operation_type_column: string;
   // Name of the system time column.
+  //
+  // Defaults to: "system_time"
   system_time_column: string;
   // Name of the event time column.
+  //
+  // Defaults to: "event_time"
   event_time_column: string;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTrigger
+// Condition that causes a flow to be executed.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtrigger-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union FlowTrigger {
+  FlowTriggerSchedule,
+  FlowTriggerSource,
+  FlowTriggerDataset,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerSchedule
+// Triggers the flow on a cron schedule.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerschedule-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowTriggerSchedule {
+  // Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
+  cron: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerSource
+// Triggers the flow when a source receives new data, with optional batching controls.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggersource-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowTriggerSource {
+  // Reference to the source resource that drives this trigger.
+  source: ResourceRef;
+  // Minimum number of new records to accumulate before triggering.
+  min_records_to_await: uint64 = null;
+  // Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
+  max_await_interval: Duration;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerDataset
+// Triggers the flow when matching datasets are updated.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerdataset-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowTriggerDataset {
+  // Selector that identifies which datasets can trigger this flow.
+  dataset: DatasetSelector;
+}
+
+table FlowTriggerWrapper {
+  value: FlowTrigger;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TaskSpec
-// An individual work item to be executed.
+// An individual work item to be executed as part of a flow.
 //
 // See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table TaskSpec {
+union TaskSpec {
+  TaskSpecIngest,
+  TaskSpecCompaction,
+  TaskSpecGarbageCollection,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngestParams
+// Optional parameters to control ingestion behavior.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingestparams-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngestParams {
+  // Target number of records to ingest per batch.
+  target_batch_size: uint64 = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecIngest
+// Fetches data from a source and appends it to a dataset.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecingest-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecIngest {
+  // Reference to the source resource that defines how to fetch data.
+  source: ResourceRef;
+  // Reference to the dataset resource to ingest data into.
+  dataset: ResourceRef;
+  // Optional parameters to control ingestion behavior.
+  params: IngestParams;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecCompaction
+// Compacts data files in matching datasets to improve query performance.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspeccompaction-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecCompaction {
+  // Selector identifying which datasets to compact.
+  dataset: DatasetSelector;
+  // Target maximum size of each compacted data slice e.g. `100MiB`.
+  max_slice_size: uint64 = null;
+  // Target maximum number of records per compacted data slice.
+  max_slice_records: uint64 = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecGarbageCollection
+// Removes unreferenced data files from matching datasets.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecgarbagecollection-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecGarbageCollection {
+  // Selector identifying which datasets to garbage collect.
+  dataset: DatasetSelector;
+}
+
+table TaskSpecWrapper {
+  value: TaskSpec;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1597,8 +1861,160 @@ table TaskSpec {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowSpec {
+  // Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow.
+  triggers: [FlowTriggerWrapper];
   // List of tasks to run consecutively.
-  tasks: [TaskSpec];
+  tasks: [TaskSpecWrapper];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Ingress
+// Defines the point where data enters the system.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingress-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union Ingress {
+  IngressUrl,
+  IngressFilesGlob,
+  IngressContainer,
+  IngressMqtt,
+  IngressEvmLogs,
+  IngressRestEndpoint,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressUrl
+// Pulls data from one of the supported sources by its URL.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressurl-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressUrl {
+  // URL of the data source
+  url: string;
+  // Describes how event time is extracted from the source metadata.
+  event_time: EventTimeSource;
+  // Describes the caching settings used for this source.
+  cache: SourceCaching;
+  // Headers to pass during the request (e.g. HTTP Authorization)
+  headers: [RequestHeader];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressFilesGlob
+// Uses glob operator to match files on the local file system.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressfilesglob-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressFilesGlob {
+  // Path with a glob pattern.
+  path: string;
+  // Describes how event time is extracted from the source metadata.
+  event_time: EventTimeSource;
+  // Describes the caching settings used for this source.
+  cache: SourceCaching;
+  // Specifies how input files should be ordered before ingestion.
+  // Order is important as every file will be processed individually
+  // and will advance the dataset's watermark.
+  order: SourceOrdering = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressContainer
+// Runs the specified OCI container to fetch data from an arbitrary source.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingresscontainer-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressContainer {
+  // Image name and and an optional tag.
+  image: string;
+  // Specifies the entrypoint. Not executed within a shell. The default OCI image's ENTRYPOINT is used if this is not provided.
+  command: [string];
+  // Arguments to the entrypoint. The OCI image's CMD is used if this is not provided.
+  args: [string];
+  // Environment variables to propagate into or set in the container.
+  env: [EnvVar];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressMqtt
+// Connects to an MQTT broker to fetch events from the specified topic.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressmqtt-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressMqtt {
+  // Hostname of the MQTT broker.
+  host: string;
+  // Port of the MQTT broker.
+  port: int32;
+  // Username to use for auth with the broker.
+  username: string;
+  // Password to use for auth with the broker (can be templated).
+  password: string;
+  // List of topic subscription parameters.
+  topics: [MqttTopicSubscription];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressEvmLogs
+// Connects to an EVM (Ethereum) node to stream transaction logs.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressevmlogs-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressEvmLogs {
+  // Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain.
+  chain_id: uint64 = null;
+  // Url of the node.
+  node_url: string;
+  // An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.
+  //
+  // Examples:
+  // - "block_number > 123 and address = X'5fbdb2315678afecb367f032d93f642f64180aa3' and topic1 = X'000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'"
+  filter: string;
+  // Solidity log event signature to use for decoding. Using this field adds `event` to the output containing decoded log as JSON.
+  signature: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressBuffer
+// Buffer configuration for holding pushed records until they are ingested.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressbuffer-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union IngressBuffer {
+  IngressBufferMemory,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressBufferMemory
+// An in-memory buffer.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressbuffermemory-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressBufferMemory {
+  // Maximum number of records to hold in the buffer.
+  buffer_size: uint64 = null;
+  // Policy applied when the buffer is full.
+  overflow_policy: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IngressRestEndpoint
+// Exposes a REST HTTP endpoint that accepts pushed data records.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressrestendpoint-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table IngressRestEndpoint {
+  // Buffer configuration for holding records until they are ingested.
+  buffer: IngressBuffer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1633,6 +2049,79 @@ table MetadataBlock {
   sequence_number: uint64;
   // Event data.
   event: MetadataEvent;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PersistentVolumeSpec
+// Defines a storage volume where data can be stored and its access credentials.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union PersistentVolumeSpec {
+  PersistentVolumeSpecS3,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VolumeCapacity
+// Storage capacity allocation.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#volumecapacity-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table VolumeCapacity {
+  // Maximum storage size e.g. `10Gi`.
+  storage: uint64 = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// S3Credentials
+// Access credentials for an S3 or S3-compatible bucket.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#s3credentials-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table S3Credentials {
+  // Reference to a secret containing the AWS access key ID.
+  access_key: ResourceRef;
+  // Reference to a secret containing the AWS secret access key.
+  secret_key: ResourceRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PersistentVolumeSpecS3
+// An Amazon S3 or S3-compatible object storage bucket.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespecs3-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PersistentVolumeSpecS3 {
+  // S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores e.g. `https://s3.amazonaws.com`.
+  endpoint: string;
+  // AWS region where the bucket is located e.g. `us-west-2`.
+  region: string;
+  // Name of the S3 bucket.
+  bucket: string;
+  // Optional path prefix within the bucket.
+  prefix: string;
+  // Storage capacity allocation.
+  capacity: VolumeCapacity;
+  // Access credentials for the bucket.
+  credentials: S3Credentials;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ProjectionSpec
+// Represents a projection of a dataaset history into a state for fast lookups.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#projectionspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ProjectionSpec {
+  // Datasets that will be used as sources.
+  inputs: [TransformInput];
+  // Transformation that will be applied to produce new data.
+  project: Transform;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1755,38 +2244,6 @@ table ResourceCondition {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceRef
-// Reference to another resource.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceref-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceRef {
-  // Reference to an account that owns the target resource.
-  account: AccountRef;
-  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`.
-  type: string;
-  // ID of a resource.
-  id: [ubyte];
-  // Name of a resource.
-  name: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Secret
-// Individual secret in raw or encrypted form.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secret-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table Secret {
-  // A secret value in raw or encoded form.
-  value: string;
-  // Represents the encoding of the value. Typically will be `jwe` after a raw secret gets encrypted.
-  content_encoding: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Secrets
 // Container for key-value secrets. Every key must be a string. Values may be strings with raw unencrypted data or objects that signify the encoding.
 //
@@ -1812,6 +2269,28 @@ table Secrets {
 table SecretSetSpec {
   // Key value pairs of secrets.
   secrets: Secrets;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SourceSpec
+// Specifies an external source of data for ingestion.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcespec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SourceSpec {
+  // Determines where data is sourced from.
+  ingress: Ingress;
+  // Defines how raw data is prepared before reading.
+  prepare: [PrepStepWrapper];
+  // Defines how data is read into structured format.
+  read: ReadStep;
+  // Pre-processing query that shapes the data.
+  preprocess: Transform;
+  // Determines how newly-ingested data should be merged with existing history.
+  merge: MergeStrategy;
+  // Defines the mapping of system fields to dataset column names.
+  vocab: DatasetVocabulary;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

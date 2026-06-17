@@ -24,6 +24,7 @@ const PREAMBLE: &str = indoc::indoc!(
     use chrono::{DateTime, Utc};
     use enum_variants::*;
     use serde::{Deserialize, Serialize};
+    use setty::types::{ByteSize, DurationString};
 
     use crate::formats::Multihash;
     use crate::identity::*;
@@ -279,7 +280,9 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::String => format!("String"),
 
         // model::Type::Multicodec => format!("Multicodec"),
+        model::Type::ByteSize => format!("ByteSize"),
         model::Type::DateTime => format!("DateTime<Utc>"),
+        model::Type::Duration => format!("DurationString"),
         model::Type::Multicodec => format!("String"),
         model::Type::Multihash => format!("Multihash"),
         model::Type::Path => format!("PathBuf"),

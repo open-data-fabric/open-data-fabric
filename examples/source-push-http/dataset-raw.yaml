@@ -1,0 +1,20 @@
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+headers:
+  name: temp.sensor
+spec:
+  kind: Root
+  metadata:
+    - kind: SetDataSchema
+      schema:
+        fields:
+          - name: offset
+            type: UInt64
+          - name: op
+            type: Int32
+          - name: system_time
+            type: Timestamp
+          - name: event_time
+            type: Timestamp
+          - name: temp
+            type: Float32

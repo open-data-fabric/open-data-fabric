@@ -2,6 +2,7 @@
   "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequest.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
+  "format": "rpc-message",
   "type": "object",
   "required": [
     "datasetId",

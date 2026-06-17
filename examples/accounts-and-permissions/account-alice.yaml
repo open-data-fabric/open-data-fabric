@@ -1,0 +1,12 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account.json
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account.json
+headers:
+  name: alice
+spec:
+  email: alice@example.com
+  displayName: Alice
+  accountType: User
+  avatarUrl: https://example.com/alice.jpg
+  password: swordfish  # Plain password
+
+# TODO: Support externally-provided DIDs?

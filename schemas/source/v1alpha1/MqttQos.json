@@ -1,0 +1,11 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/MqttQos.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "MQTT quality of service class.",
+  "type": "string",
+  "enum": [
+    "AtMostOnce",
+    "AtLeastOnce",
+    "ExactlyOnce"
+  ]
+}

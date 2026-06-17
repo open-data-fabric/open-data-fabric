@@ -4,9 +4,18 @@
   "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
   "type": "object",
   "required": [
+    "triggers",
     "tasks"
   ],
   "properties": {
+    "triggers": {
+      "type": "array",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger.json",
+        "unevaluatedProperties": false
+      },
+      "description": "Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow."
+    },
     "tasks": {
       "type": "array",
       "items": {

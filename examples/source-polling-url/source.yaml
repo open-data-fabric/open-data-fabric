@@ -1,0 +1,51 @@
+# $schema: https://opendatafabric.org/schemas/source/v1alpha1/Source.json
+$schema: https://opendatafabric.org/schemas/source/v1alpha1/Source.json
+headers:
+  name: bankofcanada.ca
+spec:
+  ingress:
+    kind: Url
+    url: https://www.bankofcanada.ca/valet/observations/group/FX_RATES_DAILY/csv?start_date=2017-01-03
+  read:
+    kind: Csv
+    header: true
+    schema:
+      fields:
+        - name: date
+          type: Timestamp
+        - name: FXAUDCAD
+          type:
+            kind: Decimal
+            scale: 19
+            precision: 6
+        - name: FXUSDCAD
+          type:
+            kind: Decimal
+            scale: 19
+            precision: 6
+  preprocess:  # Rename CSV columns
+    kind: Sql
+    engine: datafusion
+    query: |
+      select
+        date as event_time,
+        FXAUDCAD as fxaudcad,
+        FXUSDCAD as fxusdcad
+      from input
+  merge:
+    kind: Ledger
+    primaryKey:
+      - date
+  vocab:
+    eventTimeColumn: date
+
+# TODO!: Can one source be reused by multiple datasets?
+# Where state of the consuming the source is stored?
+
+# TODO!: Who provides API keys? Source or consumers of the source?
+
+# TODO!: Batch size, polling timeout, fetchUncacheable - should these be on source or flow level
+
+# TODO!: Merge strategy relates to the source or destination? What about vocab?
+
+# TODO!: Should polling ingresses also have buffers?

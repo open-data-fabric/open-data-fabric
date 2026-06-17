@@ -3,28 +3,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specifies the mapping of system columns onto dataset schema.",
   "type": "object",
-  "required": [
-    "offsetColumn",
-    "operationTypeColumn",
-    "systemTimeColumn",
-    "eventTimeColumn"
-  ],
+  "required": [],
   "properties": {
     "offsetColumn": {
       "type": "string",
-      "description": "Name of the offset column."
+      "description": "Name of the offset column.",
+      "default": "offset"
     },
     "operationTypeColumn": {
       "type": "string",
-      "description": "Name of the operation type column."
+      "description": "Name of the operation type column.",
+      "default": "op"
     },
     "systemTimeColumn": {
       "type": "string",
-      "description": "Name of the system time column."
+      "description": "Name of the system time column.",
+      "default": "system_time"
     },
     "eventTimeColumn": {
       "type": "string",
-      "description": "Name of the event time column."
+      "description": "Name of the event time column.",
+      "default": "event_time"
     }
   }
 }

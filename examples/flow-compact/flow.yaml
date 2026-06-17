@@ -1,0 +1,28 @@
+# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+headers:
+  name: compact-all-roots
+spec:
+  triggers:
+    - kind: Dataset
+      dataset:
+        pattern: '%'
+        kind: Root
+      # Events, cooldown ?
+  tasks:
+    - kind: Compaction
+      dataset:
+        pattern: '%'
+        kind: Root
+      maxSliceSize: 100MiB
+      maxSliceRecords: 10000
+
+
+# TODO!: What events trigger uses and cooldown strategy?
+# - Ideally we want to be able to tap into any Event Bus events by ID
+
+# TODO: Does pattern-matching work on resource name/labels level or is it dataset-specific?
+# Would be nice to have selector generic enough to work for all resource types
+
+# TODO: How to make event on dataset A only trigger compaction on A and not all %?
+# Should this be more like a `FlowTemplate` that instantiates one compaction flow per dataset?

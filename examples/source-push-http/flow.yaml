@@ -1,0 +1,14 @@
+# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+headers:
+  name: temp.sensor.http
+spec:
+  triggers:
+    - kind: Source
+      source: temp.sensor.http
+      minRecordsToAwait: 100
+      maxAwaitInterval: 1h
+  tasks:
+    - kind: Ingest
+      source: temp.sensor.http
+      dataset: temp.sensor

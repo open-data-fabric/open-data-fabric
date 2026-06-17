@@ -1,0 +1,20 @@
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+headers:
+  name: temp.sensor.hourly
+spec:
+  kind: Derivative
+  metadata:
+    - kind: SetTransform
+      inputs:
+        - datasetRef: temp.sensor
+      transform:
+        kind: Sql
+        engine: flink
+        query: |
+          SELECT
+            TUMBLE_START(event_time, INTERVAL '1' HOUR) as event_time,
+            min(value) as value_min,
+            max(value) as value_max
+          FROM `temp.sensor`
+          GROUP BY TUMBLE(event_time, INTERVAL '1' HOUR)

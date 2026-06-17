@@ -1,0 +1,18 @@
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+headers:
+  name: bankofcanada.ca
+spec:
+  kind: Root
+  metadata:
+    - kind: SetDataSchema
+      schema:
+        fields: []
+    - kind: SetLicense
+      name: Apache 2.0
+      shortName: Apache-2.0
+      spdxId: Apache-2.0
+      websiteUrl: https://www.apache.org/licenses/LICENSE-2.0
+  volume: pv:my-s3-bucket  # Here `pv` is a type alias of the `PersistentVolume`
+
+# TODO: Ability to provide external DID?

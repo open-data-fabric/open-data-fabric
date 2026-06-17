@@ -12,9 +12,65 @@ use bitflags::bitflags;
 use chrono::{DateTime, Utc};
 use enum_variants::*;
 use serde::{Deserialize, Serialize};
+use setty::types::{ByteSize, DurationString};
 
 use crate::formats::Multihash;
 use crate::identity::*;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Predefined account specification.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accountspec-schema
+#[derive(Clone, Debug, Eq)]
+pub struct AccountSpec {
+    /// Type of the account.
+    ///
+    /// Defaults to: "User"
+    pub account_type: Option<AccountType>,
+    /// Human-friendly display name.
+    pub display_name: Option<String>,
+    /// Email address of the account.
+    pub email: String,
+    /// URL of the account's avatar image.
+    pub avatar_url: Option<String>,
+    /// Password for local authentication. Absent for SSO or DID-based accounts.
+    pub password: Option<Secret>,
+}
+
+impl AccountSpec {
+    pub fn default_account_type() -> AccountType {
+        AccountType::User
+    }
+    pub fn account_type(&self) -> AccountType {
+        self.account_type.unwrap_or(Self::default_account_type())
+    }
+}
+
+impl PartialEq for AccountSpec {
+    fn eq(&self, other: &Self) -> bool {
+        self.account_type
+            .or_else(|| Some(Self::default_account_type()))
+            == other
+                .account_type
+                .or_else(|| Some(Self::default_account_type()))
+            && self.display_name == other.display_name
+            && self.email == other.email
+            && self.avatar_url == other.avatar_url
+            && self.password == other.password
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Represents the type of an account.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accounttype-schema
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum AccountType {
+    User,
+    Organization,
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +147,34 @@ impl_enum_variant!(Attachments::Embedded(AttachmentsEmbedded));
 pub struct AttachmentsEmbedded {
     /// List of embedded items.
     pub items: Vec<AttachmentEmbedded>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// A named attribute attached to a resource, used by auth policies for access control decisions.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#attribute-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Attribute {
+    /// The resource this attribute is attached to.
+    pub object: ResourceRef,
+    /// Name of the attribute e.g. `allowPublicRead`.
+    pub name: String,
+    /// Value of the attribute.
+    pub value: serde_json::Value,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Specifies resource attributes and relations between resources on which auth policies act upon.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#bindingsspec-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct BindingsSpec {
+    /// Directed relationships between resources.
+    pub relations: Option<Vec<Relation>>,
+    /// Named attributes attached to resources, used by auth policies for access control decisions.
+    pub attributes: Option<Vec<Attribute>>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -541,6 +625,21 @@ pub enum DatasetKind {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Selects one or more datasets by name pattern and optional filters.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetselector-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DatasetSelector {
+    /// Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all.
+    pub pattern: String,
+    /// Restricts the selector to datasets of a specific kind.
+    pub kind: Option<DatasetKind>,
+    /// Restricts the selector to datasets matching all specified labels.
+    pub labels: Option<ResourceLabels>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Represents a projection of the dataset metadata at a single point in time.
 /// This type is typically used for defining new datasets and changing the existing ones.
 ///
@@ -566,6 +665,8 @@ pub struct DatasetSpec {
     pub kind: DatasetKind,
     /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
     pub metadata: Vec<MetadataEvent>,
+    /// Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
+    pub volume: Option<ResourceRef>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -573,16 +674,95 @@ pub struct DatasetSpec {
 /// Specifies the mapping of system columns onto dataset schema.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetvocabulary-schema
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, Default)]
 pub struct DatasetVocabulary {
     /// Name of the offset column.
-    pub offset_column: String,
+    ///
+    /// Defaults to: "offset"
+    pub offset_column: Option<String>,
     /// Name of the operation type column.
-    pub operation_type_column: String,
+    ///
+    /// Defaults to: "op"
+    pub operation_type_column: Option<String>,
     /// Name of the system time column.
-    pub system_time_column: String,
+    ///
+    /// Defaults to: "system_time"
+    pub system_time_column: Option<String>,
     /// Name of the event time column.
-    pub event_time_column: String,
+    ///
+    /// Defaults to: "event_time"
+    pub event_time_column: Option<String>,
+}
+
+impl DatasetVocabulary {
+    pub fn default_offset_column() -> &'static str {
+        "offset"
+    }
+    pub fn offset_column(&self) -> &str {
+        self.offset_column
+            .as_deref()
+            .unwrap_or(Self::default_offset_column())
+    }
+    pub fn default_operation_type_column() -> &'static str {
+        "op"
+    }
+    pub fn operation_type_column(&self) -> &str {
+        self.operation_type_column
+            .as_deref()
+            .unwrap_or(Self::default_operation_type_column())
+    }
+    pub fn default_system_time_column() -> &'static str {
+        "system_time"
+    }
+    pub fn system_time_column(&self) -> &str {
+        self.system_time_column
+            .as_deref()
+            .unwrap_or(Self::default_system_time_column())
+    }
+    pub fn default_event_time_column() -> &'static str {
+        "event_time"
+    }
+    pub fn event_time_column(&self) -> &str {
+        self.event_time_column
+            .as_deref()
+            .unwrap_or(Self::default_event_time_column())
+    }
+}
+
+impl PartialEq for DatasetVocabulary {
+    fn eq(&self, other: &Self) -> bool {
+        self.offset_column
+            .as_deref()
+            .or_else(|| Some(Self::default_offset_column()))
+            == other
+                .offset_column
+                .as_deref()
+                .or_else(|| Some(Self::default_offset_column()))
+            && self
+                .operation_type_column
+                .as_deref()
+                .or_else(|| Some(Self::default_operation_type_column()))
+                == other
+                    .operation_type_column
+                    .as_deref()
+                    .or_else(|| Some(Self::default_operation_type_column()))
+            && self
+                .system_time_column
+                .as_deref()
+                .or_else(|| Some(Self::default_system_time_column()))
+                == other
+                    .system_time_column
+                    .as_deref()
+                    .or_else(|| Some(Self::default_system_time_column()))
+            && self
+                .event_time_column
+                .as_deref()
+                .or_else(|| Some(Self::default_event_time_column()))
+                == other
+                    .event_time_column
+                    .as_deref()
+                    .or_else(|| Some(Self::default_event_time_column()))
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -835,8 +1015,227 @@ pub struct FetchStepUrl {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FlowSpec {
+    /// Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow.
+    pub triggers: Vec<FlowTrigger>,
     /// List of tasks to run consecutively.
     pub tasks: Vec<TaskSpec>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Condition that causes a flow to be executed.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtrigger-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum FlowTrigger {
+    Schedule(FlowTriggerSchedule),
+    Source(FlowTriggerSource),
+    Dataset(FlowTriggerDataset),
+}
+
+impl_enum_with_variants!(FlowTrigger);
+impl_enum_variant!(FlowTrigger::Schedule(FlowTriggerSchedule));
+impl_enum_variant!(FlowTrigger::Source(FlowTriggerSource));
+impl_enum_variant!(FlowTrigger::Dataset(FlowTriggerDataset));
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Triggers the flow when matching datasets are updated.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerdataset-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FlowTriggerDataset {
+    /// Selector that identifies which datasets can trigger this flow.
+    pub dataset: DatasetSelector,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Triggers the flow on a cron schedule.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerschedule-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FlowTriggerSchedule {
+    /// Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
+    pub cron: String,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Triggers the flow when a source receives new data, with optional batching controls.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggersource-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FlowTriggerSource {
+    /// Reference to the source resource that drives this trigger.
+    pub source: ResourceRef,
+    /// Minimum number of new records to accumulate before triggering.
+    pub min_records_to_await: Option<u64>,
+    /// Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
+    pub max_await_interval: Option<DurationString>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Optional parameters to control ingestion behavior.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingestparams-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct IngestParams {
+    /// Target number of records to ingest per batch.
+    pub target_batch_size: Option<u64>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Defines the point where data enters the system.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingress-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum Ingress {
+    Url(IngressUrl),
+    FilesGlob(IngressFilesGlob),
+    Container(IngressContainer),
+    Mqtt(IngressMqtt),
+    EvmLogs(IngressEvmLogs),
+    RestEndpoint(IngressRestEndpoint),
+}
+
+impl_enum_with_variants!(Ingress);
+impl_enum_variant!(Ingress::Url(IngressUrl));
+impl_enum_variant!(Ingress::FilesGlob(IngressFilesGlob));
+impl_enum_variant!(Ingress::Container(IngressContainer));
+impl_enum_variant!(Ingress::Mqtt(IngressMqtt));
+impl_enum_variant!(Ingress::EvmLogs(IngressEvmLogs));
+impl_enum_variant!(Ingress::RestEndpoint(IngressRestEndpoint));
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Runs the specified OCI container to fetch data from an arbitrary source.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingresscontainer-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IngressContainer {
+    /// Image name and and an optional tag.
+    pub image: String,
+    /// Specifies the entrypoint. Not executed within a shell. The default OCI image's ENTRYPOINT is used if this is not provided.
+    pub command: Option<Vec<String>>,
+    /// Arguments to the entrypoint. The OCI image's CMD is used if this is not provided.
+    pub args: Option<Vec<String>>,
+    /// Environment variables to propagate into or set in the container.
+    pub env: Option<Vec<EnvVar>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Connects to an EVM (Ethereum) node to stream transaction logs.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressevmlogs-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct IngressEvmLogs {
+    /// Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain.
+    pub chain_id: Option<u64>,
+    /// Url of the node.
+    pub node_url: Option<String>,
+    /// An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.
+    ///
+    /// Examples:
+    /// - "block_number > 123 and address = X'5fbdb2315678afecb367f032d93f642f64180aa3' and topic1 = X'000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'"
+    pub filter: Option<String>,
+    /// Solidity log event signature to use for decoding. Using this field adds `event` to the output containing decoded log as JSON.
+    pub signature: Option<String>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Uses glob operator to match files on the local file system.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressfilesglob-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IngressFilesGlob {
+    /// Path with a glob pattern.
+    pub path: String,
+    /// Describes how event time is extracted from the source metadata.
+    pub event_time: Option<EventTimeSource>,
+    /// Describes the caching settings used for this source.
+    pub cache: Option<SourceCaching>,
+    /// Specifies how input files should be ordered before ingestion.
+    /// Order is important as every file will be processed individually
+    /// and will advance the dataset's watermark.
+    pub order: Option<SourceOrdering>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Connects to an MQTT broker to fetch events from the specified topic.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressmqtt-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IngressMqtt {
+    /// Hostname of the MQTT broker.
+    pub host: String,
+    /// Port of the MQTT broker.
+    pub port: i32,
+    /// Username to use for auth with the broker.
+    pub username: Option<String>,
+    /// Password to use for auth with the broker (can be templated).
+    pub password: Option<String>,
+    /// List of topic subscription parameters.
+    pub topics: Vec<MqttTopicSubscription>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Exposes a REST HTTP endpoint that accepts pushed data records.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressrestendpoint-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct IngressRestEndpoint {
+    /// Buffer configuration for holding records until they are ingested.
+    pub buffer: Option<IngressBuffer>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Pulls data from one of the supported sources by its URL.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressurl-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct IngressUrl {
+    /// URL of the data source
+    pub url: String,
+    /// Describes how event time is extracted from the source metadata.
+    pub event_time: Option<EventTimeSource>,
+    /// Describes the caching settings used for this source.
+    pub cache: Option<SourceCaching>,
+    /// Headers to pass during the request (e.g. HTTP Authorization)
+    pub headers: Option<Vec<RequestHeader>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Buffer configuration for holding pushed records until they are ingested.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressbuffer-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum IngressBuffer {
+    Memory(IngressBufferMemory),
+}
+
+impl_enum_with_variants!(IngressBuffer);
+impl_enum_variant!(IngressBuffer::Memory(IngressBufferMemory));
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// An in-memory buffer.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressbuffermemory-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct IngressBufferMemory {
+    /// Maximum number of records to hold in the buffer.
+    pub buffer_size: Option<u64>,
+    /// Policy applied when the buffer is full.
+    pub overflow_policy: Option<String>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1100,6 +1499,40 @@ pub struct OffsetInterval {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Defines a storage volume where data can be stored and its access credentials.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespec-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum PersistentVolumeSpec {
+    S3(PersistentVolumeSpecS3),
+}
+
+impl_enum_with_variants!(PersistentVolumeSpec);
+impl_enum_variant!(PersistentVolumeSpec::S3(PersistentVolumeSpecS3));
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// An Amazon S3 or S3-compatible object storage bucket.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespecs3-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PersistentVolumeSpecS3 {
+    /// S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores e.g. `https://s3.amazonaws.com`.
+    pub endpoint: Option<String>,
+    /// AWS region where the bucket is located e.g. `us-west-2`.
+    pub region: Option<String>,
+    /// Name of the S3 bucket.
+    pub bucket: String,
+    /// Optional path prefix within the bucket.
+    pub prefix: Option<String>,
+    /// Storage capacity allocation.
+    pub capacity: Option<VolumeCapacity>,
+    /// Access credentials for the bucket.
+    pub credentials: Option<S3Credentials>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Defines the steps to prepare raw data for ingestion.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#prepstep-schema
@@ -1135,6 +1568,19 @@ pub struct PrepStepDecompress {
 pub struct PrepStepPipe {
     /// Command to execute and its arguments.
     pub command: Vec<String>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Represents a projection of a dataaset history into a state for fast lookups.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#projectionspec-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProjectionSpec {
+    /// Datasets that will be used as sources.
+    pub inputs: Vec<TransformInput>,
+    /// Transformation that will be applied to produce new data.
+    pub project: Transform,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1650,6 +2096,23 @@ pub struct ReadStepParquet {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// A directed relationship between two resources, optionally carrying a typed value.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relation-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Relation {
+    /// The resource that holds the relation.
+    pub subject: ResourceRef,
+    /// Name of the relation e.g. `role`, `member`, `owner`.
+    pub relation: String,
+    /// Optional value associated with the relation e.g. `maintainer` for a `role` relation.
+    pub value: Option<serde_json::Value>,
+    /// The resource that is the target of the relation.
+    pub object: ResourceRef,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Defines a header (e.g. HTTP) to be passed into some request.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#requestheader-schema
@@ -1709,7 +2172,7 @@ pub struct ResourceCondition {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of `{controller-name}/{condition-name}`.
+/// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of URL to a schema describing this condition, e.g. `https://opendatafabric.org/schemas/resource/ConditionReady.json`.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceconditions-schema
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -1782,6 +2245,19 @@ pub struct ResourceStatus {
     pub reconciled_at: Option<DateTime<Utc>>,
     /// Detailed conditions describing the state of the resource that are added by controllers.
     pub conditions: Option<ResourceConditions>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Access credentials for an S3 or S3-compatible bucket.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#s3credentials-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct S3Credentials {
+    /// Reference to a secret containing the AWS access key ID.
+    pub access_key: Option<ResourceRef>,
+    /// Reference to a secret containing the AWS secret access key.
+    pub secret_key: Option<ResourceRef>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1968,6 +2444,27 @@ pub enum SourceOrdering {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Specifies an external source of data for ingestion.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcespec-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SourceSpec {
+    /// Determines where data is sourced from.
+    pub ingress: Option<Ingress>,
+    /// Defines how raw data is prepared before reading.
+    pub prepare: Option<Vec<PrepStep>>,
+    /// Defines how data is read into structured format.
+    pub read: ReadStep,
+    /// Pre-processing query that shapes the data.
+    pub preprocess: Option<Transform>,
+    /// Determines how newly-ingested data should be merged with existing history.
+    pub merge: Option<MergeStrategy>,
+    /// Defines the mapping of system fields to dataset column names.
+    pub vocab: Option<DatasetVocabulary>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// The state of the source the data was added from to allow fast resuming.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcestate-schema
@@ -1996,11 +2493,61 @@ pub struct SqlQueryStep {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// An individual work item to be executed.
+/// An individual work item to be executed as part of a flow.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
-pub struct TaskSpec {}
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum TaskSpec {
+    Ingest(TaskSpecIngest),
+    Compaction(TaskSpecCompaction),
+    GarbageCollection(TaskSpecGarbageCollection),
+}
+
+impl_enum_with_variants!(TaskSpec);
+impl_enum_variant!(TaskSpec::Ingest(TaskSpecIngest));
+impl_enum_variant!(TaskSpec::Compaction(TaskSpecCompaction));
+impl_enum_variant!(TaskSpec::GarbageCollection(TaskSpecGarbageCollection));
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Compacts data files in matching datasets to improve query performance.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspeccompaction-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TaskSpecCompaction {
+    /// Selector identifying which datasets to compact.
+    pub dataset: DatasetSelector,
+    /// Target maximum size of each compacted data slice e.g. `100MiB`.
+    pub max_slice_size: Option<ByteSize>,
+    /// Target maximum number of records per compacted data slice.
+    pub max_slice_records: Option<u64>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Removes unreferenced data files from matching datasets.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecgarbagecollection-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TaskSpecGarbageCollection {
+    /// Selector identifying which datasets to garbage collect.
+    pub dataset: DatasetSelector,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Fetches data from a source and appends it to a dataset.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecingest-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TaskSpecIngest {
+    /// Reference to the source resource that defines how to fetch data.
+    pub source: ResourceRef,
+    /// Reference to the dataset resource to ingest data into.
+    pub dataset: ResourceRef,
+    /// Optional parameters to control ingestion behavior.
+    pub params: Option<IngestParams>,
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2225,6 +2772,17 @@ pub struct VariableSetSpec {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Variables {
     pub entries: std::collections::BTreeMap<String, Variable>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Storage capacity allocation.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#volumecapacity-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct VolumeCapacity {
+    /// Maximum storage size e.g. `10Gi`.
+    pub storage: Option<ByteSize>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

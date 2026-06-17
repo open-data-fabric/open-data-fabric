@@ -31,7 +31,7 @@
       "description": "Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one. Thus, watermarks are monotonically non-decreasing."
     },
     "newSourceState": {
-      "$ref": "https://opendatafabric.org/schemas/ingest/v1alpha1/SourceState.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceState.json",
       "description": "The state of the source the data was added from to allow fast resuming. If the state did not change but is still relevant for subsequent runs it should be carried, i.e. only the last state per source is considered when resuming.",
       "unevaluatedProperties": false
     },

@@ -1,0 +1,12 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account.json
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account.json
+headers:
+  name: bob
+spec:
+  email: bob@example.com
+  displayName: Bob
+  accountType: User
+  avatarUrl: https://example.com/bob.jpg
+  password:
+    value: <jwe>  # Pre-encrypted password
+    contentEncoding: jwe

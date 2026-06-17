@@ -1,0 +1,15 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePushSource.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Disables the previously defined source.",
+  "type": "object",
+  "required": [
+    "sourceName"
+  ],
+  "properties": {
+    "sourceName": {
+      "type": "string",
+      "description": "Identifies the source to be disabled."
+    }
+  }
+}

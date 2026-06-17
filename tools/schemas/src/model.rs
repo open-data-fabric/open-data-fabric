@@ -209,7 +209,9 @@ pub enum Type {
     UInt64,
     String,
 
+    ByteSize,
     DateTime,
+    Duration,
     Multicodec,
     Multihash,
     Path,
@@ -309,7 +311,7 @@ fn parse_type_definition(
     match &schema {
         json_schema::Schema {
             one_of: Some(_),
-            format: None,
+            format: None | Some(json_schema::Format::RpcMessage),
             ..
         } => TypeDefinition::Union(parse_type_union(id, schema, src, ctx)),
         json_schema::Schema {
@@ -419,7 +421,7 @@ fn parse_type_struct(
         items: None,
         r#ref: None,
         r#const: None,
-        format: None,
+        format,
         default: None,
         description: Some(description),
         tag: None,
@@ -432,27 +434,38 @@ fn parse_type_struct(
         panic!("Invalid struct schema: {ctx}: {}", schema.display())
     };
 
-    // Validate `unevaluatedProperties: false` is specified only for top-level objects with `$schema` property
-    match (
-        properties.contains_key("$schema"),
-        unevaluated_properties == Some(false),
-    ) {
+    let is_resource = match format {
+        Some(json_schema::Format::Resource) => true,
+        Some(json_schema::Format::RpcMessage) => false,
+        Some(fmt) => panic!("Unknown struct format: {fmt:?}: {ctx}"),
+        None => false,
+    };
+
+    // Validate `unevaluatedProperties: false` is specified only for root schemas
+    match (is_resource, unevaluated_properties == Some(false)) {
         (true, true) | (false, false) => (),
-        (true, false) => panic!("Top-level schemas should define `unevaluatedProperties: false`"),
+        (true, false) => {
+            panic!("Resource schemas should define `unevaluatedProperties: false`: {ctx}")
+        }
         (false, true) => panic!(
-            "The `unevaluatedProperties: false` is only allowed on top-level schemas, not fragments"
+            "The `unevaluatedProperties: false` is only allowed on root schemas, not fragments: {ctx}"
         ),
     }
 
-    if let Some(schema_prop) = properties.get("$schema") {
-        assert_eq!(schema_prop.r#type, Some(json_schema::Type::String));
-        assert_eq!(
-            schema_prop.format,
-            Some(json_schema::Format::ResourceTypeUri)
-        );
-        if let Some(c) = &schema_prop.r#const {
-            let cid = ref_to_type_id(c, &id, format!("{ctx}.$schema"));
-            assert_eq!(id, cid, "$schema.const must match $id: {ctx}");
+    // Validate `$schema` on resources
+    if is_resource {
+        if let Some(schema_prop) = properties.get("$schema") {
+            assert_eq!(schema_prop.r#type, Some(json_schema::Type::String));
+            assert_eq!(
+                schema_prop.format,
+                Some(json_schema::Format::ResourceTypeUri)
+            );
+            if let Some(c) = &schema_prop.r#const {
+                let cid = ref_to_type_id(c, &id, format!("{ctx}.$schema"));
+                assert_eq!(id, cid, "$schema.const must match $id: {ctx}");
+            }
+        } else {
+            panic!("Resource schemas should define `$schema` property: {ctx}");
         }
     }
 
@@ -557,9 +570,8 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
     };
 
     let from_string = match format {
-        None => false,
         Some(json_schema::Format::UnionOrString) => true,
-        Some(fmt) => panic!("Invalid union format: {ctx}: {fmt:?}"),
+        _ => false,
     };
 
     let mut variants = Vec::new();
@@ -889,7 +901,10 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         },
         (json_schema::Type::String, None) => Type::String,
 
+        (json_schema::Type::String, Some(json_schema::Format::ByteSize)) => Type::ByteSize,
         (json_schema::Type::String, Some(json_schema::Format::DateTime)) => Type::DateTime,
+        (json_schema::Type::String, Some(json_schema::Format::Duration)) => Type::Duration,
+        (json_schema::Type::String, Some(json_schema::Format::Email)) => Type::String,
         (json_schema::Type::String, Some(json_schema::Format::Multicodec)) => Type::Multicodec,
         (json_schema::Type::String, Some(json_schema::Format::Multihash)) => Type::Multihash,
         (json_schema::Type::String, Some(json_schema::Format::Path)) => Type::Path,

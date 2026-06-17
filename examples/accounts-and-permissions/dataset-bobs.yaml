@@ -1,0 +1,8 @@
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+headers:
+  name: bobs-dataset
+  account: bob
+spec:
+  kind: Root
+  metadata: []

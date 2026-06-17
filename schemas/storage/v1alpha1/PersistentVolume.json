@@ -1,0 +1,36 @@
+{
+  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines a storage volume where data can be stored and its access credentials.",
+  "format": "resource",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "resource-type-uri",
+      "const": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume.json",
+      "description": "Identifies this resource type."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpec.json",
+      "description": "Specifies the desired state of the resource.",
+      "unevaluatedProperties": false
+    },
+    "status": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
+      "description": "Resource lifecycle and reconciliation information.",
+      "unevaluatedProperties": false
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Attribute.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A named attribute attached to a resource, used by auth policies for access control decisions.",
+  "type": "object",
+  "required": [
+    "object",
+    "name",
+    "value"
+  ],
+  "properties": {
+    "object": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+      "description": "The resource this attribute is attached to.",
+      "unevaluatedProperties": false
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the attribute e.g. `allowPublicRead`."
+    },
+    "value": {
+      "description": "Value of the attribute."
+    }
+  }
+}

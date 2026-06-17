@@ -1,0 +1,102 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines the external source of data.",
+  "$defs": {
+    "FromMetadata": {
+      "description": "Extracts event time from the source's metadata.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "FromSystemTime": {
+      "description": "Assigns event time from the system time source.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "FromPath": {
+      "description": "Extracts event time from the path component of the source.",
+      "type": "object",
+      "required": [
+        "pattern"
+      ],
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "format": "regex",
+          "description": "Regular expression where first group contains the timestamp string."
+        },
+        "timestampFormat": {
+          "type": "string",
+          "description": "Format of the expected timestamp in java.text.SimpleDateFormat form."
+        }
+      }
+    }
+  },
+  "format": "union-or-string",
+  "oneOf": [
+    {
+      "type": "string",
+      "enum": [
+        "FromMetadata",
+        "FromPath",
+        "FromSystemTime"
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FromMetadata"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FromMetadata"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FromPath"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FromPath"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "FromSystemTime"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/FromSystemTime"
+        }
+      ]
+    }
+  ]
+}

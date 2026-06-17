@@ -1,0 +1,79 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/PrepStep.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines the steps to prepare raw data for ingestion.",
+  "$defs": {
+    "Decompress": {
+      "description": "Pulls data from one of the supported sources by its URL.",
+      "type": "object",
+      "required": [
+        "format"
+      ],
+      "properties": {
+        "format": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/CompressionFormat.json",
+          "description": "Name of a compression algorithm used on data.",
+          "unevaluatedProperties": false
+        },
+        "subPath": {
+          "type": "string",
+          "description": "Path to a data file within a multi-file archive. Can contain glob patterns."
+        }
+      }
+    },
+    "Pipe": {
+      "description": "Executes external command to process the data using piped input/output.",
+      "type": "object",
+      "required": [
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command to execute and its arguments."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Decompress"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Decompress"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Pipe"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Pipe"
+        }
+      ]
+    }
+  ]
+}

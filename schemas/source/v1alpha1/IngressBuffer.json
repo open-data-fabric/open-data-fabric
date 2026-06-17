@@ -1,0 +1,32 @@
+{
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/IngressBuffer.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Buffer configuration for holding pushed records until they are ingested.",
+  "$defs": {
+    "Memory": {
+      "description": "An in-memory buffer.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "bufferSize": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Maximum number of records to hold in the buffer."
+        },
+        "overflowPolicy": {
+          "type": "string",
+          "enum": ["Reject", "DropOldest"],
+          "description": "Policy applied when the buffer is full."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Memory" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Memory" }
+      ]
+    }
+  ]
+}
