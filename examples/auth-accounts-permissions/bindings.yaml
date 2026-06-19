@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Bindings.json
-$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Bindings.json
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Bindings
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Bindings
 headers:
   name: alice-bob
 spec:

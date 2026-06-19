@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/FetchStep.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/FetchStep",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the external source of data.",
   "$defs": {
@@ -16,19 +16,19 @@
           "description": "URL of the data source"
         },
         "eventTime": {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource.json",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource",
           "description": "Describes how event time is extracted from the source metadata.",
           "unevaluatedProperties": false
         },
         "cache": {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching.json",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching",
           "description": "Describes the caching settings used for this source.",
           "unevaluatedProperties": false
         },
         "headers": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/RequestHeader.json",
+            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/RequestHeader",
             "unevaluatedProperties": false
           },
           "description": "Headers to pass during the request (e.g. HTTP Authorization)"
@@ -47,17 +47,17 @@
           "description": "Path with a glob pattern."
         },
         "eventTime": {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource.json",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource",
           "description": "Describes how event time is extracted from the source metadata.",
           "unevaluatedProperties": false
         },
         "cache": {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching.json",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching",
           "description": "Describes the caching settings used for this source.",
           "unevaluatedProperties": false
         },
         "order": {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceOrdering.json",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceOrdering",
           "description": "Specifies how input files should be ordered before ingestion.\nOrder is important as every file will be processed individually\nand will advance the dataset's watermark.",
           "unevaluatedProperties": false
         }
@@ -91,7 +91,7 @@
         "env": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EnvVar.json",
+            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/EnvVar",
             "unevaluatedProperties": false
           },
           "description": "Environment variables to propagate into or set in the container."
@@ -127,7 +127,7 @@
         "topics": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MqttTopicSubscription.json",
+            "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MqttTopicSubscription",
             "unevaluatedProperties": false
           },
           "description": "List of topic subscription parameters."

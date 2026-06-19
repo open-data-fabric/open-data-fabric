@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/AddPushSource.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/AddPushSource",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes how to ingest data into a root dataset from a certain logical source.",
   "type": "object",
@@ -14,17 +14,17 @@
       "description": "Identifies the source within this dataset."
     },
     "read": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/ReadStep.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/ReadStep",
       "description": "Defines how data is read into structured format.",
       "unevaluatedProperties": false
     },
     "preprocess": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform",
       "description": "Pre-processing query that shapes the data.",
       "unevaluatedProperties": false
     },
     "merge": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy",
       "description": "Determines how newly-ingested data should be merged with existing history.",
       "unevaluatedProperties": false
     }

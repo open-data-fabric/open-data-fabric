@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpec.json",
+  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a storage volume where data can be stored and its access credentials.",
   "$defs": {
@@ -28,12 +28,12 @@
           "description": "Optional path prefix within the bucket."
         },
         "capacity": {
-          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity.json",
+          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity",
           "description": "Storage capacity allocation.",
           "unevaluatedProperties": false
         },
         "credentials": {
-          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/S3Credentials.json",
+          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/S3Credentials",
           "description": "Access credentials for the bucket.",
           "unevaluatedProperties": false
         }

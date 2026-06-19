@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec.json",
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "An individual work item to be executed as part of a flow.",
   "$defs": {
@@ -12,17 +12,17 @@
       ],
       "properties": {
         "source": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
           "description": "Reference to the source resource that defines how to fetch data.",
           "unevaluatedProperties": false
         },
         "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
           "description": "Reference to the dataset resource to ingest data into.",
           "unevaluatedProperties": false
         },
         "params": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/IngestParams.json",
+          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/IngestParams",
           "description": "Optional parameters to control ingestion behavior.",
           "unevaluatedProperties": false
         }
@@ -36,7 +36,7 @@
       ],
       "properties": {
         "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector.json",
+          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
           "description": "Selector identifying which datasets to compact.",
           "unevaluatedProperties": false
         },
@@ -60,9 +60,27 @@
       ],
       "properties": {
         "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector.json",
+          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
           "description": "Selector identifying which datasets to garbage collect.",
           "unevaluatedProperties": false
+        }
+      }
+    },
+    "WebhookCall": {
+      "description": "Dispatches a certain payload to a specific `WebhookTarget`.",
+      "type": "object",
+      "required": [
+        "target"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "description": "Reference to the `WebhookTarget`.",
+          "unevaluatedProperties": false
+        },
+        "payload": {
+          "type": "string",
+          "description": "The payload to send. May include templating."
         }
       }
     }
@@ -84,6 +102,12 @@
       "allOf": [
         { "properties": { "kind": { "type": "string", "const": "GarbageCollection" } }, "required": ["kind"] },
         { "$ref": "#/$defs/GarbageCollection" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "WebhookCall" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/WebhookCall" }
       ]
     }
   ]

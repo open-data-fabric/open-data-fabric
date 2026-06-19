@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryRequest.json",
+  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryRequest",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step",
   "format": "rpc-message",
@@ -19,7 +19,7 @@
       }
     },
     "transform": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform",
       "description": "Transformation that will be applied to produce new data.",
       "unevaluatedProperties": false
     },

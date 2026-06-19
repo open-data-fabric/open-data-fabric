@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransform.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransform",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Indicates that derivative transformation has been performed.",
   "type": "object",
@@ -10,7 +10,7 @@
     "queryInputs": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransformInput.json",
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransformInput",
         "unevaluatedProperties": false
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."
@@ -26,12 +26,12 @@
       "description": "Last offset of the previous data slice, if any. Must be equal to the last non-empty `newData.offsetInterval.end`."
     },
     "newData": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DataSlice.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DataSlice",
       "description": "Describes output data written during this transaction, if any.",
       "unevaluatedProperties": false
     },
     "newCheckpoint": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Checkpoint.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Checkpoint",
       "description": "Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified.",
       "unevaluatedProperties": false
     },

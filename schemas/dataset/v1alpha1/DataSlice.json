@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DataSlice.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DataSlice",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes a slice of data added to a dataset or produced via transformation",
   "type": "object",
@@ -21,7 +21,7 @@
       "description": "Hash sum of the data part file."
     },
     "offsetInterval": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval",
       "description": "Data slice produced by the transaction.",
       "unevaluatedProperties": false
     },

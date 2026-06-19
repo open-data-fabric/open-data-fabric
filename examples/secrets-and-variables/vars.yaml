@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json
+# $schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet
 headers:
   name: my-vars
 spec:

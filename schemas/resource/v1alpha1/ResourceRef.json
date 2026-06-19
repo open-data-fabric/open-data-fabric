@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Reference to another resource.",
   "format": "struct-or-string",
@@ -19,7 +19,7 @@
       ],
       "properties": {
         "account": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef.json",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
           "description": "Reference to an account that owns the target resource.",
           "unevaluatedProperties": false
         },

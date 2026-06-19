@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the external source of data.",
   "$defs": {

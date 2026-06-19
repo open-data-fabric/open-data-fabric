@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
   name: compact-all-roots
 spec:

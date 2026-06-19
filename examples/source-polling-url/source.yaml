@@ -1,7 +1,7 @@
-# $schema: https://opendatafabric.org/schemas/source/v1alpha1/Source.json
-$schema: https://opendatafabric.org/schemas/source/v1alpha1/Source.json
+# $schema: https://opendatafabric.org/schemas/source/v1alpha1/Source
+$schema: https://opendatafabric.org/schemas/source/v1alpha1/Source
 headers:
-  name: bankofcanada.ca
+  name: ca.bankofcanada
 spec:
   ingress:
     kind: Url

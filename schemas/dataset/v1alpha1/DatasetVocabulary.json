@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specifies the mapping of system columns onto dataset schema.",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpec.json",
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
   "type": "object",
@@ -11,7 +11,7 @@
     "triggers": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger.json",
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger",
         "unevaluatedProperties": false
       },
       "description": "Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow."
@@ -19,7 +19,7 @@
     "tasks": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec.json",
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec",
         "unevaluatedProperties": false
       },
       "description": "List of tasks to run consecutively."

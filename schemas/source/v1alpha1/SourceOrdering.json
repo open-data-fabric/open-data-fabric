@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceOrdering.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceOrdering",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specifies how input files should be ordered before ingestion.",
   "type": "string",

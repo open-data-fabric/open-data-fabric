@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Attribute.json",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Attribute",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "A named attribute attached to a resource, used by auth policies for access control decisions.",
   "type": "object",
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "object": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
       "description": "The resource this attribute is attached to.",
       "unevaluatedProperties": false
     },

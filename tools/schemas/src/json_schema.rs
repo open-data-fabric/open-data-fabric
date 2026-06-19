@@ -114,7 +114,7 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
         schema.src = Some(path.clone());
 
         assert_eq!(
-            *id,
+            format!("{id}.json"),
             format!("https://opendatafabric.org/{}", path.display()),
             "Schema ID does not correspond to the file name"
         );
@@ -152,7 +152,7 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
     for (id, sch) in schemas.iter().filter(|(id, sch)| {
         matches!(
             sch.format,
-            Some(Format::Resource) | Some(Format::RpcMessage)
+            Some(Format::Resource) | Some(Format::ResourceCondition) | Some(Format::RpcMessage)
         ) || id.name == "Manifest"
             || id.name == "DatasetSnapshot"
             || id.name == "MetadataBlock"
@@ -259,7 +259,7 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
 // Also matches with an optional #/$defs/{Def} fragment.
 static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
     regex::Regex::new(
-        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)\.json(?:#/\$defs/(?P<def>[^/]+))?$",
+        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
     )
     .unwrap()
 });
@@ -334,6 +334,7 @@ pub enum Format {
     DatasetRef,
 
     Resource,
+    ResourceCondition,
     ResourceId,
     ResourceName,
     ResourceTypeName,

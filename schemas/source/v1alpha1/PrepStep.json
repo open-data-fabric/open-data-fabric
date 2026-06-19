@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/PrepStep.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/PrepStep",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the steps to prepare raw data for ingestion.",
   "$defs": {
@@ -11,7 +11,7 @@
       ],
       "properties": {
         "format": {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/CompressionFormat.json",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/CompressionFormat",
           "description": "Name of a compression algorithm used on data.",
           "unevaluatedProperties": false
         },

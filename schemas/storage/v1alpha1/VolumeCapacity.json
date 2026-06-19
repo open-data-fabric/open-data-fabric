@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity.json",
+  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Storage capacity allocation.",
   "type": "object",

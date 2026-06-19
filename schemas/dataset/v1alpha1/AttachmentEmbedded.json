@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Embedded attachment item.",
   "type": "object",

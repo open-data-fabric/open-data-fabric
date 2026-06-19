@@ -1047,6 +1047,8 @@ impl_enum_variant!(FlowTrigger::Dataset(FlowTriggerDataset));
 pub struct FlowTriggerDataset {
     /// Selector that identifies which datasets can trigger this flow.
     pub dataset: DatasetSelector,
+    /// Set of event bus event IDs that this trigger will react to
+    pub events: Option<Vec<String>>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2501,12 +2503,14 @@ pub enum TaskSpec {
     Ingest(TaskSpecIngest),
     Compaction(TaskSpecCompaction),
     GarbageCollection(TaskSpecGarbageCollection),
+    WebhookCall(TaskSpecWebhookCall),
 }
 
 impl_enum_with_variants!(TaskSpec);
 impl_enum_variant!(TaskSpec::Ingest(TaskSpecIngest));
 impl_enum_variant!(TaskSpec::Compaction(TaskSpecCompaction));
 impl_enum_variant!(TaskSpec::GarbageCollection(TaskSpecGarbageCollection));
+impl_enum_variant!(TaskSpec::WebhookCall(TaskSpecWebhookCall));
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2547,6 +2551,19 @@ pub struct TaskSpecIngest {
     pub dataset: ResourceRef,
     /// Optional parameters to control ingestion behavior.
     pub params: Option<IngestParams>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Dispatches a certain payload to a specific `WebhookTarget`.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecwebhookcall-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TaskSpecWebhookCall {
+    /// Reference to the `WebhookTarget`.
+    pub target: ResourceRef,
+    /// The payload to send. May include templating.
+    pub payload: Option<String>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2796,4 +2813,29 @@ pub struct Watermark {
     pub system_time: DateTime<Utc>,
     /// Moment in event time which watermark has reached.
     pub event_time: DateTime<Utc>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Defines a webhook target endpoint that can receive event notifications and data.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetspec-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct WebhookTargetSpec {
+    /// Target url of the webhook.
+    pub url: String,
+    /// Shared secret used for HMAC signature of the request payload for authentication.
+    pub secret: Option<Secret>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Represents the status of the webhook target endpoint.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum WebhookTargetStatus {
+    Unverified,
+    Ready,
+    Failing,
 }

@@ -54,11 +54,10 @@ fn test_examples() {
     let schemas = Schemas::load(&repo_root.join("schemas"));
 
     let examples_dir = repo_root.join("examples");
-    let yaml_files: Vec<_> =
-        glob::glob(&format!("{}/**/*.yaml", examples_dir.display()))
-            .unwrap()
-            .map(|e| e.unwrap())
-            .collect();
+    let yaml_files: Vec<_> = glob::glob(&format!("{}/**/*.yaml", examples_dir.display()))
+        .unwrap()
+        .map(|e| e.unwrap())
+        .collect();
 
     assert!(
         !yaml_files.is_empty(),
@@ -82,7 +81,10 @@ fn test_examples() {
         let errors: Vec<_> = validator.iter_errors(&value).collect();
         if !errors.is_empty() {
             failed = true;
-            eprintln!("Validation failed for {} ($schema: {schema_id}):", path.display());
+            eprintln!(
+                "Validation failed for {} ($schema: {schema_id}):",
+                path.display()
+            );
             for err in &errors {
                 eprintln!("  - {err} (path: {})", err.instance_path);
             }

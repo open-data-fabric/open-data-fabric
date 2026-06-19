@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Container for identity and ownership information of a resource.",
   "type": "object",
@@ -18,17 +18,17 @@
       "description": "Symbolic name of a resource that identifies it within a scope of an onwing account."
     },
     "account": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef.json",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
       "description": "Reference to an account that owns the resource.",
       "unevaluatedProperties": false
     },
     "labels": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels",
       "description": "Map of string keys and values that can be used to organize, categorize, and query resources.",
       "unevaluatedProperties": false
     },
     "annotations": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceAnnotations.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceAnnotations",
       "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.",
       "unevaluatedProperties": false
     },

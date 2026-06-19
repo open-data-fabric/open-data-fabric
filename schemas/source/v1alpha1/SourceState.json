@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceState.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceState",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "The state of the source the data was added from to allow fast resuming.",
   "type": "object",

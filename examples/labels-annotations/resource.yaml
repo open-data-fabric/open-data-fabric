@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+# $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
   account: sergiimk

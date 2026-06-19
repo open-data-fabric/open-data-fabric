@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/MqttTopicSubscription.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/MqttTopicSubscription",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "MQTT topic subscription parameters.",
   "type": "object",
@@ -12,7 +12,7 @@
       "description": "Name of the topic (may include patterns)."
     },
     "qos": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MqttQos.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MqttQos",
       "description": "Quality of service class.",
       "default": "AtMostOnce",
       "unevaluatedProperties": false

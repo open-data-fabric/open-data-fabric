@@ -866,12 +866,15 @@ impl From<odf::metadata::FlowTrigger> for FlowTrigger {
 pub struct FlowTriggerDataset {
     /// Selector that identifies which datasets can trigger this flow.
     pub dataset: DatasetSelector,
+    /// Set of event bus event IDs that this trigger will react to
+    pub events: Option<Vec<String>>,
 }
 
 impl From<odf::metadata::FlowTriggerDataset> for FlowTriggerDataset {
     fn from(v: odf::metadata::FlowTriggerDataset) -> Self {
         Self {
             dataset: v.dataset.into(),
+            events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
         }
     }
 }
@@ -2875,6 +2878,7 @@ pub enum TaskSpec {
     Ingest(TaskSpecIngest),
     Compaction(TaskSpecCompaction),
     GarbageCollection(TaskSpecGarbageCollection),
+    WebhookCall(TaskSpecWebhookCall),
 }
 
 impl From<odf::metadata::TaskSpec> for TaskSpec {
@@ -2883,6 +2887,7 @@ impl From<odf::metadata::TaskSpec> for TaskSpec {
             odf::metadata::TaskSpec::Ingest(v) => Self::Ingest(v.into()),
             odf::metadata::TaskSpec::Compaction(v) => Self::Compaction(v.into()),
             odf::metadata::TaskSpec::GarbageCollection(v) => Self::GarbageCollection(v.into()),
+            odf::metadata::TaskSpec::WebhookCall(v) => Self::WebhookCall(v.into()),
         }
     }
 }
@@ -2952,6 +2957,28 @@ impl From<odf::metadata::TaskSpecIngest> for TaskSpecIngest {
             source: v.source.into(),
             dataset: v.dataset.into(),
             params: v.params.map(Into::into),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Dispatches a certain payload to a specific `WebhookTarget`.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecwebhookcall-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct TaskSpecWebhookCall {
+    /// Reference to the `WebhookTarget`.
+    pub target: ResourceRef,
+    /// The payload to send. May include templating.
+    pub payload: Option<String>,
+}
+
+impl From<odf::metadata::TaskSpecWebhookCall> for TaskSpecWebhookCall {
+    fn from(v: odf::metadata::TaskSpecWebhookCall) -> Self {
+        Self {
+            target: v.target.into(),
+            payload: v.payload.map(Into::into),
         }
     }
 }
@@ -3395,4 +3422,39 @@ impl From<odf::metadata::Watermark> for Watermark {
             event_time: v.event_time.into(),
         }
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Defines a webhook target endpoint that can receive event notifications and data.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetspec-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct WebhookTargetSpec {
+    /// Target url of the webhook.
+    pub url: String,
+    /// Shared secret used for HMAC signature of the request payload for authentication.
+    pub secret: Option<Secret>,
+}
+
+impl From<odf::metadata::WebhookTargetSpec> for WebhookTargetSpec {
+    fn from(v: odf::metadata::WebhookTargetSpec) -> Self {
+        Self {
+            url: v.url.into(),
+            secret: v.secret.map(Into::into),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Represents the status of the webhook target endpoint.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+#[derive(Enum, Debug, Clone, Copy, PartialEq, Eq)]
+#[graphql(remote = "odf::metadata::WebhookTargetStatus")]
+pub enum WebhookTargetStatus {
+    Unverified,
+    Ready,
+    Failing,
 }

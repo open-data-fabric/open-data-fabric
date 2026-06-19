@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec.json",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Predefined account specification.",
   "type": "object",
@@ -8,7 +8,7 @@
   ],
   "properties": {
     "accountType": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountType.json",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountType",
       "description": "Type of the account.",
       "unevaluatedProperties": false,
       "default": "User"
@@ -28,7 +28,7 @@
       "description": "URL of the account's avatar image."
     },
     "password": {
-      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Secret.json",
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Secret",
       "description": "Password for local authentication. Absent for SSO or DID-based accounts.",
       "unevaluatedProperties": false
     }

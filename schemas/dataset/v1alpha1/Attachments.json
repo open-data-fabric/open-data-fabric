@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Attachments.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Attachments",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines the source of attachment files.",
   "$defs": {
@@ -13,7 +13,7 @@
         "items": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded.json",
+            "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded",
             "unevaluatedProperties": false
           },
           "description": "List of embedded items."

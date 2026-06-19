@@ -1,10 +1,10 @@
-# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection.json
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection.json
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection
 headers:
-  name: latest.bankofcanada.ca
+  name: ca.bankofcanada.latest
 spec:
   inputs:
-    - datasetRef: bankofcanada.ca
+    - datasetRef: ca.bankofcanada
   project:
     kind: Sql
     engine: datafusion
@@ -14,6 +14,6 @@ spec:
         latest(event_time) as event_time,
         latest(fxaudcad) as fxaudcad,
         latest(fxusdcad) as fxusdcad
-      from `bankofcanada.ca`
+      from `ca.bankofcanada`
 
 # TODO: Need to specify which DB this projection is stored in? Similar to volume ref for datasets?

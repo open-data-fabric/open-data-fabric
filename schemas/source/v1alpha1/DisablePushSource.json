@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePushSource.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePushSource",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Disables the previously defined source.",
   "type": "object",

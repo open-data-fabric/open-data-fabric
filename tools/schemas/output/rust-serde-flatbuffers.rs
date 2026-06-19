@@ -2177,8 +2177,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::FlowTriggerDataset {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let dataset_offset = { self.dataset.serialize(fb) };
+        let events_offset = self.events.as_ref().map(|v| {
+            let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
+            fb.create_vector(&offsets)
+        });
         let mut builder = fb::FlowTriggerDatasetBuilder::new(fb);
         builder.add_dataset(dataset_offset);
+        events_offset.map(|off| builder.add_events(off));
         builder.finish()
     }
 }
@@ -2190,6 +2195,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerDataset<'fb>> for odf::FlowTr
                 .dataset()
                 .map(|v| odf::DatasetSelector::deserialize(v))
                 .unwrap(),
+            events: proxy
+                .events()
+                .map(|v| v.iter().map(|i| i.to_owned()).collect()),
         }
     }
 }
@@ -4933,6 +4941,10 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::TaskSpec> for odf::TaskSpec {
                 fb::TaskSpec::TaskSpecGarbageCollection,
                 v.serialize(fb).as_union_value(),
             ),
+            odf::TaskSpec::WebhookCall(v) => (
+                fb::TaskSpec::TaskSpecWebhookCall,
+                v.serialize(fb).as_union_value(),
+            ),
         }
     }
 }
@@ -4954,6 +4966,11 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::TaskSpec> for odf::TaskSpec {
                 odf::TaskSpec::GarbageCollection(odf::TaskSpecGarbageCollection::deserialize(
                     unsafe { fb::TaskSpecGarbageCollection::init_from_table(table) },
                 ))
+            }
+            fb::TaskSpec::TaskSpecWebhookCall => {
+                odf::TaskSpec::WebhookCall(odf::TaskSpecWebhookCall::deserialize(unsafe {
+                    fb::TaskSpecWebhookCall::init_from_table(table)
+                }))
             }
             _ => panic!("Invalid enum value: {}", t.0),
         }
@@ -5054,6 +5071,36 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecIngest<'fb>> for odf::TaskSpecIn
                 .map(|v| odf::ResourceRef::deserialize(v))
                 .unwrap(),
             params: proxy.params().map(|v| odf::IngestParams::deserialize(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecWebhookCall
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecwebhookcall-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::TaskSpecWebhookCall {
+    type OffsetT = WIPOffset<fb::TaskSpecWebhookCall<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let target_offset = { self.target.serialize(fb) };
+        let payload_offset = self.payload.as_ref().map(|v| fb.create_string(&v));
+        let mut builder = fb::TaskSpecWebhookCallBuilder::new(fb);
+        builder.add_target(target_offset);
+        payload_offset.map(|off| builder.add_payload(off));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecWebhookCall<'fb>> for odf::TaskSpecWebhookCall {
+    fn deserialize(proxy: fb::TaskSpecWebhookCall<'fb>) -> Self {
+        odf::TaskSpecWebhookCall {
+            target: proxy
+                .target()
+                .map(|v| odf::ResourceRef::deserialize(v))
+                .unwrap(),
+            payload: proxy.payload().map(|v| v.to_owned()),
         }
     }
 }
@@ -5701,6 +5748,59 @@ impl<'fb> FlatbuffersDeserializable<fb::Watermark<'fb>> for odf::Watermark {
         odf::Watermark {
             system_time: proxy.system_time().map(|v| fb_to_datetime(v)).unwrap(),
             event_time: proxy.event_time().map(|v| fb_to_datetime(v)).unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::WebhookTargetSpec {
+    type OffsetT = WIPOffset<fb::WebhookTargetSpec<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let url_offset = { fb.create_string(&self.url) };
+        let secret_offset = self.secret.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::WebhookTargetSpecBuilder::new(fb);
+        builder.add_url(url_offset);
+        secret_offset.map(|off| builder.add_secret(off));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::WebhookTargetSpec<'fb>> for odf::WebhookTargetSpec {
+    fn deserialize(proxy: fb::WebhookTargetSpec<'fb>) -> Self {
+        odf::WebhookTargetSpec {
+            url: proxy.url().map(|v| v.to_owned()).unwrap(),
+            secret: proxy.secret().map(|v| odf::Secret::deserialize(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetStatus
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl From<odf::WebhookTargetStatus> for fb::WebhookTargetStatus {
+    fn from(v: odf::WebhookTargetStatus) -> Self {
+        match v {
+            odf::WebhookTargetStatus::Unverified => fb::WebhookTargetStatus::Unverified,
+            odf::WebhookTargetStatus::Ready => fb::WebhookTargetStatus::Ready,
+            odf::WebhookTargetStatus::Failing => fb::WebhookTargetStatus::Failing,
+        }
+    }
+}
+
+impl Into<odf::WebhookTargetStatus> for fb::WebhookTargetStatus {
+    fn into(self) -> odf::WebhookTargetStatus {
+        match self {
+            fb::WebhookTargetStatus::Unverified => odf::WebhookTargetStatus::Unverified,
+            fb::WebhookTargetStatus::Ready => odf::WebhookTargetStatus::Ready,
+            fb::WebhookTargetStatus::Failing => odf::WebhookTargetStatus::Failing,
+            _ => panic!("Invalid enum value: {}", self.0),
         }
     }
 }

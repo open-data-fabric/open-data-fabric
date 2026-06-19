@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Projection.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Projection",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a projection of a dataaset history into a state for fast lookups.",
   "format": "resource",
@@ -14,21 +14,21 @@
     "$schema": {
       "type": "string",
       "format": "resource-type-uri",
-      "const": "https://opendatafabric.org/schemas/dataset/v1alpha1/Projection.json",
+      "const": "https://opendatafabric.org/schemas/dataset/v1alpha1/Projection",
       "description": "Identifies this resource type."
     },
     "headers": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ProjectionSpec.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ProjectionSpec",
       "description": "Specifies the desired state of the resource.",
       "unevaluatedProperties": false
     },
     "status": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus",
       "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }

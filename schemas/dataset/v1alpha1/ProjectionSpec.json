@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/ProjectionSpec.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/ProjectionSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a projection of a dataaset history into a state for fast lookups.",
   "type": "object",
@@ -11,13 +11,13 @@
     "inputs": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput.json",
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput",
         "unevaluatedProperties": false
       },
       "description": "Datasets that will be used as sources."
     },
     "project": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform",
       "description": "Transformation that will be applied to produce new data.",
       "unevaluatedProperties": false
     }

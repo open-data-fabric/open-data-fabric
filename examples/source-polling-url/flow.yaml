@@ -1,14 +1,14 @@
-# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
-  name: bankofcanada.ca
+  name: ca.bankofcanada
 spec:
   triggers:
     - kind: Schedule
       cron: "*/30 * * * *"
   tasks:
     - kind: Ingest
-      source: bankofcanada.ca
-      dataset: bankofcanada.ca
+      source: ca.bankofcanada
+      dataset: ca.bankofcanada
       params:
         targetBatchSize: 10000

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
+  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/DataType",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Defines a logical type of the field. Logical type determines the semantics and boudaries of a type and how it can be operated on, without a concern about encoding and physical layout of the data in chunks.",
   "$defs": {
@@ -53,7 +53,7 @@
       "required": [],
       "properties": {
         "unit": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit",
           "description": "The unit of the duration measurement.",
           "default": "Millisecond",
           "unevaluatedProperties": false
@@ -134,7 +134,7 @@
       ],
       "properties": {
         "itemType": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType",
           "description": "Data type of list items.",
           "unevaluatedProperties": false,
           "codegen": {
@@ -159,7 +159,7 @@
       ],
       "properties": {
         "keyType": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType",
           "description": "Data type of the map's keys.",
           "unevaluatedProperties": false,
           "codegen": {
@@ -169,7 +169,7 @@
           }
         },
         "valueType": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType",
           "description": "Data type of the map's values.",
           "unevaluatedProperties": false,
           "codegen": {
@@ -198,7 +198,7 @@
       ],
       "properties": {
         "inner": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataType",
           "description": "Inner data type for the optional value.",
           "unevaluatedProperties": false,
           "codegen": {
@@ -219,7 +219,7 @@
         "fields": {
           "type": "array",
           "items": {
-            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json",
+            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField",
             "unevaluatedProperties": false
           },
           "description": "Fields that make up the struct."
@@ -232,7 +232,7 @@
       "required": [],
       "properties": {
         "unit": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit",
           "default": "Millisecond",
           "description": "The unit of the time value.",
           "unevaluatedProperties": false
@@ -245,7 +245,7 @@
       "required": [],
       "properties": {
         "unit": {
-          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
+          "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit",
           "default": "Millisecond",
           "description": "The unit of the timestamp value that determines its precision.",
           "unevaluatedProperties": false

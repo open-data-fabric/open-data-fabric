@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Watermark.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Watermark",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a watermark in the event stream.",
   "type": "object",

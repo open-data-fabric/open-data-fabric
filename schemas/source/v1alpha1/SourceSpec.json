@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceSpec.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SourceSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specifies an external source of data for ingestion.",
   "type": "object",
@@ -8,35 +8,35 @@
   ],
   "properties": {
     "ingress": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/Ingress.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/Ingress",
       "description": "Determines where data is sourced from.",
       "unevaluatedProperties": false
     },
     "prepare": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/PrepStep.json",
+        "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/PrepStep",
         "unevaluatedProperties": false
       },
       "description": "Defines how raw data is prepared before reading."
     },
     "read": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/ReadStep.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/ReadStep",
       "description": "Defines how data is read into structured format.",
       "unevaluatedProperties": false
     },
     "preprocess": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform",
       "description": "Pre-processing query that shapes the data.",
       "unevaluatedProperties": false
     },
     "merge": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy.json",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy",
       "description": "Determines how newly-ingested data should be merged with existing history.",
       "unevaluatedProperties": false
     },
     "vocab": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary",
       "description": "Defines the mapping of system fields to dataset column names.",
       "unevaluatedProperties": false
     }

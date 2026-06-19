@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequest.json",
+  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequest",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent by the coordinator to an engine to perform the next step of data transformation",
   "format": "rpc-message",
@@ -32,19 +32,19 @@
       "description": "System time to use for new records."
     },
     "vocab": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary",
       "description": "Vocabulary of the output dataset.",
       "unevaluatedProperties": false
     },
     "transform": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Transform",
       "description": "Transformation that will be applied to produce new data.",
       "unevaluatedProperties": false
     },
     "queryInputs": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequestInput.json",
+        "$ref": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequestInput",
         "unevaluatedProperties": false
       },
       "description": "Defines inputs used in this transaction. Slices corresponding to every input dataset must be present."

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/IngressBuffer.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/IngressBuffer",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Buffer configuration for holding pushed records until they are ingested.",
   "$defs": {

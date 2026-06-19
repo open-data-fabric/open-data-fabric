@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/IngestParams.json",
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/IngestParams",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Optional parameters to control ingestion behavior.",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetAttachments.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetAttachments",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Associates a set of files with this dataset.",
   "type": "object",
@@ -8,7 +8,7 @@
   ],
   "properties": {
     "attachments": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Attachments.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Attachments",
       "description": "One of the supported attachment sources.",
       "unevaluatedProperties": false
     }

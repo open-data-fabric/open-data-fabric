@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse.json",
+  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent by an engine to coordinator when performing the raw query operation",
   "format": "rpc-message",

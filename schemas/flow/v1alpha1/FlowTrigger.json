@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger.json",
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Condition that causes a flow to be executed.",
   "$defs": {
@@ -24,7 +24,7 @@
       ],
       "properties": {
         "source": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
           "description": "Reference to the source resource that drives this trigger.",
           "unevaluatedProperties": false
         },
@@ -48,9 +48,14 @@
       ],
       "properties": {
         "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector.json",
+          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
           "description": "Selector that identifies which datasets can trigger this flow.",
           "unevaluatedProperties": false
+        },
+        "events": {
+          "type": "array",
+          "items": {"type":"string"},
+          "description": "Set of event bus event IDs that this trigger will react to"
         }
       }
     }

@@ -290,7 +290,7 @@ spec:
 When an object is created by another higher-level object it can write the association into header as `ownerReferece`. This creation provenance trail can be used for automatic cascading deletion and garbage collection.
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/source/v1alpha1/Buffer.json
+$schema: https://opendatafabric.org/schemas/source/v1alpha1/Buffer
 headers:
   name: buffer-aabbcc
   ownerReferences:
@@ -307,7 +307,7 @@ See also:
 Resource reconciliation is an **eventually-consistent** process. While a controller is working to reconcile one version of a resource the desired state may be changed by the user. To reflect this lag, a sequential `generation` number is incremented every time the resource header and spec are updated.
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
   generation: 4
@@ -328,7 +328,7 @@ The `status` section of the resource manifest never appears in user-defined mani
 The main controller of a resource populates the `phase` and associated top-level fields during reconciliation attempts, while the `conditions` field provides a generic mechanism to attach additional information like error codes and messages. The `conditions` can be contributed by multiple controllers
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
 spec: {}
@@ -337,7 +337,7 @@ status:
   observedGeneration: 4
   reconciledAt: 2026-01-01T00:00:00Z
   conditions:
-    "https://opendatafabric.org/schemas/config/v1/ConditionReady.json":
+    "https://opendatafabric.org/schemas/config/v1/ConditionReady":
       value: false
       reason: decryption-key-not-found
       message: "Decryption key X does not exist"
@@ -433,7 +433,7 @@ We already generate GraphQL types for all ODF manifests. We will continue and ex
 To make use of the graph nature of the GraphQL protocol we will introduce a special treatment for cross-object references where, for example a manifest like this one:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 headers:
   id: did:odf:123..321
   name: foo
@@ -590,7 +590,7 @@ Manifests in this section are not meant to be final but are here to illustrate t
 
 ## VariableSet
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet
 headers:
   name: my-vars
 spec:
@@ -603,7 +603,7 @@ spec:
 ## SecretSet
 A raw unencrypted secret:
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
 spec:
@@ -614,7 +614,7 @@ spec:
 
 Upon loading into the system it will get encrypted and the spec will look like this:
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
 spec:
@@ -638,7 +638,6 @@ spec:
   - have a trait to link schema ID
 - Specialized `ResourceRef` types (e.g. `SecretRef`, `PersistentVolumeRef`) and generic `ResourceRef<ResT>`?
   - Can `DatasetRef` fit into this model with extra labels?
-- Get rid of `.json` suffixes in schemas
 - Need ability for operators to add their own labels?
 - Codegen namespaces
 - Start moving event bus events schemas into ODF?

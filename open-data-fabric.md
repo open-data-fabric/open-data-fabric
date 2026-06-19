@@ -1265,6 +1265,10 @@ See also:
   - [ResourcePhase](#resourcephase-schema)
   - [ResourceRef](#resourceref-schema)
   - [ResourceStatus](#resourcestatus-schema)
+- [sink](#reference-sink)
+  - [WebhookTarget](#webhooktarget-schema)
+  - [WebhookTargetSpec](#webhooktargetspec-schema)
+  - [WebhookTargetStatus](#webhooktargetstatus-schema)
 - [source](#reference-source)
   - [AddPushSource](#addpushsource-schema)
   - [CompressionFormat](#compressionformat-schema)
@@ -2557,6 +2561,7 @@ Triggers the flow when matching datasets are updated.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `dataset` | [DatasetSelector](#datasetselector-schema) | V |  | Selector that identifies which datasets can trigger this flow. |
+| `events` | array(`string`) |  |  | Set of event bus event IDs that this trigger will react to |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2624,6 +2629,7 @@ An individual work item to be executed as part of a flow.
 | [TaskSpec::Ingest](#taskspec-ingest-schema) | Fetches data from a source and appends it to a dataset. |
 | [TaskSpec::Compaction](#taskspec-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
 | [TaskSpec::GarbageCollection](#taskspec-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
+| [TaskSpec::WebhookCall](#taskspec-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2664,6 +2670,19 @@ Fetches data from a source and appends it to a dataset.
 | `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
 | `dataset` | [ResourceRef](#resourceref-schema) | V |  | Reference to the dataset resource to ingest data into. |
 | `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-webhookcall-schema"></a>
+##### TaskSpec::WebhookCall
+Dispatches a certain payload to a specific `WebhookTarget`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `target` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookTarget`. |
+| `payload` | `string` |  |  | The payload to send. May include templating. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2879,6 +2898,50 @@ Resource lifecycle and reconciliation inforamtion.
 | `conditions` | [ResourceConditions](#resourceconditions-schema) |  |  | Detailed conditions describing the state of the resource that are added by controllers. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceStatus.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="reference-sink"></a>
+#### sink
+<a name="webhooktarget-schema"></a>
+##### WebhookTarget
+Defines a webhook target endpoint that can receive event notifications and data.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [WebhookTargetSpec](#webhooktargetspec-schema) | V |  | Specifies the desired state of the resource. |
+| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTarget.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="webhooktargetspec-schema"></a>
+##### WebhookTargetSpec
+Defines a webhook target endpoint that can receive event notifications and data.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `url` | `string` | V | `url` | Target url of the webhook. |
+| `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="webhooktargetstatus-schema"></a>
+##### WebhookTargetStatus
+Represents the status of the webhook target endpoint.
+
+| Enum Value |
+| :---: |
+| Unverified |
+| Ready |
+| Failing |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 

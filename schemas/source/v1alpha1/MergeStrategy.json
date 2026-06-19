@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Merge strategy determines how newly ingested data should be combined with the data that already exists in the dataset.",
   "$defs": {

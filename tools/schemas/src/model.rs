@@ -709,6 +709,8 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         json_schema::Format::UInt16 => Type::UInt16,
         json_schema::Format::UInt32 => Type::UInt32,
         json_schema::Format::UInt64 => Type::UInt64,
+        // TODO: This is not good, we probably should not use `format` as such a label
+        json_schema::Format::ResourceCondition => Type::Int32,
         fmt => panic!("Invalid enum format: {ctx}: {fmt:?}"),
     };
 
@@ -1002,7 +1004,7 @@ fn parse_ref(
 // Also matches with an optional #/$defs/{Def} fragment.
 static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
     regex::Regex::new(
-        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)\.json(?:#/\$defs/(?P<def>[^/]+))?$",
+        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
     )
     .unwrap()
 });

@@ -1774,6 +1774,8 @@ table FlowTriggerSource {
 table FlowTriggerDataset {
   // Selector that identifies which datasets can trigger this flow.
   dataset: DatasetSelector;
+  // Set of event bus event IDs that this trigger will react to
+  events: [string];
 }
 
 table FlowTriggerWrapper {
@@ -1791,6 +1793,7 @@ union TaskSpec {
   TaskSpecIngest,
   TaskSpecCompaction,
   TaskSpecGarbageCollection,
+  TaskSpecWebhookCall,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1847,6 +1850,20 @@ table TaskSpecCompaction {
 table TaskSpecGarbageCollection {
   // Selector identifying which datasets to garbage collect.
   dataset: DatasetSelector;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecWebhookCall
+// Dispatches a certain payload to a specific `WebhookTarget`.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecwebhookcall-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecWebhookCall {
+  // Reference to the `WebhookTarget`.
+  target: ResourceRef;
+  // The payload to send. May include templating.
+  payload: string;
 }
 
 table TaskSpecWrapper {
@@ -2468,5 +2485,32 @@ table Variables {
 table VariableSetSpec {
   // Key value pairs of variables.
   variables: Variables;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetSpec
+// Defines a webhook target endpoint that can receive event notifications and data.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table WebhookTargetSpec {
+  // Target url of the webhook.
+  url: string;
+  // Shared secret used for HMAC signature of the request payload for authentication.
+  secret: Secret;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetStatus
+// Represents the status of the webhook target endpoint.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum WebhookTargetStatus: int32 {
+  Unverified,
+  Ready,
+  Failing,
 }
 

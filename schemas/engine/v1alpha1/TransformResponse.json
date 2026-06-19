@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse.json",
+  "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Sent by an engine to coordinator when performing the data transformation",
   "format": "rpc-message",
@@ -15,7 +15,7 @@
       "required": [],
       "properties": {
         "newOffsetInterval": {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval.json",
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval",
           "description": "Data slice produced by the transaction, if any.",
           "unevaluatedProperties": false
         },

@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume.json
-$schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume.json
+# $schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume
+$schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume
 headers:
   name: my-s3-bucket
 spec:

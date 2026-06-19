@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Seed.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Seed",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Establishes the identity of the dataset. Always the first metadata event in the chain.",
   "type": "object",
@@ -14,7 +14,7 @@
       "description": "Unique identity of the dataset."
     },
     "datasetKind": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind",
       "description": "Type of the dataset.",
       "unevaluatedProperties": false
     }

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePollingSource.json",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePollingSource",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Disables the previously defined polling source.",
   "type": "object",

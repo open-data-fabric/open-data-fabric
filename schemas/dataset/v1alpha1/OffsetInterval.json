@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes a range of data as a closed arithmetic interval of offsets",
   "type": "object",

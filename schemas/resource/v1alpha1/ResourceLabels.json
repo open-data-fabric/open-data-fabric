@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels.json",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Map of string keys and values that can be used to organize, categorize, and query resources.",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a desired state of the dataset metadata.",
   "type": "object",
@@ -9,20 +9,20 @@
   ],
   "properties": {
     "kind": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind",
       "description": "Type of the dataset.",
       "unevaluatedProperties": false
     },
     "metadata": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json",
+        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent",
         "unevaluatedProperties": false
       },
       "description": "An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc."
     },
     "volume": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
       "description": "Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.",
       "unevaluatedProperties": false
     }

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition.json",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Generic contdition that can be added by contollers to provide additional information about the state of a resource.",
   "type": "object",

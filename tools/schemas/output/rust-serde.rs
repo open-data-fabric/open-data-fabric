@@ -1693,6 +1693,17 @@ impl IntoDto for DatasetSelector {
     }
 }
 
+impl From<dtos::DatasetSelector> for StructOrString<DatasetSelector> {
+    fn from(v: dtos::DatasetSelector) -> Self {
+        Self(v.into())
+    }
+}
+impl From<StructOrString<DatasetSelector>> for dtos::DatasetSelector {
+    fn from(v: StructOrString<DatasetSelector>) -> Self {
+        v.0.into()
+    }
+}
+
 impl From<dtos::DatasetSelector> for DatasetSelector {
     fn from(v: dtos::DatasetSelector) -> Self {
         Self {
@@ -2649,7 +2660,10 @@ impl From<FlowTrigger> for dtos::FlowTrigger {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct FlowTriggerDataset {
-    pub dataset: DatasetSelector,
+    pub dataset: StructOrString<DatasetSelector>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub events: Option<Vec<String>>,
 }
 
 impl IntoDto for FlowTriggerDataset {
@@ -2663,6 +2677,7 @@ impl From<dtos::FlowTriggerDataset> for FlowTriggerDataset {
     fn from(v: dtos::FlowTriggerDataset) -> Self {
         Self {
             dataset: v.dataset.into(),
+            events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
         }
     }
 }
@@ -2671,6 +2686,7 @@ impl From<FlowTriggerDataset> for dtos::FlowTriggerDataset {
     fn from(v: FlowTriggerDataset) -> Self {
         Self {
             dataset: v.dataset.into(),
+            events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
         }
     }
 }
@@ -5971,6 +5987,8 @@ pub enum TaskSpec {
     Compaction(TaskSpecCompaction),
     #[serde(alias = "garbageCollection", alias = "garbagecollection")]
     GarbageCollection(TaskSpecGarbageCollection),
+    #[serde(alias = "webhookCall", alias = "webhookcall")]
+    WebhookCall(TaskSpecWebhookCall),
 }
 
 impl IntoDto for TaskSpec {
@@ -5986,6 +6004,7 @@ impl From<dtos::TaskSpec> for TaskSpec {
             dtos::TaskSpec::Ingest(v) => Self::Ingest(v.into()),
             dtos::TaskSpec::Compaction(v) => Self::Compaction(v.into()),
             dtos::TaskSpec::GarbageCollection(v) => Self::GarbageCollection(v.into()),
+            dtos::TaskSpec::WebhookCall(v) => Self::WebhookCall(v.into()),
         }
     }
 }
@@ -5996,6 +6015,7 @@ impl From<TaskSpec> for dtos::TaskSpec {
             TaskSpec::Ingest(v) => Self::Ingest(v.into()),
             TaskSpec::Compaction(v) => Self::Compaction(v.into()),
             TaskSpec::GarbageCollection(v) => Self::GarbageCollection(v.into()),
+            TaskSpec::WebhookCall(v) => Self::WebhookCall(v.into()),
         }
     }
 }
@@ -6009,7 +6029,7 @@ impl From<TaskSpec> for dtos::TaskSpec {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskSpecCompaction {
-    pub dataset: DatasetSelector,
+    pub dataset: StructOrString<DatasetSelector>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_slice_size: Option<ByteSize>,
@@ -6054,7 +6074,7 @@ impl From<TaskSpecCompaction> for dtos::TaskSpecCompaction {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskSpecGarbageCollection {
-    pub dataset: DatasetSelector,
+    pub dataset: StructOrString<DatasetSelector>,
 }
 
 impl IntoDto for TaskSpecGarbageCollection {
@@ -6119,6 +6139,46 @@ impl From<TaskSpecIngest> for dtos::TaskSpecIngest {
             source: v.source.into(),
             dataset: v.dataset.into(),
             params: v.params.map(|v| v.into()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecWebhookCall
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecwebhookcall-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct TaskSpecWebhookCall {
+    pub target: StructOrString<ResourceRef>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payload: Option<String>,
+}
+
+impl IntoDto for TaskSpecWebhookCall {
+    type Dto = dtos::TaskSpecWebhookCall;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::TaskSpecWebhookCall> for TaskSpecWebhookCall {
+    fn from(v: dtos::TaskSpecWebhookCall) -> Self {
+        Self {
+            target: v.target.into(),
+            payload: v.payload.map(|v| v),
+        }
+    }
+}
+
+impl From<TaskSpecWebhookCall> for dtos::TaskSpecWebhookCall {
+    fn from(v: TaskSpecWebhookCall) -> Self {
+        Self {
+            target: v.target.into(),
+            payload: v.payload.map(|v| v),
         }
     }
 }
@@ -6846,6 +6906,89 @@ impl From<Watermark> for dtos::Watermark {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct WebhookTargetSpec {
+    pub url: String,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub secret: Option<StructOrString<Secret>>,
+}
+
+impl IntoDto for WebhookTargetSpec {
+    type Dto = dtos::WebhookTargetSpec;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::WebhookTargetSpec> for WebhookTargetSpec {
+    fn from(v: dtos::WebhookTargetSpec) -> Self {
+        Self {
+            url: v.url,
+            secret: v.secret.map(|v| v.into()),
+        }
+    }
+}
+
+impl From<WebhookTargetSpec> for dtos::WebhookTargetSpec {
+    fn from(v: WebhookTargetSpec) -> Self {
+        Self {
+            url: v.url,
+            secret: v.secret.map(|v| v.into()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetStatus
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum WebhookTargetStatus {
+    #[serde(alias = "unverified")]
+    Unverified,
+    #[serde(alias = "ready")]
+    Ready,
+    #[serde(alias = "failing")]
+    Failing,
+}
+
+impl IntoDto for WebhookTargetStatus {
+    type Dto = dtos::WebhookTargetStatus;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::WebhookTargetStatus> for WebhookTargetStatus {
+    fn from(v: dtos::WebhookTargetStatus) -> Self {
+        match v {
+            dtos::WebhookTargetStatus::Unverified => Self::Unverified,
+            dtos::WebhookTargetStatus::Ready => Self::Ready,
+            dtos::WebhookTargetStatus::Failing => Self::Failing,
+        }
+    }
+}
+
+impl From<WebhookTargetStatus> for dtos::WebhookTargetStatus {
+    fn from(v: WebhookTargetStatus) -> Self {
+        match v {
+            WebhookTargetStatus::Unverified => Self::Unverified,
+            WebhookTargetStatus::Ready => Self::Ready,
+            WebhookTargetStatus::Failing => Self::Failing,
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 implement_serde_as!(dtos::AccountRef, AccountRef);
 implement_serde_as!(dtos::AccountSpec, AccountSpec);
@@ -7001,6 +7144,7 @@ implement_serde_as!(dtos::TaskSpec, TaskSpec);
 implement_serde_as!(dtos::TaskSpecCompaction, TaskSpecCompaction);
 implement_serde_as!(dtos::TaskSpecGarbageCollection, TaskSpecGarbageCollection);
 implement_serde_as!(dtos::TaskSpecIngest, TaskSpecIngest);
+implement_serde_as!(dtos::TaskSpecWebhookCall, TaskSpecWebhookCall);
 implement_serde_as!(dtos::TemporalTable, TemporalTable);
 implement_serde_as!(dtos::TimeUnit, TimeUnit);
 implement_serde_as!(dtos::Transform, Transform);
@@ -7024,3 +7168,5 @@ implement_serde_as!(dtos::VariableSetSpec, VariableSetSpec);
 implement_serde_as!(dtos::Variables, Variables);
 implement_serde_as!(dtos::VolumeCapacity, VolumeCapacity);
 implement_serde_as!(dtos::Watermark, Watermark);
+implement_serde_as!(dtos::WebhookTargetSpec, WebhookTargetSpec);
+implement_serde_as!(dtos::WebhookTargetStatus, WebhookTargetStatus);

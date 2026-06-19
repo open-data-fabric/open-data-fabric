@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema.json",
+  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/DataSchema",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "This schema aims to be a human-friendly variant of Arrow. Arrow currently specifies only the [flatbuffer format](https://github.com/apache/arrow/blob/f9301c0ba8a7ed1b0b63275cfdd4c44c26b04675/format/Schema.fbs) which has many legacy to it and is not suited to be defined by humans, so we had to define our own schema format. While inspired by Arrow - this format makes a clear separation between logical data types and encoding (physical layout) of data in the chunks.",
   "type": "object",
@@ -10,13 +10,13 @@
     "fields": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField.json",
+        "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/DataField",
         "unevaluatedProperties": false
       },
       "description": "Top-level fields (columns) of the schema."
     },
     "extra": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExtraAttributes.json",
+      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExtraAttributes",
       "description": "ODF extensions",
       "unevaluatedProperties": false
     }

@@ -1,8 +1,8 @@
 # $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 headers:
-  name: my-dataset
+  name: bobs-dataset
+  account: bob
 spec:
   kind: Root
   metadata: []
-  volume: pv:my-s3-bucket  # Here `pv` is a type alias of the `PersistentVolume`

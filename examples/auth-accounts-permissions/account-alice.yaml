@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account.json
-$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account.json
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account
 headers:
   name: alice
 spec:

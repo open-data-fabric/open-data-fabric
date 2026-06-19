@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a transaction that occurred on a dataset.",
   "oneOf": [
@@ -17,7 +17,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/AddData.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/AddData"
         }
       ]
     },
@@ -35,7 +35,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransform.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransform"
         }
       ]
     },
@@ -53,7 +53,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Seed.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/Seed"
         }
       ]
     },
@@ -71,7 +71,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SetPollingSource.json"
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SetPollingSource"
         }
       ]
     },
@@ -89,7 +89,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetTransform.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetTransform"
         }
       ]
     },
@@ -107,7 +107,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetVocab.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetVocab"
         }
       ]
     },
@@ -125,7 +125,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetAttachments.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetAttachments"
         }
       ]
     },
@@ -143,7 +143,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetInfo.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetInfo"
         }
       ]
     },
@@ -161,7 +161,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetLicense.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetLicense"
         }
       ]
     },
@@ -179,7 +179,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetDataSchema.json"
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/SetDataSchema"
         }
       ]
     },
@@ -197,7 +197,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/AddPushSource.json"
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/AddPushSource"
         }
       ]
     },
@@ -215,7 +215,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePushSource.json"
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePushSource"
         }
       ]
     },
@@ -233,7 +233,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePollingSource.json"
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePollingSource"
         }
       ]
     }
