@@ -1,0 +1,36 @@
+{
+  "$id": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines a webhook target endpoint that can receive event notifications and data.",
+  "format": "resource",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "resource-type-uri",
+      "const": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget",
+      "description": "Identifies this resource type."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "$ref": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetSpec",
+      "description": "Specifies the desired state of the resource.",
+      "unevaluatedProperties": false
+    },
+    "status": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus",
+      "description": "Resource lifecycle and reconciliation information.",
+      "unevaluatedProperties": false
+    }
+  }
+}

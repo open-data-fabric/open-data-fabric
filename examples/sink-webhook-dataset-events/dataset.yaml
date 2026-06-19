@@ -1,0 +1,39 @@
+# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+headers:
+  name: ca.bankofcanada
+spec:
+  kind: Root
+  metadata:
+    - kind: SetDataSchema
+      schema:
+        fields:
+          - name: offset
+            type: UInt64
+          - name: op
+            type: Int32
+          - name: system_time
+            type: Timestamp
+          - name: event_time
+            type: Timestamp
+          - name: fxaudcad
+            type:
+              kind: Decimal
+              scale: 19
+              precision: 6
+          - name: fxusdcad
+            type:
+              kind: Decimal
+              scale: 19
+              precision: 6
+    - kind: SetLicense
+      name: Apache 2.0
+      shortName: Apache-2.0
+      spdxId: Apache-2.0
+      websiteUrl: https://www.apache.org/licenses/LICENSE-2.0
+
+# TODO: Ability to provide external DID?
+
+# TODO: Would be nice if dataset `kind` was available as a label on a resource level for filtering
+# would that be some special mechanism of "surfacing" labels,
+# or ability for controllers to add their own automatic labels?

@@ -1,0 +1,16 @@
+# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
+headers:
+  name: sensor.temp.http
+spec:
+  triggers:
+    - kind: Dataset
+      dataset: ca.bankofcanada
+      events:
+        - dataset.ref.updated
+  tasks:
+    - kind: WebhookCall
+      target: com.example.hook
+      payload: '{{ trigger.event }}'
+
+# TODO!: How to connect the event that triggers the flow with payload that gets sent?

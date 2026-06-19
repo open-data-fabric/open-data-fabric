@@ -1,0 +1,17 @@
+# $schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget
+$schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget
+headers:
+  name: com.example.hook
+spec:
+  url: https://example.com/hook/
+  secret:
+    value: <jwe>
+    contentEncoding: jwe
+status:
+  phase: Reconciling
+  conditions:
+    https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus:
+      value: Unverified
+
+# TODO!: Retry strategies?
+# TODO!: Delivery semantics? Configured here or in the flow/task?

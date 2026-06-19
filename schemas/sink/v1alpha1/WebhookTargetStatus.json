@@ -1,0 +1,12 @@
+{
+  "$id": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Represents the status of the webhook target endpoint.",
+  "format": "resource-condition",
+  "type": "string",
+  "enum": [
+    "Unverified",
+    "Ready",
+    "Failing"
+  ]
+}
