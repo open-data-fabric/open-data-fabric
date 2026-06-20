@@ -45,12 +45,12 @@ Exceptions:
 The `$schema` property identifies the type and version of the resource. It doubles as a resolvable URL where the schema file is hosted:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers: {}
 spec: {}
 ```
 
-Schema URL must follow the pattern `{base-url}/{context}/{version}/{Name}.json`.
+Schema URL must follow the pattern `{base-url}/{context}/{version}/{Name}`.
 
 In case of the core ODF spec the `base-url` is `https://opendatafabric.org/schemas` and contexts are:
 
@@ -89,7 +89,7 @@ Example `Timestamp` data type schema with two default properties:
     "required": [],
     "properties": {
         "unit": {
-            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit.json",
+            "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit",
             "default": "Millisecond"
         },
         "timezone": {
@@ -130,20 +130,20 @@ Each variant is a separate schema file. The union schema references them via `al
     {
       "allOf": [
         { "properties": { "kind": { "type": "string", "const": "A" } }, "required": ["kind"] },
-        { "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/A.json" }
+        { "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/A" }
       ]
     },
     {
       "allOf": [
         { "properties": { "kind": { "type": "string", "const": "B" } }, "required": ["kind"] },
-        { "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/B.json" }
+        { "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/B" }
       ]
     }
   ]
 }
 ```
 
-The `kind` discriminator lives at the union level — variant schemas (`A.json`, `B.json`) do not include `kind`. This keeps variant schemas usable outside of a union context and avoids duplication.
+The `kind` discriminator lives at the union level — variant schemas (`A`, `B`) do not include `kind`. This keeps variant schemas usable outside of a union context and avoids duplication.
 
 
 ### Short-form Structs
@@ -257,7 +257,7 @@ To express key-value maps you can use the following schema patterns.
   "type": "object",
   "patternProperties": {
     ".*": {
-      "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/Fragment.json"
+      "$ref": "https://opendatafabric.org/schemas/domain/v1alpha1/Fragment"
     }
   }
 }
@@ -286,7 +286,7 @@ Codegen notes:
 
 Schemas use `unevaluatedProperties: false` (JSON Schema 2020-12) rather than `additionalProperties: false` to catch unknown fields while remaining composable via `allOf`.
 
-**Rule:** `unevaluatedProperties: false` is placed only on **top-level resource schemas** (e.g. `Dataset.json`, `VariableSet.json`). Fragment schemas never carry it at their root — doing so would cause `allOf`-based composition to incorrectly reject `kind` and other sibling properties evaluated by other branches.
+**Rule:** `unevaluatedProperties: false` is placed only on **top-level resource schemas** (e.g. `Dataset`, `VariableSet`). Fragment schemas never carry it at their root — doing so would cause `allOf`-based composition to incorrectly reject `kind` and other sibling properties evaluated by other branches.
 
 To extend strict validation into **nested object properties**, add `unevaluatedProperties: false` at the call site alongside the `$ref`:
 
@@ -294,7 +294,7 @@ To extend strict validation into **nested object properties**, add `unevaluatedP
 {
   "properties": {
     "headers": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders.json",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
       "unevaluatedProperties": false
     }
   }
@@ -308,7 +308,7 @@ The same pattern applies to `items` in arrays:
 ```json
 {
   "items": {
-    "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent.json",
+    "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent",
     "unevaluatedProperties": false
   }
 }
@@ -321,7 +321,7 @@ Some schemas like `Resource` may need to embed fragments of any type.
 This is represented as:
 ```json
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource.json",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource",
   "properties": {
     "spec": {
       "type": "object",

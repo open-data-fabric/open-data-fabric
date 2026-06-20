@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/legacy/v1alpha1/DatasetSnapshot",
+  "$id": "https://opendatafabric.org/schemas/legacy/v0/DatasetSnapshot",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents a projection of the dataset metadata at a single point in time.\nThis type is typically used for defining new datasets and changing the existing ones.",
   "type": "object",

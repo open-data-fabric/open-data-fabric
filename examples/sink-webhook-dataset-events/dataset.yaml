@@ -33,7 +33,3 @@ spec:
       websiteUrl: https://www.apache.org/licenses/LICENSE-2.0
 
 # TODO: Ability to provide external DID?
-
-# TODO: Would be nice if dataset `kind` was available as a label on a resource level for filtering
-# would that be some special mechanism of "surfacing" labels,
-# or ability for controllers to add their own automatic labels?

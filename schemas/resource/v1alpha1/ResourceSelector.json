@@ -1,0 +1,53 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceSelector",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Matches zero or many resources using identity and label filters.",
+  "format": "struct-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "codegen": {
+        "rust": {
+          "dtoType": "ResourceSelector"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
+          "description": "Reference to an account that owns the target resources.",
+          "unevaluatedProperties": false
+        },
+        "type": {
+          "type": "string",
+          "format": "resource-type-ref",
+          "description": "Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`."
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the singular resource."
+        },
+        "name": {
+          "type": "string",
+          "examples": [
+            "%",
+            "my-resource-%",
+            "%-prod"
+          ],
+          "description": "Name pattern in SQL `LIKE` format."
+        },
+        "labels": {
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/LabelFilter",
+          "description": "Filter by resource labels.",
+          "unevaluatedProperties": false
+        }
+      }
+    }
+  ]
+}

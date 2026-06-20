@@ -71,7 +71,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SetPollingSource"
+          "$ref": "https://opendatafabric.org/schemas/legacy/v0/SetPollingSource"
         }
       ]
     },
@@ -197,7 +197,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/AddPushSource"
+          "$ref": "https://opendatafabric.org/schemas/legacy/v0/AddPushSource"
         }
       ]
     },
@@ -215,7 +215,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePushSource"
+          "$ref": "https://opendatafabric.org/schemas/legacy/v0/DisablePushSource"
         }
       ]
     },
@@ -233,7 +233,7 @@
           ]
         },
         {
-          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/DisablePollingSource"
+          "$ref": "https://opendatafabric.org/schemas/legacy/v0/DisablePollingSource"
         }
       ]
     }

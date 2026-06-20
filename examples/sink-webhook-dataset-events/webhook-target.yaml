@@ -8,10 +8,11 @@ spec:
     value: <jwe>
     contentEncoding: jwe
 status:
-  phase: Reconciling
+  phase: Failed
   conditions:
     https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus:
-      value: Unverified
+      value: Failed
 
 # TODO!: Retry strategies?
+
 # TODO!: Delivery semantics? Configured here or in the flow/task?

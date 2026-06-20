@@ -3,6 +3,7 @@ $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
   name: sensor.temp.http
 spec:
+  target: Dataset:sensor.temp
   triggers:
     - kind: Source
       source: sensor.temp.http
@@ -11,4 +12,5 @@ spec:
   tasks:
     - kind: Ingest
       source: sensor.temp.http
-      dataset: sensor.temp
+      params:
+        targetSliceRecords: 10000

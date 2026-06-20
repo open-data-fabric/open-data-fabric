@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/AddPushSource",
+  "$id": "https://opendatafabric.org/schemas/legacy/v0/AddPushSource",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Describes how to ingest data into a root dataset from a certain logical source.",
   "type": "object",

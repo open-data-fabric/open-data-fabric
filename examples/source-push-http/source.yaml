@@ -25,3 +25,6 @@ spec:
         ts as event_time,
         temp
       from input
+
+# BEFORE: https://api.kamu.dev/{dataset}/ingest
+# AFTER:  https://api.kamu.dev/{account}/source/sensor.temp.http/ingest

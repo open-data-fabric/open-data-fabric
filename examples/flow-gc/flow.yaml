@@ -3,13 +3,9 @@ $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
   name: gc-datasets
 spec:
+  target: Dataset:%
   triggers:
     - kind: Schedule
       cron: "@daily"
   tasks:
     - kind: GarbageCollection
-      dataset:
-        pattern: '%'
-
-# TODO: Is this a single account-level flow that GCs all datasets
-# or is this more like a `FlowTemplate` that creates one GC Flow resource per dataset?

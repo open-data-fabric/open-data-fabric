@@ -1,8 +1,8 @@
 {
   "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/EngineMessage",
   "description": "Sent by an engine to coordinator when performing the raw query operation",
-  "format": "rpc-message",
+  "unevaluatedProperties": false,
   "$defs": {
     "Progress": {
       "type": "object",

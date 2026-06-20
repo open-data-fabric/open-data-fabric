@@ -1,0 +1,28 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/LabelFilter",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Filters that work on resource labels and identity headers.",
+  "type": "object",
+  "patternProperties": {
+    ".*": {}
+  },
+  "examples": [
+    {
+      "env": "prod"
+    },
+    {
+      "kind": "Root"
+    },
+    {
+      "$not": {
+        "env": "prod"
+      }
+    },
+    {
+      "$or": [
+        {"name": "foo"},
+        {"name": "bar"}
+      ]
+    }
+  ]
+}

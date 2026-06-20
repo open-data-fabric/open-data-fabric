@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use serde_with::skip_serializing_none;
 use std::{
+    borrow::Cow,
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
 };
@@ -13,10 +14,10 @@ use std::{
 #[serde(rename_all = "camelCase")]
 pub struct Schema {
     #[serde(rename = "$id")]
-    pub id: Option<String>,
+    pub id: Option<SchemaId>,
 
     #[serde(rename = "$schema")]
-    pub schema: Option<String>,
+    pub schema: Option<SchemaId>,
 
     #[serde(rename = "$defs")]
     pub defs: Option<IndexMap<String, Schema>>,
@@ -130,14 +131,42 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
 pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
     let mut schemas = HashMap::new();
 
+    // Add JSON Schema meta-schema
+    let jsonschema = Schema {
+        id: None,
+        schema: None,
+        defs: None,
+        r#type: None,
+        required: None,
+        properties: None,
+        pattern_properties: None,
+        additional_properties: None,
+        unevaluated_properties: None,
+        one_of: None,
+        all_of: None,
+        r#enum: None,
+        items: None,
+        r#ref: None,
+        r#const: None,
+        format: None,
+        default: None,
+        description: None,
+        tag: None,
+        codegen: None,
+        deprecated: None,
+        examples: None,
+        src: None,
+    };
+    schemas.insert(SchemaId::new(SchemaId::METASCHEMA_JSONSCHEMA), &jsonschema);
+
     for s in top_level_schemas {
-        let id = crate::model::schema_id_to_type_id(s.id.as_deref().unwrap_or_default());
+        let id = s.id.clone().expect("Top level schema without $id");
 
         // Add all defs
         if let Some(defs) = &s.defs {
             for (name, ds) in defs {
-                let did = id.subtype(name);
-                schemas.insert(did, ds);
+                let def_id = id.subtype(name);
+                schemas.insert(def_id, ds);
             }
         }
 
@@ -150,12 +179,15 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
 
     // Seed `to_explore` with known roots
     for (id, sch) in schemas.iter().filter(|(id, sch)| {
-        matches!(
-            sch.format,
-            Some(Format::Resource) | Some(Format::ResourceCondition) | Some(Format::RpcMessage)
-        ) || id.name == "Manifest"
-            || id.name == "DatasetSnapshot"
-            || id.name == "MetadataBlock"
+        id.as_str() != SchemaId::METASCHEMA_JSONSCHEMA
+            && (id.as_str().starts_with(SchemaId::METASCHEMA_BASE_URL)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_MANIFEST)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_CONDITION)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ENGINE_MESSAGE)
+                || id.name() == "Manifest"
+                || id.name() == "DatasetSnapshot"
+                || id.name() == "MetadataBlock")
     }) {
         to_explore.push((id.clone(), *sch));
     }
@@ -168,29 +200,14 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
 
         for reff in extract_refs(schema) {
             let ref_id = match reff {
-                Ref::Global {
-                    schema_id,
-                    subschema_def: None,
-                } => crate::model::TypeId {
-                    parent: None,
-                    name: schema_id,
-                },
-                Ref::Global {
-                    schema_id,
-                    subschema_def: Some(subschema_def),
-                } => crate::model::TypeId {
-                    parent: Some(Box::new(crate::model::TypeId::new_root(schema_id))),
-                    name: subschema_def,
-                },
+                Ref::Global(id) => id,
                 Ref::Def(name) => id.root().subtype(name),
             };
 
             if !explored.contains(&ref_id) {
-                let schema = schemas.get(&ref_id).expect(&format!(
-                    "Schema {} referenced by {} not found",
-                    ref_id.join("::"),
-                    id.join("::")
-                ));
+                let schema = schemas
+                    .get(&ref_id)
+                    .expect(&format!("Schema {ref_id} referenced by {id} not found"));
 
                 to_explore.push((ref_id, schema));
             }
@@ -200,7 +217,7 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
     let unused_schemas: Vec<_> = schemas
         .keys()
         .filter(|name| !explored.contains(*name))
-        .map(|id| id.join("::").to_string())
+        .map(|id| id.to_string())
         .collect();
 
     if !unused_schemas.is_empty() {
@@ -255,21 +272,9 @@ fn extract_refs(schema: &Schema) -> Vec<Ref> {
     refs
 }
 
-// Matches: https://opendatafabric.org/schemas/{context}/{version}/{Name}.json
-// Also matches with an optional #/$defs/{Def} fragment.
-static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
-    regex::Regex::new(
-        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
-    )
-    .unwrap()
-});
-
 fn decode_ref(reff: &str) -> Ref {
-    if let Some(caps) = SCHEMA_URL_RE.captures(reff) {
-        Ref::Global {
-            schema_id: caps["name"].to_string(),
-            subschema_def: caps.name("def").map(|c| c.as_str().to_string()),
-        }
+    if reff.starts_with("http:") || reff.starts_with("https:") {
+        Ref::Global(SchemaId::new(reff))
     } else if let Some(local) = reff.strip_prefix("#/$defs/") {
         Ref::Def(local.to_string())
     } else {
@@ -277,11 +282,103 @@ fn decode_ref(reff: &str) -> Ref {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct SchemaId(String);
+
+// Matches: https://opendatafabric.org/schemas/{context}/{version}/{Name}
+// Also matches with an optional #/$defs/{Def} fragment.
+pub static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+    regex::Regex::new(
+        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
+    )
+    .unwrap()
+});
+
+impl SchemaId {
+    pub const METASCHEMA_BASE_URL: &str = "https://opendatafabric.org/schemas/metaschemas/";
+    pub const METASCHEMA_JSONSCHEMA: &str = "https://json-schema.org/draft/2020-12/schema";
+    pub const METASCHEMA_MANIFEST: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest";
+    pub const METASCHEMA_RESOURCE: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource";
+    pub const METASCHEMA_RESOURCE_CONDITION: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition";
+    pub const METASCHEMA_ENGINE_MESSAGE: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/EngineMessage";
+
+    pub fn new(name: impl Into<String>) -> Self {
+        Self(name.into())
+    }
+
+    pub fn root<'a>(&'a self) -> Cow<'a, SchemaId> {
+        if let Some(i) = self.0.find("#/$defs/") {
+            Cow::Owned(Self(self.0[..i].into()))
+        } else {
+            Cow::Borrowed(self)
+        }
+    }
+
+    pub fn parent(&self) -> Option<SchemaId> {
+        if let Some(i) = self.0.find("#/$defs/") {
+            Some(Self(self.0[..i].into()))
+        } else {
+            None
+        }
+    }
+
+    pub fn subtype(&self, name: impl AsRef<str>) -> Self {
+        assert!(
+            !self.0.contains('#'),
+            "Nesting of subtypes is not supported"
+        );
+        Self(format!("{self}#/$defs/{}", name.as_ref()))
+    }
+
+    pub fn root_name(&self) -> &str {
+        let cap = SCHEMA_URL_RE
+            .captures(&self.0)
+            .expect("Invalid schema $id: {self}");
+
+        cap.name("name").unwrap().as_str()
+    }
+
+    pub fn name(&self) -> &str {
+        let cap = SCHEMA_URL_RE
+            .captures(&self.0)
+            .unwrap_or_else(|| panic!("Invalid schema $id: {self}"));
+
+        if let Some(name) = cap.name("def") {
+            name.as_str()
+        } else {
+            cap.name("name").unwrap().as_str()
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+impl std::ops::Deref for SchemaId {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.0.as_str()
+    }
+}
+
+impl std::fmt::Display for SchemaId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 enum Ref {
-    Global {
-        schema_id: String,
-        subschema_def: Option<String>,
-    },
+    Global(SchemaId),
     Def(String),
 }
 
@@ -333,15 +430,11 @@ pub enum Format {
     DatasetAlias, // TODO: Should this be replaced by DatasetRef everywhere?
     DatasetRef,
 
-    Resource,
-    ResourceCondition,
     ResourceId,
     ResourceName,
     ResourceTypeName,
     ResourceTypeUri,
     ResourceTypeRef,
-
-    RpcMessage,
 
     // Embedding
     Flatbuffers,

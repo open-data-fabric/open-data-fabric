@@ -19,39 +19,54 @@ pub struct Model {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TypeId {
-    pub parent: Option<Box<TypeId>>,
-    pub name: String,
-}
+pub struct TypeId(json_schema::SchemaId);
 
 impl TypeId {
-    pub fn new_root(name: impl Into<String>) -> Self {
-        Self {
-            parent: None,
-            name: name.into(),
-        }
+    pub fn new(schema_id: json_schema::SchemaId) -> Self {
+        Self(schema_id)
     }
 
-    pub fn subtype(&self, name: impl Into<String>) -> Self {
-        Self {
-            parent: Some(Box::new(self.clone())),
-            name: name.into(),
-        }
+    pub fn schema_id(&self) -> &json_schema::SchemaId {
+        &self.0
     }
 
-    pub fn root(&self) -> &TypeId {
-        if let Some(p) = &self.parent {
-            p.root()
+    pub fn context(&self) -> &str {
+        let cap = json_schema::SCHEMA_URL_RE
+            .captures(&self.0)
+            .unwrap_or_else(|| panic!("Invalid schema $id: {}", self.0));
+
+        cap.name("context").unwrap().as_str()
+    }
+
+    pub fn name(&self) -> &str {
+        self.0.name()
+    }
+
+    pub fn subtype(&self, name: impl AsRef<str>) -> Self {
+        Self(self.0.subtype(name))
+    }
+
+    pub fn parent<'a>(&'a self) -> Option<TypeId> {
+        if let Some(p) = self.0.parent() {
+            Some(TypeId::new(p))
         } else {
-            self
+            None
         }
     }
 
-    pub fn join<'a, 'b>(&'a self, sep: &'b str) -> Cow<'a, String> {
-        if let Some(p) = &self.parent {
-            Cow::Owned(format!("{}{sep}{}", p.join(sep), self.name))
+    pub fn root<'a>(&'a self) -> Cow<'a, TypeId> {
+        if let Some(p) = self.parent() {
+            Cow::Owned(p)
         } else {
-            Cow::Borrowed(&self.name)
+            Cow::Borrowed(self)
+        }
+    }
+
+    pub fn join<'a, 'b>(&'a self, sep: &'b str) -> Cow<'a, str> {
+        if let Some(p) = self.0.parent() {
+            Cow::Owned(format!("{}{sep}{}", p.name(), self.0.name()))
+        } else {
+            Cow::Borrowed(self.0.name())
         }
     }
 }
@@ -86,6 +101,15 @@ impl TypeDefinition {
         }
     }
 
+    pub fn metatype(&self) -> MetaType {
+        match self {
+            TypeDefinition::Struct(v) => v.metatype,
+            TypeDefinition::Union(v) => v.metatype,
+            TypeDefinition::Enum(v) => v.metatype,
+            TypeDefinition::Map(v) => v.metatype,
+        }
+    }
+
     pub fn description(&self) -> &str {
         match self {
             TypeDefinition::Struct(v) => &v.description,
@@ -112,34 +136,6 @@ impl TypeDefinition {
             TypeDefinition::Map(v) => &v.src,
         }
     }
-
-    pub fn context(&self) -> &str {
-        self.src()
-            .parent()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-    }
-
-    pub fn is_resource_variant(&self) -> bool {
-        let TypeDefinition::Struct(v) = self else {
-            return false;
-        };
-
-        let Some(f) = v.fields.get("$schema") else {
-            return false;
-        };
-
-        if !matches!(f.typ, Type::ResourceTypeUri) {
-            return false;
-        }
-
-        self.id().name != "Resource"
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -158,6 +154,7 @@ pub enum TypeContext {
 #[derive(Debug, Clone)]
 pub struct Struct {
     pub id: TypeId,
+    pub metatype: MetaType,
     pub fields: IndexMap<String, Field>,
     pub generics: Vec<String>,
     pub description: String,
@@ -169,6 +166,7 @@ pub struct Struct {
 #[derive(Debug, Clone)]
 pub struct Union {
     pub id: TypeId,
+    pub metatype: MetaType,
     pub variants: Vec<TypeId>,
     pub description: String,
     pub from_string: bool,
@@ -179,6 +177,7 @@ pub struct Union {
 #[derive(Debug, Clone)]
 pub struct Enum {
     pub id: TypeId,
+    pub metatype: MetaType,
     pub variants: Vec<String>,
     pub description: String,
     pub src: PathBuf,
@@ -189,6 +188,7 @@ pub struct Enum {
 #[derive(Debug, Clone)]
 pub struct Map {
     pub id: TypeId,
+    pub metatype: MetaType,
     pub description: String,
     pub value_type: Type,
     pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
@@ -240,6 +240,31 @@ pub enum Type {
     AnyJson,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum MetaType {
+    Manifest,
+    Resource,
+    ResourceCondition,
+    EngineMessage,
+    Fragment,
+}
+
+impl MetaType {
+    pub fn from_metaschema(metaschema: Option<&json_schema::SchemaId>) -> Self {
+        let id = metaschema
+            .map(|s| s.as_str())
+            .unwrap_or(json_schema::SchemaId::METASCHEMA_JSONSCHEMA);
+        match id {
+            json_schema::SchemaId::METASCHEMA_MANIFEST => Self::Manifest,
+            json_schema::SchemaId::METASCHEMA_RESOURCE => Self::Resource,
+            json_schema::SchemaId::METASCHEMA_RESOURCE_CONDITION => Self::ResourceCondition,
+            json_schema::SchemaId::METASCHEMA_ENGINE_MESSAGE => Self::EngineMessage,
+            json_schema::SchemaId::METASCHEMA_JSONSCHEMA => Self::Fragment,
+            _ => panic!("Unrecognized meta-schema: {id}"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Array {
     pub item_type: Box<Type>,
@@ -275,8 +300,49 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
     let mut types = BTreeMap::new();
 
     for mut schema in schemas {
-        let root_id = schema_id_to_type_id(&schema.id.take().expect("Named type missing an $id"));
-        schema.schema.take().expect("Named type missing a $schema");
+        // Skip metaschemas
+        let id = schema.id.as_ref().expect("Named type missing an $id");
+
+        if id.starts_with(json_schema::SchemaId::METASCHEMA_BASE_URL) {
+            continue;
+        }
+
+        let metatype = MetaType::from_metaschema(schema.schema.as_ref());
+
+        // Validate `unevaluatedProperties: false` is specified only for root schemas
+        match (
+            metatype,
+            schema.unevaluated_properties.take() == Some(false),
+        ) {
+            (MetaType::Manifest | MetaType::Resource | MetaType::EngineMessage, true) => (),
+            (MetaType::Fragment | MetaType::ResourceCondition, false) => (),
+            (_, false) => {
+                panic!("Top-level schemas should define `unevaluatedProperties: false`: {id}")
+            }
+            (_, true) => {
+                panic!(
+                    "The `unevaluatedProperties: false` is only allowed on top-level schemas: {id}"
+                )
+            }
+        }
+
+        // Validate `$schema` on resources
+        if matches!(metatype, MetaType::Manifest | MetaType::Resource) {
+            if let Some(schema_prop) = schema.properties.as_ref().and_then(|p| p.get("$schema")) {
+                assert_eq!(schema_prop.r#type, Some(json_schema::Type::String));
+                assert_eq!(
+                    schema_prop.format,
+                    Some(json_schema::Format::ResourceTypeUri)
+                );
+                if let Some(cid) = &schema_prop.r#const {
+                    assert_eq!(id.as_str(), cid, "$schema.const must match $id: {id}");
+                }
+            } else {
+                panic!("Resource schemas should define `$schema` property: {id}");
+            }
+        }
+
+        let root_id = TypeId::new(id.clone());
 
         let src = schema.src.take().expect("Schema without source path");
 
@@ -288,12 +354,13 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
                 def_id.clone(),
                 dsch,
                 src.clone(),
-                format!("{}.$defs.{}", root_id.name, def_id.name),
+                format!("{}.$defs.{}", root_id.name(), def_id.name()),
             );
             types.insert(typ.id().clone(), typ);
         }
 
-        let typ = parse_type_definition(root_id.clone(), schema, src, format!("{}", root_id.name));
+        let typ =
+            parse_type_definition(root_id.clone(), schema, src, format!("{}", root_id.name()));
         types.insert(typ.id().clone(), typ);
     }
 
@@ -311,7 +378,7 @@ fn parse_type_definition(
     match &schema {
         json_schema::Schema {
             one_of: Some(_),
-            format: None | Some(json_schema::Format::RpcMessage),
+            format: None,
             ..
         } => TypeDefinition::Union(parse_type_union(id, schema, src, ctx)),
         json_schema::Schema {
@@ -406,68 +473,35 @@ fn parse_type_struct(
     assert_eq!(schema.r#type, Some(json_schema::Type::Object));
 
     let json_schema::Schema {
-        id: None,
-        schema: None,
+        id: _,
+        schema: metaschema,
         defs: None,
         r#type: Some(_),
         required: Some(required),
         properties: Some(properties),
         pattern_properties: None,
         additional_properties: None,
-        unevaluated_properties,
+        unevaluated_properties: None,
         one_of: None,
         all_of: None,
         r#enum: None,
         items: None,
         r#ref: None,
         r#const: None,
-        format,
+        format: None,
         default: None,
         description: Some(description),
         tag: None,
         codegen,
         deprecated: None,
-        examples: None,
+        examples: _,
         src: None,
     } = schema
     else {
         panic!("Invalid struct schema: {ctx}: {}", schema.display())
     };
 
-    let is_resource = match format {
-        Some(json_schema::Format::Resource) => true,
-        Some(json_schema::Format::RpcMessage) => false,
-        Some(fmt) => panic!("Unknown struct format: {fmt:?}: {ctx}"),
-        None => false,
-    };
-
-    // Validate `unevaluatedProperties: false` is specified only for root schemas
-    match (is_resource, unevaluated_properties == Some(false)) {
-        (true, true) | (false, false) => (),
-        (true, false) => {
-            panic!("Resource schemas should define `unevaluatedProperties: false`: {ctx}")
-        }
-        (false, true) => panic!(
-            "The `unevaluatedProperties: false` is only allowed on root schemas, not fragments: {ctx}"
-        ),
-    }
-
-    // Validate `$schema` on resources
-    if is_resource {
-        if let Some(schema_prop) = properties.get("$schema") {
-            assert_eq!(schema_prop.r#type, Some(json_schema::Type::String));
-            assert_eq!(
-                schema_prop.format,
-                Some(json_schema::Format::ResourceTypeUri)
-            );
-            if let Some(c) = &schema_prop.r#const {
-                let cid = ref_to_type_id(c, &id, format!("{ctx}.$schema"));
-                assert_eq!(id, cid, "$schema.const must match $id: {ctx}");
-            }
-        } else {
-            panic!("Resource schemas should define `$schema` property: {ctx}");
-        }
-    }
+    let metatype = MetaType::from_metaschema(metaschema.as_ref());
 
     let mut fields = IndexMap::new();
     let mut generics = Vec::new();
@@ -528,6 +562,7 @@ fn parse_type_struct(
 
     Struct {
         id,
+        metatype,
         description,
         fields,
         generics,
@@ -541,8 +576,8 @@ fn parse_type_struct(
 
 fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Union {
     let json_schema::Schema {
-        id: None,
-        schema: None,
+        id: _,
+        schema: metaschema,
         defs: None,
         r#type: None,
         required: None,
@@ -562,7 +597,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         tag: None,
         codegen: None,
         deprecated: None,
-        examples: None,
+        examples: _,
         src: None,
     } = schema
     else {
@@ -584,6 +619,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
 
     Union {
         id,
+        metatype: MetaType::from_metaschema(metaschema.as_ref()),
         variants,
         description,
         from_string,
@@ -641,7 +677,7 @@ fn parse_type_union_variant(parent: &TypeId, schema: json_schema::Schema, ctx: S
           "properties": {
             "kind": {
               "type": "string",
-              "const": &type_id.name,
+              "const": type_id.name(),
             }
           },
           "required": [
@@ -658,8 +694,8 @@ fn parse_type_union_variant(parent: &TypeId, schema: json_schema::Schema, ctx: S
 
 fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: String) -> Enum {
     let json_schema::Schema {
-        id: None,
-        schema: None,
+        id: _,
+        schema: metaschema,
         defs: None,
         r#type: Some(typ),
         required: None,
@@ -709,8 +745,6 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         json_schema::Format::UInt16 => Type::UInt16,
         json_schema::Format::UInt32 => Type::UInt32,
         json_schema::Format::UInt64 => Type::UInt64,
-        // TODO: This is not good, we probably should not use `format` as such a label
-        json_schema::Format::ResourceCondition => Type::Int32,
         fmt => panic!("Invalid enum format: {ctx}: {fmt:?}"),
     };
 
@@ -718,6 +752,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
 
     Enum {
         id,
+        metatype: MetaType::from_metaschema(metaschema.as_ref()),
         variants,
         description,
         format,
@@ -732,8 +767,8 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
     assert_eq!(schema.r#type, Some(json_schema::Type::Object));
 
     let json_schema::Schema {
-        id: None,
-        schema: None,
+        id: _,
+        schema: metaschema,
         defs: None,
         r#type: Some(_),
         required: None,
@@ -753,7 +788,7 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
         tag: None,
         codegen,
         deprecated: None,
-        examples: None,
+        examples: _,
         src: None,
     } = schema
     else {
@@ -775,6 +810,7 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
 
     Map {
         id,
+        metatype: MetaType::from_metaschema(metaschema.as_ref()),
         description: description.clone(),
         value_type,
         codegen_hints: codegen.unwrap_or_default(),
@@ -844,7 +880,7 @@ fn parse_type_array(schema: json_schema::Schema, root: &TypeId, ctx: String) -> 
         tag: None,
         codegen: None,
         deprecated: None,
-        examples: None,
+        examples: _,
         src: None,
     } = schema
     else {
@@ -1000,38 +1036,9 @@ fn parse_ref(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Matches: https://opendatafabric.org/schemas/{context}/{version}/{Name}.json
-// Also matches with an optional #/$defs/{Def} fragment.
-static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
-    regex::Regex::new(
-        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
-    )
-    .unwrap()
-});
-
-pub(crate) fn schema_id_to_type_id(id: &str) -> TypeId {
-    let caps = SCHEMA_URL_RE
-        .captures(id)
-        .unwrap_or_else(|| panic!("Cannot parse schema $id: {id}"));
-    TypeId {
-        parent: None,
-        name: caps["name"].to_string(),
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 pub(crate) fn ref_to_type_id(reff: &str, parent: &TypeId, ctx: String) -> TypeId {
-    if let Some(caps) = SCHEMA_URL_RE.captures(reff) {
-        let name = TypeId {
-            parent: None,
-            name: caps["name"].to_string(),
-        };
-        if let Some(def) = caps.name("def") {
-            name.subtype(def.as_str())
-        } else {
-            name
-        }
+    if reff.starts_with("http:") || reff.starts_with("https:") {
+        TypeId::new(json_schema::SchemaId::new(reff))
     } else if let Some(local) = reff.strip_prefix("#/$defs/") {
         parent.root().subtype(local)
     } else {

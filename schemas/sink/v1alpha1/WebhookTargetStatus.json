@@ -1,12 +1,26 @@
 {
   "$id": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition",
   "description": "Represents the status of the webhook target endpoint.",
-  "format": "resource-condition",
-  "type": "string",
-  "enum": [
-    "Unverified",
-    "Ready",
-    "Failing"
-  ]
+  "$defs": {
+    "Value": {
+      "type": "string",
+      "enum": [
+        "Ready",
+        "Failed"
+      ],
+      "description": "Status of the target endpoint"
+    }
+  },
+  "type": "object",
+  "required": [
+    "value"
+  ],
+  "properties": {
+    "value": {
+      "$ref": "#/$defs/Value",
+      "description": "Status value.",
+      "unevaluatedProperties": false
+    }
+  }
 }

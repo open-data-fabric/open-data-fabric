@@ -7,8 +7,7 @@
       "description": "Fetches data from a source and appends it to a dataset.",
       "type": "object",
       "required": [
-        "source",
-        "dataset"
+        "source"
       ],
       "properties": {
         "source": {
@@ -16,13 +15,8 @@
           "description": "Reference to the source resource that defines how to fetch data.",
           "unevaluatedProperties": false
         },
-        "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
-          "description": "Reference to the dataset resource to ingest data into.",
-          "unevaluatedProperties": false
-        },
         "params": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/IngestParams",
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/IngestParams",
           "description": "Optional parameters to control ingestion behavior.",
           "unevaluatedProperties": false
         }
@@ -31,40 +25,20 @@
     "Compaction": {
       "description": "Compacts data files in matching datasets to improve query performance.",
       "type": "object",
-      "required": [
-        "dataset"
-      ],
+      "required": [],
       "properties": {
-        "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
-          "description": "Selector identifying which datasets to compact.",
+        "params": {
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/CompactionParams",
+          "description": "Optional parameters to control ingestion behavior.",
           "unevaluatedProperties": false
-        },
-        "maxSliceSize": {
-          "type": "string",
-          "format": "byte-size",
-          "description": "Target maximum size of each compacted data slice e.g. `100MiB`."
-        },
-        "maxSliceRecords": {
-          "type": "integer",
-          "format": "uint64",
-          "description": "Target maximum number of records per compacted data slice."
         }
       }
     },
     "GarbageCollection": {
       "description": "Removes unreferenced data files from matching datasets.",
       "type": "object",
-      "required": [
-        "dataset"
-      ],
-      "properties": {
-        "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
-          "description": "Selector identifying which datasets to garbage collect.",
-          "unevaluatedProperties": false
-        }
-      }
+      "required": [],
+      "properties": {}
     },
     "WebhookCall": {
       "description": "Dispatches a certain payload to a specific `WebhookTarget`.",
@@ -88,26 +62,74 @@
   "oneOf": [
     {
       "allOf": [
-        { "properties": { "kind": { "type": "string", "const": "Ingest" } }, "required": ["kind"] },
-        { "$ref": "#/$defs/Ingest" }
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Ingest"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Ingest"
+        }
       ]
     },
     {
       "allOf": [
-        { "properties": { "kind": { "type": "string", "const": "Compaction" } }, "required": ["kind"] },
-        { "$ref": "#/$defs/Compaction" }
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Compaction"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Compaction"
+        }
       ]
     },
     {
       "allOf": [
-        { "properties": { "kind": { "type": "string", "const": "GarbageCollection" } }, "required": ["kind"] },
-        { "$ref": "#/$defs/GarbageCollection" }
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "GarbageCollection"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/GarbageCollection"
+        }
       ]
     },
     {
       "allOf": [
-        { "properties": { "kind": { "type": "string", "const": "WebhookCall" } }, "required": ["kind"] },
-        { "$ref": "#/$defs/WebhookCall" }
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "WebhookCall"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/WebhookCall"
+        }
       ]
     }
   ]

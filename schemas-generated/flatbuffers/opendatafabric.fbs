@@ -1048,7 +1048,11 @@ table AttachmentsEmbedded {
 table ResourceRef {
   // Reference to an account that owns the target resource.
   account: AccountRef;
-  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`.
+  // Short type name or full type URI of the target resource.
+  //
+  // Examples:
+  // - "SecretSet"
+  // - "https://opendatafabric.org/config/v1/SecretSet"
   type: string;
   // ID of a resource.
   id: [ubyte];
@@ -1073,35 +1077,60 @@ table Attribute {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Relation
-// A directed relationship between two resources, optionally carrying a typed value.
+// ValueRef
+// Reference to a value within a `VariableSet` or a `SecretSet`.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relation-schema
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valueref-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table Relation {
-  // The resource that holds the relation.
-  subject: ResourceRef;
-  // Name of the relation e.g. `role`, `member`, `owner`.
-  relation: string;
-  // Optional value associated with the relation e.g. `maintainer` for a `role` relation.
-  value: string (json);
-  // The resource that is the target of the relation.
-  object: ResourceRef;
+table ValueRef {
+  // Reference to an account that owns the `VariableSet` or the `SecretSet`.
+  account: AccountRef;
+  // Short type name or full type URI of the target resource.
+  //
+  // Examples:
+  // - "SecretSet"
+  // - "VariableSet"
+  // - "https://opendatafabric.org/config/v1/SecretSet"
+  type: string;
+  // ID of a resource.
+  id: [ubyte];
+  // Name of a resource.
+  name: string;
+  // JSON path to a value within a `VariableSet` or a `SecretSet`.
+  //
+  // Examples:
+  // - "port"
+  // - "postgres.schemaName"
+  path: string;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// BindingsSpec
-// Specifies resource attributes and relations between resources on which auth policies act upon.
+// AwsCredentials
+// Access credentials for AWS or an AWS-compatible service.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#bindingsspec-schema
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#awscredentials-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table BindingsSpec {
-  // Directed relationships between resources.
-  relations: [Relation];
-  // Named attributes attached to resources, used by auth policies for access control decisions.
-  attributes: [Attribute];
+table AwsCredentials {
+  // Reference to a secret containing the AWS access key ID.
+  access_key: ValueRef;
+  // Reference to a secret containing the AWS secret access key.
+  secret_key: ValueRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CompactionParams
+// Optional parameters to control ingestion behavior.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#compactionparams-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table CompactionParams {
+  // Target maximum size of each compacted data slice e.g. `100MiB`.
+  max_slice_size: uint64 = null;
+  // Target maximum number of records per compacted data slice.
+  max_slice_records: uint64 = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1649,6 +1678,22 @@ table MetadataEventWrapper {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PersistentVolumeRef
+// Reference to a `PersistentVolume`.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumeref-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PersistentVolumeRef {
+  // Reference to an account that owns the `PersistentVolume`.
+  account: AccountRef;
+  // ID of the resource.
+  id: [ubyte];
+  // Name of the resource.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DatasetSpec
 // Represents a desired state of the dataset metadata.
 //
@@ -1661,7 +1706,24 @@ table DatasetSpec {
   // An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
   metadata: [MetadataEventWrapper];
   // Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
-  volume: ResourceRef;
+  volume: PersistentVolumeRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// LabelFilter
+// Filters that work on resource labels and identity headers.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#labelfilter-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table LabelFilterEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table LabelFilter {
+  // Key-value map
+  entries: [LabelFilterEntry];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1672,12 +1734,21 @@ table DatasetSpec {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DatasetSelector {
-  // Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all.
-  pattern: string;
+  // Reference to an account that owns the target resources.
+  account: AccountRef;
+  // ID of the singular resource.
+  id: [ubyte];
+  // Name pattern in SQL `LIKE` format.
+  //
+  // Examples:
+  // - "%"
+  // - "my-dataset-%"
+  // - "org.opendata.%"
+  name: string;
+  // Filter by resource labels.
+  labels: LabelFilter;
   // Restricts the selector to datasets of a specific kind.
   kind: DatasetKind = null;
-  // Restricts the selector to datasets matching all specified labels.
-  labels: ResourceLabels;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1724,6 +1795,48 @@ table DatasetVocabulary {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// EventFilter
+// Filters that work on domain event types and fields.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventfilter-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table EventFilterEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table EventFilter {
+  // Key-value map
+  entries: [EventFilterEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceSelector
+// Matches zero or many resources using identity and label filters.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceselector-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceSelector {
+  // Reference to an account that owns the target resources.
+  account: AccountRef;
+  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`.
+  type: string;
+  // ID of the singular resource.
+  id: [ubyte];
+  // Name pattern in SQL `LIKE` format.
+  //
+  // Examples:
+  // - "%"
+  // - "my-resource-%"
+  // - "%-prod"
+  name: string;
+  // Filter by resource labels.
+  labels: LabelFilter;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FlowTrigger
 // Condition that causes a flow to be executed.
 //
@@ -1732,6 +1845,7 @@ table DatasetVocabulary {
 
 union FlowTrigger {
   FlowTriggerSchedule,
+  FlowTriggerEvent,
   FlowTriggerSource,
   FlowTriggerDataset,
 }
@@ -1746,6 +1860,22 @@ union FlowTrigger {
 table FlowTriggerSchedule {
   // Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
   cron: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerEvent
+// Triggers the flow when an event bus event matching one of the filters is observed.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerevent-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowTriggerEvent {
+  // Filters the event by type and fields.
+  events: EventFilter;
+  // The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+  cooldown: Duration;
+  // If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+  cooldown_max_batch: uint64 = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1804,8 +1934,8 @@ union TaskSpec {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngestParams {
-  // Target number of records to ingest per batch.
-  target_batch_size: uint64 = null;
+  // Target number of records to ingest per data slice.
+  target_slice_records: uint64 = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1818,8 +1948,6 @@ table IngestParams {
 table TaskSpecIngest {
   // Reference to the source resource that defines how to fetch data.
   source: ResourceRef;
-  // Reference to the dataset resource to ingest data into.
-  dataset: ResourceRef;
   // Optional parameters to control ingestion behavior.
   params: IngestParams;
 }
@@ -1832,12 +1960,8 @@ table TaskSpecIngest {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TaskSpecCompaction {
-  // Selector identifying which datasets to compact.
-  dataset: DatasetSelector;
-  // Target maximum size of each compacted data slice e.g. `100MiB`.
-  max_slice_size: uint64 = null;
-  // Target maximum number of records per compacted data slice.
-  max_slice_records: uint64 = null;
+  // Optional parameters to control ingestion behavior.
+  params: CompactionParams;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1848,8 +1972,6 @@ table TaskSpecCompaction {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TaskSpecGarbageCollection {
-  // Selector identifying which datasets to garbage collect.
-  dataset: DatasetSelector;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1878,7 +2000,9 @@ table TaskSpecWrapper {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowSpec {
-  // Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow.
+  // Defines resources for which this flow will be instantiated.
+  target: ResourceSelector;
+  // Conditions that cause this flow to execute.
   triggers: [FlowTriggerWrapper];
   // List of tasks to run consecutively.
   tasks: [TaskSpecWrapper];
@@ -2092,20 +2216,6 @@ table VolumeCapacity {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// S3Credentials
-// Access credentials for an S3 or S3-compatible bucket.
-//
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#s3credentials-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table S3Credentials {
-  // Reference to a secret containing the AWS access key ID.
-  access_key: ResourceRef;
-  // Reference to a secret containing the AWS secret access key.
-  secret_key: ResourceRef;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // PersistentVolumeSpecS3
 // An Amazon S3 or S3-compatible object storage bucket.
 //
@@ -2124,7 +2234,7 @@ table PersistentVolumeSpecS3 {
   // Storage capacity allocation.
   capacity: VolumeCapacity;
   // Access credentials for the bucket.
-  credentials: S3Credentials;
+  credentials: AwsCredentials;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2223,6 +2333,38 @@ table RawQueryResponseRoot {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Relation
+// A directed relationship between two resources, optionally carrying a typed value.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relation-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table Relation {
+  // The resource that holds the relation.
+  subject: ResourceRef;
+  // Name of the relation e.g. `role`, `member`, `owner`.
+  relation: string;
+  // Optional value associated with the relation e.g. `maintainer` for a `role` relation.
+  value: string (json);
+  // The resource that is the target of the relation.
+  object: ResourceRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RelationsSpec
+// Specifies resource attributes and relations between resources on which auth policies act upon.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relationsspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table RelationsSpec {
+  // Relations between resources.
+  relations: [Relation];
+  // Resource attributes.
+  attributes: [Attribute];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Resource
 // Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.
 //
@@ -2289,6 +2431,22 @@ table SecretSetSpec {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ValueRefs
+// Container for key-value variables. Every key must be a string. Values shoud reference fields in `SecretSet`s and `VariableSet`s.
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valuerefs-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ValueRefsEntry {
+  key: string (key);
+  value: ValueRef;
+}
+table ValueRefs {
+  // Key-value map
+  entries: [ValueRefsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SourceSpec
 // Specifies an external source of data for ingestion.
 //
@@ -2296,6 +2454,8 @@ table SecretSetSpec {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SourceSpec {
+  // Brings the configuration values into the local `config` context.
+  config: ValueRefs;
   // Determines where data is sourced from.
   ingress: Ingress;
   // Defines how raw data is prepared before reading.
@@ -2502,15 +2662,26 @@ table WebhookTargetSpec {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetStatusValue
+// Status of the target endpoint
+//
+// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatusvalue-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum WebhookTargetStatusValue: int32 {
+  Ready,
+  Failed,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WebhookTargetStatus
 // Represents the status of the webhook target endpoint.
 //
 // See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum WebhookTargetStatus: int32 {
-  Unverified,
-  Ready,
-  Failing,
+table WebhookTargetStatus {
+  // Status value.
+  value: WebhookTargetStatusValue;
 }
 

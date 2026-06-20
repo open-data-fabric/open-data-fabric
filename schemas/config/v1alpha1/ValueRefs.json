@@ -1,0 +1,12 @@
+{
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/ValueRefs",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Container for key-value variables. Every key must be a string. Values shoud reference fields in `SecretSet`s and `VariableSet`s.",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/ValueRef",
+      "unevaluatedProperties": false
+    }
+  }
+}

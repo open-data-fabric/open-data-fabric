@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Projection",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Represents a projection of a dataaset history into a state for fast lookups.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

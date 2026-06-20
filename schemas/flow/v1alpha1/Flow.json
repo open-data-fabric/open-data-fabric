@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/Flow",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

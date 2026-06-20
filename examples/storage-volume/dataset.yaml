@@ -5,4 +5,4 @@ headers:
 spec:
   kind: Root
   metadata: []
-  volume: pv:my-s3-bucket  # Here `pv` is a type alias of the `PersistentVolume`
+  volume: my-s3-bucket

@@ -1,0 +1,37 @@
+{
+  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeRef",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Reference to a `PersistentVolume`.",
+  "format": "struct-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "codegen": {
+        "rust": {
+          "dtoType": "ResourceRefT<PersistentVolume>"
+        }
+      },
+      "required": [],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
+          "description": "Reference to an account that owns the `PersistentVolume`.",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of the resource."
+        }
+      }
+    }
+  ]
+}

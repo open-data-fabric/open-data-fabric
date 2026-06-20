@@ -166,15 +166,15 @@ pub struct Attribute {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Specifies resource attributes and relations between resources on which auth policies act upon.
+/// Access credentials for AWS or an AWS-compatible service.
 ///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#bindingsspec-schema
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#awscredentials-schema
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
-pub struct BindingsSpec {
-    /// Directed relationships between resources.
-    pub relations: Option<Vec<Relation>>,
-    /// Named attributes attached to resources, used by auth policies for access control decisions.
-    pub attributes: Option<Vec<Attribute>>,
+pub struct AwsCredentials {
+    /// Reference to a secret containing the AWS access key ID.
+    pub access_key: Option<ValueRef>,
+    /// Reference to a secret containing the AWS secret access key.
+    pub secret_key: Option<ValueRef>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +188,19 @@ pub struct Checkpoint {
     pub physical_hash: Multihash,
     /// Size of checkpoint file in bytes.
     pub size: u64,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Optional parameters to control ingestion behavior.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#compactionparams-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct CompactionParams {
+    /// Target maximum size of each compacted data slice e.g. `100MiB`.
+    pub max_slice_size: Option<ByteSize>,
+    /// Target maximum number of records per compacted data slice.
+    pub max_slice_records: Option<u64>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -625,21 +638,6 @@ pub enum DatasetKind {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Selects one or more datasets by name pattern and optional filters.
-///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetselector-schema
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct DatasetSelector {
-    /// Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all.
-    pub pattern: String,
-    /// Restricts the selector to datasets of a specific kind.
-    pub kind: Option<DatasetKind>,
-    /// Restricts the selector to datasets matching all specified labels.
-    pub labels: Option<ResourceLabels>,
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /// Represents a projection of the dataset metadata at a single point in time.
 /// This type is typically used for defining new datasets and changing the existing ones.
 ///
@@ -666,7 +664,7 @@ pub struct DatasetSpec {
     /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
     pub metadata: Vec<MetadataEvent>,
     /// Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
-    pub volume: Option<ResourceRef>,
+    pub volume: Option<PersistentVolumeRef>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -795,6 +793,16 @@ pub struct EnvVar {
     pub name: String,
     /// Value of the variable.
     pub value: Option<String>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Filters that work on domain event types and fields.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventfilter-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct EventFilter {
+    pub entries: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1015,7 +1023,9 @@ pub struct FetchStepUrl {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FlowSpec {
-    /// Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow.
+    /// Defines resources for which this flow will be instantiated.
+    pub target: ResourceSelector,
+    /// Conditions that cause this flow to execute.
     pub triggers: Vec<FlowTrigger>,
     /// List of tasks to run consecutively.
     pub tasks: Vec<TaskSpec>,
@@ -1029,12 +1039,14 @@ pub struct FlowSpec {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum FlowTrigger {
     Schedule(FlowTriggerSchedule),
+    Event(FlowTriggerEvent),
     Source(FlowTriggerSource),
     Dataset(FlowTriggerDataset),
 }
 
 impl_enum_with_variants!(FlowTrigger);
 impl_enum_variant!(FlowTrigger::Schedule(FlowTriggerSchedule));
+impl_enum_variant!(FlowTrigger::Event(FlowTriggerEvent));
 impl_enum_variant!(FlowTrigger::Source(FlowTriggerSource));
 impl_enum_variant!(FlowTrigger::Dataset(FlowTriggerDataset));
 
@@ -1049,6 +1061,21 @@ pub struct FlowTriggerDataset {
     pub dataset: DatasetSelector,
     /// Set of event bus event IDs that this trigger will react to
     pub events: Option<Vec<String>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Triggers the flow when an event bus event matching one of the filters is observed.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerevent-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FlowTriggerEvent {
+    /// Filters the event by type and fields.
+    pub events: EventFilter,
+    /// The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+    pub cooldown: Option<DurationString>,
+    /// If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+    pub cooldown_max_batch: Option<u64>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1084,8 +1111,8 @@ pub struct FlowTriggerSource {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingestparams-schema
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct IngestParams {
-    /// Target number of records to ingest per batch.
-    pub target_batch_size: Option<u64>,
+    /// Target number of records to ingest per data slice.
+    pub target_slice_records: Option<u64>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1238,6 +1265,16 @@ pub struct IngressBufferMemory {
     pub buffer_size: Option<u64>,
     /// Policy applied when the buffer is full.
     pub overflow_policy: Option<String>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Filters that work on resource labels and identity headers.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#labelfilter-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct LabelFilter {
+    pub entries: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1530,7 +1567,7 @@ pub struct PersistentVolumeSpecS3 {
     /// Storage capacity allocation.
     pub capacity: Option<VolumeCapacity>,
     /// Access credentials for the bucket.
-    pub credentials: Option<S3Credentials>,
+    pub credentials: Option<AwsCredentials>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2115,6 +2152,19 @@ pub struct Relation {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Specifies resource attributes and relations between resources on which auth policies act upon.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relationsspec-schema
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct RelationsSpec {
+    /// Relations between resources.
+    pub relations: Option<Vec<Relation>>,
+    /// Resource attributes.
+    pub attributes: Option<Vec<Attribute>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Defines a header (e.g. HTTP) to be passed into some request.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#requestheader-schema
@@ -2247,19 +2297,6 @@ pub struct ResourceStatus {
     pub reconciled_at: Option<DateTime<Utc>>,
     /// Detailed conditions describing the state of the resource that are added by controllers.
     pub conditions: Option<ResourceConditions>,
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/// Access credentials for an S3 or S3-compatible bucket.
-///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#s3credentials-schema
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
-pub struct S3Credentials {
-    /// Reference to a secret containing the AWS access key ID.
-    pub access_key: Option<ResourceRef>,
-    /// Reference to a secret containing the AWS secret access key.
-    pub secret_key: Option<ResourceRef>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2451,6 +2488,8 @@ pub enum SourceOrdering {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcespec-schema
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SourceSpec {
+    /// Brings the configuration values into the local `config` context.
+    pub config: Option<ValueRefs>,
     /// Determines where data is sourced from.
     pub ingress: Option<Ingress>,
     /// Defines how raw data is prepared before reading.
@@ -2517,14 +2556,10 @@ impl_enum_variant!(TaskSpec::WebhookCall(TaskSpecWebhookCall));
 /// Compacts data files in matching datasets to improve query performance.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspeccompaction-schema
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct TaskSpecCompaction {
-    /// Selector identifying which datasets to compact.
-    pub dataset: DatasetSelector,
-    /// Target maximum size of each compacted data slice e.g. `100MiB`.
-    pub max_slice_size: Option<ByteSize>,
-    /// Target maximum number of records per compacted data slice.
-    pub max_slice_records: Option<u64>,
+    /// Optional parameters to control ingestion behavior.
+    pub params: Option<CompactionParams>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2532,11 +2567,8 @@ pub struct TaskSpecCompaction {
 /// Removes unreferenced data files from matching datasets.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecgarbagecollection-schema
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct TaskSpecGarbageCollection {
-    /// Selector identifying which datasets to garbage collect.
-    pub dataset: DatasetSelector,
-}
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct TaskSpecGarbageCollection {}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2547,8 +2579,6 @@ pub struct TaskSpecGarbageCollection {
 pub struct TaskSpecIngest {
     /// Reference to the source resource that defines how to fetch data.
     pub source: ResourceRef,
-    /// Reference to the dataset resource to ingest data into.
-    pub dataset: ResourceRef,
     /// Optional parameters to control ingestion behavior.
     pub params: Option<IngestParams>,
 }
@@ -2761,6 +2791,16 @@ pub struct TransformResponseSuccess {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Container for key-value variables. Every key must be a string. Values shoud reference fields in `SecretSet`s and `VariableSet`s.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valuerefs-schema
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct ValueRefs {
+    pub entries: std::collections::BTreeMap<String, ValueRef>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Individual variable.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variable-schema
@@ -2833,9 +2873,19 @@ pub struct WebhookTargetSpec {
 /// Represents the status of the webhook target endpoint.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct WebhookTargetStatus {
+    /// Status value.
+    pub value: WebhookTargetStatusValue,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Status of the target endpoint
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatusvalue-schema
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum WebhookTargetStatus {
-    Unverified,
+pub enum WebhookTargetStatusValue {
     Ready,
-    Failing,
+    Failed,
 }

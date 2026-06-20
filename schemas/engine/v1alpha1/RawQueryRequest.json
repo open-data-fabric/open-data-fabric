@@ -1,8 +1,8 @@
 {
   "$id": "https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryRequest",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/EngineMessage",
   "description": "Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step",
-  "format": "rpc-message",
+  "unevaluatedProperties": false,
   "type": "object",
   "required": [
     "inputDataPaths",

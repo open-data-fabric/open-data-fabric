@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Defines a set of variables stored and managed by the ODF node.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

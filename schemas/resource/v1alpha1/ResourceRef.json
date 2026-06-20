@@ -26,7 +26,11 @@
         "type": {
           "type": "string",
           "format": "resource-type-ref",
-          "description": "Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`."
+          "examples": [
+            "SecretSet",
+            "https://opendatafabric.org/config/v1/SecretSet"
+          ],
+          "description": "Short type name or full type URI of the target resource."
         },
         "id": {
           "type": "string",

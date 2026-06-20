@@ -3,14 +3,21 @@ $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
   name: sensor.temp.http
 spec:
+  target: Dataset:ca.bankofcanada
   triggers:
-    - kind: Dataset
-      dataset: ca.bankofcanada
+    - kind: Event
       events:
-        - dataset.ref.updated
+        type: dataset.ref.updated
   tasks:
     - kind: WebhookCall
       target: com.example.hook
-      payload: '{{ trigger.event }}'
+      payload: '${{ trigger.event }}'
+      # retryPolicy:
+      #   maxTries: 3
+  # retryPolicy: # ????
+  #   consecutiveFailures: ??  # Disables the flow after X failures in a row
 
-# TODO!: How to connect the event that triggers the flow with payload that gets sent?
+
+# TODO!: Events should have ODF schemas too
+
+# TODO!: Special type for strings that support templating?

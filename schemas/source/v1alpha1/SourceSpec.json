@@ -7,6 +7,11 @@
     "read"
   ],
   "properties": {
+    "config": {
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/ValueRefs",
+      "description": "Brings the configuration values into the local `config` context.",
+      "unevaluatedProperties": false
+    },
     "ingress": {
       "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/Ingress",
       "description": "Determines where data is sourced from.",

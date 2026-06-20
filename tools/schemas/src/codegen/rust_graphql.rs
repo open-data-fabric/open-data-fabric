@@ -22,6 +22,7 @@ const PREAMBLE: &str = indoc::indoc!(
     use std::sync::Arc;
 
     use chrono::{DateTime, Utc};
+    use setty::types::{ByteSize, DurationString};
 
     use crate::prelude::*;
     use crate::queries::Dataset;
@@ -656,17 +657,17 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in model.types.values() {
-        if typ.id().name == "Manifest" {
+        if typ.id().name() == "Manifest" {
             continue;
         }
 
         // Schemas are represented in GQL via embedded content, so we don't generate types for those
-        if typ.context() == "data" {
+        if typ.id().context() == "data" {
             continue;
         }
 
         // Resource variants are covered by Resource<SpecT> type
-        if typ.is_resource_variant() {
+        if matches!(typ.metatype(), model::MetaType::Resource) {
             continue;
         }
 
@@ -693,7 +694,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             typ.id().join("").to_lowercase()
         )?;
 
-        if let Some(custom) = custom_types.get(typ.id().join("").as_str()) {
+        if let Some(custom) = custom_types.get(typ.id().join("").as_ref()) {
             writeln!(w, "{custom}")?;
         } else {
             match &typ {
@@ -812,7 +813,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "#[derive(Union, Debug, Clone)]")?;
     writeln!(w, "pub enum {name} {{")?;
     for variant in &typ.variants {
-        writeln!(w, "{}({}),", variant.name, variant.join(""))?;
+        writeln!(w, "{}({}),", variant.name(), variant.join(""))?;
     }
     writeln!(w, "}}")?;
     writeln!(w)?;
@@ -820,7 +821,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "fn from(v: odf::metadata::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
-        let varname = &variant.name;
+        let varname = &variant.name();
         writeln!(
             w,
             "odf::metadata::{name}::{varname}(v) => Self::{varname}(v.into()),"

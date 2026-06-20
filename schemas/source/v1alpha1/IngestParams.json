@@ -1,14 +1,14 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/IngestParams",
+  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/IngestParams",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Optional parameters to control ingestion behavior.",
   "type": "object",
   "required": [],
   "properties": {
-    "targetBatchSize": {
+    "targetSliceRecords": {
       "type": "integer",
       "format": "uint64",
-      "description": "Target number of records to ingest per batch."
+      "description": "Target number of records to ingest per data slice."
     }
   }
 }

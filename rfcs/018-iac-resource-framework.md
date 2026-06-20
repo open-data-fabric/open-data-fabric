@@ -66,9 +66,9 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
 - [Unresolved questions](#unresolved-questions)
 - [Future possibilities](#future-possibilities)
 - [Appendix A: Example Manifests](#appendix-a-example-manifests)
-  - [VariableSet](#variableset)
-  - [SecretSet](#secretset)
-    - [QQQQQQQQQQQQQQQQQQQQQQQQQQ](#qqqqqqqqqqqqqqqqqqqqqqqqqq)
+  - [`VariableSet`](#variableset)
+  - [`SecretSet`](#secretset)
+- [QQQQQQQQQQQQQQQQQQQQQQQQQQ](#qqqqqqqqqqqqqqqqqqqqqqqqqq)
 
 
 # Motivation
@@ -135,7 +135,7 @@ status: {}
 
 In ODF we propose a format like this:
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers: {}
 spec: {}
 status: {}
@@ -154,10 +154,10 @@ Here:
 We use `$schema` URL to identify resource types:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 ```
 
-The `$schema` URL is formatted as `{base-url}/{context}/{version}/{Name}.json` and carries:
+The `$schema` URL is formatted as `{base-url}/{context}/{version}/{Name}` and carries:
 - Controlling organization domain (e.g. `opendatafabric.org`)
 - Bounded context (e.g. `config`)
 - Version (e.g. `v1alpha1`)
@@ -179,7 +179,7 @@ Version is part of the `$schema` URL in the form of `v1` or `v1alpha1`.
 Resources can explicitly define which `account` they belong to:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   account: alice  # Short form can parse DID or name
   account:  # Full form
@@ -195,7 +195,7 @@ Unlike Kubernetes that uses RBAC and `namespace`-based isolation - ODF is based 
 A manifest file will usually only define the `name`:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
 spec: {}
@@ -208,7 +208,7 @@ The tuple `(Account, ResourceType, ResourceName)` uniquely identifies the resour
 The ODF node will additionally assign a unique `id` (UUID v4) to resources upon creation:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   id: 6767a4ee-d74d-436e-84f9-709407869a26
   name: my-secrets
@@ -223,7 +223,7 @@ Including `id` in the manifest can be used to ensure the manifest applies to exa
 A resource can specify custom labels and annotations. Both are maps of string keys to any JSON values, but only labels get indexed and can be used for querying:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet.json
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
   name: my-secrets
   labels:
@@ -235,6 +235,21 @@ spec: {}
 ```
 
 Labels and annotations are **mutable**.
+
+Labels and annotations with URL-like names will be automatically validated against the respective schemas to exclude typos:
+
+```yaml
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/Dataset
+headers:
+  name: my-dataset
+  labels:
+    https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root  # Anything but Root or Derivative will fail valiation
+spec:
+  kind: Root
+  metadata: []
+```
+
+Controllers may contribute their own labels to simplify common filtering scenarios. For example a `Dataset` resource above will automatically get the `https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root` label without you needing to specify it manually because it's very common to filter datasets by `kind`.
 
 
 ### References
@@ -249,28 +264,30 @@ Resources can be referenced by:
 Example:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset.json
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 headers:
   name: my-dataset
 spec:
   metadata: []
-  storage: PersistentVolume:my-org/my-s3-bucket  # Short form reference
-  storage:  # Long form reference
-    type: PersistentVolume
-    account:
-      name: my-org
-    name: my-s3-bucket
+  # Short form reference equivalent to `{ type: PersistentVolume, account: { name: my-org }, name: my-s3-bucket }
+  volume: PersistentVolume:my-org/my-s3-bucket
 ```
 
 
 ### Selectors
-Multiple resources can be referenced at once using **selectors**.
+Multiple resources can be referenced at once with **selectors**.
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow.json
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
   name: periodic-compaction
 spec:
+  target:
+    type: Dataset
+    name: org.opendatafabric.%
+    labels:
+      https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root
+      env: prod
   triggers:
     - kind: Cron
       cron: "@daily"
@@ -278,11 +295,6 @@ spec:
     - kind: Compaction
       maxSliceSize: 100MiB
       maxSliceRecords: 10_000
-      targetDatasets:
-        kind: Root
-        name: org.opendatafabric.%
-        labels:
-          env: prod
 ```
 
 
@@ -337,7 +349,7 @@ status:
   observedGeneration: 4
   reconciledAt: 2026-01-01T00:00:00Z
   conditions:
-    "https://opendatafabric.org/schemas/config/v1/ConditionReady":
+    https://opendatafabric.org/schemas/config/v1/ConditionReady:
       value: false
       reason: decryption-key-not-found
       message: "Decryption key X does not exist"
@@ -437,13 +449,9 @@ $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 headers:
   id: did:odf:123..321
   name: foo
-  account:
-    id: did:key:123
-    name: sergiimk
+  account: sergiimk
 spec:
-  storageRef:
-    id: 123-a122-1231
-    alias: sergiimk/my-s3-bucket  # Resolved for human readability only
+  volume: PersistentVolume:sergiimk/my-s3-bucket
 ```
 
 Will allow navigation of reference as:
@@ -452,9 +460,10 @@ Will allow navigation of reference as:
 datasets {
   byId(id: "did:odf:123..321") {
     spec {
-      storage {  # storage reference becomes navigable
+      volume {  # reference becomes navigable
         id
-        alias
+        type
+        name
         account {
           name
         }
@@ -588,7 +597,7 @@ status: {}
 Manifests in this section are not meant to be final but are here to illustrate the direction and the granularity of decompositions we want to achieve.
 
 
-## VariableSet
+## `VariableSet`
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet
 headers:
@@ -600,7 +609,7 @@ spec:
 ```
 
 
-## SecretSet
+## `SecretSet`
 A raw unencrypted secret:
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
@@ -628,16 +637,24 @@ spec:
 ```
 
 
-### QQQQQQQQQQQQQQQQQQQQQQQQQQ
+# QQQQQQQQQQQQQQQQQQQQQQQQQQ
+- Generate resource types + have a const for schema ID
+- Move `attributes` into `spec` or `headers`?
+- Make labels / annotations / attributes full URLs?
 - DID vs ID
   - will account/dataset have both? should we allow DIDs in references?
   - or should we only use DIDs?
     - might be useful for delegation of control in future
     - but what does it mean for moving pipelines between nodes? 
-- Generate resource types as wrappers over `Resource<SpecT>`
-  - have a trait to link schema ID
-- Specialized `ResourceRef` types (e.g. `SecretRef`, `PersistentVolumeRef`) and generic `ResourceRef<ResT>`?
-  - Can `DatasetRef` fit into this model with extra labels?
-- Need ability for operators to add their own labels?
-- Codegen namespaces
-- Start moving event bus events schemas into ODF?
+- Extensibility of task types
+- Handle errors in `IntoDto`
+- Get rid of StructOrString in struct fields in favor of `serde_as`
+
+
+Future:
+- Codegen namespaces per domain
+  - Remove `Resource*` prefix from types in `resource` domain?
+- Start moving event bus events schemas into ODF
+- Can we replace full urls with JSON-LD like contexts:
+  - instead `https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root`
+  - have `"dataset:DatasetKind": Root`

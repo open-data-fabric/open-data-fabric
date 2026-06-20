@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Defines a storage volume where data can be stored and its access credentials.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

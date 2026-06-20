@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Defines a webhook target endpoint that can receive event notifications and data.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

@@ -1,0 +1,14 @@
+{
+  "$id": "https://opendatafabric.org/schemas/event/v1alpha1/EventFilter",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Filters that work on domain event types and fields.",
+  "type": "object",
+  "patternProperties": {
+    ".*": {}
+  },
+  "examples": [
+    {
+      "type": "dataset.ref.updated"
+    }
+  ]
+}

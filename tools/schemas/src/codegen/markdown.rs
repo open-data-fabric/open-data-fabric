@@ -12,7 +12,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     writeln!(w)?;
 
     let contexts: std::collections::BTreeSet<&str> =
-        model.types.values().map(|t| t.context()).collect();
+        model.types.values().map(|t| t.id().context()).collect();
 
     for context in contexts {
         render_section(&model, context, lvl, w)?;
@@ -35,7 +35,7 @@ fn types_by_context<'a>(model: &'a model::Model, context: &str) -> Vec<&'a model
     let types: Vec<_> = model
         .types
         .values()
-        .filter(|t| t.context() == context)
+        .filter(|t| t.id().context() == context)
         .collect();
 
     types
@@ -64,7 +64,7 @@ fn render_table(
 
 fn render_toc(model: &model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let contexts: std::collections::BTreeSet<&str> =
-        model.types.values().map(|t| t.context()).collect();
+        model.types.values().map(|t| t.id().context()).collect();
 
     for context in contexts {
         render_toc_section(context, model, w)?;
@@ -81,10 +81,10 @@ fn render_toc_section(
     let id = section_id(context);
     writeln!(w, "- [{context}](#{id})")?;
     for typ in types_by_context(model, context) {
-        if typ.id().parent.is_some() {
+        if typ.id().parent().is_some() {
             continue;
         }
-        let name = &typ.id().name;
+        let name = &typ.id().name();
         let id = schema_id(&name);
         writeln!(w, "  - [{name}](#{id})")?;
     }
@@ -161,7 +161,7 @@ fn render_struct(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let name = typ.id.join("::");
-    render_header(name.as_str(), Some(schema_id(name.as_str())), lvl, w)?;
+    render_header(name.as_ref(), Some(schema_id(name.as_ref())), lvl, w)?;
     writeln!(w, "{}", typ.description)?;
     writeln!(w)?;
 
@@ -209,7 +209,7 @@ fn render_union(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let name = typ.id.join("::");
-    render_header(name.as_str(), Some(schema_id(name.as_str())), lvl, w)?;
+    render_header(name.as_ref(), Some(schema_id(name.as_ref())), lvl, w)?;
     writeln!(w, "{}", typ.description)?;
     writeln!(w)?;
 
@@ -229,7 +229,7 @@ fn render_union(
                     format!(
                         "[{}](#{})",
                         t.id().join("::"),
-                        schema_id(t.id().join("::").as_str())
+                        schema_id(t.id().join("::").as_ref())
                     ),
                     t.description().to_string(),
                 ]
@@ -250,7 +250,7 @@ fn render_enum(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let name = typ.id.join("::");
-    render_header(name.as_str(), Some(schema_id(name.as_str())), lvl, w)?;
+    render_header(name.as_ref(), Some(schema_id(name.as_ref())), lvl, w)?;
     writeln!(w, "{}", typ.description)?;
     writeln!(w)?;
 
@@ -273,7 +273,7 @@ fn render_map(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let name = typ.id.join("::");
-    render_header(name.as_str(), Some(schema_id(name.as_str())), lvl, w)?;
+    render_header(name.as_ref(), Some(schema_id(name.as_ref())), lvl, w)?;
     writeln!(w, "{}", typ.description)?;
     writeln!(w)?;
 
@@ -362,7 +362,7 @@ fn as_json_type(typ: &model::Type) -> String {
         model::Type::Generic(_) => format!("`object`"),
         model::Type::Array(t) => format!("array({})", as_json_type(&*t.item_type)),
         model::Type::Custom(t) => {
-            format!("[{}](#{})", t.join("::"), schema_id(t.join("::").as_str()))
+            format!("[{}](#{})", t.join("::"), schema_id(t.join("::").as_ref()))
         }
         model::Type::AnyJson => format!("`any`"),
     }

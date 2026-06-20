@@ -9,22 +9,40 @@
     },
     {
       "type": "object",
-      "required": [
-        "pattern"
-      ],
+      "codegen": {
+        "rust": {
+          "dtoType": "DatasetSelector"
+        }
+      },
+      "required": [],
       "properties": {
-        "pattern": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
+          "description": "Reference to an account that owns the target resources.",
+          "unevaluatedProperties": false
+        },
+        "id": {
           "type": "string",
-          "description": "Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all."
+          "format": "resource-id",
+          "description": "ID of the singular resource."
+        },
+        "name": {
+          "type": "string",
+          "examples": [
+            "%",
+            "my-dataset-%",
+            "org.opendata.%"
+          ],
+          "description": "Name pattern in SQL `LIKE` format."
+        },
+        "labels": {
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/LabelFilter",
+          "description": "Filter by resource labels.",
+          "unevaluatedProperties": false
         },
         "kind": {
           "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind",
           "description": "Restricts the selector to datasets of a specific kind.",
-          "unevaluatedProperties": false
-        },
-        "labels": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels",
-          "description": "Restricts the selector to datasets matching all specified labels.",
           "unevaluatedProperties": false
         }
       }

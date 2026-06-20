@@ -462,47 +462,43 @@ impl From<Attribute> for dtos::Attribute {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// BindingsSpec
-// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#bindingsspec-schema
+// AwsCredentials
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#awscredentials-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
-pub struct BindingsSpec {
+pub struct AwsCredentials {
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub relations: Option<Vec<Relation>>,
+    pub access_key: Option<StructOrString<ValueRef>>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attributes: Option<Vec<Attribute>>,
+    pub secret_key: Option<StructOrString<ValueRef>>,
 }
 
-impl IntoDto for BindingsSpec {
-    type Dto = dtos::BindingsSpec;
+impl IntoDto for AwsCredentials {
+    type Dto = dtos::AwsCredentials;
     fn into_dto(self) -> Self::Dto {
         self.into()
     }
 }
 
-impl From<dtos::BindingsSpec> for BindingsSpec {
-    fn from(v: dtos::BindingsSpec) -> Self {
+impl From<dtos::AwsCredentials> for AwsCredentials {
+    fn from(v: dtos::AwsCredentials) -> Self {
         Self {
-            relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
-            attributes: v
-                .attributes
-                .map(|v| v.into_iter().map(Into::into).collect()),
+            access_key: v.access_key.map(|v| v.into()),
+            secret_key: v.secret_key.map(|v| v.into()),
         }
     }
 }
 
-impl From<BindingsSpec> for dtos::BindingsSpec {
-    fn from(v: BindingsSpec) -> Self {
+impl From<AwsCredentials> for dtos::AwsCredentials {
+    fn from(v: AwsCredentials) -> Self {
         Self {
-            relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
-            attributes: v
-                .attributes
-                .map(|v| v.into_iter().map(Into::into).collect()),
+            access_key: v.access_key.map(|v| v.into()),
+            secret_key: v.secret_key.map(|v| v.into()),
         }
     }
 }
@@ -541,6 +537,48 @@ impl From<Checkpoint> for dtos::Checkpoint {
         Self {
             physical_hash: v.physical_hash,
             size: v.size,
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CompactionParams
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#compactionparams-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct CompactionParams {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_slice_size: Option<ByteSize>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_slice_records: Option<u64>,
+}
+
+impl IntoDto for CompactionParams {
+    type Dto = dtos::CompactionParams;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::CompactionParams> for CompactionParams {
+    fn from(v: dtos::CompactionParams) -> Self {
+        Self {
+            max_slice_size: v.max_slice_size.map(|v| v),
+            max_slice_records: v.max_slice_records.map(|v| v),
+        }
+    }
+}
+
+impl From<CompactionParams> for dtos::CompactionParams {
+    fn from(v: CompactionParams) -> Self {
+        Self {
+            max_slice_size: v.max_slice_size.map(|v| v),
+            max_slice_records: v.max_slice_records.map(|v| v),
         }
     }
 }
@@ -1677,13 +1715,21 @@ impl From<DatasetKind> for dtos::DatasetKind {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct DatasetSelector {
-    pub pattern: String,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account: Option<StructOrString<AccountRef>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<ResourceID>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub labels: Option<LabelFilter>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub kind: Option<DatasetKind>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub labels: Option<ResourceLabels>,
 }
 
 impl IntoDto for DatasetSelector {
@@ -1701,26 +1747,6 @@ impl From<dtos::DatasetSelector> for StructOrString<DatasetSelector> {
 impl From<StructOrString<DatasetSelector>> for dtos::DatasetSelector {
     fn from(v: StructOrString<DatasetSelector>) -> Self {
         v.0.into()
-    }
-}
-
-impl From<dtos::DatasetSelector> for DatasetSelector {
-    fn from(v: dtos::DatasetSelector) -> Self {
-        Self {
-            pattern: v.pattern,
-            kind: v.kind.map(|v| v.into()),
-            labels: v.labels.map(|v| v.into()),
-        }
-    }
-}
-
-impl From<DatasetSelector> for dtos::DatasetSelector {
-    fn from(v: DatasetSelector) -> Self {
-        Self {
-            pattern: v.pattern,
-            kind: v.kind.map(|v| v.into()),
-            labels: v.labels.map(|v| v.into()),
-        }
     }
 }
 
@@ -1778,7 +1804,7 @@ pub struct DatasetSpec {
     pub metadata: Vec<MetadataEvent>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub volume: Option<StructOrString<ResourceRef>>,
+    pub volume: Option<StructOrString<PersistentVolumeRef>>,
 }
 
 impl IntoDto for DatasetSpec {
@@ -1961,6 +1987,37 @@ impl From<EnvVar> for dtos::EnvVar {
             name: v.name,
             value: v.value.map(|v| v),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// EventFilter
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventfilter-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EventFilter {
+    #[serde(flatten)]
+    #[serde(with = "map_value_limited_precision")]
+    pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+}
+
+impl IntoDto for EventFilter {
+    type Dto = dtos::EventFilter;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::EventFilter> for EventFilter {
+    fn from(v: dtos::EventFilter) -> Self {
+        Self { entries: v.entries }
+    }
+}
+
+impl From<EventFilter> for dtos::EventFilter {
+    fn from(v: EventFilter) -> Self {
+        Self { entries: v.entries }
     }
 }
 
@@ -2578,6 +2635,7 @@ impl From<FetchStepUrl> for dtos::FetchStepUrl {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct FlowSpec {
+    pub target: StructOrString<ResourceSelector>,
     pub triggers: Vec<FlowTrigger>,
     pub tasks: Vec<TaskSpec>,
 }
@@ -2592,6 +2650,7 @@ impl IntoDto for FlowSpec {
 impl From<dtos::FlowSpec> for FlowSpec {
     fn from(v: dtos::FlowSpec) -> Self {
         Self {
+            target: v.target.into(),
             triggers: v.triggers.into_iter().map(Into::into).collect(),
             tasks: v.tasks.into_iter().map(Into::into).collect(),
         }
@@ -2601,6 +2660,7 @@ impl From<dtos::FlowSpec> for FlowSpec {
 impl From<FlowSpec> for dtos::FlowSpec {
     fn from(v: FlowSpec) -> Self {
         Self {
+            target: v.target.into(),
             triggers: v.triggers.into_iter().map(Into::into).collect(),
             tasks: v.tasks.into_iter().map(Into::into).collect(),
         }
@@ -2618,6 +2678,8 @@ impl From<FlowSpec> for dtos::FlowSpec {
 pub enum FlowTrigger {
     #[serde(alias = "schedule")]
     Schedule(FlowTriggerSchedule),
+    #[serde(alias = "event")]
+    Event(FlowTriggerEvent),
     #[serde(alias = "source")]
     Source(FlowTriggerSource),
     #[serde(alias = "dataset")]
@@ -2635,6 +2697,7 @@ impl From<dtos::FlowTrigger> for FlowTrigger {
     fn from(v: dtos::FlowTrigger) -> Self {
         match v {
             dtos::FlowTrigger::Schedule(v) => Self::Schedule(v.into()),
+            dtos::FlowTrigger::Event(v) => Self::Event(v.into()),
             dtos::FlowTrigger::Source(v) => Self::Source(v.into()),
             dtos::FlowTrigger::Dataset(v) => Self::Dataset(v.into()),
         }
@@ -2645,6 +2708,7 @@ impl From<FlowTrigger> for dtos::FlowTrigger {
     fn from(v: FlowTrigger) -> Self {
         match v {
             FlowTrigger::Schedule(v) => Self::Schedule(v.into()),
+            FlowTrigger::Event(v) => Self::Event(v.into()),
             FlowTrigger::Source(v) => Self::Source(v.into()),
             FlowTrigger::Dataset(v) => Self::Dataset(v.into()),
         }
@@ -2687,6 +2751,51 @@ impl From<FlowTriggerDataset> for dtos::FlowTriggerDataset {
         Self {
             dataset: v.dataset.into(),
             events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerEvent
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerevent-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct FlowTriggerEvent {
+    pub events: EventFilter,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cooldown: Option<DurationString>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cooldown_max_batch: Option<u64>,
+}
+
+impl IntoDto for FlowTriggerEvent {
+    type Dto = dtos::FlowTriggerEvent;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::FlowTriggerEvent> for FlowTriggerEvent {
+    fn from(v: dtos::FlowTriggerEvent) -> Self {
+        Self {
+            events: v.events.into(),
+            cooldown: v.cooldown.map(|v| v),
+            cooldown_max_batch: v.cooldown_max_batch.map(|v| v),
+        }
+    }
+}
+
+impl From<FlowTriggerEvent> for dtos::FlowTriggerEvent {
+    fn from(v: FlowTriggerEvent) -> Self {
+        Self {
+            events: v.events.into(),
+            cooldown: v.cooldown.map(|v| v),
+            cooldown_max_batch: v.cooldown_max_batch.map(|v| v),
         }
     }
 }
@@ -2778,7 +2887,7 @@ impl From<FlowTriggerSource> for dtos::FlowTriggerSource {
 pub struct IngestParams {
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub target_batch_size: Option<u64>,
+    pub target_slice_records: Option<u64>,
 }
 
 impl IntoDto for IngestParams {
@@ -2791,7 +2900,7 @@ impl IntoDto for IngestParams {
 impl From<dtos::IngestParams> for IngestParams {
     fn from(v: dtos::IngestParams) -> Self {
         Self {
-            target_batch_size: v.target_batch_size.map(|v| v),
+            target_slice_records: v.target_slice_records.map(|v| v),
         }
     }
 }
@@ -2799,7 +2908,7 @@ impl From<dtos::IngestParams> for IngestParams {
 impl From<IngestParams> for dtos::IngestParams {
     fn from(v: IngestParams) -> Self {
         Self {
-            target_batch_size: v.target_batch_size.map(|v| v),
+            target_slice_records: v.target_slice_records.map(|v| v),
         }
     }
 }
@@ -3225,6 +3334,37 @@ impl From<IngressBufferMemory> for dtos::IngressBufferMemory {
             buffer_size: v.buffer_size.map(|v| v),
             overflow_policy: v.overflow_policy.map(|v| v),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// LabelFilter
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#labelfilter-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LabelFilter {
+    #[serde(flatten)]
+    #[serde(with = "map_value_limited_precision")]
+    pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+}
+
+impl IntoDto for LabelFilter {
+    type Dto = dtos::LabelFilter;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::LabelFilter> for LabelFilter {
+    fn from(v: dtos::LabelFilter) -> Self {
+        Self { entries: v.entries }
+    }
+}
+
+impl From<LabelFilter> for dtos::LabelFilter {
+    fn from(v: LabelFilter) -> Self {
+        Self { entries: v.entries }
     }
 }
 
@@ -3762,6 +3902,44 @@ impl From<OffsetInterval> for dtos::OffsetInterval {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PersistentVolumeRef
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumeref-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct PersistentVolumeRef {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account: Option<StructOrString<AccountRef>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<ResourceID>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<ResourceName>,
+}
+
+impl IntoDto for PersistentVolumeRef {
+    type Dto = dtos::PersistentVolumeRef;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::PersistentVolumeRef> for StructOrString<PersistentVolumeRef> {
+    fn from(v: dtos::PersistentVolumeRef) -> Self {
+        Self(v.into())
+    }
+}
+impl From<StructOrString<PersistentVolumeRef>> for dtos::PersistentVolumeRef {
+    fn from(v: StructOrString<PersistentVolumeRef>) -> Self {
+        v.0.into()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // PersistentVolumeSpec
 // https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespec-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3821,7 +3999,7 @@ pub struct PersistentVolumeSpecS3 {
     pub capacity: Option<VolumeCapacity>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub credentials: Option<S3Credentials>,
+    pub credentials: Option<AwsCredentials>,
 }
 
 impl IntoDto for PersistentVolumeSpecS3 {
@@ -4748,6 +4926,52 @@ impl From<Relation> for dtos::Relation {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RelationsSpec
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relationsspec-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationsSpec {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relations: Option<Vec<Relation>>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attributes: Option<Vec<Attribute>>,
+}
+
+impl IntoDto for RelationsSpec {
+    type Dto = dtos::RelationsSpec;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::RelationsSpec> for RelationsSpec {
+    fn from(v: dtos::RelationsSpec) -> Self {
+        Self {
+            relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
+            attributes: v
+                .attributes
+                .map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+impl From<RelationsSpec> for dtos::RelationsSpec {
+    fn from(v: RelationsSpec) -> Self {
+        Self {
+            relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
+            attributes: v
+                .attributes
+                .map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // RequestHeader
 // https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#requestheader-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5159,6 +5383,48 @@ impl From<StructOrString<ResourceRef>> for dtos::ResourceRef {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceSelector
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceselector-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceSelector {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account: Option<StructOrString<AccountRef>>,
+    pub r#type: ResourceTypeRef,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<ResourceID>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub labels: Option<LabelFilter>,
+}
+
+impl IntoDto for ResourceSelector {
+    type Dto = dtos::ResourceSelector;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::ResourceSelector> for StructOrString<ResourceSelector> {
+    fn from(v: dtos::ResourceSelector) -> Self {
+        Self(v.into())
+    }
+}
+impl From<StructOrString<ResourceSelector>> for dtos::ResourceSelector {
+    fn from(v: StructOrString<ResourceSelector>) -> Self {
+        v.0.into()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ResourceStatus
 // https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcestatus-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5205,48 +5471,6 @@ impl From<ResourceStatus> for dtos::ResourceStatus {
             observed_generation: v.observed_generation.map(|v| v),
             reconciled_at: v.reconciled_at.map(|v| v),
             conditions: v.conditions.map(|v| v.into()),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// S3Credentials
-// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#s3credentials-schema
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-#[serde(rename_all = "camelCase")]
-pub struct S3Credentials {
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub access_key: Option<StructOrString<ResourceRef>>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub secret_key: Option<StructOrString<ResourceRef>>,
-}
-
-impl IntoDto for S3Credentials {
-    type Dto = dtos::S3Credentials;
-    fn into_dto(self) -> Self::Dto {
-        self.into()
-    }
-}
-
-impl From<dtos::S3Credentials> for S3Credentials {
-    fn from(v: dtos::S3Credentials) -> Self {
-        Self {
-            access_key: v.access_key.map(|v| v.into()),
-            secret_key: v.secret_key.map(|v| v.into()),
-        }
-    }
-}
-
-impl From<S3Credentials> for dtos::S3Credentials {
-    fn from(v: S3Credentials) -> Self {
-        Self {
-            access_key: v.access_key.map(|v| v.into()),
-            secret_key: v.secret_key.map(|v| v.into()),
         }
     }
 }
@@ -5842,6 +6066,9 @@ impl From<SourceOrdering> for dtos::SourceOrdering {
 pub struct SourceSpec {
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub config: Option<ValueRefs>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ingress: Option<Ingress>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -5868,6 +6095,7 @@ impl IntoDto for SourceSpec {
 impl From<dtos::SourceSpec> for SourceSpec {
     fn from(v: dtos::SourceSpec) -> Self {
         Self {
+            config: v.config.map(|v| v.into()),
             ingress: v.ingress.map(|v| v.into()),
             prepare: v.prepare.map(|v| v.into_iter().map(Into::into).collect()),
             read: v.read.into(),
@@ -5881,6 +6109,7 @@ impl From<dtos::SourceSpec> for SourceSpec {
 impl From<SourceSpec> for dtos::SourceSpec {
     fn from(v: SourceSpec) -> Self {
         Self {
+            config: v.config.map(|v| v.into()),
             ingress: v.ingress.map(|v| v.into()),
             prepare: v.prepare.map(|v| v.into_iter().map(Into::into).collect()),
             read: v.read.into(),
@@ -6029,13 +6258,9 @@ impl From<TaskSpec> for dtos::TaskSpec {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskSpecCompaction {
-    pub dataset: StructOrString<DatasetSelector>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_slice_size: Option<ByteSize>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_slice_records: Option<u64>,
+    pub params: Option<CompactionParams>,
 }
 
 impl IntoDto for TaskSpecCompaction {
@@ -6048,9 +6273,7 @@ impl IntoDto for TaskSpecCompaction {
 impl From<dtos::TaskSpecCompaction> for TaskSpecCompaction {
     fn from(v: dtos::TaskSpecCompaction) -> Self {
         Self {
-            dataset: v.dataset.into(),
-            max_slice_size: v.max_slice_size.map(|v| v),
-            max_slice_records: v.max_slice_records.map(|v| v),
+            params: v.params.map(|v| v.into()),
         }
     }
 }
@@ -6058,9 +6281,7 @@ impl From<dtos::TaskSpecCompaction> for TaskSpecCompaction {
 impl From<TaskSpecCompaction> for dtos::TaskSpecCompaction {
     fn from(v: TaskSpecCompaction) -> Self {
         Self {
-            dataset: v.dataset.into(),
-            max_slice_size: v.max_slice_size.map(|v| v),
-            max_slice_records: v.max_slice_records.map(|v| v),
+            params: v.params.map(|v| v.into()),
         }
     }
 }
@@ -6073,9 +6294,7 @@ impl From<TaskSpecCompaction> for dtos::TaskSpecCompaction {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
-pub struct TaskSpecGarbageCollection {
-    pub dataset: StructOrString<DatasetSelector>,
-}
+pub struct TaskSpecGarbageCollection {}
 
 impl IntoDto for TaskSpecGarbageCollection {
     type Dto = dtos::TaskSpecGarbageCollection;
@@ -6086,17 +6305,13 @@ impl IntoDto for TaskSpecGarbageCollection {
 
 impl From<dtos::TaskSpecGarbageCollection> for TaskSpecGarbageCollection {
     fn from(v: dtos::TaskSpecGarbageCollection) -> Self {
-        Self {
-            dataset: v.dataset.into(),
-        }
+        Self {}
     }
 }
 
 impl From<TaskSpecGarbageCollection> for dtos::TaskSpecGarbageCollection {
     fn from(v: TaskSpecGarbageCollection) -> Self {
-        Self {
-            dataset: v.dataset.into(),
-        }
+        Self {}
     }
 }
 
@@ -6110,7 +6325,6 @@ impl From<TaskSpecGarbageCollection> for dtos::TaskSpecGarbageCollection {
 #[serde(rename_all = "camelCase")]
 pub struct TaskSpecIngest {
     pub source: StructOrString<ResourceRef>,
-    pub dataset: StructOrString<ResourceRef>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub params: Option<IngestParams>,
@@ -6127,7 +6341,6 @@ impl From<dtos::TaskSpecIngest> for TaskSpecIngest {
     fn from(v: dtos::TaskSpecIngest) -> Self {
         Self {
             source: v.source.into(),
-            dataset: v.dataset.into(),
             params: v.params.map(|v| v.into()),
         }
     }
@@ -6137,7 +6350,6 @@ impl From<TaskSpecIngest> for dtos::TaskSpecIngest {
     fn from(v: TaskSpecIngest) -> Self {
         Self {
             source: v.source.into(),
-            dataset: v.dataset.into(),
             params: v.params.map(|v| v.into()),
         }
     }
@@ -6718,6 +6930,82 @@ impl From<TransformResponseSuccess> for dtos::TransformResponseSuccess {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ValueRef
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valueref-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct ValueRef {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account: Option<StructOrString<AccountRef>>,
+    pub r#type: ResourceTypeRef,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<ResourceID>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<ResourceName>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+}
+
+impl IntoDto for ValueRef {
+    type Dto = dtos::ValueRef;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::ValueRef> for StructOrString<ValueRef> {
+    fn from(v: dtos::ValueRef) -> Self {
+        Self(v.into())
+    }
+}
+impl From<StructOrString<ValueRef>> for dtos::ValueRef {
+    fn from(v: StructOrString<ValueRef>) -> Self {
+        v.0.into()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ValueRefs
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valuerefs-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ValueRefs {
+    #[serde(flatten)]
+    pub entries: std::collections::BTreeMap<String, StructOrString<ValueRef>>,
+}
+
+impl IntoDto for ValueRefs {
+    type Dto = dtos::ValueRefs;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::ValueRefs> for ValueRefs {
+    fn from(v: dtos::ValueRefs) -> Self {
+        Self {
+            entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
+        }
+    }
+}
+
+impl From<ValueRefs> for dtos::ValueRefs {
+    fn from(v: ValueRefs) -> Self {
+        Self {
+            entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Variable
 // https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variable-schema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -6952,13 +7240,9 @@ impl From<WebhookTargetSpec> for dtos::WebhookTargetSpec {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub enum WebhookTargetStatus {
-    #[serde(alias = "unverified")]
-    Unverified,
-    #[serde(alias = "ready")]
-    Ready,
-    #[serde(alias = "failing")]
-    Failing,
+#[serde(rename_all = "camelCase")]
+pub struct WebhookTargetStatus {
+    pub value: WebhookTargetStatusValue,
 }
 
 impl IntoDto for WebhookTargetStatus {
@@ -6970,20 +7254,55 @@ impl IntoDto for WebhookTargetStatus {
 
 impl From<dtos::WebhookTargetStatus> for WebhookTargetStatus {
     fn from(v: dtos::WebhookTargetStatus) -> Self {
-        match v {
-            dtos::WebhookTargetStatus::Unverified => Self::Unverified,
-            dtos::WebhookTargetStatus::Ready => Self::Ready,
-            dtos::WebhookTargetStatus::Failing => Self::Failing,
+        Self {
+            value: v.value.into(),
         }
     }
 }
 
 impl From<WebhookTargetStatus> for dtos::WebhookTargetStatus {
     fn from(v: WebhookTargetStatus) -> Self {
+        Self {
+            value: v.value.into(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WebhookTargetStatusValue
+// https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatusvalue-schema
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum WebhookTargetStatusValue {
+    #[serde(alias = "ready")]
+    Ready,
+    #[serde(alias = "failed")]
+    Failed,
+}
+
+impl IntoDto for WebhookTargetStatusValue {
+    type Dto = dtos::WebhookTargetStatusValue;
+    fn into_dto(self) -> Self::Dto {
+        self.into()
+    }
+}
+
+impl From<dtos::WebhookTargetStatusValue> for WebhookTargetStatusValue {
+    fn from(v: dtos::WebhookTargetStatusValue) -> Self {
         match v {
-            WebhookTargetStatus::Unverified => Self::Unverified,
-            WebhookTargetStatus::Ready => Self::Ready,
-            WebhookTargetStatus::Failing => Self::Failing,
+            dtos::WebhookTargetStatusValue::Ready => Self::Ready,
+            dtos::WebhookTargetStatusValue::Failed => Self::Failed,
+        }
+    }
+}
+
+impl From<WebhookTargetStatusValue> for dtos::WebhookTargetStatusValue {
+    fn from(v: WebhookTargetStatusValue) -> Self {
+        match v {
+            WebhookTargetStatusValue::Ready => Self::Ready,
+            WebhookTargetStatusValue::Failed => Self::Failed,
         }
     }
 }
@@ -6999,8 +7318,9 @@ implement_serde_as!(dtos::AttachmentEmbedded, AttachmentEmbedded);
 implement_serde_as!(dtos::Attachments, Attachments);
 implement_serde_as!(dtos::AttachmentsEmbedded, AttachmentsEmbedded);
 implement_serde_as!(dtos::Attribute, Attribute);
-implement_serde_as!(dtos::BindingsSpec, BindingsSpec);
+implement_serde_as!(dtos::AwsCredentials, AwsCredentials);
 implement_serde_as!(dtos::Checkpoint, Checkpoint);
+implement_serde_as!(dtos::CompactionParams, CompactionParams);
 implement_serde_as!(dtos::CompressionFormat, CompressionFormat);
 implement_serde_as!(dtos::DataField, DataField);
 implement_serde_as!(dtos::DataSchema, DataSchema);
@@ -7038,6 +7358,7 @@ implement_serde_as!(dtos::DatasetVocabulary, DatasetVocabulary);
 implement_serde_as!(dtos::DisablePollingSource, DisablePollingSource);
 implement_serde_as!(dtos::DisablePushSource, DisablePushSource);
 implement_serde_as!(dtos::EnvVar, EnvVar);
+implement_serde_as!(dtos::EventFilter, EventFilter);
 implement_serde_as!(dtos::EventTimeSource, EventTimeSource);
 implement_serde_as!(
     dtos::EventTimeSourceFromMetadata,
@@ -7060,6 +7381,7 @@ implement_serde_as!(dtos::FetchStepUrl, FetchStepUrl);
 implement_serde_as!(dtos::FlowSpec, FlowSpec);
 implement_serde_as!(dtos::FlowTrigger, FlowTrigger);
 implement_serde_as!(dtos::FlowTriggerDataset, FlowTriggerDataset);
+implement_serde_as!(dtos::FlowTriggerEvent, FlowTriggerEvent);
 implement_serde_as!(dtos::FlowTriggerSchedule, FlowTriggerSchedule);
 implement_serde_as!(dtos::FlowTriggerSource, FlowTriggerSource);
 implement_serde_as!(dtos::IngestParams, IngestParams);
@@ -7072,6 +7394,7 @@ implement_serde_as!(dtos::IngressRestEndpoint, IngressRestEndpoint);
 implement_serde_as!(dtos::IngressUrl, IngressUrl);
 implement_serde_as!(dtos::IngressBuffer, IngressBuffer);
 implement_serde_as!(dtos::IngressBufferMemory, IngressBufferMemory);
+implement_serde_as!(dtos::LabelFilter, LabelFilter);
 implement_serde_as!(dtos::MergeStrategy, MergeStrategy);
 implement_serde_as!(dtos::MergeStrategyAppend, MergeStrategyAppend);
 implement_serde_as!(
@@ -7086,6 +7409,7 @@ implement_serde_as!(dtos::MetadataEvent, MetadataEvent);
 implement_serde_as!(dtos::MqttQos, MqttQos);
 implement_serde_as!(dtos::MqttTopicSubscription, MqttTopicSubscription);
 implement_serde_as!(dtos::OffsetInterval, OffsetInterval);
+implement_serde_as!(dtos::PersistentVolumeRef, PersistentVolumeRef);
 implement_serde_as!(dtos::PersistentVolumeSpec, PersistentVolumeSpec);
 implement_serde_as!(dtos::PersistentVolumeSpecS3, PersistentVolumeSpecS3);
 implement_serde_as!(dtos::PrepStep, PrepStep);
@@ -7113,6 +7437,7 @@ implement_serde_as!(dtos::ReadStepNdGeoJson, ReadStepNdGeoJson);
 implement_serde_as!(dtos::ReadStepNdJson, ReadStepNdJson);
 implement_serde_as!(dtos::ReadStepParquet, ReadStepParquet);
 implement_serde_as!(dtos::Relation, Relation);
+implement_serde_as!(dtos::RelationsSpec, RelationsSpec);
 implement_serde_as!(dtos::RequestHeader, RequestHeader);
 implement_serde_as!(dtos::ResourceAnnotations, ResourceAnnotations);
 implement_serde_as!(dtos::ResourceCondition, ResourceCondition);
@@ -7121,8 +7446,8 @@ implement_serde_as!(dtos::ResourceHeaders, ResourceHeaders);
 implement_serde_as!(dtos::ResourceLabels, ResourceLabels);
 implement_serde_as!(dtos::ResourcePhase, ResourcePhase);
 implement_serde_as!(dtos::ResourceRef, ResourceRef);
+implement_serde_as!(dtos::ResourceSelector, ResourceSelector);
 implement_serde_as!(dtos::ResourceStatus, ResourceStatus);
-implement_serde_as!(dtos::S3Credentials, S3Credentials);
 implement_serde_as!(dtos::Secret, Secret);
 implement_serde_as!(dtos::SecretSetSpec, SecretSetSpec);
 implement_serde_as!(dtos::Secrets, Secrets);
@@ -7163,6 +7488,8 @@ implement_serde_as!(
 );
 implement_serde_as!(dtos::TransformResponseProgress, TransformResponseProgress);
 implement_serde_as!(dtos::TransformResponseSuccess, TransformResponseSuccess);
+implement_serde_as!(dtos::ValueRef, ValueRef);
+implement_serde_as!(dtos::ValueRefs, ValueRefs);
 implement_serde_as!(dtos::Variable, Variable);
 implement_serde_as!(dtos::VariableSetSpec, VariableSetSpec);
 implement_serde_as!(dtos::Variables, Variables);
@@ -7170,3 +7497,4 @@ implement_serde_as!(dtos::VolumeCapacity, VolumeCapacity);
 implement_serde_as!(dtos::Watermark, Watermark);
 implement_serde_as!(dtos::WebhookTargetSpec, WebhookTargetSpec);
 implement_serde_as!(dtos::WebhookTargetStatus, WebhookTargetStatus);
+implement_serde_as!(dtos::WebhookTargetStatusValue, WebhookTargetStatusValue);

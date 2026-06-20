@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/source/v1alpha1/SetPollingSource",
+  "$id": "https://opendatafabric.org/schemas/legacy/v0/SetPollingSource",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Contains information on how externally-hosted data can be ingested into the root dataset.",
   "type": "object",
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "fetch": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/FetchStep",
+      "$ref": "https://opendatafabric.org/schemas/legacy/v0/FetchStep",
       "description": "Determines where data is sourced from.",
       "unevaluatedProperties": false
     },

@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/BindingsSpec",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specifies resource attributes and relations between resources on which auth policies act upon.",
   "type": "object",
@@ -7,7 +7,7 @@
   "properties": {
     "relations": {
       "type": "array",
-      "description": "Directed relationships between resources.",
+      "description": "Relations between resources.",
       "items": {
         "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/Relation",
         "unevaluatedProperties": false
@@ -15,7 +15,7 @@
     },
     "attributes": {
       "type": "array",
-      "description": "Named attributes attached to resources, used by auth policies for access control decisions.",
+      "description": "Resource attributes.",
       "items": {
         "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/Attribute",
         "unevaluatedProperties": false

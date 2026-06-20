@@ -1,6 +1,6 @@
 use indexmap::IndexMap;
 
-use crate::json_schema::{CodegenHint, CodegenLanguage};
+use crate::json_schema::{self, CodegenHint, CodegenLanguage};
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::borrow::Cow;
@@ -50,7 +50,7 @@ fn render_impl(
     writeln!(w, "{}", PREAMBLE)?;
 
     for typ in in_dependency_order(&model) {
-        if typ.is_resource_variant() {
+        if matches!(typ.metatype(), model::MetaType::Resource) {
             // Resource variants are covered by Resource<SpecT> type
             continue;
         }
@@ -111,12 +111,13 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
             let item_type = model.types.get(&item_type_name).unwrap();
             if let model::TypeDefinition::Union(_) = item_type {
                 // Create a wrapper type
-                let wrapper_type_id = model::TypeId {
-                    parent: None,
-                    name: format!("{}Wrapper", item_type.id().join("")),
-                };
+                let wrapper_type_id = model::TypeId::new(json_schema::SchemaId::new(format!(
+                    "{}Wrapper",
+                    item_type.id().schema_id()
+                )));
                 let wrapper_type = model::TypeDefinition::Struct(model::Struct {
                     id: wrapper_type_id.clone(),
+                    metatype: model::MetaType::Fragment,
                     fields: IndexMap::from([(
                         "value".to_string(),
                         model::Field {
@@ -203,10 +204,11 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
 
     for root in &root_unions {
         let wrapper_type = model::TypeDefinition::Struct(model::Struct {
-            id: model::TypeId {
-                parent: None,
-                name: format!("{}Root", root.name),
-            },
+            id: model::TypeId::new(json_schema::SchemaId::new(format!(
+                "{}Root",
+                root.schema_id()
+            ))),
+            metatype: model::MetaType::Fragment,
             fields: IndexMap::from([(
                 "value".to_string(),
                 model::Field {

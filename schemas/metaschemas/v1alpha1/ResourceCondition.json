@@ -1,0 +1,24 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "required": ["properties"],
+      "properties": {
+        "properties": {
+          "type": "object",
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {}
+          }
+        }
+      }
+    }
+  ]
+}

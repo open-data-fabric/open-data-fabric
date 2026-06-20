@@ -3,12 +3,12 @@ $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
   name: ca.bankofcanada
 spec:
+  target: Dataset:ca.bankofcanada
   triggers:
     - kind: Schedule
       cron: "*/30 * * * *"
   tasks:
     - kind: Ingest
       source: ca.bankofcanada
-      dataset: ca.bankofcanada
       params:
-        targetBatchSize: 10000
+        targetSliceRecords: 10000

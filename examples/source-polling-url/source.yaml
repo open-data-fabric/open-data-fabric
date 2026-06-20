@@ -3,9 +3,16 @@ $schema: https://opendatafabric.org/schemas/source/v1alpha1/Source
 headers:
   name: ca.bankofcanada
 spec:
+  # Makes variables and secrets available for templating under `config` variable
+  config:
+    apiKey: SecretSet:ca.bankofcanada#apiKey
+    startDate: VariableSet:ca.bankofcanada#startDate
   ingress:
     kind: Url
-    url: https://www.bankofcanada.ca/valet/observations/group/FX_RATES_DAILY/csv?start_date=2017-01-03
+    url: https://www.bankofcanada.ca/valet/observations/group/FX_RATES_DAILY/csv?start_date=${{ config.startDate }}
+    headers:
+      - name: Authorization
+        value: "Bearer ${{ config.apiKey }}"
   read:
     kind: Csv
     header: true
@@ -36,15 +43,13 @@ spec:
     kind: Ledger
     primaryKey:
       - date
-  vocab:
-    eventTimeColumn: date
 
 # TODO!: Can one source be reused by multiple datasets?
-# Where state of the consuming the source is stored?
+# Where the state of the consuming the source (e.g. kafka offset) is stored?
 
 # TODO!: Who provides API keys? Source or consumers of the source?
 
-# TODO!: Batch size, polling timeout, fetchUncacheable - should these be on source or flow level
+# TODO!: Batch size, polling timeout, fetchUncacheable - should these be on source or ingest task level
 
 # TODO!: Merge strategy relates to the source or destination? What about vocab?
 

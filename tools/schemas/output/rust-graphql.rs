@@ -11,6 +11,7 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+use setty::types::{ByteSize, DurationString};
 
 use crate::prelude::*;
 use crate::queries::Dataset;
@@ -211,24 +212,22 @@ impl From<odf::metadata::Attribute> for Attribute {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Specifies resource attributes and relations between resources on which auth policies act upon.
+/// Access credentials for AWS or an AWS-compatible service.
 ///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#bindingsspec-schema
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#awscredentials-schema
 #[derive(SimpleObject, Debug, Clone)]
-pub struct BindingsSpec {
-    /// Directed relationships between resources.
-    pub relations: Option<Vec<Relation>>,
-    /// Named attributes attached to resources, used by auth policies for access control decisions.
-    pub attributes: Option<Vec<Attribute>>,
+pub struct AwsCredentials {
+    /// Reference to a secret containing the AWS access key ID.
+    pub access_key: Option<ValueRef>,
+    /// Reference to a secret containing the AWS secret access key.
+    pub secret_key: Option<ValueRef>,
 }
 
-impl From<odf::metadata::BindingsSpec> for BindingsSpec {
-    fn from(v: odf::metadata::BindingsSpec) -> Self {
+impl From<odf::metadata::AwsCredentials> for AwsCredentials {
+    fn from(v: odf::metadata::AwsCredentials) -> Self {
         Self {
-            relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
-            attributes: v
-                .attributes
-                .map(|v| v.into_iter().map(Into::into).collect()),
+            access_key: v.access_key.map(Into::into),
+            secret_key: v.secret_key.map(Into::into),
         }
     }
 }
@@ -251,6 +250,28 @@ impl From<odf::metadata::Checkpoint> for Checkpoint {
         Self {
             physical_hash: v.physical_hash.into(),
             size: v.size.into(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Optional parameters to control ingestion behavior.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#compactionparams-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct CompactionParams {
+    /// Target maximum size of each compacted data slice e.g. `100MiB`.
+    pub max_slice_size: Option<ByteSize>,
+    /// Target maximum number of records per compacted data slice.
+    pub max_slice_records: Option<u64>,
+}
+
+impl From<odf::metadata::CompactionParams> for CompactionParams {
+    fn from(v: odf::metadata::CompactionParams) -> Self {
+        Self {
+            max_slice_size: v.max_slice_size.map(Into::into),
+            max_slice_records: v.max_slice_records.map(Into::into),
         }
     }
 }
@@ -309,31 +330,6 @@ pub enum DatasetKind {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Selects one or more datasets by name pattern and optional filters.
-///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetselector-schema
-#[derive(SimpleObject, Debug, Clone)]
-pub struct DatasetSelector {
-    /// Name pattern for matching datasets. Use `%` as a wildcard e.g. `org.example.%` or `%` for all.
-    pub pattern: String,
-    /// Restricts the selector to datasets of a specific kind.
-    pub kind: Option<DatasetKind>,
-    /// Restricts the selector to datasets matching all specified labels.
-    pub labels: Option<ResourceLabels>,
-}
-
-impl From<odf::metadata::DatasetSelector> for DatasetSelector {
-    fn from(v: odf::metadata::DatasetSelector) -> Self {
-        Self {
-            pattern: v.pattern.into(),
-            kind: v.kind.map(Into::into),
-            labels: v.labels.map(Into::into),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /// Represents a projection of the dataset metadata at a single point in time.
 /// This type is typically used for defining new datasets and changing the existing ones.
 ///
@@ -370,7 +366,7 @@ pub struct DatasetSpec {
     /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
     pub metadata: Vec<MetadataEvent>,
     /// Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
-    pub volume: Option<ResourceRef>,
+    pub volume: Option<PersistentVolumeRef>,
 }
 
 impl From<odf::metadata::DatasetSpec> for DatasetSpec {
@@ -473,6 +469,28 @@ impl From<odf::metadata::EnvVar> for EnvVar {
             name: v.name.into(),
             value: v.value.map(Into::into),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Filters that work on domain event types and fields.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventfilter-schema
+
+#[nutype::nutype(derive(AsRef, Clone, Debug, From, Into))]
+pub struct EventFilter(odf::metadata::EventFilter);
+
+#[async_graphql::Scalar]
+impl async_graphql::ScalarType for EventFilter {
+    fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
+        let value: odf::metadata::serde::yaml::EventFilter = async_graphql::from_value(value)?;
+        Ok(Self::new(value.into()))
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        let value: odf::metadata::serde::yaml::EventFilter = self.as_ref().clone().into();
+        async_graphql::to_value(&value).unwrap()
     }
 }
 
@@ -820,7 +838,9 @@ impl From<odf::metadata::FetchStepUrl> for FetchStepUrl {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
 #[derive(SimpleObject, Debug, Clone)]
 pub struct FlowSpec {
-    /// Conditions that cause this flow to execute. If multiple triggers are specified, any one of them firing will start the flow.
+    /// Defines resources for which this flow will be instantiated.
+    pub target: ResourceSelector,
+    /// Conditions that cause this flow to execute.
     pub triggers: Vec<FlowTrigger>,
     /// List of tasks to run consecutively.
     pub tasks: Vec<TaskSpec>,
@@ -829,6 +849,7 @@ pub struct FlowSpec {
 impl From<odf::metadata::FlowSpec> for FlowSpec {
     fn from(v: odf::metadata::FlowSpec) -> Self {
         Self {
+            target: v.target.into(),
             triggers: v.triggers.into_iter().map(Into::into).collect(),
             tasks: v.tasks.into_iter().map(Into::into).collect(),
         }
@@ -843,6 +864,7 @@ impl From<odf::metadata::FlowSpec> for FlowSpec {
 #[derive(Union, Debug, Clone)]
 pub enum FlowTrigger {
     Schedule(FlowTriggerSchedule),
+    Event(FlowTriggerEvent),
     Source(FlowTriggerSource),
     Dataset(FlowTriggerDataset),
 }
@@ -851,6 +873,7 @@ impl From<odf::metadata::FlowTrigger> for FlowTrigger {
     fn from(v: odf::metadata::FlowTrigger) -> Self {
         match v {
             odf::metadata::FlowTrigger::Schedule(v) => Self::Schedule(v.into()),
+            odf::metadata::FlowTrigger::Event(v) => Self::Event(v.into()),
             odf::metadata::FlowTrigger::Source(v) => Self::Source(v.into()),
             odf::metadata::FlowTrigger::Dataset(v) => Self::Dataset(v.into()),
         }
@@ -875,6 +898,31 @@ impl From<odf::metadata::FlowTriggerDataset> for FlowTriggerDataset {
         Self {
             dataset: v.dataset.into(),
             events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Triggers the flow when an event bus event matching one of the filters is observed.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerevent-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct FlowTriggerEvent {
+    /// Filters the event by type and fields.
+    pub events: EventFilter,
+    /// The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+    pub cooldown: Option<DurationString>,
+    /// If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+    pub cooldown_max_batch: Option<u64>,
+}
+
+impl From<odf::metadata::FlowTriggerEvent> for FlowTriggerEvent {
+    fn from(v: odf::metadata::FlowTriggerEvent) -> Self {
+        Self {
+            events: v.events.into(),
+            cooldown: v.cooldown.map(Into::into),
+            cooldown_max_batch: v.cooldown_max_batch.map(Into::into),
         }
     }
 }
@@ -930,14 +978,14 @@ impl From<odf::metadata::FlowTriggerSource> for FlowTriggerSource {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingestparams-schema
 #[derive(SimpleObject, Debug, Clone)]
 pub struct IngestParams {
-    /// Target number of records to ingest per batch.
-    pub target_batch_size: Option<u64>,
+    /// Target number of records to ingest per data slice.
+    pub target_slice_records: Option<u64>,
 }
 
 impl From<odf::metadata::IngestParams> for IngestParams {
     fn from(v: odf::metadata::IngestParams) -> Self {
         Self {
-            target_batch_size: v.target_batch_size.map(Into::into),
+            target_slice_records: v.target_slice_records.map(Into::into),
         }
     }
 }
@@ -1174,6 +1222,28 @@ impl From<odf::metadata::IngressBufferMemory> for IngressBufferMemory {
             buffer_size: v.buffer_size.map(Into::into),
             overflow_policy: v.overflow_policy.map(Into::into),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Filters that work on resource labels and identity headers.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#labelfilter-schema
+
+#[nutype::nutype(derive(AsRef, Clone, Debug, From, Into))]
+pub struct LabelFilter(odf::metadata::LabelFilter);
+
+#[async_graphql::Scalar]
+impl async_graphql::ScalarType for LabelFilter {
+    fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
+        let value: odf::metadata::serde::yaml::LabelFilter = async_graphql::from_value(value)?;
+        Ok(Self::new(value.into()))
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        let value: odf::metadata::serde::yaml::LabelFilter = self.as_ref().clone().into();
+        async_graphql::to_value(&value).unwrap()
     }
 }
 
@@ -1486,7 +1556,7 @@ pub struct PersistentVolumeSpecS3 {
     /// Storage capacity allocation.
     pub capacity: Option<VolumeCapacity>,
     /// Access credentials for the bucket.
-    pub credentials: Option<S3Credentials>,
+    pub credentials: Option<AwsCredentials>,
 }
 
 impl From<odf::metadata::PersistentVolumeSpecS3> for PersistentVolumeSpecS3 {
@@ -2223,6 +2293,30 @@ impl From<odf::metadata::Relation> for Relation {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Specifies resource attributes and relations between resources on which auth policies act upon.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relationsspec-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct RelationsSpec {
+    /// Relations between resources.
+    pub relations: Option<Vec<Relation>>,
+    /// Resource attributes.
+    pub attributes: Option<Vec<Attribute>>,
+}
+
+impl From<odf::metadata::RelationsSpec> for RelationsSpec {
+    fn from(v: odf::metadata::RelationsSpec) -> Self {
+        Self {
+            relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
+            attributes: v
+                .attributes
+                .map(|v| v.into_iter().map(Into::into).collect()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Defines a header (e.g. HTTP) to be passed into some request.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#requestheader-schema
@@ -2451,28 +2545,6 @@ impl From<odf::metadata::ResourceStatus> for ResourceStatus {
             observed_generation: v.observed_generation.map(Into::into),
             reconciled_at: v.reconciled_at.map(Into::into),
             conditions: v.conditions.map(Into::into),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/// Access credentials for an S3 or S3-compatible bucket.
-///
-/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#s3credentials-schema
-#[derive(SimpleObject, Debug, Clone)]
-pub struct S3Credentials {
-    /// Reference to a secret containing the AWS access key ID.
-    pub access_key: Option<ResourceRef>,
-    /// Reference to a secret containing the AWS secret access key.
-    pub secret_key: Option<ResourceRef>,
-}
-
-impl From<odf::metadata::S3Credentials> for S3Credentials {
-    fn from(v: odf::metadata::S3Credentials) -> Self {
-        Self {
-            access_key: v.access_key.map(Into::into),
-            secret_key: v.secret_key.map(Into::into),
         }
     }
 }
@@ -2794,6 +2866,8 @@ pub enum SourceOrdering {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcespec-schema
 #[derive(SimpleObject, Debug, Clone)]
 pub struct SourceSpec {
+    /// Brings the configuration values into the local `config` context.
+    pub config: Option<ValueRefs>,
     /// Determines where data is sourced from.
     pub ingress: Option<Ingress>,
     /// Defines how raw data is prepared before reading.
@@ -2811,6 +2885,7 @@ pub struct SourceSpec {
 impl From<odf::metadata::SourceSpec> for SourceSpec {
     fn from(v: odf::metadata::SourceSpec) -> Self {
         Self {
+            config: v.config.map(Into::into),
             ingress: v.ingress.map(Into::into),
             prepare: v.prepare.map(|v| v.into_iter().map(Into::into).collect()),
             read: v.read.into(),
@@ -2899,20 +2974,14 @@ impl From<odf::metadata::TaskSpec> for TaskSpec {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspeccompaction-schema
 #[derive(SimpleObject, Debug, Clone)]
 pub struct TaskSpecCompaction {
-    /// Selector identifying which datasets to compact.
-    pub dataset: DatasetSelector,
-    /// Target maximum size of each compacted data slice e.g. `100MiB`.
-    pub max_slice_size: Option<ByteSize>,
-    /// Target maximum number of records per compacted data slice.
-    pub max_slice_records: Option<u64>,
+    /// Optional parameters to control ingestion behavior.
+    pub params: Option<CompactionParams>,
 }
 
 impl From<odf::metadata::TaskSpecCompaction> for TaskSpecCompaction {
     fn from(v: odf::metadata::TaskSpecCompaction) -> Self {
         Self {
-            dataset: v.dataset.into(),
-            max_slice_size: v.max_slice_size.map(Into::into),
-            max_slice_records: v.max_slice_records.map(Into::into),
+            params: v.params.map(Into::into),
         }
     }
 }
@@ -2924,15 +2993,12 @@ impl From<odf::metadata::TaskSpecCompaction> for TaskSpecCompaction {
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecgarbagecollection-schema
 #[derive(SimpleObject, Debug, Clone)]
 pub struct TaskSpecGarbageCollection {
-    /// Selector identifying which datasets to garbage collect.
-    pub dataset: DatasetSelector,
+    pub _dummy: Option<String>,
 }
 
 impl From<odf::metadata::TaskSpecGarbageCollection> for TaskSpecGarbageCollection {
     fn from(v: odf::metadata::TaskSpecGarbageCollection) -> Self {
-        Self {
-            dataset: v.dataset.into(),
-        }
+        Self { _dummy: None }
     }
 }
 
@@ -2945,8 +3011,6 @@ impl From<odf::metadata::TaskSpecGarbageCollection> for TaskSpecGarbageCollectio
 pub struct TaskSpecIngest {
     /// Reference to the source resource that defines how to fetch data.
     pub source: ResourceRef,
-    /// Reference to the dataset resource to ingest data into.
-    pub dataset: ResourceRef,
     /// Optional parameters to control ingestion behavior.
     pub params: Option<IngestParams>,
 }
@@ -2955,7 +3019,6 @@ impl From<odf::metadata::TaskSpecIngest> for TaskSpecIngest {
     fn from(v: odf::metadata::TaskSpecIngest) -> Self {
         Self {
             source: v.source.into(),
-            dataset: v.dataset.into(),
             params: v.params.map(Into::into),
         }
     }
@@ -3325,6 +3388,28 @@ impl From<odf::metadata::TransformResponseSuccess> for TransformResponseSuccess 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Container for key-value variables. Every key must be a string. Values shoud reference fields in `SecretSet`s and `VariableSet`s.
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valuerefs-schema
+
+#[nutype::nutype(derive(AsRef, Clone, Debug, From, Into))]
+pub struct ValueRefs(odf::metadata::ValueRefs);
+
+#[async_graphql::Scalar]
+impl async_graphql::ScalarType for ValueRefs {
+    fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
+        let value: odf::metadata::serde::yaml::ValueRefs = async_graphql::from_value(value)?;
+        Ok(Self::new(value.into()))
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        let value: odf::metadata::serde::yaml::ValueRefs = self.as_ref().clone().into();
+        async_graphql::to_value(&value).unwrap()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Individual variable.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variable-schema
@@ -3451,10 +3536,28 @@ impl From<odf::metadata::WebhookTargetSpec> for WebhookTargetSpec {
 /// Represents the status of the webhook target endpoint.
 ///
 /// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+#[derive(SimpleObject, Debug, Clone)]
+pub struct WebhookTargetStatus {
+    /// Status value.
+    pub value: WebhookTargetStatusValue,
+}
+
+impl From<odf::metadata::WebhookTargetStatus> for WebhookTargetStatus {
+    fn from(v: odf::metadata::WebhookTargetStatus) -> Self {
+        Self {
+            value: v.value.into(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Status of the target endpoint
+///
+/// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatusvalue-schema
 #[derive(Enum, Debug, Clone, Copy, PartialEq, Eq)]
-#[graphql(remote = "odf::metadata::WebhookTargetStatus")]
-pub enum WebhookTargetStatus {
-    Unverified,
+#[graphql(remote = "odf::metadata::WebhookTargetStatusValue")]
+pub enum WebhookTargetStatusValue {
     Ready,
-    Failing,
+    Failed,
 }

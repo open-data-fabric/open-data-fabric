@@ -1,0 +1,23 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "required": [
+            "$schema"
+          ],
+          "properties": {
+            "$schema": {}
+          }
+        }
+      }
+    }
+  ]
+}

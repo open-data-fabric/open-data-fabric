@@ -29,15 +29,32 @@ impl Schemas {
             .get(schema_id)
             .unwrap_or_else(|| panic!("Schema not found: {schema_id}"));
 
+        // Normalize custom metaschema URIs to the standard draft URI so the
+        // jsonschema crate (which only accepts official draft URIs as $schema)
+        // can compile schemas that declare a custom ODF metaschema.
+        let schema = Self::normalize_meta_schema(schema.clone());
+
         let resources = self.by_id.iter().filter_map(|(id, value)| {
-            let resource = Resource::from_contents(value.clone()).ok()?;
+            let resource = Resource::from_contents(Self::normalize_meta_schema(value.clone())).ok()?;
             Some((id.clone(), resource))
         });
 
         jsonschema::options()
             .with_resources(resources)
-            .build(schema)
+            .build(&schema)
             .unwrap_or_else(|e| panic!("Failed to compile schema {schema_id}: {e}"))
+    }
+
+    fn normalize_meta_schema(mut schema: Value) -> Value {
+        const STANDARD_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
+        const ODF_METASCHEMA_PREFIX: &str =
+            "https://opendatafabric.org/schemas/metaschemas/";
+        if let Some(s) = schema.get("$schema").and_then(Value::as_str) {
+            if s.starts_with(ODF_METASCHEMA_PREFIX) {
+                schema["$schema"] = Value::String(STANDARD_DRAFT.to_string());
+            }
+        }
+        schema
     }
 
     fn assert_valid(&self, schema_id: &str, instance: Value) {

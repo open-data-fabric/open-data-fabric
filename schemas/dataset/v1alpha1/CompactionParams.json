@@ -1,0 +1,19 @@
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/CompactionParams",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Optional parameters to control ingestion behavior.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "maxSliceSize": {
+      "type": "string",
+      "format": "byte-size",
+      "description": "Target maximum size of each compacted data slice e.g. `100MiB`."
+    },
+    "maxSliceRecords": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Target maximum number of records per compacted data slice."
+    }
+  }
+}

@@ -22,7 +22,7 @@
       "description": "An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc."
     },
     "volume": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+      "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeRef",
       "description": "Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.",
       "unevaluatedProperties": false
     }

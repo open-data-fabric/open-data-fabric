@@ -33,7 +33,7 @@
           "unevaluatedProperties": false
         },
         "credentials": {
-          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/S3Credentials",
+          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/AwsCredentials",
           "description": "Access credentials for the bucket.",
           "unevaluatedProperties": false
         }

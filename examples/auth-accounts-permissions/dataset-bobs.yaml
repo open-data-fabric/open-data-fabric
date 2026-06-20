@@ -6,3 +6,8 @@ headers:
 spec:
   kind: Root
   metadata: []
+  # attributes:
+  #   allowPublicRead: true
+  #   allowAnonymousRead: false
+  #   extra:
+  #     foo: bar

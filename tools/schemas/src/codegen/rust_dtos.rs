@@ -47,7 +47,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
-        if typ.is_resource_variant() {
+        if matches!(typ.metatype(), model::MetaType::Resource) {
             // Resource variants are covered by Resource<SpecT> type
             continue;
         }
@@ -70,7 +70,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             model::TypeDefinition::Union(t) => {
                 render_union(t, w)?;
 
-                if typ.id().name == "MetadataEvent" {
+                if typ.id().name() == "MetadataEvent" {
                     writeln!(w)?;
                     render_union_bitflags(t, w)?;
                 }
@@ -214,17 +214,17 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
     for variant in &typ.variants {
-        writeln!(w, "{}({}),", variant.name, variant.join(""))?;
+        writeln!(w, "{}({}),", variant.name(), variant.join(""))?;
     }
     writeln!(w, "}}")?;
     writeln!(w)?;
-    writeln!(w, "impl_enum_with_variants!({});", typ.id.name)?;
+    writeln!(w, "impl_enum_with_variants!({});", typ.id.name())?;
     for variant in &typ.variants {
         writeln!(
             w,
             "impl_enum_variant!({}::{}({}));",
-            typ.id.name,
-            variant.name,
+            typ.id.name(),
+            variant.name(),
             variant.join("")
         )?;
     }
@@ -235,7 +235,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    if typ.id.name == "DatasetKind" {
+    if typ.id.name() == "DatasetKind" {
         // TODO: Introduce `extra_derives`
         writeln!(w, "#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]")?;
     } else {
@@ -344,12 +344,12 @@ fn render_union_bitflags(
         w,
         "    #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]"
     )?;
-    writeln!(w, "    pub struct {}TypeFlags: u32 {{", typ.id.name)?;
+    writeln!(w, "    pub struct {}TypeFlags: u32 {{", typ.id.name())?;
     for (i, variant) in typ.variants.iter().enumerate() {
         writeln!(
             w,
             "        const {} = 1 << {};",
-            variant.name.to_case(Case::UpperSnake),
+            variant.name().to_case(Case::UpperSnake),
             i
         )?;
     }
@@ -360,17 +360,18 @@ fn render_union_bitflags(
     writeln!(
         w,
         "impl From<&{}> for {}TypeFlags {{",
-        typ.id.name, typ.id.name
+        typ.id.name(),
+        typ.id.name()
     )?;
-    writeln!(w, "    fn from(v: &{}) -> Self {{", typ.id.name)?;
+    writeln!(w, "    fn from(v: &{}) -> Self {{", typ.id.name())?;
     writeln!(w, "        match v {{")?;
     for variant in &typ.variants {
         writeln!(
             w,
             "            {}::{}(_) => Self::{},",
-            typ.id.name,
-            variant.name,
-            variant.name.to_case(Case::UpperSnake),
+            typ.id.name(),
+            variant.name(),
+            variant.name().to_case(Case::UpperSnake),
         )?;
     }
     writeln!(w, "        }}")?;

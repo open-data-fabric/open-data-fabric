@@ -4,7 +4,8 @@ headers:
   name: my-secrets
   account: sergiimk
   labels:
-    env: prod
+    env: prod  # Simple
+    https://opendatafabric.org/schemas/datset/v1alpha1/DatasetKind: Root  # Typed
   annotations:
     repo:  # Nested
       url: https://github.com/open-data-fabric

@@ -196,15 +196,15 @@ fn render_impl(
     };
 
     for typ in model.types.values() {
-        if typ.id().name == "Manifest"
-            || typ.id().name == "DatasetSnapshot"
-            || typ.id().name == "Resource"
+        if typ.id().name() == "Manifest"
+            || typ.id().name() == "DatasetSnapshot"
+            || typ.id().name() == "Resource"
         {
             continue;
         }
 
         // We don't yet serialize resources to flatbuffers
-        if typ.is_resource_variant() {
+        if matches!(typ.metatype(), model::MetaType::Resource) {
             continue;
         }
 
@@ -672,7 +672,7 @@ fn render_union(
 
     for variant in &typ.variants {
         let typ = variant.join("");
-        let var = &variant.name;
+        let var = variant.name();
         writeln!(
             w,
             "odf::{name}::{var}(v) => (fb::{name}::{typ}, v.serialize(fb).as_union_value()),"
@@ -695,7 +695,7 @@ fn render_union(
 
     for variant in &typ.variants {
         let typ = variant.join("");
-        let var = &variant.name;
+        let var = variant.name();
         writeln!(w, "fb::{name}::{typ} => odf::{name}::{var}(")?;
         writeln!(w, "    odf::{typ}::deserialize(")?;
         writeln!(w, "        unsafe {{ fb::{typ}::init_from_table(table) }}")?;

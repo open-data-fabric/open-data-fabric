@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/source/v1alpha1/Source",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Defines an external source of data for ingestion.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

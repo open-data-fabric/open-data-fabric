@@ -1,8 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Account",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Registers an account in an predefined account provider.",
-  "format": "resource",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

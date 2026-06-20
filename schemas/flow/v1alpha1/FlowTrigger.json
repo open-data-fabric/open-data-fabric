@@ -16,6 +16,30 @@
         }
       }
     },
+    "Event": {
+      "description": "Triggers the flow when an event bus event matching one of the filters is observed.",
+      "type": "object",
+      "required": [
+        "events"
+      ],
+      "properties": {
+        "events": {
+          "$ref": "https://opendatafabric.org/schemas/event/v1alpha1/EventFilter",
+          "description": "Filters the event by type and fields.",
+          "unevaluatedProperties": false
+        },
+        "cooldown": {
+          "type": "string",
+          "format": "duration",
+          "description": "The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run."
+        },
+        "cooldownMaxBatch": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish."
+        }
+      }
+    },
     "Source": {
       "description": "Triggers the flow when a source receives new data, with optional batching controls.",
       "type": "object",
@@ -65,6 +89,12 @@
       "allOf": [
         { "properties": { "kind": { "type": "string", "const": "Schedule" } }, "required": ["kind"] },
         { "$ref": "#/$defs/Schedule" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Event" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Event" }
       ]
     },
     {

@@ -1,0 +1,29 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "required": [
+            "$schema",
+            "headers",
+            "spec",
+            "status"
+          ],
+          "properties": {
+            "$schema": {},
+            "headers": {},
+            "spec": {},
+            "status": {}
+          }
+        }
+      }
+    }
+  ]
+}

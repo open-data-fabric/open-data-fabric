@@ -89,7 +89,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     let types: Vec<_> = model
         .types
         .values()
-        .filter(|t| !t.is_resource_variant())
+        .filter(|t| !matches!(t.metatype(), model::MetaType::Resource))
         .collect();
 
     for typ in &types {
@@ -395,7 +395,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "pub enum {name} {{")?;
 
     for variant in &typ.variants {
-        let varname = &variant.name;
+        let varname = variant.name();
         let typename = variant.join("");
 
         // Allow lowercase and camelCase names
@@ -432,7 +432,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "fn from(v: dtos::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
-        let varname = &variant.name;
+        let varname = variant.name();
         writeln!(
             w,
             "dtos::{name}::{varname}(v) => Self::{varname}(v.into()),"
@@ -448,7 +448,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "fn from(v: {name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
-        let varname = &variant.name;
+        let varname = variant.name();
         writeln!(w, "{name}::{varname}(v) => Self::{varname}(v.into()),")?;
     }
     writeln!(w, "}}")?;
