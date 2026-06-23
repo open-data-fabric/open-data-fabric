@@ -20,7 +20,7 @@ fn lint(_cmd: cli::Lint, schemas_dir: &Path) {
     let schemas = json_schema::load_schemas(schemas_dir);
 
     // TODO: Replace concrete names with a directory structure or a tag
-    json_schema::check_referential_integrity(&schemas);
+    json_schema::lint(&schemas);
 
     let model = model::parse_jsonschema(schemas);
 

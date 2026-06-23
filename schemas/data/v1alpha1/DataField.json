@@ -18,7 +18,7 @@
       "unevaluatedProperties": false
     },
     "extra": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/ExtraAttributes",
+      "$ref": "https://opendatafabric.org/schemas/data/v1alpha1/ExtraAttributes",
       "description": "ODF extensions",
       "unevaluatedProperties": false
     }

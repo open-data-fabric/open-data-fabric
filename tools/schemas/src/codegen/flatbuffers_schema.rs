@@ -8,9 +8,6 @@ use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 
-const SPEC_URL: &str =
-    "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
-
 const PREAMBLE: &str = indoc::indoc!(
     r#"
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,11 +60,7 @@ fn render_impl(
             writeln!(w, "// {}", typ.id().join(""))?;
             render_description(typ.description(), None, None, w)?;
             writeln!(w, "//")?;
-            writeln!(
-                w,
-                "// See: {SPEC_URL}#{}-schema",
-                typ.id().join("").to_lowercase()
-            )?;
+            writeln!(w, "// Schema: {}", typ.id().schema_id())?;
             writeln!(
                 w,
                 "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -128,6 +121,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                             description: String::new(),
                             explicit_tag: None,
                             default: None,
+                            constant: None,
                             examples: None,
                             deprecated: false,
                             codegen_hints: Default::default(),
@@ -219,6 +213,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
                     description: String::new(),
                     explicit_tag: None,
                     default: None,
+                    constant: None,
                     examples: None,
                     deprecated: false,
                     codegen_hints: Default::default(),
@@ -646,6 +641,7 @@ fn allocate_struct_field_ids(typ: &model::Struct, model: &model::Model) -> Vec<F
                     String::new()
                 },
                 default: None,
+                constant: None,
                 examples: None,
                 explicit_tag: None,
                 // Marking dummy fields as deprecated ensures they cannot be assigned or read by accident

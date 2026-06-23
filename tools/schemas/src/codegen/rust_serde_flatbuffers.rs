@@ -5,9 +5,6 @@ use crate::utils::indent_writer::IndentWriter;
 use std::borrow::Cow;
 use std::io::Write;
 
-const SPEC_URL: &str =
-    "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
-
 const PREAMBLE: &str = indoc::indoc!(
     r#"
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,11 +18,7 @@ const PREAMBLE: &str = indoc::indoc!(
     #![allow(clippy::pedantic)]
 
     use super::proxies_generated as fb;
-    mod odf {
-        pub use crate::dtos::*;
-        pub use crate::formats::*;
-        pub use crate::identity::*;
-    }
+    use crate as odf;
     use std::convert::TryFrom;
     use std::path::PathBuf;
 
@@ -224,11 +217,7 @@ fn render_impl(
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
         )?;
         writeln!(w, "// {}", typ.id().join(""))?;
-        writeln!(
-            w,
-            "// {SPEC_URL}#{}-schema",
-            typ.id().join("").to_lowercase()
-        )?;
+        writeln!(w, "// Schema: {}", typ.id().schema_id())?;
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -255,11 +244,12 @@ fn render_struct(
     helpers: &Helpers,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(
         w,
-        "impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{"
+        "impl<'fb> FlatbuffersSerializable<'fb> for odf::{context}::{name} {{"
     )?;
     writeln!(w, "type OffsetT = WIPOffset<fb::{name}<'fb>>;")?;
     writeln!(w)?;
@@ -287,10 +277,10 @@ fn render_struct(
 
     writeln!(
         w,
-        "impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{"
+        "impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{context}::{name} {{"
     )?;
     writeln!(w, "fn deserialize(proxy: fb::{name}<'fb>) -> Self {{")?;
-    writeln!(w, "odf::{name} {{")?;
+    writeln!(w, "odf::{context}::{name} {{")?;
 
     for field in typ.fields.values() {
         render_field_de(field, helpers, w)?;
@@ -587,11 +577,16 @@ fn render_type_de(
         | model::Type::UInt64 => writeln!(w, "{name}")?,
         model::Type::ByteSize => writeln!(w, "ByteSize::from({name})")?,
         model::Type::String => writeln!(w, "{name}.to_owned()")?,
-        model::Type::DatasetAlias => writeln!(w, "odf::DatasetAlias::try_from({name}).unwrap()")?,
-        model::Type::DatasetId => {
-            writeln!(w, "odf::DatasetID::from_bytes({name}.bytes()).unwrap()")?
+        model::Type::DatasetAlias => {
+            writeln!(w, "odf::dataset::DatasetAlias::try_from({name}).unwrap()")?
         }
-        model::Type::DatasetRef => writeln!(w, "odf::DatasetRef::try_from({name}).unwrap()")?,
+        model::Type::DatasetId => writeln!(
+            w,
+            "odf::dataset::DatasetID::from_bytes({name}.bytes()).unwrap()"
+        )?,
+        model::Type::DatasetRef => {
+            writeln!(w, "odf::dataset::DatasetRef::try_from({name}).unwrap()")?
+        }
         model::Type::DateTime => writeln!(w, "fb_to_datetime({name})")?,
         model::Type::Duration => writeln!(w, "fb_to_duration({name})")?,
         model::Type::Flatbuffers | model::Type::Generic(_) => {
@@ -621,33 +616,46 @@ fn render_type_de(
         }
         model::Type::Custom(type_id) => match helpers.model.types.get(type_id).unwrap() {
             model::TypeDefinition::Enum(_) => writeln!(w, "{name}.into()")?,
-            model::TypeDefinition::Struct(_) | model::TypeDefinition::Map(_) => {
-                writeln!(w, "odf::{}::deserialize({name})", type_id.join(""))?
-            }
+            model::TypeDefinition::Struct(_) | model::TypeDefinition::Map(_) => writeln!(
+                w,
+                "odf::{}::{}::deserialize({name})",
+                type_id.context(),
+                type_id.join("")
+            )?,
             model::TypeDefinition::Union(_) => writeln!(
                 w,
-                "odf::{}::deserialize({name}, {enum_t_accessor})",
+                "odf::{}::{}::deserialize({name}, {enum_t_accessor})",
+                type_id.context(),
                 type_id.join("")
             )?,
         },
         model::Type::AnyJson => writeln!(w, "serde_json::from_str({name}).unwrap()")?,
-        model::Type::AccountId => {
-            writeln!(w, "odf::AccountID::from_bytes({name}.bytes()).unwrap()")?
+        model::Type::AccountId => writeln!(
+            w,
+            "odf::auth::AccountID::from_bytes({name}.bytes()).unwrap()"
+        )?,
+        model::Type::AccountName => {
+            writeln!(w, "odf::auth::AccountName::try_from({name}).unwrap()")?
         }
-        model::Type::AccountName => writeln!(w, "odf::AccountName::try_from({name}).unwrap()")?,
-        model::Type::ResourceId => {
-            writeln!(w, "odf::ResourceID::from_bytes({name}.bytes()).unwrap()")?
+        model::Type::ResourceId => writeln!(
+            w,
+            "odf::resource::ResourceID::from_bytes({name}.bytes()).unwrap()"
+        )?,
+        model::Type::ResourceName => {
+            writeln!(w, "odf::resource::ResourceName::try_from({name}).unwrap()")?
         }
-        model::Type::ResourceName => writeln!(w, "odf::ResourceName::try_from({name}).unwrap()")?,
-        model::Type::ResourceTypeUri => {
-            writeln!(w, "odf::ResourceTypeUri::try_from({name}).unwrap()")?
-        }
-        model::Type::ResourceTypeName => {
-            writeln!(w, "odf::ResourceTypeName::try_from({name}).unwrap()")?
-        }
-        model::Type::ResourceTypeRef => {
-            writeln!(w, "odf::ResourceTypeRef::try_from({name}).unwrap()")?
-        }
+        model::Type::ResourceTypeUri => writeln!(
+            w,
+            "odf::resource::ResourceTypeUri::try_from({name}).unwrap()"
+        )?,
+        model::Type::ResourceTypeName => writeln!(
+            w,
+            "odf::resource::ResourceTypeName::try_from({name}).unwrap()"
+        )?,
+        model::Type::ResourceTypeRef => writeln!(
+            w,
+            "odf::resource::ResourceTypeRef::try_from({name}).unwrap()"
+        )?,
     }
     Ok(())
 }
@@ -658,11 +666,12 @@ fn render_union(
     typ: &model::Union,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(
         w,
-        "impl<'fb> FlatbuffersEnumSerializable<'fb, fb::{name}> for odf::{name} {{"
+        "impl<'fb> FlatbuffersEnumSerializable<'fb, fb::{name}> for odf::{context}::{name} {{"
     )?;
     writeln!(
         w,
@@ -675,7 +684,7 @@ fn render_union(
         let var = variant.name();
         writeln!(
             w,
-            "odf::{name}::{var}(v) => (fb::{name}::{typ}, v.serialize(fb).as_union_value()),"
+            "odf::{context}::{name}::{var}(v) => (fb::{name}::{typ}, v.serialize(fb).as_union_value()),"
         )?;
     }
 
@@ -685,7 +694,7 @@ fn render_union(
     writeln!(w)?;
     writeln!(
         w,
-        "impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::{name}> for odf::{name} {{"
+        "impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::{name}> for odf::{context}::{name} {{"
     )?;
     writeln!(
         w,
@@ -694,10 +703,11 @@ fn render_union(
     writeln!(w, "match t {{")?;
 
     for variant in &typ.variants {
+        let var_ctx = variant.context();
         let typ = variant.join("");
         let var = variant.name();
-        writeln!(w, "fb::{name}::{typ} => odf::{name}::{var}(")?;
-        writeln!(w, "    odf::{typ}::deserialize(")?;
+        writeln!(w, "fb::{name}::{typ} => odf::{context}::{name}::{var}(")?;
+        writeln!(w, "    odf::{var_ctx}::{typ}::deserialize(")?;
         writeln!(w, "        unsafe {{ fb::{typ}::init_from_table(table) }}")?;
         writeln!(w, "    )")?;
         writeln!(w, "),")?;
@@ -717,23 +727,30 @@ fn render_enum(
     typ: &model::Enum,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = &typ.id.join("");
 
-    writeln!(w, "impl From<odf::{name}> for fb::{name} {{")?;
-    writeln!(w, "fn from(v: odf::{name}) -> Self {{")?;
+    writeln!(w, "impl From<odf::{context}::{name}> for fb::{name} {{")?;
+    writeln!(w, "fn from(v: odf::{context}::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
-        writeln!(w, "odf::{name}::{variant} => fb::{name}::{variant},")?;
+        writeln!(
+            w,
+            "odf::{context}::{name}::{variant} => fb::{name}::{variant},"
+        )?;
     }
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
     writeln!(w, "")?;
-    writeln!(w, "impl Into<odf::{name}> for fb::{name} {{")?;
-    writeln!(w, "fn into(self) -> odf::{name} {{")?;
+    writeln!(w, "impl Into<odf::{context}::{name}> for fb::{name} {{")?;
+    writeln!(w, "fn into(self) -> odf::{context}::{name} {{")?;
     writeln!(w, "match self {{")?;
     for variant in &typ.variants {
-        writeln!(w, "fb::{name}::{variant} => odf::{name}::{variant},")?;
+        writeln!(
+            w,
+            "fb::{name}::{variant} => odf::{context}::{name}::{variant},"
+        )?;
     }
     writeln!(w, "_ => panic!(\"Invalid enum value: {{}}\", self.0),")?;
     writeln!(w, "}}")?;
@@ -765,6 +782,7 @@ fn render_map_with_entry_table(
     typ: &model::Map,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     let value_ser = match &typ.value_type {
@@ -775,7 +793,11 @@ fn render_map_with_entry_table(
     let value_de = match &typ.value_type {
         model::Type::AnyJson => format!("serde_json::from_str(entry.value().unwrap()).unwrap()"),
         model::Type::Custom(id) => {
-            format!("odf::{}::deserialize(entry.value().unwrap())", id.join(""))
+            format!(
+                "odf::{}::{}::deserialize(entry.value().unwrap())",
+                id.context(),
+                id.join("")
+            )
         }
         _ => unreachable!(),
     };
@@ -783,7 +805,7 @@ fn render_map_with_entry_table(
     writeln!(
         w,
         r#"
-        impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{
+        impl<'fb> FlatbuffersSerializable<'fb> for odf::{context}::{name} {{
             type OffsetT = WIPOffset<fb::{name}<'fb>>;
 
             fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {{
@@ -806,7 +828,7 @@ fn render_map_with_entry_table(
             }}
         }}
 
-        impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{
+        impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{context}::{name} {{
             fn deserialize(proxy: fb::{name}<'fb>) -> Self {{
                 Self {{
                     entries: proxy
@@ -831,12 +853,13 @@ fn render_map_json_encoded_string(
     typ: &model::Map,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(
         w,
         r#"
-        impl<'fb> FlatbuffersSerializable<'fb> for odf::{name} {{
+        impl<'fb> FlatbuffersSerializable<'fb> for odf::{context}::{name} {{
             type OffsetT = WIPOffset<fb::{name}<'fb>>;
 
             fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {{
@@ -847,7 +870,7 @@ fn render_map_json_encoded_string(
             }}
         }}
 
-        impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{name} {{
+        impl<'fb> FlatbuffersDeserializable<fb::{name}<'fb>> for odf::{context}::{name} {{
             fn deserialize(proxy: fb::{name}<'fb>) -> Self {{
                 let entries = serde_json::from_str(proxy.entries().unwrap()).unwrap();
                 Self {{ entries }}

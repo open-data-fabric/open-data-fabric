@@ -1,0 +1,18 @@
+{
+  "$id": "https://opendatafabric.org/schemas/data/v1alpha1/OperationType",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines an operation in a changelog stream.",
+  "type": "string",
+  "format": "uint8",
+  "codegen": {
+    "rust": {
+      "dtoType": "OperationType"
+    }
+  },
+  "enum": [
+    "Append",
+    "Retract",
+    "CorrectFrom",
+    "CorrectTo"
+  ]
+}

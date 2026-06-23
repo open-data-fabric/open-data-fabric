@@ -20,7 +20,7 @@ struct Timestamp {
 // AccountRef
 // Reference to an account.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accountref-schema
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AccountRef {
@@ -34,7 +34,7 @@ table AccountRef {
 // ResourceLabels
 // Map of string keys and values that can be used to organize, categorize, and query resources.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcelabels-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceLabelsEntry {
@@ -51,7 +51,7 @@ table ResourceLabels {
 // ResourceAnnotations
 // Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceannotations-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceAnnotations
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceAnnotationsEntry {
@@ -68,7 +68,7 @@ table ResourceAnnotations {
 // ResourceHeaders
 // Container for identity and ownership information of a resource.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceheaders-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceHeaders {
@@ -96,7 +96,7 @@ table ResourceHeaders {
 // AccountType
 // Represents the type of an account.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accounttype-schema
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountType
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum AccountType: int32 {
@@ -108,7 +108,7 @@ enum AccountType: int32 {
 // Secret
 // Individual secret in raw or encrypted form.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secret-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/Secret
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Secret {
@@ -122,7 +122,7 @@ table Secret {
 // AccountSpec
 // Predefined account specification.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#accountspec-schema
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AccountSpec {
@@ -144,7 +144,7 @@ table AccountSpec {
 // ResourcePhase
 // Represents the lifecycle stage of a resource.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcephase-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourcePhase
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum ResourcePhase: int32 {
@@ -158,7 +158,7 @@ enum ResourcePhase: int32 {
 // ResourceConditions
 // Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of URL to a schema describing this condition, e.g. `https://opendatafabric.org/schemas/resource/ConditionReady.json`.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceconditions-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceConditions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceConditionsEntry {
@@ -174,7 +174,7 @@ table ResourceConditions {
 // ResourceStatus
 // Resource lifecycle and reconciliation inforamtion.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcestatus-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceStatus {
@@ -192,7 +192,7 @@ table ResourceStatus {
 // OffsetInterval
 // Describes a range of data as a closed arithmetic interval of offsets
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#offsetinterval-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/OffsetInterval
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table OffsetInterval {
@@ -206,7 +206,7 @@ table OffsetInterval {
 // DataSlice
 // Describes a slice of data added to a dataset or produced via transformation
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#dataslice-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DataSlice
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataSlice {
@@ -224,7 +224,7 @@ table DataSlice {
 // Checkpoint
 // Describes a checkpoint produced by an engine
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#checkpoint-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Checkpoint
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Checkpoint {
@@ -238,7 +238,7 @@ table Checkpoint {
 // SourceState
 // The state of the source the data was added from to allow fast resuming.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcestate-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/SourceState
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SourceState {
@@ -254,7 +254,7 @@ table SourceState {
 // ExtraAttributes
 // Container for custom key-value extension attributes. Every key must be in the form of `<domain>/<path>` (e.g. `kamu.dev/archetype`) in order to fully disambiguate the value in the face of multiple extensions. Values may be any valid JSON including nested objects.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#extraattributes-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/ExtraAttributes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ExtraAttributes {
@@ -266,7 +266,7 @@ table ExtraAttributes {
 // AddData
 // Indicates that data has been ingested into a root dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#adddata-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/AddData
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AddData {
@@ -290,7 +290,7 @@ table AddData {
 // ReadStep
 // Defines how raw data should be read into the structured form.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstep-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union ReadStep {
@@ -307,7 +307,7 @@ union ReadStep {
 // DataType
 // Defines a logical type of the field. Logical type determines the semantics and boudaries of a type and how it can be operated on, without a concern about encoding and physical layout of the data in chunks.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatype-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union DataType {
@@ -341,7 +341,7 @@ union DataType {
 // DataTypeBinary
 // A sequence of bytes. Used for arbitrary binary data.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypebinary-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Binary
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeBinary {
@@ -353,7 +353,7 @@ table DataTypeBinary {
 // DataTypeBool
 // A boolean value representing true or false.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypebool-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Bool
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeBool {
@@ -363,7 +363,7 @@ table DataTypeBool {
 // DataTypeDate
 // A calendar date.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypedate-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Date
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeDate {
@@ -373,7 +373,7 @@ table DataTypeDate {
 // DataTypeDecimal
 // A fixed-point decimal number with a specified precision and scale.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypedecimal-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Decimal
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeDecimal {
@@ -389,7 +389,7 @@ table DataTypeDecimal {
 // TimeUnit
 // Defines the unit of measurement of time
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#timeunit-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/TimeUnit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum TimeUnit: int16 {
@@ -403,7 +403,7 @@ enum TimeUnit: int16 {
 // DataTypeDuration
 // An elapsed time interval with a specified time unit.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeduration-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Duration
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeDuration {
@@ -417,7 +417,7 @@ table DataTypeDuration {
 // DataTypeFloat16
 // A floating-point number.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypefloat16-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Float16
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeFloat16 {
@@ -427,7 +427,7 @@ table DataTypeFloat16 {
 // DataTypeFloat32
 // A floating-point number.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypefloat32-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Float32
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeFloat32 {
@@ -437,7 +437,7 @@ table DataTypeFloat32 {
 // DataTypeFloat64
 // A floating-point number.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypefloat64-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Float64
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeFloat64 {
@@ -447,7 +447,7 @@ table DataTypeFloat64 {
 // DataTypeInt8
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeint8-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Int8
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeInt8 {
@@ -457,7 +457,7 @@ table DataTypeInt8 {
 // DataTypeInt16
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeint16-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Int16
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeInt16 {
@@ -467,7 +467,7 @@ table DataTypeInt16 {
 // DataTypeInt32
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeint32-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Int32
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeInt32 {
@@ -477,7 +477,7 @@ table DataTypeInt32 {
 // DataTypeInt64
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeint64-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Int64
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeInt64 {
@@ -487,7 +487,7 @@ table DataTypeInt64 {
 // DataTypeUInt8
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeuint8-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/UInt8
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeUInt8 {
@@ -497,7 +497,7 @@ table DataTypeUInt8 {
 // DataTypeUInt16
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeuint16-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/UInt16
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeUInt16 {
@@ -507,7 +507,7 @@ table DataTypeUInt16 {
 // DataTypeUInt32
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeuint32-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/UInt32
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeUInt32 {
@@ -517,7 +517,7 @@ table DataTypeUInt32 {
 // DataTypeUInt64
 // An integer value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeuint64-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/UInt64
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeUInt64 {
@@ -527,7 +527,7 @@ table DataTypeUInt64 {
 // DataTypeList
 // A list of values, all having the same data type.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypelist-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/List
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeList {
@@ -541,7 +541,7 @@ table DataTypeList {
 // DataTypeMap
 // A map of key-value pairs, represented as a list of entries (structs with key and value fields).
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypemap-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Map
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeMap {
@@ -557,7 +557,7 @@ table DataTypeMap {
 // DataTypeNull
 // A type representing the absence of a value (null).
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypenull-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Null
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeNull {
@@ -567,7 +567,7 @@ table DataTypeNull {
 // DataTypeOption
 // A type representing an optional (nullable) value of another data type.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypeoption-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Option
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeOption {
@@ -579,7 +579,7 @@ table DataTypeOption {
 // DataTypeStruct
 // A collection of named fields, each with its own data type.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypestruct-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Struct
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeStruct {
@@ -591,7 +591,7 @@ table DataTypeStruct {
 // DataTypeTime
 // A time of day value, without a date, with a specified unit of granularity.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypetime-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Time
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeTime {
@@ -605,7 +605,7 @@ table DataTypeTime {
 // DataTypeTimestamp
 // A point in time, represented as an offset from the Unix epoch in a specific timezone.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypetimestamp-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/Timestamp
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeTimestamp {
@@ -629,7 +629,7 @@ table DataTypeTimestamp {
 // DataTypeString
 // A Unicode string.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datatypestring-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataType#/$defs/String
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataTypeString {
@@ -639,7 +639,7 @@ table DataTypeString {
 // DataField
 // Represents a named field (column) in a root or nested struct schema
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datafield-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataField
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataField {
@@ -655,7 +655,7 @@ table DataField {
 // DataSchema
 // This schema aims to be a human-friendly variant of Arrow. Arrow currently specifies only the [flatbuffer format](https://github.com/apache/arrow/blob/f9301c0ba8a7ed1b0b63275cfdd4c44c26b04675/format/Schema.fbs) which has many legacy to it and is not suited to be defined by humans, so we had to define our own schema format. While inspired by Arrow - this format makes a clear separation between logical data types and encoding (physical layout) of data in the chunks.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#dataschema-schema
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/DataSchema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DataSchema {
@@ -669,7 +669,7 @@ table DataSchema {
 // ReadStepCsv
 // Reader for comma-separated files.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepcsv-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/Csv
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepCsv {
@@ -722,7 +722,7 @@ table ReadStepCsv {
 // ReadStepGeoJson
 // Reader for GeoJSON files. It expects one `FeatureCollection` object in the root and will create a record per each `Feature` inside it extracting the properties into individual columns and leaving the feature geometry in its own column.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepgeojson-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/GeoJson
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepGeoJson {
@@ -736,7 +736,7 @@ table ReadStepGeoJson {
 // ReadStepEsriShapefile
 // Reader for ESRI Shapefile format.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepesrishapefile-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/EsriShapefile
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepEsriShapefile {
@@ -752,7 +752,7 @@ table ReadStepEsriShapefile {
 // ReadStepParquet
 // Reader for Apache Parquet format.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepparquet-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/Parquet
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepParquet {
@@ -766,7 +766,7 @@ table ReadStepParquet {
 // ReadStepJson
 // Reader for JSON files that contain an array of objects within them.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepjson-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/Json
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepJson {
@@ -794,7 +794,7 @@ table ReadStepJson {
 // ReadStepNdJson
 // Reader for files containing multiple newline-delimited JSON objects with the same schema.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepndjson-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/NdJson
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepNdJson {
@@ -820,7 +820,7 @@ table ReadStepNdJson {
 // ReadStepNdGeoJson
 // Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format but instead of `FeatureCollection` object in the root it expects every individual feature object to appear on its own line.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#readstepndgeojson-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/ReadStep#/$defs/NdGeoJson
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ReadStepNdGeoJson {
@@ -834,7 +834,7 @@ table ReadStepNdGeoJson {
 // Transform
 // Engine-specific processing queries that shape the resulting data.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transform-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Transform
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union Transform {
@@ -845,7 +845,7 @@ union Transform {
 // SqlQueryStep
 // Defines a query in a multi-step SQL transformation.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sqlquerystep-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SqlQueryStep
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SqlQueryStep {
@@ -859,7 +859,7 @@ table SqlQueryStep {
 // TemporalTable
 // Temporary Flink-specific extension for creating temporal tables from streams.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#temporaltable-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/TemporalTable
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TemporalTable {
@@ -873,7 +873,7 @@ table TemporalTable {
 // TransformSql
 // Transform using one of the SQL dialects.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformsql-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Transform#/$defs/Sql
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformSql {
@@ -893,7 +893,7 @@ table TransformSql {
 // MergeStrategy
 // Merge strategy determines how newly ingested data should be combined with the data that already exists in the dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mergestrategy-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union MergeStrategy {
@@ -910,7 +910,7 @@ union MergeStrategy {
 // 
 // Under this strategy new data will be appended to the dataset in its entirety, without any deduplication.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mergestrategyappend-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy#/$defs/Append
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MergeStrategyAppend {
@@ -922,7 +922,7 @@ table MergeStrategyAppend {
 // 
 // This strategy should be used for data sources containing ledgers of events. Currently this strategy will only perform deduplication of events using user-specified primary key columns. This means that the source data can contain partially overlapping set of records and only those records that were not previously seen will be appended.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mergestrategyledger-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy#/$defs/Ledger
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MergeStrategyLedger {
@@ -945,7 +945,7 @@ table MergeStrategyLedger {
 // 
 // To identify whether a row has changed this strategy will compare all other columns one by one. If the data contains a column that is guaranteed to change whenever any of the data columns changes (for example a last modification timestamp, an incremental version, or a data hash), then it can be specified in `compareColumns` property to speed up the detection of modified rows.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mergestrategysnapshot-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy#/$defs/Snapshot
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MergeStrategySnapshot {
@@ -961,7 +961,7 @@ table MergeStrategySnapshot {
 // 
 // This is the native stream format for ODF that accurately describes the evolution of all event records including appends, retractions, and corrections as per RFC-015. No pre-processing except for format validation is done.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mergestrategychangelogstream-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy#/$defs/ChangelogStream
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MergeStrategyChangelogStream {
@@ -975,7 +975,7 @@ table MergeStrategyChangelogStream {
 // 
 // This strategy should be used for data sources containing ledgers of insert-or-update and delete events. Unlike ChangelogStream the insert-or-update events only carry the new values, so this strategy will use primary key to re-classify the events into an append or a correction from/to pair, looking up the previous values.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mergestrategyupsertstream-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MergeStrategy#/$defs/UpsertStream
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MergeStrategyUpsertStream {
@@ -987,7 +987,7 @@ table MergeStrategyUpsertStream {
 // AddPushSource
 // Describes how to ingest data into a root dataset from a certain logical source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#addpushsource-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/AddPushSource
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AddPushSource {
@@ -1005,7 +1005,7 @@ table AddPushSource {
 // AttachmentEmbedded
 // Embedded attachment item.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#attachmentembedded-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/AttachmentEmbedded
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AttachmentEmbedded {
@@ -1019,7 +1019,7 @@ table AttachmentEmbedded {
 // Attachments
 // Defines the source of attachment files.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#attachments-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Attachments
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union Attachments {
@@ -1030,7 +1030,7 @@ union Attachments {
 // AttachmentsEmbedded
 // For attachments that are specified inline and are embedded in the metadata.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#attachmentsembedded-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Attachments#/$defs/Embedded
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AttachmentsEmbedded {
@@ -1042,7 +1042,7 @@ table AttachmentsEmbedded {
 // ResourceRef
 // Reference to another resource.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceref-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceRef {
@@ -1064,7 +1064,7 @@ table ResourceRef {
 // Attribute
 // A named attribute attached to a resource, used by auth policies for access control decisions.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#attribute-schema
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Attribute
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Attribute {
@@ -1080,7 +1080,7 @@ table Attribute {
 // ValueRef
 // Reference to a value within a `VariableSet` or a `SecretSet`.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valueref-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/ValueRef
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ValueRef {
@@ -1109,7 +1109,7 @@ table ValueRef {
 // AwsCredentials
 // Access credentials for AWS or an AWS-compatible service.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#awscredentials-schema
+// Schema: https://opendatafabric.org/schemas/storage/v1alpha1/AwsCredentials
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AwsCredentials {
@@ -1123,7 +1123,7 @@ table AwsCredentials {
 // CompactionParams
 // Optional parameters to control ingestion behavior.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#compactionparams-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/CompactionParams
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table CompactionParams {
@@ -1137,7 +1137,7 @@ table CompactionParams {
 // CompressionFormat
 // Defines a compression algorithm.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#compressionformat-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/CompressionFormat
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum CompressionFormat: int32 {
@@ -1149,7 +1149,7 @@ enum CompressionFormat: int32 {
 // DatasetKind
 // Represents type of the dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetkind-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum DatasetKind: int32 {
@@ -1161,7 +1161,7 @@ enum DatasetKind: int32 {
 // MetadataEvent
 // Represents a transaction that occurred on a dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#metadataevent-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union MetadataEvent {
@@ -1184,7 +1184,7 @@ union MetadataEvent {
 // ExecuteTransformInput
 // Describes a slice of the input dataset used during a transformation
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#executetransforminput-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransformInput
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ExecuteTransformInput {
@@ -1204,7 +1204,7 @@ table ExecuteTransformInput {
 // ExecuteTransform
 // Indicates that derivative transformation has been performed.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#executetransform-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/ExecuteTransform
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ExecuteTransform {
@@ -1226,7 +1226,7 @@ table ExecuteTransform {
 // Seed
 // Establishes the identity of the dataset. Always the first metadata event in the chain.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#seed-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Seed
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Seed {
@@ -1240,7 +1240,7 @@ table Seed {
 // FetchStep
 // Defines the external source of data.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#fetchstep-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union FetchStep {
@@ -1255,7 +1255,7 @@ union FetchStep {
 // EventTimeSource
 // Defines the external source of data.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventtimesource-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union EventTimeSource {
@@ -1268,7 +1268,7 @@ union EventTimeSource {
 // EventTimeSourceFromMetadata
 // Extracts event time from the source's metadata.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventtimesourcefrommetadata-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource#/$defs/FromMetadata
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table EventTimeSourceFromMetadata {
@@ -1278,7 +1278,7 @@ table EventTimeSourceFromMetadata {
 // EventTimeSourceFromPath
 // Extracts event time from the path component of the source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventtimesourcefrompath-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource#/$defs/FromPath
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table EventTimeSourceFromPath {
@@ -1292,7 +1292,7 @@ table EventTimeSourceFromPath {
 // EventTimeSourceFromSystemTime
 // Assigns event time from the system time source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventtimesourcefromsystemtime-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/EventTimeSource#/$defs/FromSystemTime
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table EventTimeSourceFromSystemTime {
@@ -1302,7 +1302,7 @@ table EventTimeSourceFromSystemTime {
 // SourceCaching
 // Defines how external data should be cached.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcecaching-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union SourceCaching {
@@ -1313,7 +1313,7 @@ union SourceCaching {
 // SourceCachingForever
 // After source was processed once it will never be ingested again.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcecachingforever-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/SourceCaching#/$defs/Forever
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SourceCachingForever {
@@ -1323,7 +1323,7 @@ table SourceCachingForever {
 // RequestHeader
 // Defines a header (e.g. HTTP) to be passed into some request.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#requestheader-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/RequestHeader
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RequestHeader {
@@ -1337,7 +1337,7 @@ table RequestHeader {
 // FetchStepUrl
 // Pulls data from one of the supported sources by its URL.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#fetchstepurl-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep#/$defs/Url
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FetchStepUrl {
@@ -1355,7 +1355,7 @@ table FetchStepUrl {
 // SourceOrdering
 // Specifies how input files should be ordered before ingestion.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourceordering-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/SourceOrdering
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum SourceOrdering: int32 {
@@ -1367,7 +1367,7 @@ enum SourceOrdering: int32 {
 // FetchStepFilesGlob
 // Uses glob operator to match files on the local file system.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#fetchstepfilesglob-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep#/$defs/FilesGlob
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FetchStepFilesGlob {
@@ -1387,7 +1387,7 @@ table FetchStepFilesGlob {
 // EnvVar
 // Defines an environment variable passed into some job.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#envvar-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/EnvVar
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table EnvVar {
@@ -1401,7 +1401,7 @@ table EnvVar {
 // FetchStepContainer
 // Runs the specified OCI container to fetch data from an arbitrary source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#fetchstepcontainer-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep#/$defs/Container
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FetchStepContainer {
@@ -1419,7 +1419,7 @@ table FetchStepContainer {
 // MqttQos
 // MQTT quality of service class.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mqttqos-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MqttQos
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum MqttQos: int32 {
@@ -1432,7 +1432,7 @@ enum MqttQos: int32 {
 // MqttTopicSubscription
 // MQTT topic subscription parameters.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#mqtttopicsubscription-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/MqttTopicSubscription
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MqttTopicSubscription {
@@ -1448,7 +1448,7 @@ table MqttTopicSubscription {
 // FetchStepMqtt
 // Connects to an MQTT broker to fetch events from the specified topic.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#fetchstepmqtt-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep#/$defs/Mqtt
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FetchStepMqtt {
@@ -1468,7 +1468,7 @@ table FetchStepMqtt {
 // FetchStepEthereumLogs
 // Connects to an Ethereum node to stream transaction logs.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#fetchstepethereumlogs-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep#/$defs/EthereumLogs
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FetchStepEthereumLogs {
@@ -1489,7 +1489,7 @@ table FetchStepEthereumLogs {
 // PrepStep
 // Defines the steps to prepare raw data for ingestion.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#prepstep-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/PrepStep
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union PrepStep {
@@ -1501,7 +1501,7 @@ union PrepStep {
 // PrepStepDecompress
 // Pulls data from one of the supported sources by its URL.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#prepstepdecompress-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/PrepStep#/$defs/Decompress
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table PrepStepDecompress {
@@ -1515,7 +1515,7 @@ table PrepStepDecompress {
 // PrepStepPipe
 // Executes external command to process the data using piped input/output.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#prepsteppipe-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/PrepStep#/$defs/Pipe
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table PrepStepPipe {
@@ -1531,7 +1531,7 @@ table PrepStepWrapper {
 // SetPollingSource
 // Contains information on how externally-hosted data can be ingested into the root dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#setpollingsource-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/SetPollingSource
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetPollingSource {
@@ -1551,7 +1551,7 @@ table SetPollingSource {
 // TransformInput
 // Describes a derivative transformation input
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transforminput-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/TransformInput
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformInput {
@@ -1565,7 +1565,7 @@ table TransformInput {
 // SetTransform
 // Defines a transformation that produces data in a derivative dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#settransform-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SetTransform
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetTransform {
@@ -1579,7 +1579,7 @@ table SetTransform {
 // SetVocab
 // Lets you manipulate names of the system columns to avoid conflicts.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#setvocab-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SetVocab
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetVocab {
@@ -1597,7 +1597,7 @@ table SetVocab {
 // SetAttachments
 // Associates a set of files with this dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#setattachments-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SetAttachments
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetAttachments {
@@ -1609,7 +1609,7 @@ table SetAttachments {
 // SetInfo
 // Provides basic human-readable information about a dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#setinfo-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SetInfo
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetInfo {
@@ -1623,7 +1623,7 @@ table SetInfo {
 // SetLicense
 // Defines a license that applies to this dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#setlicense-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SetLicense
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetLicense {
@@ -1641,7 +1641,7 @@ table SetLicense {
 // SetDataSchema
 // Specifies the complete schema of Data Slices added to the Dataset following this event.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#setdataschema-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/SetDataSchema
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SetDataSchema {
@@ -1655,7 +1655,7 @@ table SetDataSchema {
 // DisablePushSource
 // Disables the previously defined source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#disablepushsource-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/DisablePushSource
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DisablePushSource {
@@ -1667,7 +1667,7 @@ table DisablePushSource {
 // DisablePollingSource
 // Disables the previously defined polling source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#disablepollingsource-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/DisablePollingSource
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DisablePollingSource {
@@ -1681,7 +1681,7 @@ table MetadataEventWrapper {
 // PersistentVolumeRef
 // Reference to a `PersistentVolume`.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumeref-schema
+// Schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeRef
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table PersistentVolumeRef {
@@ -1697,7 +1697,7 @@ table PersistentVolumeRef {
 // DatasetSpec
 // Represents a desired state of the dataset metadata.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetspec-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DatasetSpec {
@@ -1713,7 +1713,7 @@ table DatasetSpec {
 // LabelFilter
 // Filters that work on resource labels and identity headers.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#labelfilter-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/LabelFilter
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table LabelFilterEntry {
@@ -1730,7 +1730,7 @@ table LabelFilter {
 // DatasetSelector
 // Selects one or more datasets by name pattern and optional filters.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetselector-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSelector
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DatasetSelector {
@@ -1756,7 +1756,7 @@ table DatasetSelector {
 // Represents a projection of the dataset metadata at a single point in time.
 // This type is typically used for defining new datasets and changing the existing ones.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetsnapshot-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/DatasetSnapshot
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DatasetSnapshot {
@@ -1772,7 +1772,7 @@ table DatasetSnapshot {
 // DatasetVocabulary
 // Specifies the mapping of system columns onto dataset schema.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#datasetvocabulary-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetVocabulary
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DatasetVocabulary {
@@ -1798,7 +1798,7 @@ table DatasetVocabulary {
 // EventFilter
 // Filters that work on domain event types and fields.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#eventfilter-schema
+// Schema: https://opendatafabric.org/schemas/event/v1alpha1/EventFilter
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table EventFilterEntry {
@@ -1815,7 +1815,7 @@ table EventFilter {
 // ResourceSelector
 // Matches zero or many resources using identity and label filters.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourceselector-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceSelector
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceSelector {
@@ -1840,7 +1840,7 @@ table ResourceSelector {
 // FlowTrigger
 // Condition that causes a flow to be executed.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtrigger-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union FlowTrigger {
@@ -1854,7 +1854,7 @@ union FlowTrigger {
 // FlowTriggerSchedule
 // Triggers the flow on a cron schedule.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerschedule-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger#/$defs/Schedule
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerSchedule {
@@ -1866,7 +1866,7 @@ table FlowTriggerSchedule {
 // FlowTriggerEvent
 // Triggers the flow when an event bus event matching one of the filters is observed.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerevent-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger#/$defs/Event
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerEvent {
@@ -1882,7 +1882,7 @@ table FlowTriggerEvent {
 // FlowTriggerSource
 // Triggers the flow when a source receives new data, with optional batching controls.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggersource-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger#/$defs/Source
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerSource {
@@ -1898,7 +1898,7 @@ table FlowTriggerSource {
 // FlowTriggerDataset
 // Triggers the flow when matching datasets are updated.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowtriggerdataset-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger#/$defs/Dataset
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerDataset {
@@ -1916,7 +1916,7 @@ table FlowTriggerWrapper {
 // TaskSpec
 // An individual work item to be executed as part of a flow.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspec-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union TaskSpec {
@@ -1930,7 +1930,7 @@ union TaskSpec {
 // IngestParams
 // Optional parameters to control ingestion behavior.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingestparams-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/IngestParams
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngestParams {
@@ -1942,7 +1942,7 @@ table IngestParams {
 // TaskSpecIngest
 // Fetches data from a source and appends it to a dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecingest-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec#/$defs/Ingest
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TaskSpecIngest {
@@ -1956,7 +1956,7 @@ table TaskSpecIngest {
 // TaskSpecCompaction
 // Compacts data files in matching datasets to improve query performance.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspeccompaction-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec#/$defs/Compaction
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TaskSpecCompaction {
@@ -1968,7 +1968,7 @@ table TaskSpecCompaction {
 // TaskSpecGarbageCollection
 // Removes unreferenced data files from matching datasets.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecgarbagecollection-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec#/$defs/GarbageCollection
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TaskSpecGarbageCollection {
@@ -1978,7 +1978,7 @@ table TaskSpecGarbageCollection {
 // TaskSpecWebhookCall
 // Dispatches a certain payload to a specific `WebhookTarget`.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#taskspecwebhookcall-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec#/$defs/WebhookCall
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TaskSpecWebhookCall {
@@ -1996,7 +1996,7 @@ table TaskSpecWrapper {
 // FlowSpec
 // Defines a sequence of tasks to be executed upon certain trigger conditions.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#flowspec-schema
+// Schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowSpec {
@@ -2012,7 +2012,7 @@ table FlowSpec {
 // Ingress
 // Defines the point where data enters the system.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingress-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union Ingress {
@@ -2028,7 +2028,7 @@ union Ingress {
 // IngressUrl
 // Pulls data from one of the supported sources by its URL.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressurl-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress#/$defs/Url
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressUrl {
@@ -2046,7 +2046,7 @@ table IngressUrl {
 // IngressFilesGlob
 // Uses glob operator to match files on the local file system.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressfilesglob-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress#/$defs/FilesGlob
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressFilesGlob {
@@ -2066,7 +2066,7 @@ table IngressFilesGlob {
 // IngressContainer
 // Runs the specified OCI container to fetch data from an arbitrary source.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingresscontainer-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress#/$defs/Container
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressContainer {
@@ -2084,7 +2084,7 @@ table IngressContainer {
 // IngressMqtt
 // Connects to an MQTT broker to fetch events from the specified topic.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressmqtt-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress#/$defs/Mqtt
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressMqtt {
@@ -2104,7 +2104,7 @@ table IngressMqtt {
 // IngressEvmLogs
 // Connects to an EVM (Ethereum) node to stream transaction logs.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressevmlogs-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress#/$defs/EvmLogs
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressEvmLogs {
@@ -2125,7 +2125,7 @@ table IngressEvmLogs {
 // IngressBuffer
 // Buffer configuration for holding pushed records until they are ingested.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressbuffer-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/IngressBuffer
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union IngressBuffer {
@@ -2136,7 +2136,7 @@ union IngressBuffer {
 // IngressBufferMemory
 // An in-memory buffer.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressbuffermemory-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/IngressBuffer#/$defs/Memory
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressBufferMemory {
@@ -2150,7 +2150,7 @@ table IngressBufferMemory {
 // IngressRestEndpoint
 // Exposes a REST HTTP endpoint that accepts pushed data records.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#ingressrestendpoint-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/Ingress#/$defs/RestEndpoint
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table IngressRestEndpoint {
@@ -2162,7 +2162,7 @@ table IngressRestEndpoint {
 // Manifest
 // An object that wraps the metadata resources providing versioning and type identification. All root-level resources are wrapped with a manifest when serialized to disk.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#manifest-schema
+// Schema: https://opendatafabric.org/schemas/legacy/v0/Manifest
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Manifest {
@@ -2178,7 +2178,7 @@ table Manifest {
 // MetadataBlock
 // An individual block in the metadata chain that captures the history of modifications of a dataset.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#metadatablock-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataBlock
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table MetadataBlock {
@@ -2193,10 +2193,24 @@ table MetadataBlock {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OperationType
+// Defines an operation in a changelog stream.
+//
+// Schema: https://opendatafabric.org/schemas/data/v1alpha1/OperationType
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum OperationType: ubyte {
+  Append,
+  Retract,
+  CorrectFrom,
+  CorrectTo,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // PersistentVolumeSpec
 // Defines a storage volume where data can be stored and its access credentials.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespec-schema
+// Schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 union PersistentVolumeSpec {
@@ -2207,7 +2221,7 @@ union PersistentVolumeSpec {
 // VolumeCapacity
 // Storage capacity allocation.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#volumecapacity-schema
+// Schema: https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table VolumeCapacity {
@@ -2219,7 +2233,7 @@ table VolumeCapacity {
 // PersistentVolumeSpecS3
 // An Amazon S3 or S3-compatible object storage bucket.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#persistentvolumespecs3-schema
+// Schema: https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpec#/$defs/S3
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table PersistentVolumeSpecS3 {
@@ -2241,7 +2255,7 @@ table PersistentVolumeSpecS3 {
 // ProjectionSpec
 // Represents a projection of a dataaset history into a state for fast lookups.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#projectionspec-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/ProjectionSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ProjectionSpec {
@@ -2255,7 +2269,7 @@ table ProjectionSpec {
 // RawQueryRequest
 // Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#rawqueryrequest-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryRequest
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RawQueryRequest {
@@ -2278,7 +2292,7 @@ union RawQueryResponse {
 // RawQueryResponseProgress
 // Reports query progress
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#rawqueryresponseprogress-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse#/$defs/Progress
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RawQueryResponseProgress {
@@ -2288,7 +2302,7 @@ table RawQueryResponseProgress {
 // RawQueryResponseSuccess
 // Query executed successfully
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#rawqueryresponsesuccess-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse#/$defs/Success
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RawQueryResponseSuccess {
@@ -2300,7 +2314,7 @@ table RawQueryResponseSuccess {
 // RawQueryResponseInvalidQuery
 // Query did not pass validation
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#rawqueryresponseinvalidquery-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse#/$defs/InvalidQuery
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RawQueryResponseInvalidQuery {
@@ -2312,7 +2326,7 @@ table RawQueryResponseInvalidQuery {
 // RawQueryResponseInternalError
 // Internal error during query execution
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#rawqueryresponseinternalerror-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponse#/$defs/InternalError
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RawQueryResponseInternalError {
@@ -2325,7 +2339,7 @@ table RawQueryResponseInternalError {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // RawQueryResponseRoot
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#rawqueryresponseroot-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/RawQueryResponseRoot
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RawQueryResponseRoot {
@@ -2336,7 +2350,7 @@ table RawQueryResponseRoot {
 // Relation
 // A directed relationship between two resources, optionally carrying a typed value.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relation-schema
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Relation {
@@ -2354,7 +2368,7 @@ table Relation {
 // RelationsSpec
 // Specifies resource attributes and relations between resources on which auth policies act upon.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#relationsspec-schema
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table RelationsSpec {
@@ -2368,7 +2382,7 @@ table RelationsSpec {
 // Resource
 // Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resource-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Resource {
@@ -2386,7 +2400,7 @@ table Resource {
 // ResourceCondition
 // Generic contdition that can be added by contollers to provide additional information about the state of a resource.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#resourcecondition-schema
+// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ResourceCondition {
@@ -2406,7 +2420,7 @@ table ResourceCondition {
 // Secrets
 // Container for key-value secrets. Every key must be a string. Values may be strings with raw unencrypted data or objects that signify the encoding.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secrets-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/Secrets
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SecretsEntry {
@@ -2422,7 +2436,7 @@ table Secrets {
 // SecretSetSpec
 // Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#secretsetspec-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSetSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SecretSetSpec {
@@ -2434,7 +2448,7 @@ table SecretSetSpec {
 // ValueRefs
 // Container for key-value variables. Every key must be a string. Values shoud reference fields in `SecretSet`s and `VariableSet`s.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#valuerefs-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/ValueRefs
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table ValueRefsEntry {
@@ -2450,7 +2464,7 @@ table ValueRefs {
 // SourceSpec
 // Specifies an external source of data for ingestion.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#sourcespec-schema
+// Schema: https://opendatafabric.org/schemas/source/v1alpha1/SourceSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table SourceSpec {
@@ -2474,7 +2488,7 @@ table SourceSpec {
 // Watermark
 // Represents a watermark in the event stream.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#watermark-schema
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Watermark
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Watermark {
@@ -2488,7 +2502,7 @@ table Watermark {
 // TransformRequestInput
 // Sent as part of the engine transform request operation to describe the input
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformrequestinput-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequestInput
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformRequestInput {
@@ -2514,7 +2528,7 @@ table TransformRequestInput {
 // TransformRequest
 // Sent by the coordinator to an engine to perform the next step of data transformation
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformrequest-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformRequest
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformRequest {
@@ -2551,7 +2565,7 @@ union TransformResponse {
 // TransformResponseProgress
 // Reports query progress
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformresponseprogress-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse#/$defs/Progress
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformResponseProgress {
@@ -2561,7 +2575,7 @@ table TransformResponseProgress {
 // TransformResponseSuccess
 // Query executed successfully
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformresponsesuccess-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse#/$defs/Success
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformResponseSuccess {
@@ -2575,7 +2589,7 @@ table TransformResponseSuccess {
 // TransformResponseInvalidQuery
 // Query did not pass validation
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformresponseinvalidquery-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse#/$defs/InvalidQuery
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformResponseInvalidQuery {
@@ -2587,7 +2601,7 @@ table TransformResponseInvalidQuery {
 // TransformResponseInternalError
 // Internal error during query execution
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformresponseinternalerror-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponse#/$defs/InternalError
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformResponseInternalError {
@@ -2600,7 +2614,7 @@ table TransformResponseInternalError {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TransformResponseRoot
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#transformresponseroot-schema
+// Schema: https://opendatafabric.org/schemas/engine/v1alpha1/TransformResponseRoot
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table TransformResponseRoot {
@@ -2611,7 +2625,7 @@ table TransformResponseRoot {
 // Variable
 // Individual variable.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variable-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/Variable
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Variable {
@@ -2623,7 +2637,7 @@ table Variable {
 // Variables
 // Container for key-value variables. Every key must be a string. Values may be raw strings or objects that incorporate the encoding.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variables-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/Variables
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table VariablesEntry {
@@ -2639,7 +2653,7 @@ table Variables {
 // VariableSetSpec
 // Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#variablesetspec-schema
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSetSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table VariableSetSpec {
@@ -2651,7 +2665,7 @@ table VariableSetSpec {
 // WebhookTargetSpec
 // Defines a webhook target endpoint that can receive event notifications and data.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetspec-schema
+// Schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table WebhookTargetSpec {
@@ -2665,7 +2679,7 @@ table WebhookTargetSpec {
 // WebhookTargetStatusValue
 // Status of the target endpoint
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatusvalue-schema
+// Schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus#/$defs/Value
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum WebhookTargetStatusValue: int32 {
@@ -2677,7 +2691,7 @@ enum WebhookTargetStatusValue: int32 {
 // WebhookTargetStatus
 // Represents the status of the webhook target endpoint.
 //
-// See: https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#webhooktargetstatus-schema
+// Schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table WebhookTargetStatus {

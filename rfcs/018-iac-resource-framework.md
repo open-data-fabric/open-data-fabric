@@ -638,23 +638,20 @@ spec:
 
 
 # QQQQQQQQQQQQQQQQQQQQQQQQQQ
-- Generate resource types + have a const for schema ID
-- Move `attributes` into `spec` or `headers`?
+- Extensibility of task types / ingress types ...
+- Move ReBAC `attributes` into `spec` or `headers`?
 - Make labels / annotations / attributes full URLs?
 - DID vs ID
   - will account/dataset have both? should we allow DIDs in references?
   - or should we only use DIDs?
     - might be useful for delegation of control in future
     - but what does it mean for moving pipelines between nodes? 
-- Extensibility of task types
-- Handle errors in `IntoDto`
-- Get rid of StructOrString in struct fields in favor of `serde_as`
 
 
 Future:
-- Codegen namespaces per domain
-  - Remove `Resource*` prefix from types in `resource` domain?
 - Start moving event bus events schemas into ODF
+- Get rid of StructOrString in struct fields in favor of `serde_as`
+- Remove `Resource*` prefix from types in `resource` domain?
 - Can we replace full urls with JSON-LD like contexts:
   - instead `https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root`
   - have `"dataset:DatasetKind": Root`

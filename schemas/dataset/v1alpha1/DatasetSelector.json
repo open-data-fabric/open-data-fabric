@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSelector",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Selects one or more datasets by name pattern and optional filters.",
   "format": "struct-or-string",

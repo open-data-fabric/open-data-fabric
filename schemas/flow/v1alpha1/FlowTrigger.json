@@ -72,7 +72,7 @@
       ],
       "properties": {
         "dataset": {
-          "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/DatasetSelector",
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSelector",
           "description": "Selector that identifies which datasets can trigger this flow.",
           "unevaluatedProperties": false
         },

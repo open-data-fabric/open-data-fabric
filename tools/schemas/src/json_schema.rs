@@ -45,7 +45,7 @@ pub struct Schema {
     #[serde(rename = "$ref")]
     pub r#ref: Option<String>,
 
-    pub r#const: Option<String>,
+    pub r#const: Option<serde_json::Value>,
 
     // ODF Extensions
     pub format: Option<Format>,
@@ -128,7 +128,7 @@ pub fn load_schemas(schemas_dir: &Path) -> Vec<Schema> {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
+pub fn lint(top_level_schemas: &[Schema]) {
     let mut schemas = HashMap::new();
 
     // Add JSON Schema meta-schema
@@ -174,6 +174,27 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
         schemas.insert(id, s);
     }
 
+    // Check names are unique, as some codegens don't support context-level modularity yet
+    let mut seen_names = HashMap::new();
+    for id in schemas.keys() {
+        if id.as_str() == SchemaId::METASCHEMA_JSONSCHEMA
+            || id.as_str().starts_with(SchemaId::METASCHEMA_BASE_URL)
+        {
+            continue;
+        }
+
+        let name = if let Some(p) = id.parent() {
+            format!("{}{}", p.name(), id.name())
+        } else {
+            id.name().to_string()
+        };
+        if let Some(prev) = seen_names.insert(name.clone(), id) {
+            panic!(
+                "Name {name} in schema {id} is already used by schema {prev}. We don't allow it as some codegens don't yet support context-level modularity",
+            )
+        }
+    }
+
     let mut to_explore = Vec::new();
     let mut explored = HashSet::new();
 
@@ -187,7 +208,8 @@ pub fn check_referential_integrity(top_level_schemas: &[Schema]) {
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ENGINE_MESSAGE)
                 || id.name() == "Manifest"
                 || id.name() == "DatasetSnapshot"
-                || id.name() == "MetadataBlock")
+                || id.name() == "MetadataBlock"
+                || id.name() == "OperationType")
     }) {
         to_explore.push((id.clone(), *sch));
     }

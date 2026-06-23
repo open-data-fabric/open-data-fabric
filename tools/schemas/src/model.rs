@@ -279,6 +279,7 @@ pub struct Field {
     pub description: String,
     pub default: Option<serde_json::Value>,
     pub examples: Option<Vec<serde_json::Value>>,
+    pub constant: Option<serde_json::Value>,
     pub explicit_tag: Option<u32>,
     pub deprecated: bool,
     pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
@@ -507,6 +508,8 @@ fn parse_type_struct(
     let mut generics = Vec::new();
 
     for (pname, mut psch) in properties {
+        let fconst = psch.r#const.take();
+
         let fdesc = psch
             .description
             .take()
@@ -541,6 +544,7 @@ fn parse_type_struct(
             description: fdesc,
             default: fdefault,
             examples: fexamples,
+            constant: fconst,
             explicit_tag: ftag,
             deprecated: fdeprecated,
             codegen_hints,
@@ -713,7 +717,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         default: None,
         description: Some(description),
         tag: None,
-        codegen: None,
+        codegen,
         deprecated: None,
         examples: None,
         src: None,
@@ -756,7 +760,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         variants,
         description,
         format,
-        codegen_hints: Default::default(),
+        codegen_hints: codegen.unwrap_or_default(),
         src,
     }
 }

@@ -1,12 +1,11 @@
+use std::collections::BTreeMap;
+
 use crate::{
     codegen::rust_common::format_ident,
     json_schema::{CodegenHint, CodegenLanguage},
     model,
 };
 use convert_case::{Case, Casing};
-
-const SPEC_URL: &str =
-    "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
 
 const PREAMBLE: &str = indoc::indoc!(
     r#"
@@ -20,36 +19,34 @@ const PREAMBLE: &str = indoc::indoc!(
     #![allow(unused_variables)]
 
     use std::path::PathBuf;
-    use ::serde::{Deserialize, Serialize, Serializer, Deserializer};
+
+    use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
     use chrono::{DateTime, Utc};
     use multiformats::*;
     use setty::types::{ByteSize, DurationString};
 
     use super::formats::*;
-    use crate::identity::*;
-
-    mod dtos {
-        pub use crate::dtos::*;
-        pub use crate::identity::*;
-    }
+    use crate::auth::{AccountID, AccountName};
+    use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
+    use crate::dtos;
+    use crate::errors::ValidationError;
+    use crate::resource::{ResourceID, ResourceName, ResourceTypeRef, ResourceTypeUri};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub trait IntoDto {
         type Dto;
-        fn into_dto(self) -> Self::Dto;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError>;
     }
 
     impl IntoDto for ::serde::de::IgnoredAny {
         type Dto = Self;
-        fn into_dto(self) -> Self::Dto { self }
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> { Ok(self) }
     }
 
     impl IntoDto for ::serde_json::Value {
         type Dto = Self;
-        fn into_dto(self) -> Self::Dto {
-            self
-        }
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> { Ok(self) }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +69,9 @@ const PREAMBLE: &str = indoc::indoc!(
                 where
                     D: Deserializer<'de>,
                 {
-                    <$proxy>::deserialize(deserializer).map(Into::into)
+                    use ::serde::de::Error;
+                    let proxy = <$proxy>::deserialize(deserializer)?;
+                    proxy.try_into().map_err(D::Error::custom)
                 }
             }
         };
@@ -85,56 +84,54 @@ const PREAMBLE: &str = indoc::indoc!(
 pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     writeln!(w, "{}", PREAMBLE)?;
 
-    // Resource variants are covered by Resource<SpecT> type
-    let types: Vec<_> = model
+    // Group by `context` and sort by names
+    let types_by_context: BTreeMap<&str, BTreeMap<String, &model::TypeDefinition>> = model
         .types
         .values()
         .filter(|t| !matches!(t.metatype(), model::MetaType::Resource))
-        .collect();
+        .fold(BTreeMap::new(), |mut map, t| {
+            map.entry(t.id().context())
+                .or_insert_with(BTreeMap::new)
+                .insert(t.id().join("").into(), t);
+            map
+        });
 
-    for typ in &types {
+    for (context, types) in &types_by_context {
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
         )?;
-        writeln!(w, "// {}", typ.id().join(""))?;
+        writeln!(w, "// {context}")?;
         writeln!(
             w,
-            "// {SPEC_URL}#{}-schema",
-            typ.id().join("").to_lowercase()
+            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n"
         )?;
-        writeln!(
-            w,
-            "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
-        )?;
-        writeln!(w)?;
 
-        match &typ {
-            model::TypeDefinition::Struct(t) => render_struct(&model, t, w)?,
-            model::TypeDefinition::Union(t) => render_union(t, w)?,
-            model::TypeDefinition::Enum(t) => render_enum(t, w)?,
-            model::TypeDefinition::Map(t) => render_map(&model, t, w)?,
+        writeln!(w, "pub mod {context} {{")?;
+        writeln!(w, "#[allow(unused_imports)]")?;
+        writeln!(w, "use super::*;\n")?;
+
+        for typ in types.values() {
+            writeln!(w, "// Schema: {}", typ.id().schema_id())?;
+
+            match &typ {
+                model::TypeDefinition::Struct(t) => render_struct(&model, t, w)?,
+                model::TypeDefinition::Union(t) => render_union(t, w)?,
+                model::TypeDefinition::Enum(t) => render_enum(t, w)?,
+                model::TypeDefinition::Map(t) => render_map(&model, t, w)?,
+            }
+
+            writeln!(w)?;
+
+            // TODO: Support #[serde_as(as = "X")] for generic types
+            if !matches!(typ, model::TypeDefinition::Struct(t) if !t.generics.is_empty()) {
+                let name = typ.id().join("");
+                writeln!(w, "implement_serde_as!(dtos::{context}::{name}, {name});\n")?;
+            }
         }
 
-        writeln!(w)?;
+        writeln!(w, "}}\n")?;
     }
-    writeln!(
-        w,
-        "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
-    )?;
-    writeln!(w)?;
-
-    for typ in &types {
-        // TODO: Support #[serde_as(as = "X")] for generic types
-        match &typ {
-            model::TypeDefinition::Struct(t) if !t.generics.is_empty() => continue,
-            _ => (),
-        };
-        let name = typ.id().join("");
-        writeln!(w, "implement_serde_as!(dtos::{name}, {name});")?;
-    }
-
-    writeln!(w)?;
 
     Ok(())
 }
@@ -146,6 +143,7 @@ fn render_struct(
     typ: &model::Struct,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
     let generics = format!("<{}>", typ.generics.join(", "));
     let is_external = typ
@@ -181,12 +179,18 @@ fn render_struct(
         writeln!(w, "where")?;
         for generic in &typ.generics {
             writeln!(w, "{generic}: IntoDto,")?;
-            writeln!(w, "<{generic} as IntoDto>::Dto: From<{generic}>,")?;
+            writeln!(
+                w,
+                "<{generic} as IntoDto>::Dto: TryFrom<{generic}>, ValidationError: From<<<{generic} as IntoDto>::Dto as TryFrom<{generic}>>::Error>,"
+            )?;
         }
     }
     writeln!(w, "{{")?;
-    writeln!(w, "type Dto = dtos::{name}{generics_dto};")?;
-    writeln!(w, "fn into_dto(self) -> Self::Dto {{ self.into() }}")?;
+    writeln!(w, "type Dto = dtos::{context}::{name}{generics_dto};")?;
+    writeln!(
+        w,
+        "fn into_dto(self) -> Result<Self::Dto, ValidationError> {{ self.try_into() }}"
+    )?;
     writeln!(w, "}}")?;
 
     if typ.from_string {
@@ -194,12 +198,12 @@ fn render_struct(
 
         writeln!(
             w,
-            "impl From<dtos::{name}> for StructOrString<{name}> {{ fn from(v: dtos::{name}) -> Self {{ Self(v.into()) }} }}"
+            "impl From<dtos::{context}::{name}> for StructOrString<{name}> {{ fn from(v: dtos::{context}::{name}) -> Self {{ Self(v.into()) }} }}"
         )?;
 
         writeln!(
             w,
-            "impl From<StructOrString<{name}>> for dtos::{name} {{ fn from(v: StructOrString<{name}>) -> Self {{ v.0.into() }} }}"
+            "impl TryFrom<StructOrString<{name}>> for dtos::{context}::{name} {{ type Error = ValidationError; fn try_from(v: StructOrString<{name}>) -> Result<Self, ValidationError> {{ v.0.try_into() }} }}"
         )?;
     }
 
@@ -234,12 +238,15 @@ fn render_struct(
 
     writeln!(
         w,
-        "impl{generics_from_to} From<dtos::{name}{generics_from}> for {name}{generics_to} {whereas} {{"
+        "impl{generics_from_to} From<dtos::{context}::{name}{generics_from}> for {name}{generics_to} {whereas} {{"
     )?;
-    writeln!(w, "fn from(v: dtos::{name}{generics_from}) -> Self {{")?;
+    writeln!(
+        w,
+        "fn from(v: dtos::{context}::{name}{generics_from}) -> Self {{"
+    )?;
     writeln!(w, "Self {{")?;
     for field in typ.fields.values() {
-        render_field_conversion(field, w)?;
+        render_field_into(field, w)?;
     }
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
@@ -247,16 +254,32 @@ fn render_struct(
 
     writeln!(w)?;
 
+    let whereas: Vec<_> = typ
+        .generics
+        .iter()
+        .map(|v| format!("{v}To: TryFrom<{v}From>, ValidationError: From<<{v}To as TryFrom<{v}From>>::Error>,"))
+        .collect();
+
+    let whereas = if typ.generics.is_empty() {
+        String::new()
+    } else {
+        format!("where {}", whereas.join(", "))
+    };
+
     writeln!(
         w,
-        "impl{generics_from_to} From<{name}{generics_from}> for dtos::{name}{generics_to} {whereas} {{"
+        "impl{generics_from_to} TryFrom<{name}{generics_from}> for dtos::{context}::{name}{generics_to} {whereas} {{"
     )?;
-    writeln!(w, "fn from(v: {name}{generics_from}) -> Self {{")?;
-    writeln!(w, "Self {{")?;
+    writeln!(w, "type Error = ValidationError;")?;
+    writeln!(
+        w,
+        "fn try_from(v: {name}{generics_from}) -> Result<Self, ValidationError> {{"
+    )?;
+    writeln!(w, "Ok(Self {{")?;
     for field in typ.fields.values() {
-        render_field_conversion(field, w)?;
+        render_field_try_into(field, w)?;
     }
-    writeln!(w, "}}")?;
+    writeln!(w, "}})")?;
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
 
@@ -320,7 +343,15 @@ fn render_field(
     Ok(())
 }
 
-fn render_field_conversion(
+fn needs_conversion(typ: &model::Type) -> bool {
+    match typ {
+        model::Type::Generic(_) | model::Type::Custom(_) => true,
+        model::Type::Array(t) => needs_conversion(&t.item_type),
+        _ => false,
+    }
+}
+
+fn render_field_into(
     field: &model::Field,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
@@ -331,7 +362,9 @@ fn render_field_conversion(
 
     let fname = format_ident(&field.name);
 
-    let convert = if let Some(container) = container {
+    let convert = if !needs_conversion(&field.typ) {
+        format!("v.{fname}")
+    } else if let Some(container) = container {
         format!(
             "{container}::new({})",
             format_into(&field.typ, &format!("(*v.{fname})"))
@@ -349,44 +382,64 @@ fn render_field_conversion(
 
 fn format_into(typ: &model::Type, ident: &str) -> String {
     match typ {
-        model::Type::Boolean
-        | model::Type::Int8
-        | model::Type::Int16
-        | model::Type::Int32
-        | model::Type::Int64
-        | model::Type::UInt8
-        | model::Type::UInt16
-        | model::Type::UInt32
-        | model::Type::UInt64
-        | model::Type::String
-        | model::Type::ByteSize
-        | model::Type::DatasetAlias
-        | model::Type::DatasetId
-        | model::Type::DatasetRef
-        | model::Type::DateTime
-        | model::Type::Duration
-        | model::Type::Flatbuffers
-        | model::Type::Multicodec
-        | model::Type::Multihash
-        | model::Type::Path
-        | model::Type::Regex
-        | model::Type::Url
-        | model::Type::AccountId
-        | model::Type::AccountName
-        | model::Type::ResourceId
-        | model::Type::ResourceName
-        | model::Type::ResourceTypeUri
-        | model::Type::ResourceTypeName
-        | model::Type::ResourceTypeRef
-        | model::Type::AnyJson => format!("{ident}"),
         model::Type::Generic(_) | model::Type::Custom(_) => format!("{ident}.into()"),
         model::Type::Array(_) => format!("{ident}.into_iter().map(Into::into).collect()"),
+        _ => unreachable!(),
+    }
+}
+
+fn render_field_try_into(
+    field: &model::Field,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let container = field
+        .codegen_hints
+        .get(&CodegenLanguage::Rust)
+        .and_then(|m| m.get(&CodegenHint::Container));
+
+    let fname = format_ident(&field.name);
+
+    let convert = if !needs_conversion(&field.typ) {
+        format!("v.{fname}")
+    } else if let Some(container) = container {
+        format!(
+            "{container}::new({}?)",
+            format_try_into(&field.typ, &format!("*v.{fname}"))
+        )
+    } else if !field.optional {
+        format!("{}?", format_try_into(&field.typ, &format!("v.{fname}")))
+    } else {
+        format!(
+            "v.{fname}.map(|v| {{ {} }}).transpose()?",
+            format_try_into(&field.typ, "v")
+        )
+    };
+
+    writeln!(w, "{fname}: {convert},",)?;
+
+    Ok(())
+}
+
+fn format_try_into(typ: &model::Type, ident: &str) -> String {
+    match typ {
+        model::Type::Generic(t) => format!("{t}To::try_from({ident})"),
+        model::Type::Custom(t) => {
+            format!("dtos::{}::{}::try_from({ident})", t.context(), t.join(""))
+        }
+        model::Type::Array(t) => {
+            format!(
+                "{ident}.into_iter().map(|i| {}).collect::<Result<_,_>>()",
+                format_try_into(&t.item_type, "i")
+            )
+        }
+        _ => unreachable!(),
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
@@ -395,12 +448,13 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w, "pub enum {name} {{")?;
 
     for variant in &typ.variants {
+        let var_ctx = variant.context();
         let varname = variant.name();
         let typename = variant.join("");
 
         // Allow lowercase and camelCase names
         render_aliases(varname, w)?;
-        writeln!(w, "{varname}({typename}),")?;
+        writeln!(w, "{varname}({var_ctx}::{typename}),")?;
     }
 
     writeln!(w, "}}")?;
@@ -410,32 +464,35 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 
         writeln!(
             w,
-            "impl From<dtos::{name}> for UnionOrString<{name}> {{ fn from(v: dtos::{name}) -> Self {{ Self(v.into()) }} }}"
+            "impl From<dtos::{context}::{name}> for UnionOrString<{name}> {{ fn from(v: dtos::{context}::{name}) -> Self {{ Self(v.into()) }} }}"
         )?;
 
         writeln!(
             w,
-            "impl From<UnionOrString<{name}>> for dtos::{name} {{ fn from(v: UnionOrString<{name}>) -> Self {{ v.0.into() }} }}"
+            "impl TryFrom<UnionOrString<{name}>> for dtos::{context}::{name} {{ type Error = ValidationError; fn try_from(v: UnionOrString<{name}>) -> Result<Self, Self::Error> {{ v.0.try_into() }} }}"
         )?;
     }
 
     writeln!(w)?;
 
     writeln!(w, "impl IntoDto for {name} {{")?;
-    writeln!(w, "type Dto = dtos::{name};")?;
-    writeln!(w, "fn into_dto(self) -> Self::Dto {{ self.into() }}")?;
+    writeln!(w, "type Dto = dtos::{context}::{name};")?;
+    writeln!(
+        w,
+        "fn into_dto(self) -> Result<Self::Dto, ValidationError> {{ self.try_into() }}"
+    )?;
     writeln!(w, "}}")?;
 
     writeln!(w)?;
 
-    writeln!(w, "impl From<dtos::{name}> for {name} {{")?;
-    writeln!(w, "fn from(v: dtos::{name}) -> Self {{")?;
+    writeln!(w, "impl From<dtos::{context}::{name}> for {name} {{")?;
+    writeln!(w, "fn from(v: dtos::{context}::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
         let varname = variant.name();
         writeln!(
             w,
-            "dtos::{name}::{varname}(v) => Self::{varname}(v.into()),"
+            "dtos::{context}::{name}::{varname}(v) => Self::{varname}(v.into()),"
         )?;
     }
     writeln!(w, "}}")?;
@@ -444,12 +501,16 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 
     writeln!(w)?;
 
-    writeln!(w, "impl From<{name}> for dtos::{name} {{")?;
-    writeln!(w, "fn from(v: {name}) -> Self {{")?;
+    writeln!(w, "impl TryFrom<{name}> for dtos::{context}::{name} {{")?;
+    writeln!(w, "type Error = ValidationError;")?;
+    writeln!(w, "fn try_from(v: {name}) -> Result<Self, Self::Error> {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
         let varname = variant.name();
-        writeln!(w, "{name}::{varname}(v) => Self::{varname}(v.into()),")?;
+        writeln!(
+            w,
+            "{name}::{varname}(v) => Ok(Self::{varname}(v.try_into()?)),"
+        )?;
     }
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
@@ -461,6 +522,7 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
@@ -477,17 +539,20 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
     writeln!(w)?;
 
     writeln!(w, "impl IntoDto for {name} {{")?;
-    writeln!(w, "type Dto = dtos::{name};")?;
-    writeln!(w, "fn into_dto(self) -> Self::Dto {{ self.into() }}")?;
+    writeln!(w, "type Dto = dtos::{context}::{name};")?;
+    writeln!(
+        w,
+        "fn into_dto(self) -> Result<Self::Dto, ValidationError> {{ self.try_into() }}"
+    )?;
     writeln!(w, "}}")?;
 
     writeln!(w)?;
 
-    writeln!(w, "impl From<dtos::{name}> for {name} {{")?;
-    writeln!(w, "fn from(v: dtos::{name}) -> Self {{")?;
+    writeln!(w, "impl From<dtos::{context}::{name}> for {name} {{")?;
+    writeln!(w, "fn from(v: dtos::{context}::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
-        writeln!(w, "dtos::{name}::{variant} => Self::{variant},")?;
+        writeln!(w, "dtos::{context}::{name}::{variant} => Self::{variant},")?;
     }
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
@@ -495,11 +560,12 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 
     writeln!(w)?;
 
-    writeln!(w, "impl From<{name}> for dtos::{name} {{")?;
-    writeln!(w, "fn from(v: {name}) -> Self {{")?;
+    writeln!(w, "impl TryFrom<{name}> for dtos::{context}::{name} {{")?;
+    writeln!(w, "type Error = ValidationError;")?;
+    writeln!(w, "fn try_from(v: {name}) -> Result<Self, Self::Error> {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
-        writeln!(w, "{name}::{variant} => Self::{variant},")?;
+        writeln!(w, "{name}::{variant} => Ok(Self::{variant}),")?;
     }
     writeln!(w, "}}")?;
     writeln!(w, "}}")?;
@@ -515,6 +581,7 @@ fn render_map(
     typ: &model::Map,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
     let value_type = format_type(model, &typ.value_type);
 
@@ -538,29 +605,37 @@ fn render_map(
         _ => "v.entries",
     };
 
+    let entries_try_into = match typ.value_type {
+        model::Type::Custom(_) => {
+            "v.entries.into_iter().map(|(k, v)| -> Result<_, ValidationError> { Ok((k, v.try_into()?)) }).collect::<Result<_,_>>()?"
+        }
+        _ => "v.entries",
+    };
+
     writeln!(
         w,
         r#"
         impl IntoDto for {name} {{
-            type Dto = dtos::{name};
-            fn into_dto(self) -> Self::Dto {{
-                self.into()
+            type Dto = dtos::{context}::{name};
+            fn into_dto(self) -> Result<Self::Dto, ValidationError> {{
+                self.try_into()
             }}
         }}
 
-        impl From<dtos::{name}> for {name} {{
-            fn from(v: dtos::{name}) -> Self {{
+        impl From<dtos::{context}::{name}> for {name} {{
+            fn from(v: dtos::{context}::{name}) -> Self {{
                 Self {{
                     entries: {entries_into},
                 }}
             }}
         }}
 
-        impl From<{name}> for dtos::{name} {{
-            fn from(v: {name}) -> Self {{
-                Self {{
-                    entries: {entries_into},
-                }}
+        impl TryFrom<{name}> for dtos::{context}::{name} {{
+            type Error = ValidationError;
+            fn try_from(v: {name}) -> Result<Self, Self::Error> {{
+                Ok(Self {{
+                    entries: {entries_try_into},
+                }})
             }}
         }}
         "#
@@ -629,16 +704,17 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::Generic(t) => t.clone(),
         model::Type::Array(t) => format!("Vec<{}>", format_type(model, &t.item_type)),
         model::Type::Custom(id) => {
-            let name = id.join("").to_string();
+            let ctx = id.context();
+            let name = id.join("");
 
             match &model.types[id] {
                 model::TypeDefinition::Struct(t) if t.from_string => {
-                    format!("StructOrString<{name}>")
+                    format!("StructOrString<{ctx}::{name}>")
                 }
                 model::TypeDefinition::Union(t) if t.from_string => {
-                    format!("UnionOrString<{name}>")
+                    format!("UnionOrString<{ctx}::{name}>")
                 }
-                _ => name,
+                _ => format!("{ctx}::{name}"),
             }
         }
         model::Type::AnyJson => format!("serde_json::Value"),

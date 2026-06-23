@@ -1209,6 +1209,8 @@ See also:
   - [DataField](#datafield-schema)
   - [DataSchema](#dataschema-schema)
   - [DataType](#datatype-schema)
+  - [ExtraAttributes](#extraattributes-schema)
+  - [OperationType](#operationtype-schema)
   - [TimeUnit](#timeunit-schema)
 - [dataset](#reference-dataset)
   - [AddData](#adddata-schema)
@@ -1219,11 +1221,11 @@ See also:
   - [DataSlice](#dataslice-schema)
   - [Dataset](#dataset-schema)
   - [DatasetKind](#datasetkind-schema)
+  - [DatasetSelector](#datasetselector-schema)
   - [DatasetSpec](#datasetspec-schema)
   - [DatasetVocabulary](#datasetvocabulary-schema)
   - [ExecuteTransform](#executetransform-schema)
   - [ExecuteTransformInput](#executetransforminput-schema)
-  - [ExtraAttributes](#extraattributes-schema)
   - [MetadataBlock](#metadatablock-schema)
   - [MetadataEvent](#metadataevent-schema)
   - [OffsetInterval](#offsetinterval-schema)
@@ -1250,7 +1252,6 @@ See also:
 - [event](#reference-event)
   - [EventFilter](#eventfilter-schema)
 - [flow](#reference-flow)
-  - [DatasetSelector](#datasetselector-schema)
   - [Flow](#flow-schema)
   - [FlowSpec](#flowspec-schema)
   - [FlowTrigger](#flowtrigger-schema)
@@ -1899,6 +1900,49 @@ An integer value.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+<a name="extraattributes-schema"></a>
+##### ExtraAttributes
+Container for custom key-value extension attributes. Every key must be in the form of `<domain>/<path>` (e.g. `kamu.dev/archetype`) in order to fully disambiguate the value in the face of multiple extensions. Values may be any valid JSON including nested objects.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/data/v1alpha1/ExtraAttributes.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="known-extra-attrs"></a>
+###### Known Extensions
+| Extension | Description |
+| --- | --- |
+| `opendatafabric.net/description` | Used for human readable schema field descriptions |
+| `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
+| `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
+| `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
+
+<a name="known-extra-types"></a>
+###### Known Extended Types
+| Extended Type | Core Type | Description |
+| --- | --- | --- |
+| `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
+| `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
+| `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
+
+
+<a name="operationtype-schema"></a>
+##### OperationType
+Defines an operation in a changelog stream.
+
+| Enum Value |
+| :---: |
+| Append |
+| Retract |
+| CorrectFrom |
+| CorrectTo |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/data/v1alpha1/OperationType.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="timeunit-schema"></a>
 ##### TimeUnit
 Defines the unit of measurement of time
@@ -2040,6 +2084,22 @@ Represents type of the dataset.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+<a name="datasetselector-schema"></a>
+##### DatasetSelector
+Selects one or more datasets by name pattern and optional filters.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resources. |
+| `id` | `string` |  |  | ID of the singular resource. |
+| `name` | `string` |  |  | Name pattern in SQL `LIKE` format. |
+| `labels` | [LabelFilter](#labelfilter-schema) |  |  | Filter by resource labels. |
+| `kind` | [DatasetKind](#datasetkind-schema) |  |  | Restricts the selector to datasets of a specific kind. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSelector.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="datasetspec-schema"></a>
 ##### DatasetSpec
 Represents a desired state of the dataset metadata.
@@ -2101,34 +2161,6 @@ Describes a slice of the input dataset used during a transformation
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ExecuteTransformInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
-
-<a name="extraattributes-schema"></a>
-##### ExtraAttributes
-Container for custom key-value extension attributes. Every key must be in the form of `<domain>/<path>` (e.g. `kamu.dev/archetype`) in order to fully disambiguate the value in the face of multiple extensions. Values may be any valid JSON including nested objects.
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ExtraAttributes.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="known-extra-attrs"></a>
-###### Known Extensions
-| Extension | Description |
-| --- | --- |
-| `opendatafabric.net/description` | Used for human readable schema field descriptions |
-| `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
-| `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
-| `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
-| `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
-| `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
-
-<a name="known-extra-types"></a>
-###### Known Extended Types
-| Extended Type | Core Type | Description |
-| --- | --- | --- |
-| `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
-| `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
-| `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
-
 
 <a name="metadatablock-schema"></a>
 ##### MetadataBlock
@@ -2593,22 +2625,6 @@ Filters that work on domain event types and fields.
 
 <a name="reference-flow"></a>
 #### flow
-<a name="datasetselector-schema"></a>
-##### DatasetSelector
-Selects one or more datasets by name pattern and optional filters.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resources. |
-| `id` | `string` |  |  | ID of the singular resource. |
-| `name` | `string` |  |  | Name pattern in SQL `LIKE` format. |
-| `labels` | [LabelFilter](#labelfilter-schema) |  |  | Filter by resource labels. |
-| `kind` | [DatasetKind](#datasetkind-schema) |  |  | Restricts the selector to datasets of a specific kind. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/DatasetSelector.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
 <a name="flow-schema"></a>
 ##### Flow
 Defines a sequence of tasks to be executed upon certain trigger conditions.

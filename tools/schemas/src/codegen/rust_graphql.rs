@@ -4,9 +4,6 @@ use crate::{
     model,
 };
 
-const SPEC_URL: &str =
-    "https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md";
-
 const PREAMBLE: &str = indoc::indoc!(
     r#"
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -662,7 +659,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         }
 
         // Schemas are represented in GQL via embedded content, so we don't generate types for those
-        if typ.id().context() == "data" {
+        if typ.id().context() == "data" && typ.id().name() != "ExtraAttributes" {
             continue;
         }
 
@@ -688,11 +685,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         writeln!(w)?;
         render_description(typ.description(), None, None, w)?;
         writeln!(w, "///")?;
-        writeln!(
-            w,
-            "/// See: {SPEC_URL}#{}-schema",
-            typ.id().join("").to_lowercase()
-        )?;
+        writeln!(w, "/// Schema: {}", typ.id().schema_id())?;
 
         if let Some(custom) = custom_types.get(typ.id().join("").as_ref()) {
             writeln!(w, "{custom}")?;
@@ -712,6 +705,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
     let generics = format!(
         "<{}>",
@@ -755,9 +749,12 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     writeln!(w)?;
     writeln!(
         w,
-        "impl From<odf::metadata::{name}{generics}> for {name} {{"
+        "impl From<odf::metadata::{context}::{name}{generics}> for {name} {{"
     )?;
-    writeln!(w, "fn from(v: odf::metadata::{name}{generics}) -> Self {{")?;
+    writeln!(
+        w,
+        "fn from(v: odf::metadata::{context}::{name}{generics}) -> Self {{"
+    )?;
     writeln!(w, "Self {{")?;
 
     if typ.fields.is_empty() {
@@ -808,6 +805,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(w, "#[derive(Union, Debug, Clone)]")?;
@@ -817,14 +815,17 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     }
     writeln!(w, "}}")?;
     writeln!(w)?;
-    writeln!(w, "impl From<odf::metadata::{name}> for {name} {{")?;
-    writeln!(w, "fn from(v: odf::metadata::{name}) -> Self {{")?;
+    writeln!(
+        w,
+        "impl From<odf::metadata::{context}::{name}> for {name} {{"
+    )?;
+    writeln!(w, "fn from(v: odf::metadata::{context}::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
         let varname = &variant.name();
         writeln!(
             w,
-            "odf::metadata::{name}::{varname}(v) => Self::{varname}(v.into()),"
+            "odf::metadata::{context}::{name}::{varname}(v) => Self::{varname}(v.into()),"
         )?;
     }
     writeln!(w, "}}")?;
@@ -837,10 +838,14 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(w, "#[derive(Enum, Debug, Clone, Copy, PartialEq, Eq)]")?;
-    writeln!(w, "#[graphql(remote = \"odf::metadata::{name}\")]")?;
+    writeln!(
+        w,
+        "#[graphql(remote = \"odf::metadata::{context}::{name}\")]"
+    )?;
 
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
     for variant in &typ.variants {
@@ -855,23 +860,25 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 
 // We represent all maps as JSON scalars
 fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let context = typ.id.context();
     let name = typ.id.join("");
 
     writeln!(
         w,
         r#"
         #[nutype::nutype(derive(AsRef, Clone, Debug, From, Into))]
-        pub struct {name}(odf::metadata::{name});
+        pub struct {name}(odf::metadata::{context}::{name});
         
         #[async_graphql::Scalar]
         impl async_graphql::ScalarType for {name} {{
             fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {{
-                let value: odf::metadata::serde::yaml::{name} = async_graphql::from_value(value)?;
-                Ok(Self::new(value.into()))
+                let proxy: odf::metadata::serde::yaml::{context}::{name} = async_graphql::from_value(value)?;
+                let dto = proxy.try_into().map_err(|e: odf::metadata::errors::ValidationError| async_graphql::InputValueError::custom(e.to_string()))?;
+                Ok(Self::new(dto))
             }}
 
             fn to_value(&self) -> async_graphql::Value {{
-                let value: odf::metadata::serde::yaml::{name} = self.as_ref().clone().into();
+                let value: odf::metadata::serde::yaml::{context}::{name} = self.as_ref().clone().into();
                 async_graphql::to_value(&value).unwrap()
             }}
         }}
