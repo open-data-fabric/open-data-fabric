@@ -18,26 +18,27 @@ use super::formats::*;
 use crate::auth::{AccountID, AccountName};
 use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
 use crate::dtos;
+use crate::errors::ValidationError;
 use crate::resource::{ResourceID, ResourceName, ResourceTypeRef, ResourceTypeUri};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub trait IntoDto {
     type Dto;
-    fn into_dto(self) -> Self::Dto;
+    fn into_dto(self) -> Result<Self::Dto, ValidationError>;
 }
 
 impl IntoDto for ::serde::de::IgnoredAny {
     type Dto = Self;
-    fn into_dto(self) -> Self::Dto {
-        self
+    fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+        Ok(self)
     }
 }
 
 impl IntoDto for ::serde_json::Value {
     type Dto = Self;
-    fn into_dto(self) -> Self::Dto {
-        self
+    fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+        Ok(self)
     }
 }
 
@@ -61,7 +62,9 @@ macro_rules! implement_serde_as {
             where
                 D: Deserializer<'de>,
             {
-                <$proxy>::deserialize(deserializer).map(Into::into)
+                use ::serde::de::Error;
+                let proxy = <$proxy>::deserialize(deserializer)?;
+                proxy.try_into().map_err(D::Error::custom)
             }
         }
     };
@@ -90,8 +93,8 @@ pub mod auth {
 
     impl IntoDto for AccountRef {
         type Dto = dtos::auth::AccountRef;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -100,9 +103,10 @@ pub mod auth {
             Self(v.into())
         }
     }
-    impl From<StructOrString<AccountRef>> for dtos::auth::AccountRef {
-        fn from(v: StructOrString<AccountRef>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<AccountRef>> for dtos::auth::AccountRef {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<AccountRef>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -130,8 +134,8 @@ pub mod auth {
 
     impl IntoDto for AccountSpec {
         type Dto = dtos::auth::AccountSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -139,23 +143,30 @@ pub mod auth {
         fn from(v: dtos::auth::AccountSpec) -> Self {
             Self {
                 account_type: v.account_type.map(|v| v.into()),
-                display_name: v.display_name.map(|v| v),
+                display_name: v.display_name,
                 email: v.email,
-                avatar_url: v.avatar_url.map(|v| v),
+                avatar_url: v.avatar_url,
                 password: v.password.map(|v| v.into()),
             }
         }
     }
 
-    impl From<AccountSpec> for dtos::auth::AccountSpec {
-        fn from(v: AccountSpec) -> Self {
-            Self {
-                account_type: v.account_type.map(|v| v.into()),
-                display_name: v.display_name.map(|v| v),
+    impl TryFrom<AccountSpec> for dtos::auth::AccountSpec {
+        type Error = ValidationError;
+        fn try_from(v: AccountSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                account_type: v
+                    .account_type
+                    .map(|v| dtos::auth::AccountType::try_from(v))
+                    .transpose()?,
+                display_name: v.display_name,
                 email: v.email,
-                avatar_url: v.avatar_url.map(|v| v),
-                password: v.password.map(|v| v.into()),
-            }
+                avatar_url: v.avatar_url,
+                password: v
+                    .password
+                    .map(|v| dtos::config::Secret::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -173,8 +184,8 @@ pub mod auth {
 
     impl IntoDto for AccountType {
         type Dto = dtos::auth::AccountType;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -187,11 +198,12 @@ pub mod auth {
         }
     }
 
-    impl From<AccountType> for dtos::auth::AccountType {
-        fn from(v: AccountType) -> Self {
+    impl TryFrom<AccountType> for dtos::auth::AccountType {
+        type Error = ValidationError;
+        fn try_from(v: AccountType) -> Result<Self, Self::Error> {
             match v {
-                AccountType::User => Self::User,
-                AccountType::Organization => Self::Organization,
+                AccountType::User => Ok(Self::User),
+                AccountType::Organization => Ok(Self::Organization),
             }
         }
     }
@@ -210,8 +222,8 @@ pub mod auth {
 
     impl IntoDto for Attribute {
         type Dto = dtos::auth::Attribute;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -225,13 +237,14 @@ pub mod auth {
         }
     }
 
-    impl From<Attribute> for dtos::auth::Attribute {
-        fn from(v: Attribute) -> Self {
-            Self {
-                object: v.object.into(),
+    impl TryFrom<Attribute> for dtos::auth::Attribute {
+        type Error = ValidationError;
+        fn try_from(v: Attribute) -> Result<Self, ValidationError> {
+            Ok(Self {
+                object: dtos::resource::ResourceRef::try_from(v.object)?,
                 name: v.name,
                 value: v.value,
-            }
+            })
         }
     }
 
@@ -252,8 +265,8 @@ pub mod auth {
 
     impl IntoDto for Relation {
         type Dto = dtos::auth::Relation;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -262,20 +275,21 @@ pub mod auth {
             Self {
                 subject: v.subject.into(),
                 relation: v.relation,
-                value: v.value.map(|v| v),
+                value: v.value,
                 object: v.object.into(),
             }
         }
     }
 
-    impl From<Relation> for dtos::auth::Relation {
-        fn from(v: Relation) -> Self {
-            Self {
-                subject: v.subject.into(),
+    impl TryFrom<Relation> for dtos::auth::Relation {
+        type Error = ValidationError;
+        fn try_from(v: Relation) -> Result<Self, ValidationError> {
+            Ok(Self {
+                subject: dtos::resource::ResourceRef::try_from(v.subject)?,
                 relation: v.relation,
-                value: v.value.map(|v| v),
-                object: v.object.into(),
-            }
+                value: v.value,
+                object: dtos::resource::ResourceRef::try_from(v.object)?,
+            })
         }
     }
 
@@ -296,8 +310,8 @@ pub mod auth {
 
     impl IntoDto for RelationsSpec {
         type Dto = dtos::auth::RelationsSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -312,14 +326,27 @@ pub mod auth {
         }
     }
 
-    impl From<RelationsSpec> for dtos::auth::RelationsSpec {
-        fn from(v: RelationsSpec) -> Self {
-            Self {
-                relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
+    impl TryFrom<RelationsSpec> for dtos::auth::RelationsSpec {
+        type Error = ValidationError;
+        fn try_from(v: RelationsSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                relations: v
+                    .relations
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::auth::Relation::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
                 attributes: v
                     .attributes
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-            }
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::auth::Attribute::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+            })
         }
     }
 
@@ -347,8 +374,8 @@ pub mod config {
 
     impl IntoDto for Secret {
         type Dto = dtos::config::Secret;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -357,9 +384,10 @@ pub mod config {
             Self(v.into())
         }
     }
-    impl From<StructOrString<Secret>> for dtos::config::Secret {
-        fn from(v: StructOrString<Secret>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<Secret>> for dtos::config::Secret {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<Secret>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -367,17 +395,18 @@ pub mod config {
         fn from(v: dtos::config::Secret) -> Self {
             Self {
                 value: v.value,
-                content_encoding: v.content_encoding.map(|v| v),
+                content_encoding: v.content_encoding,
             }
         }
     }
 
-    impl From<Secret> for dtos::config::Secret {
-        fn from(v: Secret) -> Self {
-            Self {
+    impl TryFrom<Secret> for dtos::config::Secret {
+        type Error = ValidationError;
+        fn try_from(v: Secret) -> Result<Self, ValidationError> {
+            Ok(Self {
                 value: v.value,
-                content_encoding: v.content_encoding.map(|v| v),
-            }
+                content_encoding: v.content_encoding,
+            })
         }
     }
 
@@ -393,8 +422,8 @@ pub mod config {
 
     impl IntoDto for SecretSetSpec {
         type Dto = dtos::config::SecretSetSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -406,11 +435,12 @@ pub mod config {
         }
     }
 
-    impl From<SecretSetSpec> for dtos::config::SecretSetSpec {
-        fn from(v: SecretSetSpec) -> Self {
-            Self {
-                secrets: v.secrets.into(),
-            }
+    impl TryFrom<SecretSetSpec> for dtos::config::SecretSetSpec {
+        type Error = ValidationError;
+        fn try_from(v: SecretSetSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                secrets: dtos::config::Secrets::try_from(v.secrets)?,
+            })
         }
     }
 
@@ -425,8 +455,8 @@ pub mod config {
 
     impl IntoDto for Secrets {
         type Dto = dtos::config::Secrets;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -438,11 +468,16 @@ pub mod config {
         }
     }
 
-    impl From<Secrets> for dtos::config::Secrets {
-        fn from(v: Secrets) -> Self {
-            Self {
-                entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
-            }
+    impl TryFrom<Secrets> for dtos::config::Secrets {
+        type Error = ValidationError;
+        fn try_from(v: Secrets) -> Result<Self, Self::Error> {
+            Ok(Self {
+                entries: v
+                    .entries
+                    .into_iter()
+                    .map(|(k, v)| -> Result<_, ValidationError> { Ok((k, v.try_into()?)) })
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -470,8 +505,8 @@ pub mod config {
 
     impl IntoDto for ValueRef {
         type Dto = dtos::config::ValueRef;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -480,9 +515,10 @@ pub mod config {
             Self(v.into())
         }
     }
-    impl From<StructOrString<ValueRef>> for dtos::config::ValueRef {
-        fn from(v: StructOrString<ValueRef>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<ValueRef>> for dtos::config::ValueRef {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<ValueRef>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -497,8 +533,8 @@ pub mod config {
 
     impl IntoDto for ValueRefs {
         type Dto = dtos::config::ValueRefs;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -510,11 +546,16 @@ pub mod config {
         }
     }
 
-    impl From<ValueRefs> for dtos::config::ValueRefs {
-        fn from(v: ValueRefs) -> Self {
-            Self {
-                entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
-            }
+    impl TryFrom<ValueRefs> for dtos::config::ValueRefs {
+        type Error = ValidationError;
+        fn try_from(v: ValueRefs) -> Result<Self, Self::Error> {
+            Ok(Self {
+                entries: v
+                    .entries
+                    .into_iter()
+                    .map(|(k, v)| -> Result<_, ValidationError> { Ok((k, v.try_into()?)) })
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -530,8 +571,8 @@ pub mod config {
 
     impl IntoDto for Variable {
         type Dto = dtos::config::Variable;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -540,9 +581,10 @@ pub mod config {
             Self(v.into())
         }
     }
-    impl From<StructOrString<Variable>> for dtos::config::Variable {
-        fn from(v: StructOrString<Variable>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<Variable>> for dtos::config::Variable {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<Variable>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -552,9 +594,10 @@ pub mod config {
         }
     }
 
-    impl From<Variable> for dtos::config::Variable {
-        fn from(v: Variable) -> Self {
-            Self { value: v.value }
+    impl TryFrom<Variable> for dtos::config::Variable {
+        type Error = ValidationError;
+        fn try_from(v: Variable) -> Result<Self, ValidationError> {
+            Ok(Self { value: v.value })
         }
     }
 
@@ -570,8 +613,8 @@ pub mod config {
 
     impl IntoDto for VariableSetSpec {
         type Dto = dtos::config::VariableSetSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -583,11 +626,12 @@ pub mod config {
         }
     }
 
-    impl From<VariableSetSpec> for dtos::config::VariableSetSpec {
-        fn from(v: VariableSetSpec) -> Self {
-            Self {
-                variables: v.variables.into(),
-            }
+    impl TryFrom<VariableSetSpec> for dtos::config::VariableSetSpec {
+        type Error = ValidationError;
+        fn try_from(v: VariableSetSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                variables: dtos::config::Variables::try_from(v.variables)?,
+            })
         }
     }
 
@@ -602,8 +646,8 @@ pub mod config {
 
     impl IntoDto for Variables {
         type Dto = dtos::config::Variables;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -615,11 +659,16 @@ pub mod config {
         }
     }
 
-    impl From<Variables> for dtos::config::Variables {
-        fn from(v: Variables) -> Self {
-            Self {
-                entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
-            }
+    impl TryFrom<Variables> for dtos::config::Variables {
+        type Error = ValidationError;
+        fn try_from(v: Variables) -> Result<Self, Self::Error> {
+            Ok(Self {
+                entries: v
+                    .entries
+                    .into_iter()
+                    .map(|(k, v)| -> Result<_, ValidationError> { Ok((k, v.try_into()?)) })
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -648,8 +697,8 @@ pub mod data {
 
     impl IntoDto for DataField {
         type Dto = dtos::data::DataField;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -663,13 +712,17 @@ pub mod data {
         }
     }
 
-    impl From<DataField> for dtos::data::DataField {
-        fn from(v: DataField) -> Self {
-            Self {
+    impl TryFrom<DataField> for dtos::data::DataField {
+        type Error = ValidationError;
+        fn try_from(v: DataField) -> Result<Self, ValidationError> {
+            Ok(Self {
                 name: v.name,
-                r#type: v.r#type.into(),
-                extra: v.extra.map(|v| v.into()),
-            }
+                r#type: dtos::data::DataType::try_from(v.r#type)?,
+                extra: v
+                    .extra
+                    .map(|v| dtos::data::ExtraAttributes::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -688,8 +741,8 @@ pub mod data {
 
     impl IntoDto for DataSchema {
         type Dto = dtos::data::DataSchema;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -702,12 +755,20 @@ pub mod data {
         }
     }
 
-    impl From<DataSchema> for dtos::data::DataSchema {
-        fn from(v: DataSchema) -> Self {
-            Self {
-                fields: v.fields.into_iter().map(Into::into).collect(),
-                extra: v.extra.map(|v| v.into()),
-            }
+    impl TryFrom<DataSchema> for dtos::data::DataSchema {
+        type Error = ValidationError;
+        fn try_from(v: DataSchema) -> Result<Self, ValidationError> {
+            Ok(Self {
+                fields: v
+                    .fields
+                    .into_iter()
+                    .map(|i| dtos::data::DataField::try_from(i))
+                    .collect::<Result<_, _>>()?,
+                extra: v
+                    .extra
+                    .map(|v| dtos::data::ExtraAttributes::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -773,16 +834,17 @@ pub mod data {
             Self(v.into())
         }
     }
-    impl From<UnionOrString<DataType>> for dtos::data::DataType {
-        fn from(v: UnionOrString<DataType>) -> Self {
-            v.0.into()
+    impl TryFrom<UnionOrString<DataType>> for dtos::data::DataType {
+        type Error = ValidationError;
+        fn try_from(v: UnionOrString<DataType>) -> Result<Self, Self::Error> {
+            v.0.try_into()
         }
     }
 
     impl IntoDto for DataType {
         type Dto = dtos::data::DataType;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -817,33 +879,34 @@ pub mod data {
         }
     }
 
-    impl From<DataType> for dtos::data::DataType {
-        fn from(v: DataType) -> Self {
+    impl TryFrom<DataType> for dtos::data::DataType {
+        type Error = ValidationError;
+        fn try_from(v: DataType) -> Result<Self, Self::Error> {
             match v {
-                DataType::Binary(v) => Self::Binary(v.into()),
-                DataType::Bool(v) => Self::Bool(v.into()),
-                DataType::Date(v) => Self::Date(v.into()),
-                DataType::Decimal(v) => Self::Decimal(v.into()),
-                DataType::Duration(v) => Self::Duration(v.into()),
-                DataType::Float16(v) => Self::Float16(v.into()),
-                DataType::Float32(v) => Self::Float32(v.into()),
-                DataType::Float64(v) => Self::Float64(v.into()),
-                DataType::Int8(v) => Self::Int8(v.into()),
-                DataType::Int16(v) => Self::Int16(v.into()),
-                DataType::Int32(v) => Self::Int32(v.into()),
-                DataType::Int64(v) => Self::Int64(v.into()),
-                DataType::UInt8(v) => Self::UInt8(v.into()),
-                DataType::UInt16(v) => Self::UInt16(v.into()),
-                DataType::UInt32(v) => Self::UInt32(v.into()),
-                DataType::UInt64(v) => Self::UInt64(v.into()),
-                DataType::List(v) => Self::List(v.into()),
-                DataType::Map(v) => Self::Map(v.into()),
-                DataType::Null(v) => Self::Null(v.into()),
-                DataType::Option(v) => Self::Option(v.into()),
-                DataType::Struct(v) => Self::Struct(v.into()),
-                DataType::Time(v) => Self::Time(v.into()),
-                DataType::Timestamp(v) => Self::Timestamp(v.into()),
-                DataType::String(v) => Self::String(v.into()),
+                DataType::Binary(v) => Ok(Self::Binary(v.try_into()?)),
+                DataType::Bool(v) => Ok(Self::Bool(v.try_into()?)),
+                DataType::Date(v) => Ok(Self::Date(v.try_into()?)),
+                DataType::Decimal(v) => Ok(Self::Decimal(v.try_into()?)),
+                DataType::Duration(v) => Ok(Self::Duration(v.try_into()?)),
+                DataType::Float16(v) => Ok(Self::Float16(v.try_into()?)),
+                DataType::Float32(v) => Ok(Self::Float32(v.try_into()?)),
+                DataType::Float64(v) => Ok(Self::Float64(v.try_into()?)),
+                DataType::Int8(v) => Ok(Self::Int8(v.try_into()?)),
+                DataType::Int16(v) => Ok(Self::Int16(v.try_into()?)),
+                DataType::Int32(v) => Ok(Self::Int32(v.try_into()?)),
+                DataType::Int64(v) => Ok(Self::Int64(v.try_into()?)),
+                DataType::UInt8(v) => Ok(Self::UInt8(v.try_into()?)),
+                DataType::UInt16(v) => Ok(Self::UInt16(v.try_into()?)),
+                DataType::UInt32(v) => Ok(Self::UInt32(v.try_into()?)),
+                DataType::UInt64(v) => Ok(Self::UInt64(v.try_into()?)),
+                DataType::List(v) => Ok(Self::List(v.try_into()?)),
+                DataType::Map(v) => Ok(Self::Map(v.try_into()?)),
+                DataType::Null(v) => Ok(Self::Null(v.try_into()?)),
+                DataType::Option(v) => Ok(Self::Option(v.try_into()?)),
+                DataType::Struct(v) => Ok(Self::Struct(v.try_into()?)),
+                DataType::Time(v) => Ok(Self::Time(v.try_into()?)),
+                DataType::Timestamp(v) => Ok(Self::Timestamp(v.try_into()?)),
+                DataType::String(v) => Ok(Self::String(v.try_into()?)),
             }
         }
     }
@@ -862,24 +925,25 @@ pub mod data {
 
     impl IntoDto for DataTypeBinary {
         type Dto = dtos::data::DataTypeBinary;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::data::DataTypeBinary> for DataTypeBinary {
         fn from(v: dtos::data::DataTypeBinary) -> Self {
             Self {
-                fixed_length: v.fixed_length.map(|v| v),
+                fixed_length: v.fixed_length,
             }
         }
     }
 
-    impl From<DataTypeBinary> for dtos::data::DataTypeBinary {
-        fn from(v: DataTypeBinary) -> Self {
-            Self {
-                fixed_length: v.fixed_length.map(|v| v),
-            }
+    impl TryFrom<DataTypeBinary> for dtos::data::DataTypeBinary {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeBinary) -> Result<Self, ValidationError> {
+            Ok(Self {
+                fixed_length: v.fixed_length,
+            })
         }
     }
 
@@ -893,8 +957,8 @@ pub mod data {
 
     impl IntoDto for DataTypeBool {
         type Dto = dtos::data::DataTypeBool;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -904,9 +968,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeBool> for dtos::data::DataTypeBool {
-        fn from(v: DataTypeBool) -> Self {
-            Self {}
+    impl TryFrom<DataTypeBool> for dtos::data::DataTypeBool {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeBool) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -920,8 +985,8 @@ pub mod data {
 
     impl IntoDto for DataTypeDate {
         type Dto = dtos::data::DataTypeDate;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -931,9 +996,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeDate> for dtos::data::DataTypeDate {
-        fn from(v: DataTypeDate) -> Self {
-            Self {}
+    impl TryFrom<DataTypeDate> for dtos::data::DataTypeDate {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeDate) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -950,8 +1016,8 @@ pub mod data {
 
     impl IntoDto for DataTypeDecimal {
         type Dto = dtos::data::DataTypeDecimal;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -964,12 +1030,13 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeDecimal> for dtos::data::DataTypeDecimal {
-        fn from(v: DataTypeDecimal) -> Self {
-            Self {
+    impl TryFrom<DataTypeDecimal> for dtos::data::DataTypeDecimal {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeDecimal) -> Result<Self, ValidationError> {
+            Ok(Self {
                 precision: v.precision,
                 scale: v.scale,
-            }
+            })
         }
     }
 
@@ -987,8 +1054,8 @@ pub mod data {
 
     impl IntoDto for DataTypeDuration {
         type Dto = dtos::data::DataTypeDuration;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1000,11 +1067,15 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeDuration> for dtos::data::DataTypeDuration {
-        fn from(v: DataTypeDuration) -> Self {
-            Self {
-                unit: v.unit.map(|v| v.into()),
-            }
+    impl TryFrom<DataTypeDuration> for dtos::data::DataTypeDuration {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeDuration) -> Result<Self, ValidationError> {
+            Ok(Self {
+                unit: v
+                    .unit
+                    .map(|v| dtos::data::TimeUnit::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -1018,8 +1089,8 @@ pub mod data {
 
     impl IntoDto for DataTypeFloat16 {
         type Dto = dtos::data::DataTypeFloat16;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1029,9 +1100,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeFloat16> for dtos::data::DataTypeFloat16 {
-        fn from(v: DataTypeFloat16) -> Self {
-            Self {}
+    impl TryFrom<DataTypeFloat16> for dtos::data::DataTypeFloat16 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeFloat16) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1045,8 +1117,8 @@ pub mod data {
 
     impl IntoDto for DataTypeFloat32 {
         type Dto = dtos::data::DataTypeFloat32;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1056,9 +1128,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeFloat32> for dtos::data::DataTypeFloat32 {
-        fn from(v: DataTypeFloat32) -> Self {
-            Self {}
+    impl TryFrom<DataTypeFloat32> for dtos::data::DataTypeFloat32 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeFloat32) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1072,8 +1145,8 @@ pub mod data {
 
     impl IntoDto for DataTypeFloat64 {
         type Dto = dtos::data::DataTypeFloat64;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1083,9 +1156,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeFloat64> for dtos::data::DataTypeFloat64 {
-        fn from(v: DataTypeFloat64) -> Self {
-            Self {}
+    impl TryFrom<DataTypeFloat64> for dtos::data::DataTypeFloat64 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeFloat64) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1099,8 +1173,8 @@ pub mod data {
 
     impl IntoDto for DataTypeInt16 {
         type Dto = dtos::data::DataTypeInt16;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1110,9 +1184,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeInt16> for dtos::data::DataTypeInt16 {
-        fn from(v: DataTypeInt16) -> Self {
-            Self {}
+    impl TryFrom<DataTypeInt16> for dtos::data::DataTypeInt16 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeInt16) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1126,8 +1201,8 @@ pub mod data {
 
     impl IntoDto for DataTypeInt32 {
         type Dto = dtos::data::DataTypeInt32;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1137,9 +1212,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeInt32> for dtos::data::DataTypeInt32 {
-        fn from(v: DataTypeInt32) -> Self {
-            Self {}
+    impl TryFrom<DataTypeInt32> for dtos::data::DataTypeInt32 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeInt32) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1153,8 +1229,8 @@ pub mod data {
 
     impl IntoDto for DataTypeInt64 {
         type Dto = dtos::data::DataTypeInt64;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1164,9 +1240,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeInt64> for dtos::data::DataTypeInt64 {
-        fn from(v: DataTypeInt64) -> Self {
-            Self {}
+    impl TryFrom<DataTypeInt64> for dtos::data::DataTypeInt64 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeInt64) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1180,8 +1257,8 @@ pub mod data {
 
     impl IntoDto for DataTypeInt8 {
         type Dto = dtos::data::DataTypeInt8;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1191,9 +1268,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeInt8> for dtos::data::DataTypeInt8 {
-        fn from(v: DataTypeInt8) -> Self {
-            Self {}
+    impl TryFrom<DataTypeInt8> for dtos::data::DataTypeInt8 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeInt8) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1212,8 +1290,8 @@ pub mod data {
 
     impl IntoDto for DataTypeList {
         type Dto = dtos::data::DataTypeList;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1221,17 +1299,18 @@ pub mod data {
         fn from(v: dtos::data::DataTypeList) -> Self {
             Self {
                 item_type: Box::new((*v.item_type).into()),
-                fixed_length: v.fixed_length.map(|v| v),
+                fixed_length: v.fixed_length,
             }
         }
     }
 
-    impl From<DataTypeList> for dtos::data::DataTypeList {
-        fn from(v: DataTypeList) -> Self {
-            Self {
-                item_type: Box::new((*v.item_type).into()),
-                fixed_length: v.fixed_length.map(|v| v),
-            }
+    impl TryFrom<DataTypeList> for dtos::data::DataTypeList {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeList) -> Result<Self, ValidationError> {
+            Ok(Self {
+                item_type: Box::new(dtos::data::DataType::try_from(*v.item_type)?),
+                fixed_length: v.fixed_length,
+            })
         }
     }
 
@@ -1251,8 +1330,8 @@ pub mod data {
 
     impl IntoDto for DataTypeMap {
         type Dto = dtos::data::DataTypeMap;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1261,18 +1340,19 @@ pub mod data {
             Self {
                 key_type: Box::new((*v.key_type).into()),
                 value_type: Box::new((*v.value_type).into()),
-                keys_sorted: v.keys_sorted.map(|v| v),
+                keys_sorted: v.keys_sorted,
             }
         }
     }
 
-    impl From<DataTypeMap> for dtos::data::DataTypeMap {
-        fn from(v: DataTypeMap) -> Self {
-            Self {
-                key_type: Box::new((*v.key_type).into()),
-                value_type: Box::new((*v.value_type).into()),
-                keys_sorted: v.keys_sorted.map(|v| v),
-            }
+    impl TryFrom<DataTypeMap> for dtos::data::DataTypeMap {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeMap) -> Result<Self, ValidationError> {
+            Ok(Self {
+                key_type: Box::new(dtos::data::DataType::try_from(*v.key_type)?),
+                value_type: Box::new(dtos::data::DataType::try_from(*v.value_type)?),
+                keys_sorted: v.keys_sorted,
+            })
         }
     }
 
@@ -1286,8 +1366,8 @@ pub mod data {
 
     impl IntoDto for DataTypeNull {
         type Dto = dtos::data::DataTypeNull;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1297,9 +1377,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeNull> for dtos::data::DataTypeNull {
-        fn from(v: DataTypeNull) -> Self {
-            Self {}
+    impl TryFrom<DataTypeNull> for dtos::data::DataTypeNull {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeNull) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1315,8 +1396,8 @@ pub mod data {
 
     impl IntoDto for DataTypeOption {
         type Dto = dtos::data::DataTypeOption;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1328,11 +1409,12 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeOption> for dtos::data::DataTypeOption {
-        fn from(v: DataTypeOption) -> Self {
-            Self {
-                inner: Box::new((*v.inner).into()),
-            }
+    impl TryFrom<DataTypeOption> for dtos::data::DataTypeOption {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeOption) -> Result<Self, ValidationError> {
+            Ok(Self {
+                inner: Box::new(dtos::data::DataType::try_from(*v.inner)?),
+            })
         }
     }
 
@@ -1346,8 +1428,8 @@ pub mod data {
 
     impl IntoDto for DataTypeString {
         type Dto = dtos::data::DataTypeString;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1357,9 +1439,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeString> for dtos::data::DataTypeString {
-        fn from(v: DataTypeString) -> Self {
-            Self {}
+    impl TryFrom<DataTypeString> for dtos::data::DataTypeString {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeString) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1375,8 +1458,8 @@ pub mod data {
 
     impl IntoDto for DataTypeStruct {
         type Dto = dtos::data::DataTypeStruct;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1388,11 +1471,16 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeStruct> for dtos::data::DataTypeStruct {
-        fn from(v: DataTypeStruct) -> Self {
-            Self {
-                fields: v.fields.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<DataTypeStruct> for dtos::data::DataTypeStruct {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeStruct) -> Result<Self, ValidationError> {
+            Ok(Self {
+                fields: v
+                    .fields
+                    .into_iter()
+                    .map(|i| dtos::data::DataField::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -1410,8 +1498,8 @@ pub mod data {
 
     impl IntoDto for DataTypeTime {
         type Dto = dtos::data::DataTypeTime;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1423,11 +1511,15 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeTime> for dtos::data::DataTypeTime {
-        fn from(v: DataTypeTime) -> Self {
-            Self {
-                unit: v.unit.map(|v| v.into()),
-            }
+    impl TryFrom<DataTypeTime> for dtos::data::DataTypeTime {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeTime) -> Result<Self, ValidationError> {
+            Ok(Self {
+                unit: v
+                    .unit
+                    .map(|v| dtos::data::TimeUnit::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -1448,8 +1540,8 @@ pub mod data {
 
     impl IntoDto for DataTypeTimestamp {
         type Dto = dtos::data::DataTypeTimestamp;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1457,17 +1549,21 @@ pub mod data {
         fn from(v: dtos::data::DataTypeTimestamp) -> Self {
             Self {
                 unit: v.unit.map(|v| v.into()),
-                timezone: v.timezone.map(|v| v),
+                timezone: v.timezone,
             }
         }
     }
 
-    impl From<DataTypeTimestamp> for dtos::data::DataTypeTimestamp {
-        fn from(v: DataTypeTimestamp) -> Self {
-            Self {
-                unit: v.unit.map(|v| v.into()),
-                timezone: v.timezone.map(|v| v),
-            }
+    impl TryFrom<DataTypeTimestamp> for dtos::data::DataTypeTimestamp {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeTimestamp) -> Result<Self, ValidationError> {
+            Ok(Self {
+                unit: v
+                    .unit
+                    .map(|v| dtos::data::TimeUnit::try_from(v))
+                    .transpose()?,
+                timezone: v.timezone,
+            })
         }
     }
 
@@ -1481,8 +1577,8 @@ pub mod data {
 
     impl IntoDto for DataTypeUInt16 {
         type Dto = dtos::data::DataTypeUInt16;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1492,9 +1588,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeUInt16> for dtos::data::DataTypeUInt16 {
-        fn from(v: DataTypeUInt16) -> Self {
-            Self {}
+    impl TryFrom<DataTypeUInt16> for dtos::data::DataTypeUInt16 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeUInt16) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1508,8 +1605,8 @@ pub mod data {
 
     impl IntoDto for DataTypeUInt32 {
         type Dto = dtos::data::DataTypeUInt32;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1519,9 +1616,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeUInt32> for dtos::data::DataTypeUInt32 {
-        fn from(v: DataTypeUInt32) -> Self {
-            Self {}
+    impl TryFrom<DataTypeUInt32> for dtos::data::DataTypeUInt32 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeUInt32) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1535,8 +1633,8 @@ pub mod data {
 
     impl IntoDto for DataTypeUInt64 {
         type Dto = dtos::data::DataTypeUInt64;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1546,9 +1644,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeUInt64> for dtos::data::DataTypeUInt64 {
-        fn from(v: DataTypeUInt64) -> Self {
-            Self {}
+    impl TryFrom<DataTypeUInt64> for dtos::data::DataTypeUInt64 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeUInt64) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1562,8 +1661,8 @@ pub mod data {
 
     impl IntoDto for DataTypeUInt8 {
         type Dto = dtos::data::DataTypeUInt8;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1573,9 +1672,10 @@ pub mod data {
         }
     }
 
-    impl From<DataTypeUInt8> for dtos::data::DataTypeUInt8 {
-        fn from(v: DataTypeUInt8) -> Self {
-            Self {}
+    impl TryFrom<DataTypeUInt8> for dtos::data::DataTypeUInt8 {
+        type Error = ValidationError;
+        fn try_from(v: DataTypeUInt8) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -1591,8 +1691,8 @@ pub mod data {
 
     impl IntoDto for ExtraAttributes {
         type Dto = dtos::data::ExtraAttributes;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1602,9 +1702,10 @@ pub mod data {
         }
     }
 
-    impl From<ExtraAttributes> for dtos::data::ExtraAttributes {
-        fn from(v: ExtraAttributes) -> Self {
-            Self { entries: v.entries }
+    impl TryFrom<ExtraAttributes> for dtos::data::ExtraAttributes {
+        type Error = ValidationError;
+        fn try_from(v: ExtraAttributes) -> Result<Self, Self::Error> {
+            Ok(Self { entries: v.entries })
         }
     }
 
@@ -1626,8 +1727,8 @@ pub mod data {
 
     impl IntoDto for OperationType {
         type Dto = dtos::data::OperationType;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1642,13 +1743,14 @@ pub mod data {
         }
     }
 
-    impl From<OperationType> for dtos::data::OperationType {
-        fn from(v: OperationType) -> Self {
+    impl TryFrom<OperationType> for dtos::data::OperationType {
+        type Error = ValidationError;
+        fn try_from(v: OperationType) -> Result<Self, Self::Error> {
             match v {
-                OperationType::Append => Self::Append,
-                OperationType::Retract => Self::Retract,
-                OperationType::CorrectFrom => Self::CorrectFrom,
-                OperationType::CorrectTo => Self::CorrectTo,
+                OperationType::Append => Ok(Self::Append),
+                OperationType::Retract => Ok(Self::Retract),
+                OperationType::CorrectFrom => Ok(Self::CorrectFrom),
+                OperationType::CorrectTo => Ok(Self::CorrectTo),
             }
         }
     }
@@ -1671,8 +1773,8 @@ pub mod data {
 
     impl IntoDto for TimeUnit {
         type Dto = dtos::data::TimeUnit;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1687,13 +1789,14 @@ pub mod data {
         }
     }
 
-    impl From<TimeUnit> for dtos::data::TimeUnit {
-        fn from(v: TimeUnit) -> Self {
+    impl TryFrom<TimeUnit> for dtos::data::TimeUnit {
+        type Error = ValidationError;
+        fn try_from(v: TimeUnit) -> Result<Self, Self::Error> {
             match v {
-                TimeUnit::Second => Self::Second,
-                TimeUnit::Millisecond => Self::Millisecond,
-                TimeUnit::Microsecond => Self::Microsecond,
-                TimeUnit::Nanosecond => Self::Nanosecond,
+                TimeUnit::Second => Ok(Self::Second),
+                TimeUnit::Millisecond => Ok(Self::Millisecond),
+                TimeUnit::Microsecond => Ok(Self::Microsecond),
+                TimeUnit::Nanosecond => Ok(Self::Nanosecond),
             }
         }
     }
@@ -1740,36 +1843,49 @@ pub mod dataset {
 
     impl IntoDto for AddData {
         type Dto = dtos::dataset::AddData;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::AddData> for AddData {
         fn from(v: dtos::dataset::AddData) -> Self {
             Self {
-                prev_checkpoint: v.prev_checkpoint.map(|v| v),
-                prev_offset: v.prev_offset.map(|v| v),
+                prev_checkpoint: v.prev_checkpoint,
+                prev_offset: v.prev_offset,
                 new_data: v.new_data.map(|v| v.into()),
                 new_checkpoint: v.new_checkpoint.map(|v| v.into()),
-                new_watermark: v.new_watermark.map(|v| v),
+                new_watermark: v.new_watermark,
                 new_source_state: v.new_source_state.map(|v| v.into()),
                 extra: v.extra.map(|v| v.into()),
             }
         }
     }
 
-    impl From<AddData> for dtos::dataset::AddData {
-        fn from(v: AddData) -> Self {
-            Self {
-                prev_checkpoint: v.prev_checkpoint.map(|v| v),
-                prev_offset: v.prev_offset.map(|v| v),
-                new_data: v.new_data.map(|v| v.into()),
-                new_checkpoint: v.new_checkpoint.map(|v| v.into()),
-                new_watermark: v.new_watermark.map(|v| v),
-                new_source_state: v.new_source_state.map(|v| v.into()),
-                extra: v.extra.map(|v| v.into()),
-            }
+    impl TryFrom<AddData> for dtos::dataset::AddData {
+        type Error = ValidationError;
+        fn try_from(v: AddData) -> Result<Self, ValidationError> {
+            Ok(Self {
+                prev_checkpoint: v.prev_checkpoint,
+                prev_offset: v.prev_offset,
+                new_data: v
+                    .new_data
+                    .map(|v| dtos::dataset::DataSlice::try_from(v))
+                    .transpose()?,
+                new_checkpoint: v
+                    .new_checkpoint
+                    .map(|v| dtos::dataset::Checkpoint::try_from(v))
+                    .transpose()?,
+                new_watermark: v.new_watermark,
+                new_source_state: v
+                    .new_source_state
+                    .map(|v| dtos::source::SourceState::try_from(v))
+                    .transpose()?,
+                extra: v
+                    .extra
+                    .map(|v| dtos::data::ExtraAttributes::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -1786,8 +1902,8 @@ pub mod dataset {
 
     impl IntoDto for AttachmentEmbedded {
         type Dto = dtos::dataset::AttachmentEmbedded;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1800,12 +1916,13 @@ pub mod dataset {
         }
     }
 
-    impl From<AttachmentEmbedded> for dtos::dataset::AttachmentEmbedded {
-        fn from(v: AttachmentEmbedded) -> Self {
-            Self {
+    impl TryFrom<AttachmentEmbedded> for dtos::dataset::AttachmentEmbedded {
+        type Error = ValidationError;
+        fn try_from(v: AttachmentEmbedded) -> Result<Self, ValidationError> {
+            Ok(Self {
                 path: v.path,
                 content: v.content,
-            }
+            })
         }
     }
 
@@ -1822,8 +1939,8 @@ pub mod dataset {
 
     impl IntoDto for Attachments {
         type Dto = dtos::dataset::Attachments;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1835,10 +1952,11 @@ pub mod dataset {
         }
     }
 
-    impl From<Attachments> for dtos::dataset::Attachments {
-        fn from(v: Attachments) -> Self {
+    impl TryFrom<Attachments> for dtos::dataset::Attachments {
+        type Error = ValidationError;
+        fn try_from(v: Attachments) -> Result<Self, Self::Error> {
             match v {
-                Attachments::Embedded(v) => Self::Embedded(v.into()),
+                Attachments::Embedded(v) => Ok(Self::Embedded(v.try_into()?)),
             }
         }
     }
@@ -1855,8 +1973,8 @@ pub mod dataset {
 
     impl IntoDto for AttachmentsEmbedded {
         type Dto = dtos::dataset::AttachmentsEmbedded;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1868,11 +1986,16 @@ pub mod dataset {
         }
     }
 
-    impl From<AttachmentsEmbedded> for dtos::dataset::AttachmentsEmbedded {
-        fn from(v: AttachmentsEmbedded) -> Self {
-            Self {
-                items: v.items.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<AttachmentsEmbedded> for dtos::dataset::AttachmentsEmbedded {
+        type Error = ValidationError;
+        fn try_from(v: AttachmentsEmbedded) -> Result<Self, ValidationError> {
+            Ok(Self {
+                items: v
+                    .items
+                    .into_iter()
+                    .map(|i| dtos::dataset::AttachmentEmbedded::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -1889,8 +2012,8 @@ pub mod dataset {
 
     impl IntoDto for Checkpoint {
         type Dto = dtos::dataset::Checkpoint;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1903,12 +2026,13 @@ pub mod dataset {
         }
     }
 
-    impl From<Checkpoint> for dtos::dataset::Checkpoint {
-        fn from(v: Checkpoint) -> Self {
-            Self {
+    impl TryFrom<Checkpoint> for dtos::dataset::Checkpoint {
+        type Error = ValidationError;
+        fn try_from(v: Checkpoint) -> Result<Self, ValidationError> {
+            Ok(Self {
                 physical_hash: v.physical_hash,
                 size: v.size,
-            }
+            })
         }
     }
 
@@ -1929,26 +2053,27 @@ pub mod dataset {
 
     impl IntoDto for CompactionParams {
         type Dto = dtos::dataset::CompactionParams;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::CompactionParams> for CompactionParams {
         fn from(v: dtos::dataset::CompactionParams) -> Self {
             Self {
-                max_slice_size: v.max_slice_size.map(|v| v),
-                max_slice_records: v.max_slice_records.map(|v| v),
+                max_slice_size: v.max_slice_size,
+                max_slice_records: v.max_slice_records,
             }
         }
     }
 
-    impl From<CompactionParams> for dtos::dataset::CompactionParams {
-        fn from(v: CompactionParams) -> Self {
-            Self {
-                max_slice_size: v.max_slice_size.map(|v| v),
-                max_slice_records: v.max_slice_records.map(|v| v),
-            }
+    impl TryFrom<CompactionParams> for dtos::dataset::CompactionParams {
+        type Error = ValidationError;
+        fn try_from(v: CompactionParams) -> Result<Self, ValidationError> {
+            Ok(Self {
+                max_slice_size: v.max_slice_size,
+                max_slice_records: v.max_slice_records,
+            })
         }
     }
 
@@ -1967,8 +2092,8 @@ pub mod dataset {
 
     impl IntoDto for DataSlice {
         type Dto = dtos::dataset::DataSlice;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -1983,14 +2108,15 @@ pub mod dataset {
         }
     }
 
-    impl From<DataSlice> for dtos::dataset::DataSlice {
-        fn from(v: DataSlice) -> Self {
-            Self {
+    impl TryFrom<DataSlice> for dtos::dataset::DataSlice {
+        type Error = ValidationError;
+        fn try_from(v: DataSlice) -> Result<Self, ValidationError> {
+            Ok(Self {
                 logical_hash: v.logical_hash,
                 physical_hash: v.physical_hash,
-                offset_interval: v.offset_interval.into(),
+                offset_interval: dtos::dataset::OffsetInterval::try_from(v.offset_interval)?,
                 size: v.size,
-            }
+            })
         }
     }
 
@@ -2008,8 +2134,8 @@ pub mod dataset {
 
     impl IntoDto for DatasetKind {
         type Dto = dtos::dataset::DatasetKind;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2022,11 +2148,12 @@ pub mod dataset {
         }
     }
 
-    impl From<DatasetKind> for dtos::dataset::DatasetKind {
-        fn from(v: DatasetKind) -> Self {
+    impl TryFrom<DatasetKind> for dtos::dataset::DatasetKind {
+        type Error = ValidationError;
+        fn try_from(v: DatasetKind) -> Result<Self, Self::Error> {
             match v {
-                DatasetKind::Root => Self::Root,
-                DatasetKind::Derivative => Self::Derivative,
+                DatasetKind::Root => Ok(Self::Root),
+                DatasetKind::Derivative => Ok(Self::Derivative),
             }
         }
     }
@@ -2057,8 +2184,8 @@ pub mod dataset {
 
     impl IntoDto for DatasetSelector {
         type Dto = dtos::dataset::DatasetSelector;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2067,9 +2194,10 @@ pub mod dataset {
             Self(v.into())
         }
     }
-    impl From<StructOrString<DatasetSelector>> for dtos::dataset::DatasetSelector {
-        fn from(v: StructOrString<DatasetSelector>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<DatasetSelector>> for dtos::dataset::DatasetSelector {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<DatasetSelector>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -2089,8 +2217,8 @@ pub mod dataset {
 
     impl IntoDto for DatasetSpec {
         type Dto = dtos::dataset::DatasetSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2104,13 +2232,21 @@ pub mod dataset {
         }
     }
 
-    impl From<DatasetSpec> for dtos::dataset::DatasetSpec {
-        fn from(v: DatasetSpec) -> Self {
-            Self {
-                kind: v.kind.into(),
-                metadata: v.metadata.into_iter().map(Into::into).collect(),
-                volume: v.volume.map(|v| v.into()),
-            }
+    impl TryFrom<DatasetSpec> for dtos::dataset::DatasetSpec {
+        type Error = ValidationError;
+        fn try_from(v: DatasetSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                kind: dtos::dataset::DatasetKind::try_from(v.kind)?,
+                metadata: v
+                    .metadata
+                    .into_iter()
+                    .map(|i| dtos::dataset::MetadataEvent::try_from(i))
+                    .collect::<Result<_, _>>()?,
+                volume: v
+                    .volume
+                    .map(|v| dtos::storage::PersistentVolumeRef::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -2137,30 +2273,31 @@ pub mod dataset {
 
     impl IntoDto for DatasetVocabulary {
         type Dto = dtos::dataset::DatasetVocabulary;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::DatasetVocabulary> for DatasetVocabulary {
         fn from(v: dtos::dataset::DatasetVocabulary) -> Self {
             Self {
-                offset_column: v.offset_column.map(|v| v),
-                operation_type_column: v.operation_type_column.map(|v| v),
-                system_time_column: v.system_time_column.map(|v| v),
-                event_time_column: v.event_time_column.map(|v| v),
+                offset_column: v.offset_column,
+                operation_type_column: v.operation_type_column,
+                system_time_column: v.system_time_column,
+                event_time_column: v.event_time_column,
             }
         }
     }
 
-    impl From<DatasetVocabulary> for dtos::dataset::DatasetVocabulary {
-        fn from(v: DatasetVocabulary) -> Self {
-            Self {
-                offset_column: v.offset_column.map(|v| v),
-                operation_type_column: v.operation_type_column.map(|v| v),
-                system_time_column: v.system_time_column.map(|v| v),
-                event_time_column: v.event_time_column.map(|v| v),
-            }
+    impl TryFrom<DatasetVocabulary> for dtos::dataset::DatasetVocabulary {
+        type Error = ValidationError;
+        fn try_from(v: DatasetVocabulary) -> Result<Self, ValidationError> {
+            Ok(Self {
+                offset_column: v.offset_column,
+                operation_type_column: v.operation_type_column,
+                system_time_column: v.system_time_column,
+                event_time_column: v.event_time_column,
+            })
         }
     }
 
@@ -2192,8 +2329,8 @@ pub mod dataset {
 
     impl IntoDto for ExecuteTransform {
         type Dto = dtos::dataset::ExecuteTransform;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2201,25 +2338,36 @@ pub mod dataset {
         fn from(v: dtos::dataset::ExecuteTransform) -> Self {
             Self {
                 query_inputs: v.query_inputs.into_iter().map(Into::into).collect(),
-                prev_checkpoint: v.prev_checkpoint.map(|v| v),
-                prev_offset: v.prev_offset.map(|v| v),
+                prev_checkpoint: v.prev_checkpoint,
+                prev_offset: v.prev_offset,
                 new_data: v.new_data.map(|v| v.into()),
                 new_checkpoint: v.new_checkpoint.map(|v| v.into()),
-                new_watermark: v.new_watermark.map(|v| v),
+                new_watermark: v.new_watermark,
             }
         }
     }
 
-    impl From<ExecuteTransform> for dtos::dataset::ExecuteTransform {
-        fn from(v: ExecuteTransform) -> Self {
-            Self {
-                query_inputs: v.query_inputs.into_iter().map(Into::into).collect(),
-                prev_checkpoint: v.prev_checkpoint.map(|v| v),
-                prev_offset: v.prev_offset.map(|v| v),
-                new_data: v.new_data.map(|v| v.into()),
-                new_checkpoint: v.new_checkpoint.map(|v| v.into()),
-                new_watermark: v.new_watermark.map(|v| v),
-            }
+    impl TryFrom<ExecuteTransform> for dtos::dataset::ExecuteTransform {
+        type Error = ValidationError;
+        fn try_from(v: ExecuteTransform) -> Result<Self, ValidationError> {
+            Ok(Self {
+                query_inputs: v
+                    .query_inputs
+                    .into_iter()
+                    .map(|i| dtos::dataset::ExecuteTransformInput::try_from(i))
+                    .collect::<Result<_, _>>()?,
+                prev_checkpoint: v.prev_checkpoint,
+                prev_offset: v.prev_offset,
+                new_data: v
+                    .new_data
+                    .map(|v| dtos::dataset::DataSlice::try_from(v))
+                    .transpose()?,
+                new_checkpoint: v
+                    .new_checkpoint
+                    .map(|v| dtos::dataset::Checkpoint::try_from(v))
+                    .transpose()?,
+                new_watermark: v.new_watermark,
+            })
         }
     }
 
@@ -2247,8 +2395,8 @@ pub mod dataset {
 
     impl IntoDto for ExecuteTransformInput {
         type Dto = dtos::dataset::ExecuteTransformInput;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2256,23 +2404,24 @@ pub mod dataset {
         fn from(v: dtos::dataset::ExecuteTransformInput) -> Self {
             Self {
                 dataset_id: v.dataset_id,
-                prev_block_hash: v.prev_block_hash.map(|v| v),
-                new_block_hash: v.new_block_hash.map(|v| v),
-                prev_offset: v.prev_offset.map(|v| v),
-                new_offset: v.new_offset.map(|v| v),
+                prev_block_hash: v.prev_block_hash,
+                new_block_hash: v.new_block_hash,
+                prev_offset: v.prev_offset,
+                new_offset: v.new_offset,
             }
         }
     }
 
-    impl From<ExecuteTransformInput> for dtos::dataset::ExecuteTransformInput {
-        fn from(v: ExecuteTransformInput) -> Self {
-            Self {
+    impl TryFrom<ExecuteTransformInput> for dtos::dataset::ExecuteTransformInput {
+        type Error = ValidationError;
+        fn try_from(v: ExecuteTransformInput) -> Result<Self, ValidationError> {
+            Ok(Self {
                 dataset_id: v.dataset_id,
-                prev_block_hash: v.prev_block_hash.map(|v| v),
-                new_block_hash: v.new_block_hash.map(|v| v),
-                prev_offset: v.prev_offset.map(|v| v),
-                new_offset: v.new_offset.map(|v| v),
-            }
+                prev_block_hash: v.prev_block_hash,
+                new_block_hash: v.new_block_hash,
+                prev_offset: v.prev_offset,
+                new_offset: v.new_offset,
+            })
         }
     }
 
@@ -2294,8 +2443,8 @@ pub mod dataset {
 
     impl IntoDto for MetadataBlock {
         type Dto = dtos::dataset::MetadataBlock;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2303,21 +2452,22 @@ pub mod dataset {
         fn from(v: dtos::dataset::MetadataBlock) -> Self {
             Self {
                 system_time: v.system_time,
-                prev_block_hash: v.prev_block_hash.map(|v| v),
+                prev_block_hash: v.prev_block_hash,
                 sequence_number: v.sequence_number,
                 event: v.event.into(),
             }
         }
     }
 
-    impl From<MetadataBlock> for dtos::dataset::MetadataBlock {
-        fn from(v: MetadataBlock) -> Self {
-            Self {
+    impl TryFrom<MetadataBlock> for dtos::dataset::MetadataBlock {
+        type Error = ValidationError;
+        fn try_from(v: MetadataBlock) -> Result<Self, ValidationError> {
+            Ok(Self {
                 system_time: v.system_time,
-                prev_block_hash: v.prev_block_hash.map(|v| v),
+                prev_block_hash: v.prev_block_hash,
                 sequence_number: v.sequence_number,
-                event: v.event.into(),
-            }
+                event: dtos::dataset::MetadataEvent::try_from(v.event)?,
+            })
         }
     }
 
@@ -2358,8 +2508,8 @@ pub mod dataset {
 
     impl IntoDto for MetadataEvent {
         type Dto = dtos::dataset::MetadataEvent;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2391,22 +2541,25 @@ pub mod dataset {
         }
     }
 
-    impl From<MetadataEvent> for dtos::dataset::MetadataEvent {
-        fn from(v: MetadataEvent) -> Self {
+    impl TryFrom<MetadataEvent> for dtos::dataset::MetadataEvent {
+        type Error = ValidationError;
+        fn try_from(v: MetadataEvent) -> Result<Self, Self::Error> {
             match v {
-                MetadataEvent::AddData(v) => Self::AddData(v.into()),
-                MetadataEvent::ExecuteTransform(v) => Self::ExecuteTransform(v.into()),
-                MetadataEvent::Seed(v) => Self::Seed(v.into()),
-                MetadataEvent::SetPollingSource(v) => Self::SetPollingSource(v.into()),
-                MetadataEvent::SetTransform(v) => Self::SetTransform(v.into()),
-                MetadataEvent::SetVocab(v) => Self::SetVocab(v.into()),
-                MetadataEvent::SetAttachments(v) => Self::SetAttachments(v.into()),
-                MetadataEvent::SetInfo(v) => Self::SetInfo(v.into()),
-                MetadataEvent::SetLicense(v) => Self::SetLicense(v.into()),
-                MetadataEvent::SetDataSchema(v) => Self::SetDataSchema(v.into()),
-                MetadataEvent::AddPushSource(v) => Self::AddPushSource(v.into()),
-                MetadataEvent::DisablePushSource(v) => Self::DisablePushSource(v.into()),
-                MetadataEvent::DisablePollingSource(v) => Self::DisablePollingSource(v.into()),
+                MetadataEvent::AddData(v) => Ok(Self::AddData(v.try_into()?)),
+                MetadataEvent::ExecuteTransform(v) => Ok(Self::ExecuteTransform(v.try_into()?)),
+                MetadataEvent::Seed(v) => Ok(Self::Seed(v.try_into()?)),
+                MetadataEvent::SetPollingSource(v) => Ok(Self::SetPollingSource(v.try_into()?)),
+                MetadataEvent::SetTransform(v) => Ok(Self::SetTransform(v.try_into()?)),
+                MetadataEvent::SetVocab(v) => Ok(Self::SetVocab(v.try_into()?)),
+                MetadataEvent::SetAttachments(v) => Ok(Self::SetAttachments(v.try_into()?)),
+                MetadataEvent::SetInfo(v) => Ok(Self::SetInfo(v.try_into()?)),
+                MetadataEvent::SetLicense(v) => Ok(Self::SetLicense(v.try_into()?)),
+                MetadataEvent::SetDataSchema(v) => Ok(Self::SetDataSchema(v.try_into()?)),
+                MetadataEvent::AddPushSource(v) => Ok(Self::AddPushSource(v.try_into()?)),
+                MetadataEvent::DisablePushSource(v) => Ok(Self::DisablePushSource(v.try_into()?)),
+                MetadataEvent::DisablePollingSource(v) => {
+                    Ok(Self::DisablePollingSource(v.try_into()?))
+                }
             }
         }
     }
@@ -2424,8 +2577,8 @@ pub mod dataset {
 
     impl IntoDto for OffsetInterval {
         type Dto = dtos::dataset::OffsetInterval;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2438,12 +2591,13 @@ pub mod dataset {
         }
     }
 
-    impl From<OffsetInterval> for dtos::dataset::OffsetInterval {
-        fn from(v: OffsetInterval) -> Self {
-            Self {
+    impl TryFrom<OffsetInterval> for dtos::dataset::OffsetInterval {
+        type Error = ValidationError;
+        fn try_from(v: OffsetInterval) -> Result<Self, ValidationError> {
+            Ok(Self {
                 start: v.start,
                 end: v.end,
-            }
+            })
         }
     }
 
@@ -2460,8 +2614,8 @@ pub mod dataset {
 
     impl IntoDto for ProjectionSpec {
         type Dto = dtos::dataset::ProjectionSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2474,12 +2628,17 @@ pub mod dataset {
         }
     }
 
-    impl From<ProjectionSpec> for dtos::dataset::ProjectionSpec {
-        fn from(v: ProjectionSpec) -> Self {
-            Self {
-                inputs: v.inputs.into_iter().map(Into::into).collect(),
-                project: v.project.into(),
-            }
+    impl TryFrom<ProjectionSpec> for dtos::dataset::ProjectionSpec {
+        type Error = ValidationError;
+        fn try_from(v: ProjectionSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                inputs: v
+                    .inputs
+                    .into_iter()
+                    .map(|i| dtos::dataset::TransformInput::try_from(i))
+                    .collect::<Result<_, _>>()?,
+                project: dtos::dataset::Transform::try_from(v.project)?,
+            })
         }
     }
 
@@ -2496,8 +2655,8 @@ pub mod dataset {
 
     impl IntoDto for Seed {
         type Dto = dtos::dataset::Seed;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2510,12 +2669,13 @@ pub mod dataset {
         }
     }
 
-    impl From<Seed> for dtos::dataset::Seed {
-        fn from(v: Seed) -> Self {
-            Self {
+    impl TryFrom<Seed> for dtos::dataset::Seed {
+        type Error = ValidationError;
+        fn try_from(v: Seed) -> Result<Self, ValidationError> {
+            Ok(Self {
                 dataset_id: v.dataset_id,
-                dataset_kind: v.dataset_kind.into(),
-            }
+                dataset_kind: dtos::dataset::DatasetKind::try_from(v.dataset_kind)?,
+            })
         }
     }
 
@@ -2531,8 +2691,8 @@ pub mod dataset {
 
     impl IntoDto for SetAttachments {
         type Dto = dtos::dataset::SetAttachments;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2544,11 +2704,12 @@ pub mod dataset {
         }
     }
 
-    impl From<SetAttachments> for dtos::dataset::SetAttachments {
-        fn from(v: SetAttachments) -> Self {
-            Self {
-                attachments: v.attachments.into(),
-            }
+    impl TryFrom<SetAttachments> for dtos::dataset::SetAttachments {
+        type Error = ValidationError;
+        fn try_from(v: SetAttachments) -> Result<Self, ValidationError> {
+            Ok(Self {
+                attachments: dtos::dataset::Attachments::try_from(v.attachments)?,
+            })
         }
     }
 
@@ -2570,26 +2731,30 @@ pub mod dataset {
 
     impl IntoDto for SetDataSchema {
         type Dto = dtos::dataset::SetDataSchema;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::SetDataSchema> for SetDataSchema {
         fn from(v: dtos::dataset::SetDataSchema) -> Self {
             Self {
-                raw_arrow_schema: v.raw_arrow_schema.map(|v| v),
+                raw_arrow_schema: v.raw_arrow_schema,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<SetDataSchema> for dtos::dataset::SetDataSchema {
-        fn from(v: SetDataSchema) -> Self {
-            Self {
-                raw_arrow_schema: v.raw_arrow_schema.map(|v| v),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<SetDataSchema> for dtos::dataset::SetDataSchema {
+        type Error = ValidationError;
+        fn try_from(v: SetDataSchema) -> Result<Self, ValidationError> {
+            Ok(Self {
+                raw_arrow_schema: v.raw_arrow_schema,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -2610,26 +2775,27 @@ pub mod dataset {
 
     impl IntoDto for SetInfo {
         type Dto = dtos::dataset::SetInfo;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::SetInfo> for SetInfo {
         fn from(v: dtos::dataset::SetInfo) -> Self {
             Self {
-                description: v.description.map(|v| v),
-                keywords: v.keywords.map(|v| v.into_iter().map(Into::into).collect()),
+                description: v.description,
+                keywords: v.keywords,
             }
         }
     }
 
-    impl From<SetInfo> for dtos::dataset::SetInfo {
-        fn from(v: SetInfo) -> Self {
-            Self {
-                description: v.description.map(|v| v),
-                keywords: v.keywords.map(|v| v.into_iter().map(Into::into).collect()),
-            }
+    impl TryFrom<SetInfo> for dtos::dataset::SetInfo {
+        type Error = ValidationError;
+        fn try_from(v: SetInfo) -> Result<Self, ValidationError> {
+            Ok(Self {
+                description: v.description,
+                keywords: v.keywords,
+            })
         }
     }
 
@@ -2650,8 +2816,8 @@ pub mod dataset {
 
     impl IntoDto for SetLicense {
         type Dto = dtos::dataset::SetLicense;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2660,20 +2826,21 @@ pub mod dataset {
             Self {
                 short_name: v.short_name,
                 name: v.name,
-                spdx_id: v.spdx_id.map(|v| v),
+                spdx_id: v.spdx_id,
                 website_url: v.website_url,
             }
         }
     }
 
-    impl From<SetLicense> for dtos::dataset::SetLicense {
-        fn from(v: SetLicense) -> Self {
-            Self {
+    impl TryFrom<SetLicense> for dtos::dataset::SetLicense {
+        type Error = ValidationError;
+        fn try_from(v: SetLicense) -> Result<Self, ValidationError> {
+            Ok(Self {
                 short_name: v.short_name,
                 name: v.name,
-                spdx_id: v.spdx_id.map(|v| v),
+                spdx_id: v.spdx_id,
                 website_url: v.website_url,
-            }
+            })
         }
     }
 
@@ -2690,8 +2857,8 @@ pub mod dataset {
 
     impl IntoDto for SetTransform {
         type Dto = dtos::dataset::SetTransform;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2704,12 +2871,17 @@ pub mod dataset {
         }
     }
 
-    impl From<SetTransform> for dtos::dataset::SetTransform {
-        fn from(v: SetTransform) -> Self {
-            Self {
-                inputs: v.inputs.into_iter().map(Into::into).collect(),
-                transform: v.transform.into(),
-            }
+    impl TryFrom<SetTransform> for dtos::dataset::SetTransform {
+        type Error = ValidationError;
+        fn try_from(v: SetTransform) -> Result<Self, ValidationError> {
+            Ok(Self {
+                inputs: v
+                    .inputs
+                    .into_iter()
+                    .map(|i| dtos::dataset::TransformInput::try_from(i))
+                    .collect::<Result<_, _>>()?,
+                transform: dtos::dataset::Transform::try_from(v.transform)?,
+            })
         }
     }
 
@@ -2736,30 +2908,31 @@ pub mod dataset {
 
     impl IntoDto for SetVocab {
         type Dto = dtos::dataset::SetVocab;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::SetVocab> for SetVocab {
         fn from(v: dtos::dataset::SetVocab) -> Self {
             Self {
-                offset_column: v.offset_column.map(|v| v),
-                operation_type_column: v.operation_type_column.map(|v| v),
-                system_time_column: v.system_time_column.map(|v| v),
-                event_time_column: v.event_time_column.map(|v| v),
+                offset_column: v.offset_column,
+                operation_type_column: v.operation_type_column,
+                system_time_column: v.system_time_column,
+                event_time_column: v.event_time_column,
             }
         }
     }
 
-    impl From<SetVocab> for dtos::dataset::SetVocab {
-        fn from(v: SetVocab) -> Self {
-            Self {
-                offset_column: v.offset_column.map(|v| v),
-                operation_type_column: v.operation_type_column.map(|v| v),
-                system_time_column: v.system_time_column.map(|v| v),
-                event_time_column: v.event_time_column.map(|v| v),
-            }
+    impl TryFrom<SetVocab> for dtos::dataset::SetVocab {
+        type Error = ValidationError;
+        fn try_from(v: SetVocab) -> Result<Self, ValidationError> {
+            Ok(Self {
+                offset_column: v.offset_column,
+                operation_type_column: v.operation_type_column,
+                system_time_column: v.system_time_column,
+                event_time_column: v.event_time_column,
+            })
         }
     }
 
@@ -2778,26 +2951,27 @@ pub mod dataset {
 
     impl IntoDto for SqlQueryStep {
         type Dto = dtos::dataset::SqlQueryStep;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::dataset::SqlQueryStep> for SqlQueryStep {
         fn from(v: dtos::dataset::SqlQueryStep) -> Self {
             Self {
-                alias: v.alias.map(|v| v),
+                alias: v.alias,
                 query: v.query,
             }
         }
     }
 
-    impl From<SqlQueryStep> for dtos::dataset::SqlQueryStep {
-        fn from(v: SqlQueryStep) -> Self {
-            Self {
-                alias: v.alias.map(|v| v),
+    impl TryFrom<SqlQueryStep> for dtos::dataset::SqlQueryStep {
+        type Error = ValidationError;
+        fn try_from(v: SqlQueryStep) -> Result<Self, ValidationError> {
+            Ok(Self {
+                alias: v.alias,
                 query: v.query,
-            }
+            })
         }
     }
 
@@ -2814,8 +2988,8 @@ pub mod dataset {
 
     impl IntoDto for TemporalTable {
         type Dto = dtos::dataset::TemporalTable;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2823,17 +2997,18 @@ pub mod dataset {
         fn from(v: dtos::dataset::TemporalTable) -> Self {
             Self {
                 name: v.name,
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
+                primary_key: v.primary_key,
             }
         }
     }
 
-    impl From<TemporalTable> for dtos::dataset::TemporalTable {
-        fn from(v: TemporalTable) -> Self {
-            Self {
+    impl TryFrom<TemporalTable> for dtos::dataset::TemporalTable {
+        type Error = ValidationError;
+        fn try_from(v: TemporalTable) -> Result<Self, ValidationError> {
+            Ok(Self {
                 name: v.name,
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
-            }
+                primary_key: v.primary_key,
+            })
         }
     }
 
@@ -2850,8 +3025,8 @@ pub mod dataset {
 
     impl IntoDto for Transform {
         type Dto = dtos::dataset::Transform;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2863,10 +3038,11 @@ pub mod dataset {
         }
     }
 
-    impl From<Transform> for dtos::dataset::Transform {
-        fn from(v: Transform) -> Self {
+    impl TryFrom<Transform> for dtos::dataset::Transform {
+        type Error = ValidationError;
+        fn try_from(v: Transform) -> Result<Self, Self::Error> {
             match v {
-                Transform::Sql(v) => Self::Sql(v.into()),
+                Transform::Sql(v) => Ok(Self::Sql(v.try_into()?)),
             }
         }
     }
@@ -2886,8 +3062,8 @@ pub mod dataset {
 
     impl IntoDto for TransformInput {
         type Dto = dtos::dataset::TransformInput;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2895,17 +3071,18 @@ pub mod dataset {
         fn from(v: dtos::dataset::TransformInput) -> Self {
             Self {
                 dataset_ref: v.dataset_ref,
-                alias: v.alias.map(|v| v),
+                alias: v.alias,
             }
         }
     }
 
-    impl From<TransformInput> for dtos::dataset::TransformInput {
-        fn from(v: TransformInput) -> Self {
-            Self {
+    impl TryFrom<TransformInput> for dtos::dataset::TransformInput {
+        type Error = ValidationError;
+        fn try_from(v: TransformInput) -> Result<Self, ValidationError> {
+            Ok(Self {
                 dataset_ref: v.dataset_ref,
-                alias: v.alias.map(|v| v),
-            }
+                alias: v.alias,
+            })
         }
     }
 
@@ -2933,8 +3110,8 @@ pub mod dataset {
 
     impl IntoDto for TransformSql {
         type Dto = dtos::dataset::TransformSql;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2942,8 +3119,8 @@ pub mod dataset {
         fn from(v: dtos::dataset::TransformSql) -> Self {
             Self {
                 engine: v.engine,
-                version: v.version.map(|v| v),
-                query: v.query.map(|v| v),
+                version: v.version,
+                query: v.query,
                 queries: v.queries.map(|v| v.into_iter().map(Into::into).collect()),
                 temporal_tables: v
                     .temporal_tables
@@ -2952,17 +3129,30 @@ pub mod dataset {
         }
     }
 
-    impl From<TransformSql> for dtos::dataset::TransformSql {
-        fn from(v: TransformSql) -> Self {
-            Self {
+    impl TryFrom<TransformSql> for dtos::dataset::TransformSql {
+        type Error = ValidationError;
+        fn try_from(v: TransformSql) -> Result<Self, ValidationError> {
+            Ok(Self {
                 engine: v.engine,
-                version: v.version.map(|v| v),
-                query: v.query.map(|v| v),
-                queries: v.queries.map(|v| v.into_iter().map(Into::into).collect()),
+                version: v.version,
+                query: v.query,
+                queries: v
+                    .queries
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::dataset::SqlQueryStep::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
                 temporal_tables: v
                     .temporal_tables
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-            }
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::dataset::TemporalTable::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+            })
         }
     }
 
@@ -2981,8 +3171,8 @@ pub mod dataset {
 
     impl IntoDto for Watermark {
         type Dto = dtos::dataset::Watermark;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -2995,12 +3185,13 @@ pub mod dataset {
         }
     }
 
-    impl From<Watermark> for dtos::dataset::Watermark {
-        fn from(v: Watermark) -> Self {
-            Self {
+    impl TryFrom<Watermark> for dtos::dataset::Watermark {
+        type Error = ValidationError;
+        fn try_from(v: Watermark) -> Result<Self, ValidationError> {
+            Ok(Self {
                 system_time: v.system_time,
                 event_time: v.event_time,
-            }
+            })
         }
     }
 
@@ -3027,28 +3218,29 @@ pub mod engine {
 
     impl IntoDto for RawQueryRequest {
         type Dto = dtos::engine::RawQueryRequest;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::engine::RawQueryRequest> for RawQueryRequest {
         fn from(v: dtos::engine::RawQueryRequest) -> Self {
             Self {
-                input_data_paths: v.input_data_paths.into_iter().map(Into::into).collect(),
+                input_data_paths: v.input_data_paths,
                 transform: v.transform.into(),
                 output_data_path: v.output_data_path,
             }
         }
     }
 
-    impl From<RawQueryRequest> for dtos::engine::RawQueryRequest {
-        fn from(v: RawQueryRequest) -> Self {
-            Self {
-                input_data_paths: v.input_data_paths.into_iter().map(Into::into).collect(),
-                transform: v.transform.into(),
+    impl TryFrom<RawQueryRequest> for dtos::engine::RawQueryRequest {
+        type Error = ValidationError;
+        fn try_from(v: RawQueryRequest) -> Result<Self, ValidationError> {
+            Ok(Self {
+                input_data_paths: v.input_data_paths,
+                transform: dtos::dataset::Transform::try_from(v.transform)?,
                 output_data_path: v.output_data_path,
-            }
+            })
         }
     }
 
@@ -3071,8 +3263,8 @@ pub mod engine {
 
     impl IntoDto for RawQueryResponse {
         type Dto = dtos::engine::RawQueryResponse;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3087,13 +3279,14 @@ pub mod engine {
         }
     }
 
-    impl From<RawQueryResponse> for dtos::engine::RawQueryResponse {
-        fn from(v: RawQueryResponse) -> Self {
+    impl TryFrom<RawQueryResponse> for dtos::engine::RawQueryResponse {
+        type Error = ValidationError;
+        fn try_from(v: RawQueryResponse) -> Result<Self, Self::Error> {
             match v {
-                RawQueryResponse::Progress(v) => Self::Progress(v.into()),
-                RawQueryResponse::Success(v) => Self::Success(v.into()),
-                RawQueryResponse::InvalidQuery(v) => Self::InvalidQuery(v.into()),
-                RawQueryResponse::InternalError(v) => Self::InternalError(v.into()),
+                RawQueryResponse::Progress(v) => Ok(Self::Progress(v.try_into()?)),
+                RawQueryResponse::Success(v) => Ok(Self::Success(v.try_into()?)),
+                RawQueryResponse::InvalidQuery(v) => Ok(Self::InvalidQuery(v.try_into()?)),
+                RawQueryResponse::InternalError(v) => Ok(Self::InternalError(v.try_into()?)),
             }
         }
     }
@@ -3113,8 +3306,8 @@ pub mod engine {
 
     impl IntoDto for RawQueryResponseInternalError {
         type Dto = dtos::engine::RawQueryResponseInternalError;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3122,17 +3315,18 @@ pub mod engine {
         fn from(v: dtos::engine::RawQueryResponseInternalError) -> Self {
             Self {
                 message: v.message,
-                backtrace: v.backtrace.map(|v| v),
+                backtrace: v.backtrace,
             }
         }
     }
 
-    impl From<RawQueryResponseInternalError> for dtos::engine::RawQueryResponseInternalError {
-        fn from(v: RawQueryResponseInternalError) -> Self {
-            Self {
+    impl TryFrom<RawQueryResponseInternalError> for dtos::engine::RawQueryResponseInternalError {
+        type Error = ValidationError;
+        fn try_from(v: RawQueryResponseInternalError) -> Result<Self, ValidationError> {
+            Ok(Self {
                 message: v.message,
-                backtrace: v.backtrace.map(|v| v),
-            }
+                backtrace: v.backtrace,
+            })
         }
     }
 
@@ -3151,8 +3345,8 @@ pub mod engine {
 
     impl IntoDto for RawQueryResponseInvalidQuery {
         type Dto = dtos::engine::RawQueryResponseInvalidQuery;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3162,9 +3356,10 @@ pub mod engine {
         }
     }
 
-    impl From<RawQueryResponseInvalidQuery> for dtos::engine::RawQueryResponseInvalidQuery {
-        fn from(v: RawQueryResponseInvalidQuery) -> Self {
-            Self { message: v.message }
+    impl TryFrom<RawQueryResponseInvalidQuery> for dtos::engine::RawQueryResponseInvalidQuery {
+        type Error = ValidationError;
+        fn try_from(v: RawQueryResponseInvalidQuery) -> Result<Self, ValidationError> {
+            Ok(Self { message: v.message })
         }
     }
 
@@ -3181,8 +3376,8 @@ pub mod engine {
 
     impl IntoDto for RawQueryResponseProgress {
         type Dto = dtos::engine::RawQueryResponseProgress;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3192,9 +3387,10 @@ pub mod engine {
         }
     }
 
-    impl From<RawQueryResponseProgress> for dtos::engine::RawQueryResponseProgress {
-        fn from(v: RawQueryResponseProgress) -> Self {
-            Self {}
+    impl TryFrom<RawQueryResponseProgress> for dtos::engine::RawQueryResponseProgress {
+        type Error = ValidationError;
+        fn try_from(v: RawQueryResponseProgress) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -3213,8 +3409,8 @@ pub mod engine {
 
     impl IntoDto for RawQueryResponseSuccess {
         type Dto = dtos::engine::RawQueryResponseSuccess;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3226,11 +3422,12 @@ pub mod engine {
         }
     }
 
-    impl From<RawQueryResponseSuccess> for dtos::engine::RawQueryResponseSuccess {
-        fn from(v: RawQueryResponseSuccess) -> Self {
-            Self {
+    impl TryFrom<RawQueryResponseSuccess> for dtos::engine::RawQueryResponseSuccess {
+        type Error = ValidationError;
+        fn try_from(v: RawQueryResponseSuccess) -> Result<Self, ValidationError> {
+            Ok(Self {
                 num_records: v.num_records,
-            }
+            })
         }
     }
 
@@ -3261,8 +3458,8 @@ pub mod engine {
 
     impl IntoDto for TransformRequest {
         type Dto = dtos::engine::TransformRequest;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3276,27 +3473,32 @@ pub mod engine {
                 transform: v.transform.into(),
                 query_inputs: v.query_inputs.into_iter().map(Into::into).collect(),
                 next_offset: v.next_offset,
-                prev_checkpoint_path: v.prev_checkpoint_path.map(|v| v),
+                prev_checkpoint_path: v.prev_checkpoint_path,
                 new_checkpoint_path: v.new_checkpoint_path,
                 new_data_path: v.new_data_path,
             }
         }
     }
 
-    impl From<TransformRequest> for dtos::engine::TransformRequest {
-        fn from(v: TransformRequest) -> Self {
-            Self {
+    impl TryFrom<TransformRequest> for dtos::engine::TransformRequest {
+        type Error = ValidationError;
+        fn try_from(v: TransformRequest) -> Result<Self, ValidationError> {
+            Ok(Self {
                 dataset_id: v.dataset_id,
                 dataset_alias: v.dataset_alias,
                 system_time: v.system_time,
-                vocab: v.vocab.into(),
-                transform: v.transform.into(),
-                query_inputs: v.query_inputs.into_iter().map(Into::into).collect(),
+                vocab: dtos::dataset::DatasetVocabulary::try_from(v.vocab)?,
+                transform: dtos::dataset::Transform::try_from(v.transform)?,
+                query_inputs: v
+                    .query_inputs
+                    .into_iter()
+                    .map(|i| dtos::engine::TransformRequestInput::try_from(i))
+                    .collect::<Result<_, _>>()?,
                 next_offset: v.next_offset,
-                prev_checkpoint_path: v.prev_checkpoint_path.map(|v| v),
+                prev_checkpoint_path: v.prev_checkpoint_path,
                 new_checkpoint_path: v.new_checkpoint_path,
                 new_data_path: v.new_data_path,
-            }
+            })
         }
     }
 
@@ -3321,8 +3523,8 @@ pub mod engine {
 
     impl IntoDto for TransformRequestInput {
         type Dto = dtos::engine::TransformRequestInput;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3334,25 +3536,33 @@ pub mod engine {
                 query_alias: v.query_alias,
                 vocab: v.vocab.into(),
                 offset_interval: v.offset_interval.map(|v| v.into()),
-                data_paths: v.data_paths.into_iter().map(Into::into).collect(),
+                data_paths: v.data_paths,
                 schema_file: v.schema_file,
                 explicit_watermarks: v.explicit_watermarks.into_iter().map(Into::into).collect(),
             }
         }
     }
 
-    impl From<TransformRequestInput> for dtos::engine::TransformRequestInput {
-        fn from(v: TransformRequestInput) -> Self {
-            Self {
+    impl TryFrom<TransformRequestInput> for dtos::engine::TransformRequestInput {
+        type Error = ValidationError;
+        fn try_from(v: TransformRequestInput) -> Result<Self, ValidationError> {
+            Ok(Self {
                 dataset_id: v.dataset_id,
                 dataset_alias: v.dataset_alias,
                 query_alias: v.query_alias,
-                vocab: v.vocab.into(),
-                offset_interval: v.offset_interval.map(|v| v.into()),
-                data_paths: v.data_paths.into_iter().map(Into::into).collect(),
+                vocab: dtos::dataset::DatasetVocabulary::try_from(v.vocab)?,
+                offset_interval: v
+                    .offset_interval
+                    .map(|v| dtos::dataset::OffsetInterval::try_from(v))
+                    .transpose()?,
+                data_paths: v.data_paths,
                 schema_file: v.schema_file,
-                explicit_watermarks: v.explicit_watermarks.into_iter().map(Into::into).collect(),
-            }
+                explicit_watermarks: v
+                    .explicit_watermarks
+                    .into_iter()
+                    .map(|i| dtos::dataset::Watermark::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -3375,8 +3585,8 @@ pub mod engine {
 
     impl IntoDto for TransformResponse {
         type Dto = dtos::engine::TransformResponse;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3391,13 +3601,14 @@ pub mod engine {
         }
     }
 
-    impl From<TransformResponse> for dtos::engine::TransformResponse {
-        fn from(v: TransformResponse) -> Self {
+    impl TryFrom<TransformResponse> for dtos::engine::TransformResponse {
+        type Error = ValidationError;
+        fn try_from(v: TransformResponse) -> Result<Self, Self::Error> {
             match v {
-                TransformResponse::Progress(v) => Self::Progress(v.into()),
-                TransformResponse::Success(v) => Self::Success(v.into()),
-                TransformResponse::InvalidQuery(v) => Self::InvalidQuery(v.into()),
-                TransformResponse::InternalError(v) => Self::InternalError(v.into()),
+                TransformResponse::Progress(v) => Ok(Self::Progress(v.try_into()?)),
+                TransformResponse::Success(v) => Ok(Self::Success(v.try_into()?)),
+                TransformResponse::InvalidQuery(v) => Ok(Self::InvalidQuery(v.try_into()?)),
+                TransformResponse::InternalError(v) => Ok(Self::InternalError(v.try_into()?)),
             }
         }
     }
@@ -3417,8 +3628,8 @@ pub mod engine {
 
     impl IntoDto for TransformResponseInternalError {
         type Dto = dtos::engine::TransformResponseInternalError;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3426,17 +3637,18 @@ pub mod engine {
         fn from(v: dtos::engine::TransformResponseInternalError) -> Self {
             Self {
                 message: v.message,
-                backtrace: v.backtrace.map(|v| v),
+                backtrace: v.backtrace,
             }
         }
     }
 
-    impl From<TransformResponseInternalError> for dtos::engine::TransformResponseInternalError {
-        fn from(v: TransformResponseInternalError) -> Self {
-            Self {
+    impl TryFrom<TransformResponseInternalError> for dtos::engine::TransformResponseInternalError {
+        type Error = ValidationError;
+        fn try_from(v: TransformResponseInternalError) -> Result<Self, ValidationError> {
+            Ok(Self {
                 message: v.message,
-                backtrace: v.backtrace.map(|v| v),
-            }
+                backtrace: v.backtrace,
+            })
         }
     }
 
@@ -3455,8 +3667,8 @@ pub mod engine {
 
     impl IntoDto for TransformResponseInvalidQuery {
         type Dto = dtos::engine::TransformResponseInvalidQuery;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3466,9 +3678,10 @@ pub mod engine {
         }
     }
 
-    impl From<TransformResponseInvalidQuery> for dtos::engine::TransformResponseInvalidQuery {
-        fn from(v: TransformResponseInvalidQuery) -> Self {
-            Self { message: v.message }
+    impl TryFrom<TransformResponseInvalidQuery> for dtos::engine::TransformResponseInvalidQuery {
+        type Error = ValidationError;
+        fn try_from(v: TransformResponseInvalidQuery) -> Result<Self, ValidationError> {
+            Ok(Self { message: v.message })
         }
     }
 
@@ -3485,8 +3698,8 @@ pub mod engine {
 
     impl IntoDto for TransformResponseProgress {
         type Dto = dtos::engine::TransformResponseProgress;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3496,9 +3709,10 @@ pub mod engine {
         }
     }
 
-    impl From<TransformResponseProgress> for dtos::engine::TransformResponseProgress {
-        fn from(v: TransformResponseProgress) -> Self {
-            Self {}
+    impl TryFrom<TransformResponseProgress> for dtos::engine::TransformResponseProgress {
+        type Error = ValidationError;
+        fn try_from(v: TransformResponseProgress) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -3523,8 +3737,8 @@ pub mod engine {
 
     impl IntoDto for TransformResponseSuccess {
         type Dto = dtos::engine::TransformResponseSuccess;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3532,17 +3746,21 @@ pub mod engine {
         fn from(v: dtos::engine::TransformResponseSuccess) -> Self {
             Self {
                 new_offset_interval: v.new_offset_interval.map(|v| v.into()),
-                new_watermark: v.new_watermark.map(|v| v),
+                new_watermark: v.new_watermark,
             }
         }
     }
 
-    impl From<TransformResponseSuccess> for dtos::engine::TransformResponseSuccess {
-        fn from(v: TransformResponseSuccess) -> Self {
-            Self {
-                new_offset_interval: v.new_offset_interval.map(|v| v.into()),
-                new_watermark: v.new_watermark.map(|v| v),
-            }
+    impl TryFrom<TransformResponseSuccess> for dtos::engine::TransformResponseSuccess {
+        type Error = ValidationError;
+        fn try_from(v: TransformResponseSuccess) -> Result<Self, ValidationError> {
+            Ok(Self {
+                new_offset_interval: v
+                    .new_offset_interval
+                    .map(|v| dtos::dataset::OffsetInterval::try_from(v))
+                    .transpose()?,
+                new_watermark: v.new_watermark,
+            })
         }
     }
 
@@ -3570,8 +3788,8 @@ pub mod event {
 
     impl IntoDto for EventFilter {
         type Dto = dtos::event::EventFilter;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3581,9 +3799,10 @@ pub mod event {
         }
     }
 
-    impl From<EventFilter> for dtos::event::EventFilter {
-        fn from(v: EventFilter) -> Self {
-            Self { entries: v.entries }
+    impl TryFrom<EventFilter> for dtos::event::EventFilter {
+        type Error = ValidationError;
+        fn try_from(v: EventFilter) -> Result<Self, Self::Error> {
+            Ok(Self { entries: v.entries })
         }
     }
 
@@ -3610,8 +3829,8 @@ pub mod flow {
 
     impl IntoDto for FlowSpec {
         type Dto = dtos::flow::FlowSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3625,13 +3844,22 @@ pub mod flow {
         }
     }
 
-    impl From<FlowSpec> for dtos::flow::FlowSpec {
-        fn from(v: FlowSpec) -> Self {
-            Self {
-                target: v.target.into(),
-                triggers: v.triggers.into_iter().map(Into::into).collect(),
-                tasks: v.tasks.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<FlowSpec> for dtos::flow::FlowSpec {
+        type Error = ValidationError;
+        fn try_from(v: FlowSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                target: dtos::resource::ResourceSelector::try_from(v.target)?,
+                triggers: v
+                    .triggers
+                    .into_iter()
+                    .map(|i| dtos::flow::FlowTrigger::try_from(i))
+                    .collect::<Result<_, _>>()?,
+                tasks: v
+                    .tasks
+                    .into_iter()
+                    .map(|i| dtos::flow::TaskSpec::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -3654,8 +3882,8 @@ pub mod flow {
 
     impl IntoDto for FlowTrigger {
         type Dto = dtos::flow::FlowTrigger;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3670,13 +3898,14 @@ pub mod flow {
         }
     }
 
-    impl From<FlowTrigger> for dtos::flow::FlowTrigger {
-        fn from(v: FlowTrigger) -> Self {
+    impl TryFrom<FlowTrigger> for dtos::flow::FlowTrigger {
+        type Error = ValidationError;
+        fn try_from(v: FlowTrigger) -> Result<Self, Self::Error> {
             match v {
-                FlowTrigger::Schedule(v) => Self::Schedule(v.into()),
-                FlowTrigger::Event(v) => Self::Event(v.into()),
-                FlowTrigger::Source(v) => Self::Source(v.into()),
-                FlowTrigger::Dataset(v) => Self::Dataset(v.into()),
+                FlowTrigger::Schedule(v) => Ok(Self::Schedule(v.try_into()?)),
+                FlowTrigger::Event(v) => Ok(Self::Event(v.try_into()?)),
+                FlowTrigger::Source(v) => Ok(Self::Source(v.try_into()?)),
+                FlowTrigger::Dataset(v) => Ok(Self::Dataset(v.try_into()?)),
             }
         }
     }
@@ -3696,8 +3925,8 @@ pub mod flow {
 
     impl IntoDto for FlowTriggerDataset {
         type Dto = dtos::flow::FlowTriggerDataset;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3705,17 +3934,18 @@ pub mod flow {
         fn from(v: dtos::flow::FlowTriggerDataset) -> Self {
             Self {
                 dataset: v.dataset.into(),
-                events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
+                events: v.events,
             }
         }
     }
 
-    impl From<FlowTriggerDataset> for dtos::flow::FlowTriggerDataset {
-        fn from(v: FlowTriggerDataset) -> Self {
-            Self {
-                dataset: v.dataset.into(),
-                events: v.events.map(|v| v.into_iter().map(Into::into).collect()),
-            }
+    impl TryFrom<FlowTriggerDataset> for dtos::flow::FlowTriggerDataset {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerDataset) -> Result<Self, ValidationError> {
+            Ok(Self {
+                dataset: dtos::dataset::DatasetSelector::try_from(v.dataset)?,
+                events: v.events,
+            })
         }
     }
 
@@ -3737,8 +3967,8 @@ pub mod flow {
 
     impl IntoDto for FlowTriggerEvent {
         type Dto = dtos::flow::FlowTriggerEvent;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3746,19 +3976,20 @@ pub mod flow {
         fn from(v: dtos::flow::FlowTriggerEvent) -> Self {
             Self {
                 events: v.events.into(),
-                cooldown: v.cooldown.map(|v| v),
-                cooldown_max_batch: v.cooldown_max_batch.map(|v| v),
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
             }
         }
     }
 
-    impl From<FlowTriggerEvent> for dtos::flow::FlowTriggerEvent {
-        fn from(v: FlowTriggerEvent) -> Self {
-            Self {
-                events: v.events.into(),
-                cooldown: v.cooldown.map(|v| v),
-                cooldown_max_batch: v.cooldown_max_batch.map(|v| v),
-            }
+    impl TryFrom<FlowTriggerEvent> for dtos::flow::FlowTriggerEvent {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerEvent) -> Result<Self, ValidationError> {
+            Ok(Self {
+                events: dtos::event::EventFilter::try_from(v.events)?,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+            })
         }
     }
 
@@ -3774,8 +4005,8 @@ pub mod flow {
 
     impl IntoDto for FlowTriggerSchedule {
         type Dto = dtos::flow::FlowTriggerSchedule;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3785,9 +4016,10 @@ pub mod flow {
         }
     }
 
-    impl From<FlowTriggerSchedule> for dtos::flow::FlowTriggerSchedule {
-        fn from(v: FlowTriggerSchedule) -> Self {
-            Self { cron: v.cron }
+    impl TryFrom<FlowTriggerSchedule> for dtos::flow::FlowTriggerSchedule {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerSchedule) -> Result<Self, ValidationError> {
+            Ok(Self { cron: v.cron })
         }
     }
 
@@ -3809,8 +4041,8 @@ pub mod flow {
 
     impl IntoDto for FlowTriggerSource {
         type Dto = dtos::flow::FlowTriggerSource;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3818,19 +4050,20 @@ pub mod flow {
         fn from(v: dtos::flow::FlowTriggerSource) -> Self {
             Self {
                 source: v.source.into(),
-                min_records_to_await: v.min_records_to_await.map(|v| v),
-                max_await_interval: v.max_await_interval.map(|v| v),
+                min_records_to_await: v.min_records_to_await,
+                max_await_interval: v.max_await_interval,
             }
         }
     }
 
-    impl From<FlowTriggerSource> for dtos::flow::FlowTriggerSource {
-        fn from(v: FlowTriggerSource) -> Self {
-            Self {
-                source: v.source.into(),
-                min_records_to_await: v.min_records_to_await.map(|v| v),
-                max_await_interval: v.max_await_interval.map(|v| v),
-            }
+    impl TryFrom<FlowTriggerSource> for dtos::flow::FlowTriggerSource {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerSource) -> Result<Self, ValidationError> {
+            Ok(Self {
+                source: dtos::resource::ResourceRef::try_from(v.source)?,
+                min_records_to_await: v.min_records_to_await,
+                max_await_interval: v.max_await_interval,
+            })
         }
     }
 
@@ -3853,8 +4086,8 @@ pub mod flow {
 
     impl IntoDto for TaskSpec {
         type Dto = dtos::flow::TaskSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3869,13 +4102,14 @@ pub mod flow {
         }
     }
 
-    impl From<TaskSpec> for dtos::flow::TaskSpec {
-        fn from(v: TaskSpec) -> Self {
+    impl TryFrom<TaskSpec> for dtos::flow::TaskSpec {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpec) -> Result<Self, Self::Error> {
             match v {
-                TaskSpec::Ingest(v) => Self::Ingest(v.into()),
-                TaskSpec::Compaction(v) => Self::Compaction(v.into()),
-                TaskSpec::GarbageCollection(v) => Self::GarbageCollection(v.into()),
-                TaskSpec::WebhookCall(v) => Self::WebhookCall(v.into()),
+                TaskSpec::Ingest(v) => Ok(Self::Ingest(v.try_into()?)),
+                TaskSpec::Compaction(v) => Ok(Self::Compaction(v.try_into()?)),
+                TaskSpec::GarbageCollection(v) => Ok(Self::GarbageCollection(v.try_into()?)),
+                TaskSpec::WebhookCall(v) => Ok(Self::WebhookCall(v.try_into()?)),
             }
         }
     }
@@ -3894,8 +4128,8 @@ pub mod flow {
 
     impl IntoDto for TaskSpecCompaction {
         type Dto = dtos::flow::TaskSpecCompaction;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3907,11 +4141,15 @@ pub mod flow {
         }
     }
 
-    impl From<TaskSpecCompaction> for dtos::flow::TaskSpecCompaction {
-        fn from(v: TaskSpecCompaction) -> Self {
-            Self {
-                params: v.params.map(|v| v.into()),
-            }
+    impl TryFrom<TaskSpecCompaction> for dtos::flow::TaskSpecCompaction {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecCompaction) -> Result<Self, ValidationError> {
+            Ok(Self {
+                params: v
+                    .params
+                    .map(|v| dtos::dataset::CompactionParams::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -3925,8 +4163,8 @@ pub mod flow {
 
     impl IntoDto for TaskSpecGarbageCollection {
         type Dto = dtos::flow::TaskSpecGarbageCollection;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3936,9 +4174,10 @@ pub mod flow {
         }
     }
 
-    impl From<TaskSpecGarbageCollection> for dtos::flow::TaskSpecGarbageCollection {
-        fn from(v: TaskSpecGarbageCollection) -> Self {
-            Self {}
+    impl TryFrom<TaskSpecGarbageCollection> for dtos::flow::TaskSpecGarbageCollection {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecGarbageCollection) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -3960,8 +4199,8 @@ pub mod flow {
 
     impl IntoDto for TaskSpecIngest {
         type Dto = dtos::flow::TaskSpecIngest;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -3974,12 +4213,16 @@ pub mod flow {
         }
     }
 
-    impl From<TaskSpecIngest> for dtos::flow::TaskSpecIngest {
-        fn from(v: TaskSpecIngest) -> Self {
-            Self {
-                source: v.source.into(),
-                params: v.params.map(|v| v.into()),
-            }
+    impl TryFrom<TaskSpecIngest> for dtos::flow::TaskSpecIngest {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecIngest) -> Result<Self, ValidationError> {
+            Ok(Self {
+                source: dtos::resource::ResourceRef::try_from(v.source)?,
+                params: v
+                    .params
+                    .map(|v| dtos::source::IngestParams::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -3998,8 +4241,8 @@ pub mod flow {
 
     impl IntoDto for TaskSpecWebhookCall {
         type Dto = dtos::flow::TaskSpecWebhookCall;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4007,17 +4250,18 @@ pub mod flow {
         fn from(v: dtos::flow::TaskSpecWebhookCall) -> Self {
             Self {
                 target: v.target.into(),
-                payload: v.payload.map(|v| v),
+                payload: v.payload,
             }
         }
     }
 
-    impl From<TaskSpecWebhookCall> for dtos::flow::TaskSpecWebhookCall {
-        fn from(v: TaskSpecWebhookCall) -> Self {
-            Self {
-                target: v.target.into(),
-                payload: v.payload.map(|v| v),
-            }
+    impl TryFrom<TaskSpecWebhookCall> for dtos::flow::TaskSpecWebhookCall {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecWebhookCall) -> Result<Self, ValidationError> {
+            Ok(Self {
+                target: dtos::resource::ResourceRef::try_from(v.target)?,
+                payload: v.payload,
+            })
         }
     }
 
@@ -4047,8 +4291,8 @@ pub mod legacy {
 
     impl IntoDto for AddPushSource {
         type Dto = dtos::legacy::AddPushSource;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4063,14 +4307,18 @@ pub mod legacy {
         }
     }
 
-    impl From<AddPushSource> for dtos::legacy::AddPushSource {
-        fn from(v: AddPushSource) -> Self {
-            Self {
+    impl TryFrom<AddPushSource> for dtos::legacy::AddPushSource {
+        type Error = ValidationError;
+        fn try_from(v: AddPushSource) -> Result<Self, ValidationError> {
+            Ok(Self {
                 source_name: v.source_name,
-                read: v.read.into(),
-                preprocess: v.preprocess.map(|v| v.into()),
-                merge: v.merge.into(),
-            }
+                read: dtos::source::ReadStep::try_from(v.read)?,
+                preprocess: v
+                    .preprocess
+                    .map(|v| dtos::dataset::Transform::try_from(v))
+                    .transpose()?,
+                merge: dtos::source::MergeStrategy::try_from(v.merge)?,
+            })
         }
     }
 
@@ -4088,8 +4336,8 @@ pub mod legacy {
 
     impl IntoDto for DatasetSnapshot {
         type Dto = dtos::legacy::DatasetSnapshot;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4103,13 +4351,18 @@ pub mod legacy {
         }
     }
 
-    impl From<DatasetSnapshot> for dtos::legacy::DatasetSnapshot {
-        fn from(v: DatasetSnapshot) -> Self {
-            Self {
+    impl TryFrom<DatasetSnapshot> for dtos::legacy::DatasetSnapshot {
+        type Error = ValidationError;
+        fn try_from(v: DatasetSnapshot) -> Result<Self, ValidationError> {
+            Ok(Self {
                 name: v.name,
-                kind: v.kind.into(),
-                metadata: v.metadata.into_iter().map(Into::into).collect(),
-            }
+                kind: dtos::dataset::DatasetKind::try_from(v.kind)?,
+                metadata: v
+                    .metadata
+                    .into_iter()
+                    .map(|i| dtos::dataset::MetadataEvent::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -4123,8 +4376,8 @@ pub mod legacy {
 
     impl IntoDto for DisablePollingSource {
         type Dto = dtos::legacy::DisablePollingSource;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4134,9 +4387,10 @@ pub mod legacy {
         }
     }
 
-    impl From<DisablePollingSource> for dtos::legacy::DisablePollingSource {
-        fn from(v: DisablePollingSource) -> Self {
-            Self {}
+    impl TryFrom<DisablePollingSource> for dtos::legacy::DisablePollingSource {
+        type Error = ValidationError;
+        fn try_from(v: DisablePollingSource) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -4152,8 +4406,8 @@ pub mod legacy {
 
     impl IntoDto for DisablePushSource {
         type Dto = dtos::legacy::DisablePushSource;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4165,11 +4419,12 @@ pub mod legacy {
         }
     }
 
-    impl From<DisablePushSource> for dtos::legacy::DisablePushSource {
-        fn from(v: DisablePushSource) -> Self {
-            Self {
+    impl TryFrom<DisablePushSource> for dtos::legacy::DisablePushSource {
+        type Error = ValidationError;
+        fn try_from(v: DisablePushSource) -> Result<Self, ValidationError> {
+            Ok(Self {
                 source_name: v.source_name,
-            }
+            })
         }
     }
 
@@ -4194,8 +4449,8 @@ pub mod legacy {
 
     impl IntoDto for FetchStep {
         type Dto = dtos::legacy::FetchStep;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4211,14 +4466,15 @@ pub mod legacy {
         }
     }
 
-    impl From<FetchStep> for dtos::legacy::FetchStep {
-        fn from(v: FetchStep) -> Self {
+    impl TryFrom<FetchStep> for dtos::legacy::FetchStep {
+        type Error = ValidationError;
+        fn try_from(v: FetchStep) -> Result<Self, Self::Error> {
             match v {
-                FetchStep::Url(v) => Self::Url(v.into()),
-                FetchStep::FilesGlob(v) => Self::FilesGlob(v.into()),
-                FetchStep::Container(v) => Self::Container(v.into()),
-                FetchStep::Mqtt(v) => Self::Mqtt(v.into()),
-                FetchStep::EthereumLogs(v) => Self::EthereumLogs(v.into()),
+                FetchStep::Url(v) => Ok(Self::Url(v.try_into()?)),
+                FetchStep::FilesGlob(v) => Ok(Self::FilesGlob(v.try_into()?)),
+                FetchStep::Container(v) => Ok(Self::Container(v.try_into()?)),
+                FetchStep::Mqtt(v) => Ok(Self::Mqtt(v.try_into()?)),
+                FetchStep::EthereumLogs(v) => Ok(Self::EthereumLogs(v.try_into()?)),
             }
         }
     }
@@ -4244,8 +4500,8 @@ pub mod legacy {
 
     impl IntoDto for FetchStepContainer {
         type Dto = dtos::legacy::FetchStepContainer;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4253,21 +4509,29 @@ pub mod legacy {
         fn from(v: dtos::legacy::FetchStepContainer) -> Self {
             Self {
                 image: v.image,
-                command: v.command.map(|v| v.into_iter().map(Into::into).collect()),
-                args: v.args.map(|v| v.into_iter().map(Into::into).collect()),
+                command: v.command,
+                args: v.args,
                 env: v.env.map(|v| v.into_iter().map(Into::into).collect()),
             }
         }
     }
 
-    impl From<FetchStepContainer> for dtos::legacy::FetchStepContainer {
-        fn from(v: FetchStepContainer) -> Self {
-            Self {
+    impl TryFrom<FetchStepContainer> for dtos::legacy::FetchStepContainer {
+        type Error = ValidationError;
+        fn try_from(v: FetchStepContainer) -> Result<Self, ValidationError> {
+            Ok(Self {
                 image: v.image,
-                command: v.command.map(|v| v.into_iter().map(Into::into).collect()),
-                args: v.args.map(|v| v.into_iter().map(Into::into).collect()),
-                env: v.env.map(|v| v.into_iter().map(Into::into).collect()),
-            }
+                command: v.command,
+                args: v.args,
+                env: v
+                    .env
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::source::EnvVar::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+            })
         }
     }
 
@@ -4294,30 +4558,31 @@ pub mod legacy {
 
     impl IntoDto for FetchStepEthereumLogs {
         type Dto = dtos::legacy::FetchStepEthereumLogs;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::legacy::FetchStepEthereumLogs> for FetchStepEthereumLogs {
         fn from(v: dtos::legacy::FetchStepEthereumLogs) -> Self {
             Self {
-                chain_id: v.chain_id.map(|v| v),
-                node_url: v.node_url.map(|v| v),
-                filter: v.filter.map(|v| v),
-                signature: v.signature.map(|v| v),
+                chain_id: v.chain_id,
+                node_url: v.node_url,
+                filter: v.filter,
+                signature: v.signature,
             }
         }
     }
 
-    impl From<FetchStepEthereumLogs> for dtos::legacy::FetchStepEthereumLogs {
-        fn from(v: FetchStepEthereumLogs) -> Self {
-            Self {
-                chain_id: v.chain_id.map(|v| v),
-                node_url: v.node_url.map(|v| v),
-                filter: v.filter.map(|v| v),
-                signature: v.signature.map(|v| v),
-            }
+    impl TryFrom<FetchStepEthereumLogs> for dtos::legacy::FetchStepEthereumLogs {
+        type Error = ValidationError;
+        fn try_from(v: FetchStepEthereumLogs) -> Result<Self, ValidationError> {
+            Ok(Self {
+                chain_id: v.chain_id,
+                node_url: v.node_url,
+                filter: v.filter,
+                signature: v.signature,
+            })
         }
     }
 
@@ -4342,8 +4607,8 @@ pub mod legacy {
 
     impl IntoDto for FetchStepFilesGlob {
         type Dto = dtos::legacy::FetchStepFilesGlob;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4358,14 +4623,24 @@ pub mod legacy {
         }
     }
 
-    impl From<FetchStepFilesGlob> for dtos::legacy::FetchStepFilesGlob {
-        fn from(v: FetchStepFilesGlob) -> Self {
-            Self {
+    impl TryFrom<FetchStepFilesGlob> for dtos::legacy::FetchStepFilesGlob {
+        type Error = ValidationError;
+        fn try_from(v: FetchStepFilesGlob) -> Result<Self, ValidationError> {
+            Ok(Self {
                 path: v.path,
-                event_time: v.event_time.map(|v| v.into()),
-                cache: v.cache.map(|v| v.into()),
-                order: v.order.map(|v| v.into()),
-            }
+                event_time: v
+                    .event_time
+                    .map(|v| dtos::source::EventTimeSource::try_from(v))
+                    .transpose()?,
+                cache: v
+                    .cache
+                    .map(|v| dtos::source::SourceCaching::try_from(v))
+                    .transpose()?,
+                order: v
+                    .order
+                    .map(|v| dtos::source::SourceOrdering::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -4389,8 +4664,8 @@ pub mod legacy {
 
     impl IntoDto for FetchStepMqtt {
         type Dto = dtos::legacy::FetchStepMqtt;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4399,22 +4674,27 @@ pub mod legacy {
             Self {
                 host: v.host,
                 port: v.port,
-                username: v.username.map(|v| v),
-                password: v.password.map(|v| v),
+                username: v.username,
+                password: v.password,
                 topics: v.topics.into_iter().map(Into::into).collect(),
             }
         }
     }
 
-    impl From<FetchStepMqtt> for dtos::legacy::FetchStepMqtt {
-        fn from(v: FetchStepMqtt) -> Self {
-            Self {
+    impl TryFrom<FetchStepMqtt> for dtos::legacy::FetchStepMqtt {
+        type Error = ValidationError;
+        fn try_from(v: FetchStepMqtt) -> Result<Self, ValidationError> {
+            Ok(Self {
                 host: v.host,
                 port: v.port,
-                username: v.username.map(|v| v),
-                password: v.password.map(|v| v),
-                topics: v.topics.into_iter().map(Into::into).collect(),
-            }
+                username: v.username,
+                password: v.password,
+                topics: v
+                    .topics
+                    .into_iter()
+                    .map(|i| dtos::source::MqttTopicSubscription::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -4439,8 +4719,8 @@ pub mod legacy {
 
     impl IntoDto for FetchStepUrl {
         type Dto = dtos::legacy::FetchStepUrl;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4455,14 +4735,28 @@ pub mod legacy {
         }
     }
 
-    impl From<FetchStepUrl> for dtos::legacy::FetchStepUrl {
-        fn from(v: FetchStepUrl) -> Self {
-            Self {
+    impl TryFrom<FetchStepUrl> for dtos::legacy::FetchStepUrl {
+        type Error = ValidationError;
+        fn try_from(v: FetchStepUrl) -> Result<Self, ValidationError> {
+            Ok(Self {
                 url: v.url,
-                event_time: v.event_time.map(|v| v.into()),
-                cache: v.cache.map(|v| v.into()),
-                headers: v.headers.map(|v| v.into_iter().map(Into::into).collect()),
-            }
+                event_time: v
+                    .event_time
+                    .map(|v| dtos::source::EventTimeSource::try_from(v))
+                    .transpose()?,
+                cache: v
+                    .cache
+                    .map(|v| dtos::source::SourceCaching::try_from(v))
+                    .transpose()?,
+                headers: v
+                    .headers
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::source::RequestHeader::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+            })
         }
     }
 
@@ -4481,11 +4775,12 @@ pub mod legacy {
     impl<ContentT> IntoDto for Manifest<ContentT>
     where
         ContentT: IntoDto,
-        <ContentT as IntoDto>::Dto: From<ContentT>,
+        <ContentT as IntoDto>::Dto: TryFrom<ContentT>,
+        ValidationError: From<<<ContentT as IntoDto>::Dto as TryFrom<ContentT>>::Error>,
     {
         type Dto = dtos::legacy::Manifest<ContentT::Dto>;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4502,16 +4797,19 @@ pub mod legacy {
         }
     }
 
-    impl<ContentTFrom, ContentTTo> From<Manifest<ContentTFrom>> for dtos::legacy::Manifest<ContentTTo>
+    impl<ContentTFrom, ContentTTo> TryFrom<Manifest<ContentTFrom>>
+        for dtos::legacy::Manifest<ContentTTo>
     where
-        ContentTTo: From<ContentTFrom>,
+        ContentTTo: TryFrom<ContentTFrom>,
+        ValidationError: From<<ContentTTo as TryFrom<ContentTFrom>>::Error>,
     {
-        fn from(v: Manifest<ContentTFrom>) -> Self {
-            Self {
+        type Error = ValidationError;
+        fn try_from(v: Manifest<ContentTFrom>) -> Result<Self, ValidationError> {
+            Ok(Self {
                 kind: v.kind,
                 version: v.version,
-                content: v.content.into(),
-            }
+                content: ContentTTo::try_from(v.content)?,
+            })
         }
     }
 
@@ -4533,8 +4831,8 @@ pub mod legacy {
 
     impl IntoDto for SetPollingSource {
         type Dto = dtos::legacy::SetPollingSource;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4550,15 +4848,26 @@ pub mod legacy {
         }
     }
 
-    impl From<SetPollingSource> for dtos::legacy::SetPollingSource {
-        fn from(v: SetPollingSource) -> Self {
-            Self {
-                fetch: v.fetch.into(),
-                prepare: v.prepare.map(|v| v.into_iter().map(Into::into).collect()),
-                read: v.read.into(),
-                preprocess: v.preprocess.map(|v| v.into()),
-                merge: v.merge.into(),
-            }
+    impl TryFrom<SetPollingSource> for dtos::legacy::SetPollingSource {
+        type Error = ValidationError;
+        fn try_from(v: SetPollingSource) -> Result<Self, ValidationError> {
+            Ok(Self {
+                fetch: dtos::legacy::FetchStep::try_from(v.fetch)?,
+                prepare: v
+                    .prepare
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::source::PrepStep::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+                read: dtos::source::ReadStep::try_from(v.read)?,
+                preprocess: v
+                    .preprocess
+                    .map(|v| dtos::dataset::Transform::try_from(v))
+                    .transpose()?,
+                merge: dtos::source::MergeStrategy::try_from(v.merge)?,
+            })
         }
     }
 
@@ -4583,8 +4892,8 @@ pub mod resource {
 
     impl IntoDto for LabelFilter {
         type Dto = dtos::resource::LabelFilter;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4594,9 +4903,10 @@ pub mod resource {
         }
     }
 
-    impl From<LabelFilter> for dtos::resource::LabelFilter {
-        fn from(v: LabelFilter) -> Self {
-            Self { entries: v.entries }
+    impl TryFrom<LabelFilter> for dtos::resource::LabelFilter {
+        type Error = ValidationError;
+        fn try_from(v: LabelFilter) -> Result<Self, Self::Error> {
+            Ok(Self { entries: v.entries })
         }
     }
 
@@ -4619,11 +4929,12 @@ pub mod resource {
     impl<SpecT> IntoDto for Resource<SpecT>
     where
         SpecT: IntoDto,
-        <SpecT as IntoDto>::Dto: From<SpecT>,
+        <SpecT as IntoDto>::Dto: TryFrom<SpecT>,
+        ValidationError: From<<<SpecT as IntoDto>::Dto as TryFrom<SpecT>>::Error>,
     {
         type Dto = dtos::resource::Resource<SpecT::Dto>;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4641,17 +4952,22 @@ pub mod resource {
         }
     }
 
-    impl<SpecTFrom, SpecTTo> From<Resource<SpecTFrom>> for dtos::resource::Resource<SpecTTo>
+    impl<SpecTFrom, SpecTTo> TryFrom<Resource<SpecTFrom>> for dtos::resource::Resource<SpecTTo>
     where
-        SpecTTo: From<SpecTFrom>,
+        SpecTTo: TryFrom<SpecTFrom>,
+        ValidationError: From<<SpecTTo as TryFrom<SpecTFrom>>::Error>,
     {
-        fn from(v: Resource<SpecTFrom>) -> Self {
-            Self {
+        type Error = ValidationError;
+        fn try_from(v: Resource<SpecTFrom>) -> Result<Self, ValidationError> {
+            Ok(Self {
                 schema: v.schema,
-                headers: v.headers.into(),
-                spec: v.spec.into(),
-                status: v.status.map(|v| v.into()),
-            }
+                headers: dtos::resource::ResourceHeaders::try_from(v.headers)?,
+                spec: SpecTTo::try_from(v.spec)?,
+                status: v
+                    .status
+                    .map(|v| dtos::resource::ResourceStatus::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -4665,8 +4981,8 @@ pub mod resource {
 
     impl IntoDto for ResourceAnnotations {
         type Dto = dtos::resource::ResourceAnnotations;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4676,9 +4992,10 @@ pub mod resource {
         }
     }
 
-    impl From<ResourceAnnotations> for dtos::resource::ResourceAnnotations {
-        fn from(v: ResourceAnnotations) -> Self {
-            Self { entries: v.entries }
+    impl TryFrom<ResourceAnnotations> for dtos::resource::ResourceAnnotations {
+        type Error = ValidationError;
+        fn try_from(v: ResourceAnnotations) -> Result<Self, Self::Error> {
+            Ok(Self { entries: v.entries })
         }
     }
 
@@ -4707,8 +5024,8 @@ pub mod resource {
 
     impl IntoDto for ResourceCondition {
         type Dto = dtos::resource::ResourceCondition;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4716,23 +5033,24 @@ pub mod resource {
         fn from(v: dtos::resource::ResourceCondition) -> Self {
             Self {
                 value: v.value,
-                reason: v.reason.map(|v| v),
-                message: v.message.map(|v| v),
-                last_transition_time: v.last_transition_time.map(|v| v),
-                observed_generation: v.observed_generation.map(|v| v),
+                reason: v.reason,
+                message: v.message,
+                last_transition_time: v.last_transition_time,
+                observed_generation: v.observed_generation,
             }
         }
     }
 
-    impl From<ResourceCondition> for dtos::resource::ResourceCondition {
-        fn from(v: ResourceCondition) -> Self {
-            Self {
+    impl TryFrom<ResourceCondition> for dtos::resource::ResourceCondition {
+        type Error = ValidationError;
+        fn try_from(v: ResourceCondition) -> Result<Self, ValidationError> {
+            Ok(Self {
                 value: v.value,
-                reason: v.reason.map(|v| v),
-                message: v.message.map(|v| v),
-                last_transition_time: v.last_transition_time.map(|v| v),
-                observed_generation: v.observed_generation.map(|v| v),
-            }
+                reason: v.reason,
+                message: v.message,
+                last_transition_time: v.last_transition_time,
+                observed_generation: v.observed_generation,
+            })
         }
     }
 
@@ -4747,8 +5065,8 @@ pub mod resource {
 
     impl IntoDto for ResourceConditions {
         type Dto = dtos::resource::ResourceConditions;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4760,11 +5078,16 @@ pub mod resource {
         }
     }
 
-    impl From<ResourceConditions> for dtos::resource::ResourceConditions {
-        fn from(v: ResourceConditions) -> Self {
-            Self {
-                entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
-            }
+    impl TryFrom<ResourceConditions> for dtos::resource::ResourceConditions {
+        type Error = ValidationError;
+        fn try_from(v: ResourceConditions) -> Result<Self, Self::Error> {
+            Ok(Self {
+                entries: v
+                    .entries
+                    .into_iter()
+                    .map(|(k, v)| -> Result<_, ValidationError> { Ok((k, v.try_into()?)) })
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -4807,40 +5130,50 @@ pub mod resource {
 
     impl IntoDto for ResourceHeaders {
         type Dto = dtos::resource::ResourceHeaders;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::resource::ResourceHeaders> for ResourceHeaders {
         fn from(v: dtos::resource::ResourceHeaders) -> Self {
             Self {
-                id: v.id.map(|v| v),
+                id: v.id,
                 name: v.name,
                 account: v.account.map(|v| v.into()),
                 labels: v.labels.map(|v| v.into()),
                 annotations: v.annotations.map(|v| v.into()),
-                generation: v.generation.map(|v| v),
-                created_at: v.created_at.map(|v| v),
-                updated_at: v.updated_at.map(|v| v),
-                deleted_at: v.deleted_at.map(|v| v),
+                generation: v.generation,
+                created_at: v.created_at,
+                updated_at: v.updated_at,
+                deleted_at: v.deleted_at,
             }
         }
     }
 
-    impl From<ResourceHeaders> for dtos::resource::ResourceHeaders {
-        fn from(v: ResourceHeaders) -> Self {
-            Self {
-                id: v.id.map(|v| v),
+    impl TryFrom<ResourceHeaders> for dtos::resource::ResourceHeaders {
+        type Error = ValidationError;
+        fn try_from(v: ResourceHeaders) -> Result<Self, ValidationError> {
+            Ok(Self {
+                id: v.id,
                 name: v.name,
-                account: v.account.map(|v| v.into()),
-                labels: v.labels.map(|v| v.into()),
-                annotations: v.annotations.map(|v| v.into()),
-                generation: v.generation.map(|v| v),
-                created_at: v.created_at.map(|v| v),
-                updated_at: v.updated_at.map(|v| v),
-                deleted_at: v.deleted_at.map(|v| v),
-            }
+                account: v
+                    .account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
+                labels: v
+                    .labels
+                    .map(|v| dtos::resource::ResourceLabels::try_from(v))
+                    .transpose()?,
+                annotations: v
+                    .annotations
+                    .map(|v| dtos::resource::ResourceAnnotations::try_from(v))
+                    .transpose()?,
+                generation: v.generation,
+                created_at: v.created_at,
+                updated_at: v.updated_at,
+                deleted_at: v.deleted_at,
+            })
         }
     }
 
@@ -4856,8 +5189,8 @@ pub mod resource {
 
     impl IntoDto for ResourceLabels {
         type Dto = dtos::resource::ResourceLabels;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4867,9 +5200,10 @@ pub mod resource {
         }
     }
 
-    impl From<ResourceLabels> for dtos::resource::ResourceLabels {
-        fn from(v: ResourceLabels) -> Self {
-            Self { entries: v.entries }
+    impl TryFrom<ResourceLabels> for dtos::resource::ResourceLabels {
+        type Error = ValidationError;
+        fn try_from(v: ResourceLabels) -> Result<Self, Self::Error> {
+            Ok(Self { entries: v.entries })
         }
     }
 
@@ -4891,8 +5225,8 @@ pub mod resource {
 
     impl IntoDto for ResourcePhase {
         type Dto = dtos::resource::ResourcePhase;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4907,13 +5241,14 @@ pub mod resource {
         }
     }
 
-    impl From<ResourcePhase> for dtos::resource::ResourcePhase {
-        fn from(v: ResourcePhase) -> Self {
+    impl TryFrom<ResourcePhase> for dtos::resource::ResourcePhase {
+        type Error = ValidationError;
+        fn try_from(v: ResourcePhase) -> Result<Self, Self::Error> {
             match v {
-                ResourcePhase::Pending => Self::Pending,
-                ResourcePhase::Reconciling => Self::Reconciling,
-                ResourcePhase::Ready => Self::Ready,
-                ResourcePhase::Failed => Self::Failed,
+                ResourcePhase::Pending => Ok(Self::Pending),
+                ResourcePhase::Reconciling => Ok(Self::Reconciling),
+                ResourcePhase::Ready => Ok(Self::Ready),
+                ResourcePhase::Failed => Ok(Self::Failed),
             }
         }
     }
@@ -4939,8 +5274,8 @@ pub mod resource {
 
     impl IntoDto for ResourceRef {
         type Dto = dtos::resource::ResourceRef;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4949,9 +5284,10 @@ pub mod resource {
             Self(v.into())
         }
     }
-    impl From<StructOrString<ResourceRef>> for dtos::resource::ResourceRef {
-        fn from(v: StructOrString<ResourceRef>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<ResourceRef>> for dtos::resource::ResourceRef {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<ResourceRef>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -4979,8 +5315,8 @@ pub mod resource {
 
     impl IntoDto for ResourceSelector {
         type Dto = dtos::resource::ResourceSelector;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -4989,9 +5325,10 @@ pub mod resource {
             Self(v.into())
         }
     }
-    impl From<StructOrString<ResourceSelector>> for dtos::resource::ResourceSelector {
-        fn from(v: StructOrString<ResourceSelector>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<ResourceSelector>> for dtos::resource::ResourceSelector {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<ResourceSelector>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -5017,8 +5354,8 @@ pub mod resource {
 
     impl IntoDto for ResourceStatus {
         type Dto = dtos::resource::ResourceStatus;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5026,21 +5363,25 @@ pub mod resource {
         fn from(v: dtos::resource::ResourceStatus) -> Self {
             Self {
                 phase: v.phase.into(),
-                observed_generation: v.observed_generation.map(|v| v),
-                reconciled_at: v.reconciled_at.map(|v| v),
+                observed_generation: v.observed_generation,
+                reconciled_at: v.reconciled_at,
                 conditions: v.conditions.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ResourceStatus> for dtos::resource::ResourceStatus {
-        fn from(v: ResourceStatus) -> Self {
-            Self {
-                phase: v.phase.into(),
-                observed_generation: v.observed_generation.map(|v| v),
-                reconciled_at: v.reconciled_at.map(|v| v),
-                conditions: v.conditions.map(|v| v.into()),
-            }
+    impl TryFrom<ResourceStatus> for dtos::resource::ResourceStatus {
+        type Error = ValidationError;
+        fn try_from(v: ResourceStatus) -> Result<Self, ValidationError> {
+            Ok(Self {
+                phase: dtos::resource::ResourcePhase::try_from(v.phase)?,
+                observed_generation: v.observed_generation,
+                reconciled_at: v.reconciled_at,
+                conditions: v
+                    .conditions
+                    .map(|v| dtos::resource::ResourceConditions::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -5068,8 +5409,8 @@ pub mod sink {
 
     impl IntoDto for WebhookTargetSpec {
         type Dto = dtos::sink::WebhookTargetSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5082,12 +5423,16 @@ pub mod sink {
         }
     }
 
-    impl From<WebhookTargetSpec> for dtos::sink::WebhookTargetSpec {
-        fn from(v: WebhookTargetSpec) -> Self {
-            Self {
+    impl TryFrom<WebhookTargetSpec> for dtos::sink::WebhookTargetSpec {
+        type Error = ValidationError;
+        fn try_from(v: WebhookTargetSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
                 url: v.url,
-                secret: v.secret.map(|v| v.into()),
-            }
+                secret: v
+                    .secret
+                    .map(|v| dtos::config::Secret::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -5103,8 +5448,8 @@ pub mod sink {
 
     impl IntoDto for WebhookTargetStatus {
         type Dto = dtos::sink::WebhookTargetStatus;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5116,11 +5461,12 @@ pub mod sink {
         }
     }
 
-    impl From<WebhookTargetStatus> for dtos::sink::WebhookTargetStatus {
-        fn from(v: WebhookTargetStatus) -> Self {
-            Self {
-                value: v.value.into(),
-            }
+    impl TryFrom<WebhookTargetStatus> for dtos::sink::WebhookTargetStatus {
+        type Error = ValidationError;
+        fn try_from(v: WebhookTargetStatus) -> Result<Self, ValidationError> {
+            Ok(Self {
+                value: dtos::sink::WebhookTargetStatusValue::try_from(v.value)?,
+            })
         }
     }
 
@@ -5138,8 +5484,8 @@ pub mod sink {
 
     impl IntoDto for WebhookTargetStatusValue {
         type Dto = dtos::sink::WebhookTargetStatusValue;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5152,11 +5498,12 @@ pub mod sink {
         }
     }
 
-    impl From<WebhookTargetStatusValue> for dtos::sink::WebhookTargetStatusValue {
-        fn from(v: WebhookTargetStatusValue) -> Self {
+    impl TryFrom<WebhookTargetStatusValue> for dtos::sink::WebhookTargetStatusValue {
+        type Error = ValidationError;
+        fn try_from(v: WebhookTargetStatusValue) -> Result<Self, Self::Error> {
             match v {
-                WebhookTargetStatusValue::Ready => Self::Ready,
-                WebhookTargetStatusValue::Failed => Self::Failed,
+                WebhookTargetStatusValue::Ready => Ok(Self::Ready),
+                WebhookTargetStatusValue::Failed => Ok(Self::Failed),
             }
         }
     }
@@ -5187,8 +5534,8 @@ pub mod source {
 
     impl IntoDto for CompressionFormat {
         type Dto = dtos::source::CompressionFormat;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5201,11 +5548,12 @@ pub mod source {
         }
     }
 
-    impl From<CompressionFormat> for dtos::source::CompressionFormat {
-        fn from(v: CompressionFormat) -> Self {
+    impl TryFrom<CompressionFormat> for dtos::source::CompressionFormat {
+        type Error = ValidationError;
+        fn try_from(v: CompressionFormat) -> Result<Self, Self::Error> {
             match v {
-                CompressionFormat::Gzip => Self::Gzip,
-                CompressionFormat::Zip => Self::Zip,
+                CompressionFormat::Gzip => Ok(Self::Gzip),
+                CompressionFormat::Zip => Ok(Self::Zip),
             }
         }
     }
@@ -5225,8 +5573,8 @@ pub mod source {
 
     impl IntoDto for EnvVar {
         type Dto = dtos::source::EnvVar;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5234,17 +5582,18 @@ pub mod source {
         fn from(v: dtos::source::EnvVar) -> Self {
             Self {
                 name: v.name,
-                value: v.value.map(|v| v),
+                value: v.value,
             }
         }
     }
 
-    impl From<EnvVar> for dtos::source::EnvVar {
-        fn from(v: EnvVar) -> Self {
-            Self {
+    impl TryFrom<EnvVar> for dtos::source::EnvVar {
+        type Error = ValidationError;
+        fn try_from(v: EnvVar) -> Result<Self, ValidationError> {
+            Ok(Self {
                 name: v.name,
-                value: v.value.map(|v| v),
-            }
+                value: v.value,
+            })
         }
     }
 
@@ -5268,16 +5617,17 @@ pub mod source {
             Self(v.into())
         }
     }
-    impl From<UnionOrString<EventTimeSource>> for dtos::source::EventTimeSource {
-        fn from(v: UnionOrString<EventTimeSource>) -> Self {
-            v.0.into()
+    impl TryFrom<UnionOrString<EventTimeSource>> for dtos::source::EventTimeSource {
+        type Error = ValidationError;
+        fn try_from(v: UnionOrString<EventTimeSource>) -> Result<Self, Self::Error> {
+            v.0.try_into()
         }
     }
 
     impl IntoDto for EventTimeSource {
         type Dto = dtos::source::EventTimeSource;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5291,12 +5641,13 @@ pub mod source {
         }
     }
 
-    impl From<EventTimeSource> for dtos::source::EventTimeSource {
-        fn from(v: EventTimeSource) -> Self {
+    impl TryFrom<EventTimeSource> for dtos::source::EventTimeSource {
+        type Error = ValidationError;
+        fn try_from(v: EventTimeSource) -> Result<Self, Self::Error> {
             match v {
-                EventTimeSource::FromMetadata(v) => Self::FromMetadata(v.into()),
-                EventTimeSource::FromPath(v) => Self::FromPath(v.into()),
-                EventTimeSource::FromSystemTime(v) => Self::FromSystemTime(v.into()),
+                EventTimeSource::FromMetadata(v) => Ok(Self::FromMetadata(v.try_into()?)),
+                EventTimeSource::FromPath(v) => Ok(Self::FromPath(v.try_into()?)),
+                EventTimeSource::FromSystemTime(v) => Ok(Self::FromSystemTime(v.try_into()?)),
             }
         }
     }
@@ -5311,8 +5662,8 @@ pub mod source {
 
     impl IntoDto for EventTimeSourceFromMetadata {
         type Dto = dtos::source::EventTimeSourceFromMetadata;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5322,9 +5673,10 @@ pub mod source {
         }
     }
 
-    impl From<EventTimeSourceFromMetadata> for dtos::source::EventTimeSourceFromMetadata {
-        fn from(v: EventTimeSourceFromMetadata) -> Self {
-            Self {}
+    impl TryFrom<EventTimeSourceFromMetadata> for dtos::source::EventTimeSourceFromMetadata {
+        type Error = ValidationError;
+        fn try_from(v: EventTimeSourceFromMetadata) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -5346,8 +5698,8 @@ pub mod source {
 
     impl IntoDto for EventTimeSourceFromPath {
         type Dto = dtos::source::EventTimeSourceFromPath;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5355,17 +5707,18 @@ pub mod source {
         fn from(v: dtos::source::EventTimeSourceFromPath) -> Self {
             Self {
                 pattern: v.pattern,
-                timestamp_format: v.timestamp_format.map(|v| v),
+                timestamp_format: v.timestamp_format,
             }
         }
     }
 
-    impl From<EventTimeSourceFromPath> for dtos::source::EventTimeSourceFromPath {
-        fn from(v: EventTimeSourceFromPath) -> Self {
-            Self {
+    impl TryFrom<EventTimeSourceFromPath> for dtos::source::EventTimeSourceFromPath {
+        type Error = ValidationError;
+        fn try_from(v: EventTimeSourceFromPath) -> Result<Self, ValidationError> {
+            Ok(Self {
                 pattern: v.pattern,
-                timestamp_format: v.timestamp_format.map(|v| v),
-            }
+                timestamp_format: v.timestamp_format,
+            })
         }
     }
 
@@ -5382,8 +5735,8 @@ pub mod source {
 
     impl IntoDto for EventTimeSourceFromSystemTime {
         type Dto = dtos::source::EventTimeSourceFromSystemTime;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5393,9 +5746,10 @@ pub mod source {
         }
     }
 
-    impl From<EventTimeSourceFromSystemTime> for dtos::source::EventTimeSourceFromSystemTime {
-        fn from(v: EventTimeSourceFromSystemTime) -> Self {
-            Self {}
+    impl TryFrom<EventTimeSourceFromSystemTime> for dtos::source::EventTimeSourceFromSystemTime {
+        type Error = ValidationError;
+        fn try_from(v: EventTimeSourceFromSystemTime) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -5416,24 +5770,25 @@ pub mod source {
 
     impl IntoDto for IngestParams {
         type Dto = dtos::source::IngestParams;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::IngestParams> for IngestParams {
         fn from(v: dtos::source::IngestParams) -> Self {
             Self {
-                target_slice_records: v.target_slice_records.map(|v| v),
+                target_slice_records: v.target_slice_records,
             }
         }
     }
 
-    impl From<IngestParams> for dtos::source::IngestParams {
-        fn from(v: IngestParams) -> Self {
-            Self {
-                target_slice_records: v.target_slice_records.map(|v| v),
-            }
+    impl TryFrom<IngestParams> for dtos::source::IngestParams {
+        type Error = ValidationError;
+        fn try_from(v: IngestParams) -> Result<Self, ValidationError> {
+            Ok(Self {
+                target_slice_records: v.target_slice_records,
+            })
         }
     }
 
@@ -5460,8 +5815,8 @@ pub mod source {
 
     impl IntoDto for Ingress {
         type Dto = dtos::source::Ingress;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5478,15 +5833,16 @@ pub mod source {
         }
     }
 
-    impl From<Ingress> for dtos::source::Ingress {
-        fn from(v: Ingress) -> Self {
+    impl TryFrom<Ingress> for dtos::source::Ingress {
+        type Error = ValidationError;
+        fn try_from(v: Ingress) -> Result<Self, Self::Error> {
             match v {
-                Ingress::Url(v) => Self::Url(v.into()),
-                Ingress::FilesGlob(v) => Self::FilesGlob(v.into()),
-                Ingress::Container(v) => Self::Container(v.into()),
-                Ingress::Mqtt(v) => Self::Mqtt(v.into()),
-                Ingress::EvmLogs(v) => Self::EvmLogs(v.into()),
-                Ingress::RestEndpoint(v) => Self::RestEndpoint(v.into()),
+                Ingress::Url(v) => Ok(Self::Url(v.try_into()?)),
+                Ingress::FilesGlob(v) => Ok(Self::FilesGlob(v.try_into()?)),
+                Ingress::Container(v) => Ok(Self::Container(v.try_into()?)),
+                Ingress::Mqtt(v) => Ok(Self::Mqtt(v.try_into()?)),
+                Ingress::EvmLogs(v) => Ok(Self::EvmLogs(v.try_into()?)),
+                Ingress::RestEndpoint(v) => Ok(Self::RestEndpoint(v.try_into()?)),
             }
         }
     }
@@ -5504,8 +5860,8 @@ pub mod source {
 
     impl IntoDto for IngressBuffer {
         type Dto = dtos::source::IngressBuffer;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5517,10 +5873,11 @@ pub mod source {
         }
     }
 
-    impl From<IngressBuffer> for dtos::source::IngressBuffer {
-        fn from(v: IngressBuffer) -> Self {
+    impl TryFrom<IngressBuffer> for dtos::source::IngressBuffer {
+        type Error = ValidationError;
+        fn try_from(v: IngressBuffer) -> Result<Self, Self::Error> {
             match v {
-                IngressBuffer::Memory(v) => Self::Memory(v.into()),
+                IngressBuffer::Memory(v) => Ok(Self::Memory(v.try_into()?)),
             }
         }
     }
@@ -5542,26 +5899,27 @@ pub mod source {
 
     impl IntoDto for IngressBufferMemory {
         type Dto = dtos::source::IngressBufferMemory;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::IngressBufferMemory> for IngressBufferMemory {
         fn from(v: dtos::source::IngressBufferMemory) -> Self {
             Self {
-                buffer_size: v.buffer_size.map(|v| v),
-                overflow_policy: v.overflow_policy.map(|v| v),
+                buffer_size: v.buffer_size,
+                overflow_policy: v.overflow_policy,
             }
         }
     }
 
-    impl From<IngressBufferMemory> for dtos::source::IngressBufferMemory {
-        fn from(v: IngressBufferMemory) -> Self {
-            Self {
-                buffer_size: v.buffer_size.map(|v| v),
-                overflow_policy: v.overflow_policy.map(|v| v),
-            }
+    impl TryFrom<IngressBufferMemory> for dtos::source::IngressBufferMemory {
+        type Error = ValidationError;
+        fn try_from(v: IngressBufferMemory) -> Result<Self, ValidationError> {
+            Ok(Self {
+                buffer_size: v.buffer_size,
+                overflow_policy: v.overflow_policy,
+            })
         }
     }
 
@@ -5586,8 +5944,8 @@ pub mod source {
 
     impl IntoDto for IngressContainer {
         type Dto = dtos::source::IngressContainer;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5595,21 +5953,29 @@ pub mod source {
         fn from(v: dtos::source::IngressContainer) -> Self {
             Self {
                 image: v.image,
-                command: v.command.map(|v| v.into_iter().map(Into::into).collect()),
-                args: v.args.map(|v| v.into_iter().map(Into::into).collect()),
+                command: v.command,
+                args: v.args,
                 env: v.env.map(|v| v.into_iter().map(Into::into).collect()),
             }
         }
     }
 
-    impl From<IngressContainer> for dtos::source::IngressContainer {
-        fn from(v: IngressContainer) -> Self {
-            Self {
+    impl TryFrom<IngressContainer> for dtos::source::IngressContainer {
+        type Error = ValidationError;
+        fn try_from(v: IngressContainer) -> Result<Self, ValidationError> {
+            Ok(Self {
                 image: v.image,
-                command: v.command.map(|v| v.into_iter().map(Into::into).collect()),
-                args: v.args.map(|v| v.into_iter().map(Into::into).collect()),
-                env: v.env.map(|v| v.into_iter().map(Into::into).collect()),
-            }
+                command: v.command,
+                args: v.args,
+                env: v
+                    .env
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::source::EnvVar::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+            })
         }
     }
 
@@ -5636,30 +6002,31 @@ pub mod source {
 
     impl IntoDto for IngressEvmLogs {
         type Dto = dtos::source::IngressEvmLogs;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::IngressEvmLogs> for IngressEvmLogs {
         fn from(v: dtos::source::IngressEvmLogs) -> Self {
             Self {
-                chain_id: v.chain_id.map(|v| v),
-                node_url: v.node_url.map(|v| v),
-                filter: v.filter.map(|v| v),
-                signature: v.signature.map(|v| v),
+                chain_id: v.chain_id,
+                node_url: v.node_url,
+                filter: v.filter,
+                signature: v.signature,
             }
         }
     }
 
-    impl From<IngressEvmLogs> for dtos::source::IngressEvmLogs {
-        fn from(v: IngressEvmLogs) -> Self {
-            Self {
-                chain_id: v.chain_id.map(|v| v),
-                node_url: v.node_url.map(|v| v),
-                filter: v.filter.map(|v| v),
-                signature: v.signature.map(|v| v),
-            }
+    impl TryFrom<IngressEvmLogs> for dtos::source::IngressEvmLogs {
+        type Error = ValidationError;
+        fn try_from(v: IngressEvmLogs) -> Result<Self, ValidationError> {
+            Ok(Self {
+                chain_id: v.chain_id,
+                node_url: v.node_url,
+                filter: v.filter,
+                signature: v.signature,
+            })
         }
     }
 
@@ -5684,8 +6051,8 @@ pub mod source {
 
     impl IntoDto for IngressFilesGlob {
         type Dto = dtos::source::IngressFilesGlob;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5700,14 +6067,24 @@ pub mod source {
         }
     }
 
-    impl From<IngressFilesGlob> for dtos::source::IngressFilesGlob {
-        fn from(v: IngressFilesGlob) -> Self {
-            Self {
+    impl TryFrom<IngressFilesGlob> for dtos::source::IngressFilesGlob {
+        type Error = ValidationError;
+        fn try_from(v: IngressFilesGlob) -> Result<Self, ValidationError> {
+            Ok(Self {
                 path: v.path,
-                event_time: v.event_time.map(|v| v.into()),
-                cache: v.cache.map(|v| v.into()),
-                order: v.order.map(|v| v.into()),
-            }
+                event_time: v
+                    .event_time
+                    .map(|v| dtos::source::EventTimeSource::try_from(v))
+                    .transpose()?,
+                cache: v
+                    .cache
+                    .map(|v| dtos::source::SourceCaching::try_from(v))
+                    .transpose()?,
+                order: v
+                    .order
+                    .map(|v| dtos::source::SourceOrdering::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -5731,8 +6108,8 @@ pub mod source {
 
     impl IntoDto for IngressMqtt {
         type Dto = dtos::source::IngressMqtt;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5741,22 +6118,27 @@ pub mod source {
             Self {
                 host: v.host,
                 port: v.port,
-                username: v.username.map(|v| v),
-                password: v.password.map(|v| v),
+                username: v.username,
+                password: v.password,
                 topics: v.topics.into_iter().map(Into::into).collect(),
             }
         }
     }
 
-    impl From<IngressMqtt> for dtos::source::IngressMqtt {
-        fn from(v: IngressMqtt) -> Self {
-            Self {
+    impl TryFrom<IngressMqtt> for dtos::source::IngressMqtt {
+        type Error = ValidationError;
+        fn try_from(v: IngressMqtt) -> Result<Self, ValidationError> {
+            Ok(Self {
                 host: v.host,
                 port: v.port,
-                username: v.username.map(|v| v),
-                password: v.password.map(|v| v),
-                topics: v.topics.into_iter().map(Into::into).collect(),
-            }
+                username: v.username,
+                password: v.password,
+                topics: v
+                    .topics
+                    .into_iter()
+                    .map(|i| dtos::source::MqttTopicSubscription::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
         }
     }
 
@@ -5774,8 +6156,8 @@ pub mod source {
 
     impl IntoDto for IngressRestEndpoint {
         type Dto = dtos::source::IngressRestEndpoint;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5787,11 +6169,15 @@ pub mod source {
         }
     }
 
-    impl From<IngressRestEndpoint> for dtos::source::IngressRestEndpoint {
-        fn from(v: IngressRestEndpoint) -> Self {
-            Self {
-                buffer: v.buffer.map(|v| v.into()),
-            }
+    impl TryFrom<IngressRestEndpoint> for dtos::source::IngressRestEndpoint {
+        type Error = ValidationError;
+        fn try_from(v: IngressRestEndpoint) -> Result<Self, ValidationError> {
+            Ok(Self {
+                buffer: v
+                    .buffer
+                    .map(|v| dtos::source::IngressBuffer::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -5816,8 +6202,8 @@ pub mod source {
 
     impl IntoDto for IngressUrl {
         type Dto = dtos::source::IngressUrl;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5832,14 +6218,28 @@ pub mod source {
         }
     }
 
-    impl From<IngressUrl> for dtos::source::IngressUrl {
-        fn from(v: IngressUrl) -> Self {
-            Self {
+    impl TryFrom<IngressUrl> for dtos::source::IngressUrl {
+        type Error = ValidationError;
+        fn try_from(v: IngressUrl) -> Result<Self, ValidationError> {
+            Ok(Self {
                 url: v.url,
-                event_time: v.event_time.map(|v| v.into()),
-                cache: v.cache.map(|v| v.into()),
-                headers: v.headers.map(|v| v.into_iter().map(Into::into).collect()),
-            }
+                event_time: v
+                    .event_time
+                    .map(|v| dtos::source::EventTimeSource::try_from(v))
+                    .transpose()?,
+                cache: v
+                    .cache
+                    .map(|v| dtos::source::SourceCaching::try_from(v))
+                    .transpose()?,
+                headers: v
+                    .headers
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::source::RequestHeader::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+            })
         }
     }
 
@@ -5864,8 +6264,8 @@ pub mod source {
 
     impl IntoDto for MergeStrategy {
         type Dto = dtos::source::MergeStrategy;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5881,14 +6281,15 @@ pub mod source {
         }
     }
 
-    impl From<MergeStrategy> for dtos::source::MergeStrategy {
-        fn from(v: MergeStrategy) -> Self {
+    impl TryFrom<MergeStrategy> for dtos::source::MergeStrategy {
+        type Error = ValidationError;
+        fn try_from(v: MergeStrategy) -> Result<Self, Self::Error> {
             match v {
-                MergeStrategy::Append(v) => Self::Append(v.into()),
-                MergeStrategy::Ledger(v) => Self::Ledger(v.into()),
-                MergeStrategy::Snapshot(v) => Self::Snapshot(v.into()),
-                MergeStrategy::ChangelogStream(v) => Self::ChangelogStream(v.into()),
-                MergeStrategy::UpsertStream(v) => Self::UpsertStream(v.into()),
+                MergeStrategy::Append(v) => Ok(Self::Append(v.try_into()?)),
+                MergeStrategy::Ledger(v) => Ok(Self::Ledger(v.try_into()?)),
+                MergeStrategy::Snapshot(v) => Ok(Self::Snapshot(v.try_into()?)),
+                MergeStrategy::ChangelogStream(v) => Ok(Self::ChangelogStream(v.try_into()?)),
+                MergeStrategy::UpsertStream(v) => Ok(Self::UpsertStream(v.try_into()?)),
             }
         }
     }
@@ -5903,8 +6304,8 @@ pub mod source {
 
     impl IntoDto for MergeStrategyAppend {
         type Dto = dtos::source::MergeStrategyAppend;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -5914,9 +6315,10 @@ pub mod source {
         }
     }
 
-    impl From<MergeStrategyAppend> for dtos::source::MergeStrategyAppend {
-        fn from(v: MergeStrategyAppend) -> Self {
-            Self {}
+    impl TryFrom<MergeStrategyAppend> for dtos::source::MergeStrategyAppend {
+        type Error = ValidationError;
+        fn try_from(v: MergeStrategyAppend) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -5932,24 +6334,25 @@ pub mod source {
 
     impl IntoDto for MergeStrategyChangelogStream {
         type Dto = dtos::source::MergeStrategyChangelogStream;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::MergeStrategyChangelogStream> for MergeStrategyChangelogStream {
         fn from(v: dtos::source::MergeStrategyChangelogStream) -> Self {
             Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
+                primary_key: v.primary_key,
             }
         }
     }
 
-    impl From<MergeStrategyChangelogStream> for dtos::source::MergeStrategyChangelogStream {
-        fn from(v: MergeStrategyChangelogStream) -> Self {
-            Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<MergeStrategyChangelogStream> for dtos::source::MergeStrategyChangelogStream {
+        type Error = ValidationError;
+        fn try_from(v: MergeStrategyChangelogStream) -> Result<Self, ValidationError> {
+            Ok(Self {
+                primary_key: v.primary_key,
+            })
         }
     }
 
@@ -5968,24 +6371,25 @@ pub mod source {
 
     impl IntoDto for MergeStrategyLedger {
         type Dto = dtos::source::MergeStrategyLedger;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::MergeStrategyLedger> for MergeStrategyLedger {
         fn from(v: dtos::source::MergeStrategyLedger) -> Self {
             Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
+                primary_key: v.primary_key,
             }
         }
     }
 
-    impl From<MergeStrategyLedger> for dtos::source::MergeStrategyLedger {
-        fn from(v: MergeStrategyLedger) -> Self {
-            Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<MergeStrategyLedger> for dtos::source::MergeStrategyLedger {
+        type Error = ValidationError;
+        fn try_from(v: MergeStrategyLedger) -> Result<Self, ValidationError> {
+            Ok(Self {
+                primary_key: v.primary_key,
+            })
         }
     }
 
@@ -6004,30 +6408,27 @@ pub mod source {
 
     impl IntoDto for MergeStrategySnapshot {
         type Dto = dtos::source::MergeStrategySnapshot;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::MergeStrategySnapshot> for MergeStrategySnapshot {
         fn from(v: dtos::source::MergeStrategySnapshot) -> Self {
             Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
-                compare_columns: v
-                    .compare_columns
-                    .map(|v| v.into_iter().map(Into::into).collect()),
+                primary_key: v.primary_key,
+                compare_columns: v.compare_columns,
             }
         }
     }
 
-    impl From<MergeStrategySnapshot> for dtos::source::MergeStrategySnapshot {
-        fn from(v: MergeStrategySnapshot) -> Self {
-            Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
-                compare_columns: v
-                    .compare_columns
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-            }
+    impl TryFrom<MergeStrategySnapshot> for dtos::source::MergeStrategySnapshot {
+        type Error = ValidationError;
+        fn try_from(v: MergeStrategySnapshot) -> Result<Self, ValidationError> {
+            Ok(Self {
+                primary_key: v.primary_key,
+                compare_columns: v.compare_columns,
+            })
         }
     }
 
@@ -6043,24 +6444,25 @@ pub mod source {
 
     impl IntoDto for MergeStrategyUpsertStream {
         type Dto = dtos::source::MergeStrategyUpsertStream;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::MergeStrategyUpsertStream> for MergeStrategyUpsertStream {
         fn from(v: dtos::source::MergeStrategyUpsertStream) -> Self {
             Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
+                primary_key: v.primary_key,
             }
         }
     }
 
-    impl From<MergeStrategyUpsertStream> for dtos::source::MergeStrategyUpsertStream {
-        fn from(v: MergeStrategyUpsertStream) -> Self {
-            Self {
-                primary_key: v.primary_key.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<MergeStrategyUpsertStream> for dtos::source::MergeStrategyUpsertStream {
+        type Error = ValidationError;
+        fn try_from(v: MergeStrategyUpsertStream) -> Result<Self, ValidationError> {
+            Ok(Self {
+                primary_key: v.primary_key,
+            })
         }
     }
 
@@ -6083,8 +6485,8 @@ pub mod source {
 
     impl IntoDto for MqttQos {
         type Dto = dtos::source::MqttQos;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6098,12 +6500,13 @@ pub mod source {
         }
     }
 
-    impl From<MqttQos> for dtos::source::MqttQos {
-        fn from(v: MqttQos) -> Self {
+    impl TryFrom<MqttQos> for dtos::source::MqttQos {
+        type Error = ValidationError;
+        fn try_from(v: MqttQos) -> Result<Self, Self::Error> {
             match v {
-                MqttQos::AtMostOnce => Self::AtMostOnce,
-                MqttQos::AtLeastOnce => Self::AtLeastOnce,
-                MqttQos::ExactlyOnce => Self::ExactlyOnce,
+                MqttQos::AtMostOnce => Ok(Self::AtMostOnce),
+                MqttQos::AtLeastOnce => Ok(Self::AtLeastOnce),
+                MqttQos::ExactlyOnce => Ok(Self::ExactlyOnce),
             }
         }
     }
@@ -6123,8 +6526,8 @@ pub mod source {
 
     impl IntoDto for MqttTopicSubscription {
         type Dto = dtos::source::MqttTopicSubscription;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6137,12 +6540,16 @@ pub mod source {
         }
     }
 
-    impl From<MqttTopicSubscription> for dtos::source::MqttTopicSubscription {
-        fn from(v: MqttTopicSubscription) -> Self {
-            Self {
+    impl TryFrom<MqttTopicSubscription> for dtos::source::MqttTopicSubscription {
+        type Error = ValidationError;
+        fn try_from(v: MqttTopicSubscription) -> Result<Self, ValidationError> {
+            Ok(Self {
                 path: v.path,
-                qos: v.qos.map(|v| v.into()),
-            }
+                qos: v
+                    .qos
+                    .map(|v| dtos::source::MqttQos::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6161,8 +6568,8 @@ pub mod source {
 
     impl IntoDto for PrepStep {
         type Dto = dtos::source::PrepStep;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6175,11 +6582,12 @@ pub mod source {
         }
     }
 
-    impl From<PrepStep> for dtos::source::PrepStep {
-        fn from(v: PrepStep) -> Self {
+    impl TryFrom<PrepStep> for dtos::source::PrepStep {
+        type Error = ValidationError;
+        fn try_from(v: PrepStep) -> Result<Self, Self::Error> {
             match v {
-                PrepStep::Decompress(v) => Self::Decompress(v.into()),
-                PrepStep::Pipe(v) => Self::Pipe(v.into()),
+                PrepStep::Decompress(v) => Ok(Self::Decompress(v.try_into()?)),
+                PrepStep::Pipe(v) => Ok(Self::Pipe(v.try_into()?)),
             }
         }
     }
@@ -6199,8 +6607,8 @@ pub mod source {
 
     impl IntoDto for PrepStepDecompress {
         type Dto = dtos::source::PrepStepDecompress;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6208,17 +6616,18 @@ pub mod source {
         fn from(v: dtos::source::PrepStepDecompress) -> Self {
             Self {
                 format: v.format.into(),
-                sub_path: v.sub_path.map(|v| v),
+                sub_path: v.sub_path,
             }
         }
     }
 
-    impl From<PrepStepDecompress> for dtos::source::PrepStepDecompress {
-        fn from(v: PrepStepDecompress) -> Self {
-            Self {
-                format: v.format.into(),
-                sub_path: v.sub_path.map(|v| v),
-            }
+    impl TryFrom<PrepStepDecompress> for dtos::source::PrepStepDecompress {
+        type Error = ValidationError;
+        fn try_from(v: PrepStepDecompress) -> Result<Self, ValidationError> {
+            Ok(Self {
+                format: dtos::source::CompressionFormat::try_from(v.format)?,
+                sub_path: v.sub_path,
+            })
         }
     }
 
@@ -6234,24 +6643,21 @@ pub mod source {
 
     impl IntoDto for PrepStepPipe {
         type Dto = dtos::source::PrepStepPipe;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::PrepStepPipe> for PrepStepPipe {
         fn from(v: dtos::source::PrepStepPipe) -> Self {
-            Self {
-                command: v.command.into_iter().map(Into::into).collect(),
-            }
+            Self { command: v.command }
         }
     }
 
-    impl From<PrepStepPipe> for dtos::source::PrepStepPipe {
-        fn from(v: PrepStepPipe) -> Self {
-            Self {
-                command: v.command.into_iter().map(Into::into).collect(),
-            }
+    impl TryFrom<PrepStepPipe> for dtos::source::PrepStepPipe {
+        type Error = ValidationError;
+        fn try_from(v: PrepStepPipe) -> Result<Self, ValidationError> {
+            Ok(Self { command: v.command })
         }
     }
 
@@ -6280,8 +6686,8 @@ pub mod source {
 
     impl IntoDto for ReadStep {
         type Dto = dtos::source::ReadStep;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6299,16 +6705,17 @@ pub mod source {
         }
     }
 
-    impl From<ReadStep> for dtos::source::ReadStep {
-        fn from(v: ReadStep) -> Self {
+    impl TryFrom<ReadStep> for dtos::source::ReadStep {
+        type Error = ValidationError;
+        fn try_from(v: ReadStep) -> Result<Self, Self::Error> {
             match v {
-                ReadStep::Csv(v) => Self::Csv(v.into()),
-                ReadStep::GeoJson(v) => Self::GeoJson(v.into()),
-                ReadStep::EsriShapefile(v) => Self::EsriShapefile(v.into()),
-                ReadStep::Parquet(v) => Self::Parquet(v.into()),
-                ReadStep::Json(v) => Self::Json(v.into()),
-                ReadStep::NdJson(v) => Self::NdJson(v.into()),
-                ReadStep::NdGeoJson(v) => Self::NdGeoJson(v.into()),
+                ReadStep::Csv(v) => Ok(Self::Csv(v.try_into()?)),
+                ReadStep::GeoJson(v) => Ok(Self::GeoJson(v.try_into()?)),
+                ReadStep::EsriShapefile(v) => Ok(Self::EsriShapefile(v.try_into()?)),
+                ReadStep::Parquet(v) => Ok(Self::Parquet(v.try_into()?)),
+                ReadStep::Json(v) => Ok(Self::Json(v.try_into()?)),
+                ReadStep::NdJson(v) => Ok(Self::NdJson(v.try_into()?)),
+                ReadStep::NdGeoJson(v) => Ok(Self::NdGeoJson(v.try_into()?)),
             }
         }
     }
@@ -6357,48 +6764,48 @@ pub mod source {
 
     impl IntoDto for ReadStepCsv {
         type Dto = dtos::source::ReadStepCsv;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepCsv> for ReadStepCsv {
         fn from(v: dtos::source::ReadStepCsv) -> Self {
             Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                separator: v.separator.map(|v| v),
-                encoding: v.encoding.map(|v| v),
-                quote: v.quote.map(|v| v),
-                escape: v.escape.map(|v| v),
-                header: v.header.map(|v| v),
-                infer_schema: v.infer_schema.map(|v| v),
-                null_value: v.null_value.map(|v| v),
-                date_format: v.date_format.map(|v| v),
-                timestamp_format: v.timestamp_format.map(|v| v),
+                ddl_schema: v.ddl_schema,
+                separator: v.separator,
+                encoding: v.encoding,
+                quote: v.quote,
+                escape: v.escape,
+                header: v.header,
+                infer_schema: v.infer_schema,
+                null_value: v.null_value,
+                date_format: v.date_format,
+                timestamp_format: v.timestamp_format,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepCsv> for dtos::source::ReadStepCsv {
-        fn from(v: ReadStepCsv) -> Self {
-            Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                separator: v.separator.map(|v| v),
-                encoding: v.encoding.map(|v| v),
-                quote: v.quote.map(|v| v),
-                escape: v.escape.map(|v| v),
-                header: v.header.map(|v| v),
-                infer_schema: v.infer_schema.map(|v| v),
-                null_value: v.null_value.map(|v| v),
-                date_format: v.date_format.map(|v| v),
-                timestamp_format: v.timestamp_format.map(|v| v),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepCsv> for dtos::source::ReadStepCsv {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepCsv) -> Result<Self, ValidationError> {
+            Ok(Self {
+                ddl_schema: v.ddl_schema,
+                separator: v.separator,
+                encoding: v.encoding,
+                quote: v.quote,
+                escape: v.escape,
+                header: v.header,
+                infer_schema: v.infer_schema,
+                null_value: v.null_value,
+                date_format: v.date_format,
+                timestamp_format: v.timestamp_format,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6422,32 +6829,32 @@ pub mod source {
 
     impl IntoDto for ReadStepEsriShapefile {
         type Dto = dtos::source::ReadStepEsriShapefile;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepEsriShapefile> for ReadStepEsriShapefile {
         fn from(v: dtos::source::ReadStepEsriShapefile) -> Self {
             Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                sub_path: v.sub_path.map(|v| v),
+                ddl_schema: v.ddl_schema,
+                sub_path: v.sub_path,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepEsriShapefile> for dtos::source::ReadStepEsriShapefile {
-        fn from(v: ReadStepEsriShapefile) -> Self {
-            Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                sub_path: v.sub_path.map(|v| v),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepEsriShapefile> for dtos::source::ReadStepEsriShapefile {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepEsriShapefile) -> Result<Self, ValidationError> {
+            Ok(Self {
+                ddl_schema: v.ddl_schema,
+                sub_path: v.sub_path,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6468,30 +6875,30 @@ pub mod source {
 
     impl IntoDto for ReadStepGeoJson {
         type Dto = dtos::source::ReadStepGeoJson;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepGeoJson> for ReadStepGeoJson {
         fn from(v: dtos::source::ReadStepGeoJson) -> Self {
             Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
+                ddl_schema: v.ddl_schema,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepGeoJson> for dtos::source::ReadStepGeoJson {
-        fn from(v: ReadStepGeoJson) -> Self {
-            Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepGeoJson> for dtos::source::ReadStepGeoJson {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepGeoJson) -> Result<Self, ValidationError> {
+            Ok(Self {
+                ddl_schema: v.ddl_schema,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6524,38 +6931,38 @@ pub mod source {
 
     impl IntoDto for ReadStepJson {
         type Dto = dtos::source::ReadStepJson;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepJson> for ReadStepJson {
         fn from(v: dtos::source::ReadStepJson) -> Self {
             Self {
-                sub_path: v.sub_path.map(|v| v),
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                date_format: v.date_format.map(|v| v),
-                encoding: v.encoding.map(|v| v),
-                timestamp_format: v.timestamp_format.map(|v| v),
+                sub_path: v.sub_path,
+                ddl_schema: v.ddl_schema,
+                date_format: v.date_format,
+                encoding: v.encoding,
+                timestamp_format: v.timestamp_format,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepJson> for dtos::source::ReadStepJson {
-        fn from(v: ReadStepJson) -> Self {
-            Self {
-                sub_path: v.sub_path.map(|v| v),
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                date_format: v.date_format.map(|v| v),
-                encoding: v.encoding.map(|v| v),
-                timestamp_format: v.timestamp_format.map(|v| v),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepJson> for dtos::source::ReadStepJson {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepJson) -> Result<Self, ValidationError> {
+            Ok(Self {
+                sub_path: v.sub_path,
+                ddl_schema: v.ddl_schema,
+                date_format: v.date_format,
+                encoding: v.encoding,
+                timestamp_format: v.timestamp_format,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6576,30 +6983,30 @@ pub mod source {
 
     impl IntoDto for ReadStepNdGeoJson {
         type Dto = dtos::source::ReadStepNdGeoJson;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepNdGeoJson> for ReadStepNdGeoJson {
         fn from(v: dtos::source::ReadStepNdGeoJson) -> Self {
             Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
+                ddl_schema: v.ddl_schema,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepNdGeoJson> for dtos::source::ReadStepNdGeoJson {
-        fn from(v: ReadStepNdGeoJson) -> Self {
-            Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepNdGeoJson> for dtos::source::ReadStepNdGeoJson {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepNdGeoJson) -> Result<Self, ValidationError> {
+            Ok(Self {
+                ddl_schema: v.ddl_schema,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6629,36 +7036,36 @@ pub mod source {
 
     impl IntoDto for ReadStepNdJson {
         type Dto = dtos::source::ReadStepNdJson;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepNdJson> for ReadStepNdJson {
         fn from(v: dtos::source::ReadStepNdJson) -> Self {
             Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                date_format: v.date_format.map(|v| v),
-                encoding: v.encoding.map(|v| v),
-                timestamp_format: v.timestamp_format.map(|v| v),
+                ddl_schema: v.ddl_schema,
+                date_format: v.date_format,
+                encoding: v.encoding,
+                timestamp_format: v.timestamp_format,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepNdJson> for dtos::source::ReadStepNdJson {
-        fn from(v: ReadStepNdJson) -> Self {
-            Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                date_format: v.date_format.map(|v| v),
-                encoding: v.encoding.map(|v| v),
-                timestamp_format: v.timestamp_format.map(|v| v),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepNdJson> for dtos::source::ReadStepNdJson {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepNdJson) -> Result<Self, ValidationError> {
+            Ok(Self {
+                ddl_schema: v.ddl_schema,
+                date_format: v.date_format,
+                encoding: v.encoding,
+                timestamp_format: v.timestamp_format,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6679,30 +7086,30 @@ pub mod source {
 
     impl IntoDto for ReadStepParquet {
         type Dto = dtos::source::ReadStepParquet;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::source::ReadStepParquet> for ReadStepParquet {
         fn from(v: dtos::source::ReadStepParquet) -> Self {
             Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
+                ddl_schema: v.ddl_schema,
                 schema: v.schema.map(|v| v.into()),
             }
         }
     }
 
-    impl From<ReadStepParquet> for dtos::source::ReadStepParquet {
-        fn from(v: ReadStepParquet) -> Self {
-            Self {
-                ddl_schema: v
-                    .ddl_schema
-                    .map(|v| v.into_iter().map(Into::into).collect()),
-                schema: v.schema.map(|v| v.into()),
-            }
+    impl TryFrom<ReadStepParquet> for dtos::source::ReadStepParquet {
+        type Error = ValidationError;
+        fn try_from(v: ReadStepParquet) -> Result<Self, ValidationError> {
+            Ok(Self {
+                ddl_schema: v.ddl_schema,
+                schema: v
+                    .schema
+                    .map(|v| dtos::data::DataSchema::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6719,8 +7126,8 @@ pub mod source {
 
     impl IntoDto for RequestHeader {
         type Dto = dtos::source::RequestHeader;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6733,12 +7140,13 @@ pub mod source {
         }
     }
 
-    impl From<RequestHeader> for dtos::source::RequestHeader {
-        fn from(v: RequestHeader) -> Self {
-            Self {
+    impl TryFrom<RequestHeader> for dtos::source::RequestHeader {
+        type Error = ValidationError;
+        fn try_from(v: RequestHeader) -> Result<Self, ValidationError> {
+            Ok(Self {
                 name: v.name,
                 value: v.value,
-            }
+            })
         }
     }
 
@@ -6758,16 +7166,17 @@ pub mod source {
             Self(v.into())
         }
     }
-    impl From<UnionOrString<SourceCaching>> for dtos::source::SourceCaching {
-        fn from(v: UnionOrString<SourceCaching>) -> Self {
-            v.0.into()
+    impl TryFrom<UnionOrString<SourceCaching>> for dtos::source::SourceCaching {
+        type Error = ValidationError;
+        fn try_from(v: UnionOrString<SourceCaching>) -> Result<Self, Self::Error> {
+            v.0.try_into()
         }
     }
 
     impl IntoDto for SourceCaching {
         type Dto = dtos::source::SourceCaching;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6779,10 +7188,11 @@ pub mod source {
         }
     }
 
-    impl From<SourceCaching> for dtos::source::SourceCaching {
-        fn from(v: SourceCaching) -> Self {
+    impl TryFrom<SourceCaching> for dtos::source::SourceCaching {
+        type Error = ValidationError;
+        fn try_from(v: SourceCaching) -> Result<Self, Self::Error> {
             match v {
-                SourceCaching::Forever(v) => Self::Forever(v.into()),
+                SourceCaching::Forever(v) => Ok(Self::Forever(v.try_into()?)),
             }
         }
     }
@@ -6797,8 +7207,8 @@ pub mod source {
 
     impl IntoDto for SourceCachingForever {
         type Dto = dtos::source::SourceCachingForever;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6808,9 +7218,10 @@ pub mod source {
         }
     }
 
-    impl From<SourceCachingForever> for dtos::source::SourceCachingForever {
-        fn from(v: SourceCachingForever) -> Self {
-            Self {}
+    impl TryFrom<SourceCachingForever> for dtos::source::SourceCachingForever {
+        type Error = ValidationError;
+        fn try_from(v: SourceCachingForever) -> Result<Self, ValidationError> {
+            Ok(Self {})
         }
     }
 
@@ -6828,8 +7239,8 @@ pub mod source {
 
     impl IntoDto for SourceOrdering {
         type Dto = dtos::source::SourceOrdering;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6842,11 +7253,12 @@ pub mod source {
         }
     }
 
-    impl From<SourceOrdering> for dtos::source::SourceOrdering {
-        fn from(v: SourceOrdering) -> Self {
+    impl TryFrom<SourceOrdering> for dtos::source::SourceOrdering {
+        type Error = ValidationError;
+        fn try_from(v: SourceOrdering) -> Result<Self, Self::Error> {
             match v {
-                SourceOrdering::ByEventTime => Self::ByEventTime,
-                SourceOrdering::ByName => Self::ByName,
+                SourceOrdering::ByEventTime => Ok(Self::ByEventTime),
+                SourceOrdering::ByName => Ok(Self::ByName),
             }
         }
     }
@@ -6881,8 +7293,8 @@ pub mod source {
 
     impl IntoDto for SourceSpec {
         type Dto = dtos::source::SourceSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6900,17 +7312,40 @@ pub mod source {
         }
     }
 
-    impl From<SourceSpec> for dtos::source::SourceSpec {
-        fn from(v: SourceSpec) -> Self {
-            Self {
-                config: v.config.map(|v| v.into()),
-                ingress: v.ingress.map(|v| v.into()),
-                prepare: v.prepare.map(|v| v.into_iter().map(Into::into).collect()),
-                read: v.read.into(),
-                preprocess: v.preprocess.map(|v| v.into()),
-                merge: v.merge.map(|v| v.into()),
-                vocab: v.vocab.map(|v| v.into()),
-            }
+    impl TryFrom<SourceSpec> for dtos::source::SourceSpec {
+        type Error = ValidationError;
+        fn try_from(v: SourceSpec) -> Result<Self, ValidationError> {
+            Ok(Self {
+                config: v
+                    .config
+                    .map(|v| dtos::config::ValueRefs::try_from(v))
+                    .transpose()?,
+                ingress: v
+                    .ingress
+                    .map(|v| dtos::source::Ingress::try_from(v))
+                    .transpose()?,
+                prepare: v
+                    .prepare
+                    .map(|v| {
+                        v.into_iter()
+                            .map(|i| dtos::source::PrepStep::try_from(i))
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?,
+                read: dtos::source::ReadStep::try_from(v.read)?,
+                preprocess: v
+                    .preprocess
+                    .map(|v| dtos::dataset::Transform::try_from(v))
+                    .transpose()?,
+                merge: v
+                    .merge
+                    .map(|v| dtos::source::MergeStrategy::try_from(v))
+                    .transpose()?,
+                vocab: v
+                    .vocab
+                    .map(|v| dtos::dataset::DatasetVocabulary::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -6928,8 +7363,8 @@ pub mod source {
 
     impl IntoDto for SourceState {
         type Dto = dtos::source::SourceState;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6943,13 +7378,14 @@ pub mod source {
         }
     }
 
-    impl From<SourceState> for dtos::source::SourceState {
-        fn from(v: SourceState) -> Self {
-            Self {
+    impl TryFrom<SourceState> for dtos::source::SourceState {
+        type Error = ValidationError;
+        fn try_from(v: SourceState) -> Result<Self, ValidationError> {
+            Ok(Self {
                 source_name: v.source_name,
                 kind: v.kind,
                 value: v.value,
-            }
+            })
         }
     }
 
@@ -6979,8 +7415,8 @@ pub mod storage {
 
     impl IntoDto for AwsCredentials {
         type Dto = dtos::storage::AwsCredentials;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -6993,12 +7429,19 @@ pub mod storage {
         }
     }
 
-    impl From<AwsCredentials> for dtos::storage::AwsCredentials {
-        fn from(v: AwsCredentials) -> Self {
-            Self {
-                access_key: v.access_key.map(|v| v.into()),
-                secret_key: v.secret_key.map(|v| v.into()),
-            }
+    impl TryFrom<AwsCredentials> for dtos::storage::AwsCredentials {
+        type Error = ValidationError;
+        fn try_from(v: AwsCredentials) -> Result<Self, ValidationError> {
+            Ok(Self {
+                access_key: v
+                    .access_key
+                    .map(|v| dtos::config::ValueRef::try_from(v))
+                    .transpose()?,
+                secret_key: v
+                    .secret_key
+                    .map(|v| dtos::config::ValueRef::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -7022,8 +7465,8 @@ pub mod storage {
 
     impl IntoDto for PersistentVolumeRef {
         type Dto = dtos::storage::PersistentVolumeRef;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -7032,9 +7475,10 @@ pub mod storage {
             Self(v.into())
         }
     }
-    impl From<StructOrString<PersistentVolumeRef>> for dtos::storage::PersistentVolumeRef {
-        fn from(v: StructOrString<PersistentVolumeRef>) -> Self {
-            v.0.into()
+    impl TryFrom<StructOrString<PersistentVolumeRef>> for dtos::storage::PersistentVolumeRef {
+        type Error = ValidationError;
+        fn try_from(v: StructOrString<PersistentVolumeRef>) -> Result<Self, ValidationError> {
+            v.0.try_into()
         }
     }
 
@@ -7051,8 +7495,8 @@ pub mod storage {
 
     impl IntoDto for PersistentVolumeSpec {
         type Dto = dtos::storage::PersistentVolumeSpec;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
@@ -7064,10 +7508,11 @@ pub mod storage {
         }
     }
 
-    impl From<PersistentVolumeSpec> for dtos::storage::PersistentVolumeSpec {
-        fn from(v: PersistentVolumeSpec) -> Self {
+    impl TryFrom<PersistentVolumeSpec> for dtos::storage::PersistentVolumeSpec {
+        type Error = ValidationError;
+        fn try_from(v: PersistentVolumeSpec) -> Result<Self, Self::Error> {
             match v {
-                PersistentVolumeSpec::S3(v) => Self::S3(v.into()),
+                PersistentVolumeSpec::S3(v) => Ok(Self::S3(v.try_into()?)),
             }
         }
     }
@@ -7099,34 +7544,41 @@ pub mod storage {
 
     impl IntoDto for PersistentVolumeSpecS3 {
         type Dto = dtos::storage::PersistentVolumeSpecS3;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::storage::PersistentVolumeSpecS3> for PersistentVolumeSpecS3 {
         fn from(v: dtos::storage::PersistentVolumeSpecS3) -> Self {
             Self {
-                endpoint: v.endpoint.map(|v| v),
-                region: v.region.map(|v| v),
+                endpoint: v.endpoint,
+                region: v.region,
                 bucket: v.bucket,
-                prefix: v.prefix.map(|v| v),
+                prefix: v.prefix,
                 capacity: v.capacity.map(|v| v.into()),
                 credentials: v.credentials.map(|v| v.into()),
             }
         }
     }
 
-    impl From<PersistentVolumeSpecS3> for dtos::storage::PersistentVolumeSpecS3 {
-        fn from(v: PersistentVolumeSpecS3) -> Self {
-            Self {
-                endpoint: v.endpoint.map(|v| v),
-                region: v.region.map(|v| v),
+    impl TryFrom<PersistentVolumeSpecS3> for dtos::storage::PersistentVolumeSpecS3 {
+        type Error = ValidationError;
+        fn try_from(v: PersistentVolumeSpecS3) -> Result<Self, ValidationError> {
+            Ok(Self {
+                endpoint: v.endpoint,
+                region: v.region,
                 bucket: v.bucket,
-                prefix: v.prefix.map(|v| v),
-                capacity: v.capacity.map(|v| v.into()),
-                credentials: v.credentials.map(|v| v.into()),
-            }
+                prefix: v.prefix,
+                capacity: v
+                    .capacity
+                    .map(|v| dtos::storage::VolumeCapacity::try_from(v))
+                    .transpose()?,
+                credentials: v
+                    .credentials
+                    .map(|v| dtos::storage::AwsCredentials::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -7147,24 +7599,21 @@ pub mod storage {
 
     impl IntoDto for VolumeCapacity {
         type Dto = dtos::storage::VolumeCapacity;
-        fn into_dto(self) -> Self::Dto {
-            self.into()
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
         }
     }
 
     impl From<dtos::storage::VolumeCapacity> for VolumeCapacity {
         fn from(v: dtos::storage::VolumeCapacity) -> Self {
-            Self {
-                storage: v.storage.map(|v| v),
-            }
+            Self { storage: v.storage }
         }
     }
 
-    impl From<VolumeCapacity> for dtos::storage::VolumeCapacity {
-        fn from(v: VolumeCapacity) -> Self {
-            Self {
-                storage: v.storage.map(|v| v),
-            }
+    impl TryFrom<VolumeCapacity> for dtos::storage::VolumeCapacity {
+        type Error = ValidationError;
+        fn try_from(v: VolumeCapacity) -> Result<Self, ValidationError> {
+            Ok(Self { storage: v.storage })
         }
     }
 

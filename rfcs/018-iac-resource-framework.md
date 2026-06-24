@@ -638,7 +638,7 @@ spec:
 
 
 # QQQQQQQQQQQQQQQQQQQQQQQQQQ
-- Extensibility of task types / ingress types ...
+
 - Move ReBAC `attributes` into `spec` or `headers`?
 - Make labels / annotations / attributes full URLs?
 - DID vs ID
@@ -649,6 +649,13 @@ spec:
 
 
 Future:
+- Extensibility of task types / ingress types ...
+  - Describe this pattern in RFC:
+    ```yaml
+    tasks:
+    - kind: Extended
+      $schema: https://kamu.dev/odf/schemas/v1/SomeTask
+    ```
 - Start moving event bus events schemas into ODF
 - Get rid of StructOrString in struct fields in favor of `serde_as`
 - Remove `Resource*` prefix from types in `resource` domain?

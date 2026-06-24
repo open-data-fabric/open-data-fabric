@@ -484,9 +484,14 @@ pub struct EventFilter(odf::metadata::event::EventFilter);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for EventFilter {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::event::EventFilter =
+        let proxy: odf::metadata::serde::yaml::event::EventFilter =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -650,9 +655,14 @@ pub struct ExtraAttributes(odf::metadata::data::ExtraAttributes);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for ExtraAttributes {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::data::ExtraAttributes =
+        let proxy: odf::metadata::serde::yaml::data::ExtraAttributes =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -1241,9 +1251,14 @@ pub struct LabelFilter(odf::metadata::resource::LabelFilter);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for LabelFilter {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::resource::LabelFilter =
+        let proxy: odf::metadata::serde::yaml::resource::LabelFilter =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -2400,9 +2415,14 @@ pub struct ResourceAnnotations(odf::metadata::resource::ResourceAnnotations);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for ResourceAnnotations {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::resource::ResourceAnnotations =
+        let proxy: odf::metadata::serde::yaml::resource::ResourceAnnotations =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -2455,9 +2475,14 @@ pub struct ResourceConditions(odf::metadata::resource::ResourceConditions);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for ResourceConditions {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::resource::ResourceConditions =
+        let proxy: odf::metadata::serde::yaml::resource::ResourceConditions =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -2522,9 +2547,14 @@ pub struct ResourceLabels(odf::metadata::resource::ResourceLabels);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for ResourceLabels {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::resource::ResourceLabels =
+        let proxy: odf::metadata::serde::yaml::resource::ResourceLabels =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -2629,8 +2659,13 @@ pub struct Secrets(odf::metadata::config::Secrets);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for Secrets {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::config::Secrets = async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let proxy: odf::metadata::serde::yaml::config::Secrets = async_graphql::from_value(value)?;
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -3433,9 +3468,14 @@ pub struct ValueRefs(odf::metadata::config::ValueRefs);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for ValueRefs {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::config::ValueRefs =
+        let proxy: odf::metadata::serde::yaml::config::ValueRefs =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
@@ -3494,9 +3534,14 @@ pub struct Variables(odf::metadata::config::Variables);
 #[async_graphql::Scalar]
 impl async_graphql::ScalarType for Variables {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
-        let value: odf::metadata::serde::yaml::config::Variables =
+        let proxy: odf::metadata::serde::yaml::config::Variables =
             async_graphql::from_value(value)?;
-        Ok(Self::new(value.into()))
+        let dto = proxy
+            .try_into()
+            .map_err(|e: odf::metadata::errors::ValidationError| {
+                async_graphql::InputValueError::custom(e.to_string())
+            })?;
+        Ok(Self::new(dto))
     }
 
     fn to_value(&self) -> async_graphql::Value {
