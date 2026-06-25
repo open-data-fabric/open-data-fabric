@@ -20,7 +20,10 @@ SCHEMAS_UTILS_SRC = $(shell find tools/schemas/ -type f -name '*.rs')
 
 SCHEMA_MARKDOWN = build/metadata-reference.md
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
-SCHEMA_MERMAID_ERD = schemas-generated/mermaid/erd.md
+SCHEMA_MERMAID_ERD = schemas-generated/mermaid/erd.mmd
+SCHEMA_ERD_SVG = schemas-generated/mermaid/erd.svg
+
+MMDC = nix shell "path:dev/nix\#mermaid-cli" --command mmdc
 
 CODEGEN_CMD = RUST_BACKTRACE=1 cargo run -q -- codegen
 RUSTFMT = rustfmt --edition 2024 --style-edition 2024
@@ -49,7 +52,9 @@ $(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
 codegen:
 	$(CODEGEN_CMD) markdown > $(SCHEMA_MARKDOWN)
 	$(CODEGEN_CMD) flatbuffers-schema > $(SCHEMA_FLATBUFFERS)
+	mkdir -p $(dir $(SCHEMA_MERMAID_ERD))
 	$(CODEGEN_CMD) mermaid-erd > $(SCHEMA_MERMAID_ERD)
+	$(MMDC) -i $(SCHEMA_MERMAID_ERD) -o $(SCHEMA_ERD_SVG)
 	$(CODEGEN_CMD) rust-dtos > tools/schemas/output/rust-dtos.rs
 	$(CODEGEN_CMD) rust-serde > tools/schemas/output/rust-serde.rs
 	$(CODEGEN_CMD) rust-serde-flatbuffers > tools/schemas/output/rust-serde-flatbuffers.rs

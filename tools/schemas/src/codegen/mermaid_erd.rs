@@ -41,7 +41,6 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         })
         .collect();
 
-    writeln!(w, "```mermaid")?;
     writeln!(w, "%%{{init: {{\"flowchart\": {{\"defaultRenderer\": \"elk\"}}}} }}%%")?;
     writeln!(w, "graph TD")?;
     writeln!(w)?;
@@ -104,8 +103,6 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             TypeDefinition::Enum(_) => {}
         }
     }
-
-    writeln!(w, "```")?;
 
     Ok(())
 }
