@@ -1,0 +1,419 @@
+```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
+graph TD
+
+  classDef ctx_auth fill:#f0e0ff,stroke:#999,color:#000
+  classDef ctx_config fill:#fff0b3,stroke:#999,color:#000
+  classDef ctx_data fill:#d0f0d0,stroke:#999,color:#000
+  classDef ctx_dataset fill:#cce5ff,stroke:#999,color:#000
+  classDef ctx_engine fill:#ffe0cc,stroke:#999,color:#000
+  classDef ctx_event fill:#e0f7fa,stroke:#999,color:#000
+  classDef ctx_flow fill:#ffd6e0,stroke:#999,color:#000
+  classDef ctx_legacy fill:#e0e0e0,stroke:#999,color:#000
+  classDef ctx_resource fill:#f5f5f5,stroke:#999,color:#000
+  classDef ctx_sink fill:#ffe8cc,stroke:#999,color:#000
+  classDef ctx_source fill:#d6f0e8,stroke:#999,color:#000
+  classDef ctx_storage fill:#e8d6f0,stroke:#999,color:#000
+
+  subgraph auth["auth"]
+    Account
+    AccountRef
+    AccountSpec
+    AccountType
+    Attribute
+    Relation
+    Relations
+    RelationsSpec
+  end
+  class Account,AccountRef,AccountSpec,AccountType,Attribute,Relation,Relations,RelationsSpec ctx_auth
+
+  subgraph config["config"]
+    Secret
+    SecretSet
+    SecretSetSpec
+    Secrets
+    ValueRef
+    ValueRefs
+    Variable
+    VariableSet
+    VariableSetSpec
+    Variables
+  end
+  class Secret,SecretSet,SecretSetSpec,Secrets,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,Variables ctx_config
+
+  subgraph data["data"]
+    DataField
+    DataSchema
+    DataType
+    ExtraAttributes
+    OperationType
+    TimeUnit
+  end
+  class DataField,DataSchema,DataType,ExtraAttributes,OperationType,TimeUnit ctx_data
+
+  subgraph dataset["dataset"]
+    AddData
+    AttachmentEmbedded
+    Attachments
+    Attachments_Embedded["Attachments::Embedded"]
+    Checkpoint
+    CompactionParams
+    DataSlice
+    Dataset
+    DatasetKind
+    DatasetSelector
+    DatasetSpec
+    DatasetVocabulary
+    ExecuteTransform
+    ExecuteTransformInput
+    MetadataBlock
+    MetadataEvent
+    OffsetInterval
+    Projection
+    ProjectionSpec
+    Seed
+    SetAttachments
+    SetDataSchema
+    SetInfo
+    SetLicense
+    SetTransform
+    SetVocab
+    SqlQueryStep
+    TemporalTable
+    Transform
+    Transform_Sql["Transform::Sql"]
+    TransformInput
+    Watermark
+  end
+  class AddData,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetSelector,DatasetSpec,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
+
+  subgraph engine["engine"]
+    RawQueryRequest
+    RawQueryResponse
+    RawQueryResponse_InternalError["RawQueryResponse::InternalError"]
+    RawQueryResponse_InvalidQuery["RawQueryResponse::InvalidQuery"]
+    RawQueryResponse_Progress["RawQueryResponse::Progress"]
+    RawQueryResponse_Success["RawQueryResponse::Success"]
+    TransformRequest
+    TransformRequestInput
+    TransformResponse
+    TransformResponse_InternalError["TransformResponse::InternalError"]
+    TransformResponse_InvalidQuery["TransformResponse::InvalidQuery"]
+    TransformResponse_Progress["TransformResponse::Progress"]
+    TransformResponse_Success["TransformResponse::Success"]
+  end
+  class RawQueryRequest,RawQueryResponse,RawQueryResponse_InternalError,RawQueryResponse_InvalidQuery,RawQueryResponse_Progress,RawQueryResponse_Success,TransformRequest,TransformRequestInput,TransformResponse,TransformResponse_InternalError,TransformResponse_InvalidQuery,TransformResponse_Progress,TransformResponse_Success ctx_engine
+
+  subgraph event["event"]
+    EventFilter
+  end
+  class EventFilter ctx_event
+
+  subgraph flow["flow"]
+    Flow
+    FlowSpec
+    FlowTrigger
+    FlowTrigger_Dataset["FlowTrigger::Dataset"]
+    FlowTrigger_Event["FlowTrigger::Event"]
+    FlowTrigger_Schedule["FlowTrigger::Schedule"]
+    FlowTrigger_Source["FlowTrigger::Source"]
+    Task
+    TaskSpec
+    TaskSpec_Compaction["TaskSpec::Compaction"]
+    TaskSpec_GarbageCollection["TaskSpec::GarbageCollection"]
+    TaskSpec_Ingest["TaskSpec::Ingest"]
+    TaskSpec_WebhookCall["TaskSpec::WebhookCall"]
+  end
+  class Flow,FlowSpec,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Schedule,FlowTrigger_Source,Task,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_WebhookCall ctx_flow
+
+  subgraph legacy["legacy"]
+    AddPushSource
+    DatasetSnapshot
+    DisablePollingSource
+    DisablePushSource
+    FetchStep
+    FetchStep_Container["FetchStep::Container"]
+    FetchStep_EthereumLogs["FetchStep::EthereumLogs"]
+    FetchStep_FilesGlob["FetchStep::FilesGlob"]
+    FetchStep_Mqtt["FetchStep::Mqtt"]
+    FetchStep_Url["FetchStep::Url"]
+    Manifest
+    SetPollingSource
+  end
+  class AddPushSource,DatasetSnapshot,DisablePollingSource,DisablePushSource,FetchStep,FetchStep_Container,FetchStep_EthereumLogs,FetchStep_FilesGlob,FetchStep_Mqtt,FetchStep_Url,Manifest,SetPollingSource ctx_legacy
+
+  subgraph resource["resource"]
+    LabelFilter
+    Resource
+    ResourceAnnotations
+    ResourceCondition
+    ResourceConditions
+    ResourceHeaders
+    ResourceLabels
+    ResourcePhase
+    ResourceRef
+    ResourceSelector
+    ResourceStatus
+  end
+  class LabelFilter,Resource,ResourceAnnotations,ResourceCondition,ResourceConditions,ResourceHeaders,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
+
+  subgraph sink["sink"]
+    WebhookTarget
+    WebhookTargetSpec
+    WebhookTargetStatus
+    WebhookTargetStatus_Value["WebhookTargetStatus::Value"]
+  end
+  class WebhookTarget,WebhookTargetSpec,WebhookTargetStatus,WebhookTargetStatus_Value ctx_sink
+
+  subgraph source["source"]
+    CompressionFormat
+    EnvVar
+    EventTimeSource
+    EventTimeSource_FromMetadata["EventTimeSource::FromMetadata"]
+    EventTimeSource_FromPath["EventTimeSource::FromPath"]
+    EventTimeSource_FromSystemTime["EventTimeSource::FromSystemTime"]
+    IngestParams
+    Ingress
+    Ingress_Container["Ingress::Container"]
+    Ingress_EvmLogs["Ingress::EvmLogs"]
+    Ingress_FilesGlob["Ingress::FilesGlob"]
+    Ingress_Mqtt["Ingress::Mqtt"]
+    Ingress_RestEndpoint["Ingress::RestEndpoint"]
+    Ingress_Url["Ingress::Url"]
+    IngressBuffer
+    IngressBuffer_Memory["IngressBuffer::Memory"]
+    MergeStrategy
+    MergeStrategy_Append["MergeStrategy::Append"]
+    MergeStrategy_ChangelogStream["MergeStrategy::ChangelogStream"]
+    MergeStrategy_Ledger["MergeStrategy::Ledger"]
+    MergeStrategy_Snapshot["MergeStrategy::Snapshot"]
+    MergeStrategy_UpsertStream["MergeStrategy::UpsertStream"]
+    MqttQos
+    MqttTopicSubscription
+    PrepStep
+    PrepStep_Decompress["PrepStep::Decompress"]
+    PrepStep_Pipe["PrepStep::Pipe"]
+    ReadStep
+    RequestHeader
+    Source
+    SourceCaching
+    SourceCaching_Forever["SourceCaching::Forever"]
+    SourceOrdering
+    SourceSpec
+    SourceState
+  end
+  class CompressionFormat,EnvVar,EventTimeSource,EventTimeSource_FromMetadata,EventTimeSource_FromPath,EventTimeSource_FromSystemTime,IngestParams,Ingress,Ingress_Container,Ingress_EvmLogs,Ingress_FilesGlob,Ingress_Mqtt,Ingress_RestEndpoint,Ingress_Url,IngressBuffer,IngressBuffer_Memory,MergeStrategy,MergeStrategy_Append,MergeStrategy_ChangelogStream,MergeStrategy_Ledger,MergeStrategy_Snapshot,MergeStrategy_UpsertStream,MqttQos,MqttTopicSubscription,PrepStep,PrepStep_Decompress,PrepStep_Pipe,ReadStep,RequestHeader,Source,SourceCaching,SourceCaching_Forever,SourceOrdering,SourceSpec,SourceState ctx_source
+
+  subgraph storage["storage"]
+    AwsCredentials
+    PersistentVolume
+    PersistentVolumeRef
+    PersistentVolumeSpec
+    PersistentVolumeSpec_S3["PersistentVolumeSpec::S3"]
+    VolumeCapacity
+  end
+  class AwsCredentials,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,VolumeCapacity ctx_storage
+
+  Account -->|"headers"| ResourceHeaders
+  Account -->|"spec"| AccountSpec
+  Account -->|"status"| ResourceStatus
+  AccountSpec -->|"account_type"| AccountType
+  AccountSpec -->|"password"| Secret
+  AddData -->|"new_data"| DataSlice
+  AddData -->|"new_checkpoint"| Checkpoint
+  AddData -->|"new_source_state"| SourceState
+  AddData -->|"extra"| ExtraAttributes
+  AddPushSource -->|"read"| ReadStep
+  AddPushSource -->|"preprocess"| Transform
+  AddPushSource -->|"merge"| MergeStrategy
+  Attachments -->|"variant"| Attachments_Embedded
+  Attachments_Embedded -->|"items"| AttachmentEmbedded
+  Attribute -->|"object"| ResourceRef
+  AwsCredentials -->|"access_key"| ValueRef
+  AwsCredentials -->|"secret_key"| ValueRef
+  DataField -->|"type"| DataType
+  DataField -->|"extra"| ExtraAttributes
+  DataSchema -->|"fields"| DataField
+  DataSchema -->|"extra"| ExtraAttributes
+  DataSlice -->|"offset_interval"| OffsetInterval
+  Dataset -->|"headers"| ResourceHeaders
+  Dataset -->|"spec"| DatasetSpec
+  Dataset -->|"status"| ResourceStatus
+  DatasetSelector -->|"account"| AccountRef
+  DatasetSelector -->|"labels"| LabelFilter
+  DatasetSelector -->|"kind"| DatasetKind
+  DatasetSnapshot -->|"kind"| DatasetKind
+  DatasetSnapshot -->|"metadata"| MetadataEvent
+  DatasetSpec -->|"kind"| DatasetKind
+  DatasetSpec -->|"metadata"| MetadataEvent
+  DatasetSpec -->|"volume"| PersistentVolumeRef
+  EventTimeSource -->|"variant"| EventTimeSource_FromMetadata
+  EventTimeSource -->|"variant"| EventTimeSource_FromPath
+  EventTimeSource -->|"variant"| EventTimeSource_FromSystemTime
+  ExecuteTransform -->|"query_inputs"| ExecuteTransformInput
+  ExecuteTransform -->|"new_data"| DataSlice
+  ExecuteTransform -->|"new_checkpoint"| Checkpoint
+  FetchStep -->|"variant"| FetchStep_Url
+  FetchStep -->|"variant"| FetchStep_FilesGlob
+  FetchStep -->|"variant"| FetchStep_Container
+  FetchStep -->|"variant"| FetchStep_Mqtt
+  FetchStep -->|"variant"| FetchStep_EthereumLogs
+  FetchStep_Container -->|"env"| EnvVar
+  FetchStep_FilesGlob -->|"event_time"| EventTimeSource
+  FetchStep_FilesGlob -->|"cache"| SourceCaching
+  FetchStep_FilesGlob -->|"order"| SourceOrdering
+  FetchStep_Mqtt -->|"topics"| MqttTopicSubscription
+  FetchStep_Url -->|"event_time"| EventTimeSource
+  FetchStep_Url -->|"cache"| SourceCaching
+  FetchStep_Url -->|"headers"| RequestHeader
+  Flow -->|"headers"| ResourceHeaders
+  Flow -->|"spec"| FlowSpec
+  Flow -->|"status"| ResourceStatus
+  FlowSpec -->|"target"| ResourceSelector
+  FlowSpec -->|"triggers"| FlowTrigger
+  FlowSpec -->|"tasks"| TaskSpec
+  FlowTrigger -->|"variant"| FlowTrigger_Schedule
+  FlowTrigger -->|"variant"| FlowTrigger_Event
+  FlowTrigger -->|"variant"| FlowTrigger_Source
+  FlowTrigger -->|"variant"| FlowTrigger_Dataset
+  FlowTrigger_Dataset -->|"dataset"| DatasetSelector
+  FlowTrigger_Event -->|"events"| EventFilter
+  FlowTrigger_Source -->|"source"| ResourceRef
+  Ingress -->|"variant"| Ingress_Url
+  Ingress -->|"variant"| Ingress_FilesGlob
+  Ingress -->|"variant"| Ingress_Container
+  Ingress -->|"variant"| Ingress_Mqtt
+  Ingress -->|"variant"| Ingress_EvmLogs
+  Ingress -->|"variant"| Ingress_RestEndpoint
+  Ingress_Container -->|"env"| EnvVar
+  Ingress_FilesGlob -->|"event_time"| EventTimeSource
+  Ingress_FilesGlob -->|"cache"| SourceCaching
+  Ingress_FilesGlob -->|"order"| SourceOrdering
+  Ingress_Mqtt -->|"topics"| MqttTopicSubscription
+  Ingress_RestEndpoint -->|"buffer"| IngressBuffer
+  Ingress_Url -->|"event_time"| EventTimeSource
+  Ingress_Url -->|"cache"| SourceCaching
+  Ingress_Url -->|"headers"| RequestHeader
+  IngressBuffer -->|"variant"| IngressBuffer_Memory
+  MergeStrategy -->|"variant"| MergeStrategy_Append
+  MergeStrategy -->|"variant"| MergeStrategy_Ledger
+  MergeStrategy -->|"variant"| MergeStrategy_Snapshot
+  MergeStrategy -->|"variant"| MergeStrategy_ChangelogStream
+  MergeStrategy -->|"variant"| MergeStrategy_UpsertStream
+  MetadataBlock -->|"event"| MetadataEvent
+  MetadataEvent -->|"variant"| AddData
+  MetadataEvent -->|"variant"| ExecuteTransform
+  MetadataEvent -->|"variant"| Seed
+  MetadataEvent -->|"variant"| SetPollingSource
+  MetadataEvent -->|"variant"| SetTransform
+  MetadataEvent -->|"variant"| SetVocab
+  MetadataEvent -->|"variant"| SetAttachments
+  MetadataEvent -->|"variant"| SetInfo
+  MetadataEvent -->|"variant"| SetLicense
+  MetadataEvent -->|"variant"| SetDataSchema
+  MetadataEvent -->|"variant"| AddPushSource
+  MetadataEvent -->|"variant"| DisablePushSource
+  MetadataEvent -->|"variant"| DisablePollingSource
+  MqttTopicSubscription -->|"qos"| MqttQos
+  PersistentVolume -->|"headers"| ResourceHeaders
+  PersistentVolume -->|"spec"| PersistentVolumeSpec
+  PersistentVolume -->|"status"| ResourceStatus
+  PersistentVolumeRef -->|"account"| AccountRef
+  PersistentVolumeSpec -->|"variant"| PersistentVolumeSpec_S3
+  PersistentVolumeSpec_S3 -->|"capacity"| VolumeCapacity
+  PersistentVolumeSpec_S3 -->|"credentials"| AwsCredentials
+  PrepStep -->|"variant"| PrepStep_Decompress
+  PrepStep -->|"variant"| PrepStep_Pipe
+  PrepStep_Decompress -->|"format"| CompressionFormat
+  Projection -->|"headers"| ResourceHeaders
+  Projection -->|"spec"| ProjectionSpec
+  Projection -->|"status"| ResourceStatus
+  ProjectionSpec -->|"inputs"| TransformInput
+  ProjectionSpec -->|"project"| Transform
+  RawQueryRequest -->|"transform"| Transform
+  RawQueryResponse -->|"variant"| RawQueryResponse_Progress
+  RawQueryResponse -->|"variant"| RawQueryResponse_Success
+  RawQueryResponse -->|"variant"| RawQueryResponse_InvalidQuery
+  RawQueryResponse -->|"variant"| RawQueryResponse_InternalError
+  Relation -->|"subject"| ResourceRef
+  Relation -->|"object"| ResourceRef
+  Relations -->|"headers"| ResourceHeaders
+  Relations -->|"spec"| RelationsSpec
+  Relations -->|"status"| ResourceStatus
+  RelationsSpec -->|"relations"| Relation
+  RelationsSpec -->|"attributes"| Attribute
+  Resource -->|"headers"| ResourceHeaders
+  Resource -->|"status"| ResourceStatus
+  ResourceConditions -->|"values"| ResourceCondition
+  ResourceHeaders -->|"account"| AccountRef
+  ResourceHeaders -->|"labels"| ResourceLabels
+  ResourceHeaders -->|"annotations"| ResourceAnnotations
+  ResourceRef -->|"account"| AccountRef
+  ResourceSelector -->|"account"| AccountRef
+  ResourceSelector -->|"labels"| LabelFilter
+  ResourceStatus -->|"phase"| ResourcePhase
+  ResourceStatus -->|"conditions"| ResourceConditions
+  SecretSet -->|"headers"| ResourceHeaders
+  SecretSet -->|"spec"| SecretSetSpec
+  SecretSet -->|"status"| ResourceStatus
+  SecretSetSpec -->|"secrets"| Secrets
+  Secrets -->|"values"| Secret
+  Seed -->|"dataset_kind"| DatasetKind
+  SetAttachments -->|"attachments"| Attachments
+  SetDataSchema -->|"schema"| DataSchema
+  SetPollingSource -->|"fetch"| FetchStep
+  SetPollingSource -->|"prepare"| PrepStep
+  SetPollingSource -->|"read"| ReadStep
+  SetPollingSource -->|"preprocess"| Transform
+  SetPollingSource -->|"merge"| MergeStrategy
+  SetTransform -->|"inputs"| TransformInput
+  SetTransform -->|"transform"| Transform
+  Source -->|"headers"| ResourceHeaders
+  Source -->|"spec"| SourceSpec
+  Source -->|"status"| ResourceStatus
+  SourceCaching -->|"variant"| SourceCaching_Forever
+  SourceSpec -->|"config"| ValueRefs
+  SourceSpec -->|"ingress"| Ingress
+  SourceSpec -->|"prepare"| PrepStep
+  SourceSpec -->|"read"| ReadStep
+  SourceSpec -->|"preprocess"| Transform
+  SourceSpec -->|"merge"| MergeStrategy
+  SourceSpec -->|"vocab"| DatasetVocabulary
+  Task -->|"headers"| ResourceHeaders
+  Task -->|"spec"| TaskSpec
+  Task -->|"status"| ResourceStatus
+  TaskSpec -->|"variant"| TaskSpec_Ingest
+  TaskSpec -->|"variant"| TaskSpec_Compaction
+  TaskSpec -->|"variant"| TaskSpec_GarbageCollection
+  TaskSpec -->|"variant"| TaskSpec_WebhookCall
+  TaskSpec_Compaction -->|"params"| CompactionParams
+  TaskSpec_Ingest -->|"source"| ResourceRef
+  TaskSpec_Ingest -->|"params"| IngestParams
+  TaskSpec_WebhookCall -->|"target"| ResourceRef
+  Transform -->|"variant"| Transform_Sql
+  Transform_Sql -->|"queries"| SqlQueryStep
+  Transform_Sql -->|"temporal_tables"| TemporalTable
+  TransformRequest -->|"vocab"| DatasetVocabulary
+  TransformRequest -->|"transform"| Transform
+  TransformRequest -->|"query_inputs"| TransformRequestInput
+  TransformRequestInput -->|"vocab"| DatasetVocabulary
+  TransformRequestInput -->|"offset_interval"| OffsetInterval
+  TransformRequestInput -->|"explicit_watermarks"| Watermark
+  TransformResponse -->|"variant"| TransformResponse_Progress
+  TransformResponse -->|"variant"| TransformResponse_Success
+  TransformResponse -->|"variant"| TransformResponse_InvalidQuery
+  TransformResponse -->|"variant"| TransformResponse_InternalError
+  TransformResponse_Success -->|"new_offset_interval"| OffsetInterval
+  ValueRef -->|"account"| AccountRef
+  ValueRefs -->|"values"| ValueRef
+  VariableSet -->|"headers"| ResourceHeaders
+  VariableSet -->|"spec"| VariableSetSpec
+  VariableSet -->|"status"| ResourceStatus
+  VariableSetSpec -->|"variables"| Variables
+  Variables -->|"values"| Variable
+  WebhookTarget -->|"headers"| ResourceHeaders
+  WebhookTarget -->|"spec"| WebhookTargetSpec
+  WebhookTarget -->|"status"| ResourceStatus
+  WebhookTargetSpec -->|"secret"| Secret
+  WebhookTargetStatus -->|"value"| WebhookTargetStatus_Value
+```

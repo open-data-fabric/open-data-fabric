@@ -20,6 +20,7 @@ SCHEMAS_UTILS_SRC = $(shell find tools/schemas/ -type f -name '*.rs')
 
 SCHEMA_MARKDOWN = build/metadata-reference.md
 SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
+SCHEMA_MERMAID_ERD = schemas-generated/mermaid/erd.md
 
 CODEGEN_CMD = RUST_BACKTRACE=1 cargo run -q -- codegen
 RUSTFMT = rustfmt --edition 2024 --style-edition 2024
@@ -48,6 +49,7 @@ $(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
 codegen:
 	$(CODEGEN_CMD) markdown > $(SCHEMA_MARKDOWN)
 	$(CODEGEN_CMD) flatbuffers-schema > $(SCHEMA_FLATBUFFERS)
+	$(CODEGEN_CMD) mermaid-erd > $(SCHEMA_MERMAID_ERD)
 	$(CODEGEN_CMD) rust-dtos > tools/schemas/output/rust-dtos.rs
 	$(CODEGEN_CMD) rust-serde > tools/schemas/output/rust-serde.rs
 	$(CODEGEN_CMD) rust-serde-flatbuffers > tools/schemas/output/rust-serde-flatbuffers.rs

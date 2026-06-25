@@ -40,6 +40,7 @@ pub struct Codegen {
 pub enum CodegenLang {
     FlatbuffersSchema,
     Markdown,
+    MermaidErd,
     RustDtos,
     RustGraphql,
     RustSerde,

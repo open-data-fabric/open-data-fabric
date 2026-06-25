@@ -43,6 +43,9 @@ fn codegen(cmd: cli::Codegen, schemas_dir: &Path) {
         cli::CodegenLang::Markdown => {
             codegen::markdown::render(model, &mut w).unwrap();
         }
+        cli::CodegenLang::MermaidErd => {
+            codegen::mermaid_erd::render(model, &mut w).unwrap();
+        }
         cli::CodegenLang::RustDtos => {
             codegen::rust_dtos::render(model, &mut w).unwrap();
         }

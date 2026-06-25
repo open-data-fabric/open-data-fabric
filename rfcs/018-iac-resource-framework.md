@@ -66,8 +66,6 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
 - [Unresolved questions](#unresolved-questions)
 - [Future possibilities](#future-possibilities)
 - [Appendix A: Example Manifests](#appendix-a-example-manifests)
-  - [`VariableSet`](#variableset)
-  - [`SecretSet`](#secretset)
 - [QQQQQQQQQQQQQQQQQQQQQQQQQQ](#qqqqqqqqqqqqqqqqqqqqqqqqqq)
 
 
@@ -592,53 +590,19 @@ status: {}
 
 # Appendix A: Example Manifests
 
-![][image5]
+Example resource manifests are provided along with this RFC in the [`/examples`](/examples) directory.
 
-Manifests in this section are not meant to be final but are here to illustrate the direction and the granularity of decompositions we want to achieve.
+We also generate an [entity-relationship diagram](/schemas-generated/mermaid/types.md) for all schemas.
 
-
-## `VariableSet`
-```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/VariableSet
-headers:
-  name: my-vars
-spec:
-  variables:
-    host: postgres
-    port: "5113"
-```
-
-
-## `SecretSet`
-A raw unencrypted secret:
-```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
-headers:
-  name: my-secrets
-spec:
-  secrets:
-    password: "postgres-staging-password"
-    api_key: "internal-api-key-123"
-```
-
-Upon loading into the system it will get encrypted and the spec will look like this:
-```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
-headers:
-  name: my-secrets
-spec:
-  secrets:
-    password:
-      value: eyJh..dN5oc
-      contentEncoding: jwe
-    api_key:
-      value: eyJh..dN5oc
-      contentEncoding: jwe
-```
 
 
 # QQQQQQQQQQQQQQQQQQQQQQQQQQ
-
+- Resource statuses
+- Renaming resources
+  - When references are resolved
+- Apply phase batching & transactionality
+- Flow compactionPolicy
+- Flow retries
 - Move ReBAC `attributes` into `spec` or `headers`?
 - Make labels / annotations / attributes full URLs?
 - DID vs ID
