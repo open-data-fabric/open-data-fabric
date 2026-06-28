@@ -30,7 +30,7 @@ const PREAMBLE: &str = indoc::indoc!(
     use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
     use crate::dtos;
     use crate::errors::ValidationError;
-    use crate::resource::{ResourceID, ResourceName, ResourceTypeRef, ResourceTypeUri};
+    use crate::resource::{ResourceID, ResourceName, TypeRef, TypeUri};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -583,6 +583,18 @@ fn render_map(
 ) -> Result<(), std::io::Error> {
     let context = typ.id.context();
     let name = typ.id.join("");
+
+    // TODO: Quick hack - replace with type parsing
+    let key_type = match typ
+        .codegen_hints
+        .get(&CodegenLanguage::Rust)
+        .and_then(|h| h.get(&CodegenHint::MapKeyFormat))
+        .map(|s| s.as_str())
+    {
+        Some("type-ref") => model::Type::TypeRef,
+        _ => model::Type::String,
+    };
+    let key_type = format_type(model, &key_type);
     let value_type = format_type(model, &typ.value_type);
 
     writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
@@ -594,7 +606,7 @@ fn render_map(
     }
     writeln!(
         w,
-        "pub entries: std::collections::BTreeMap<String, {value_type}>,"
+        "pub entries: std::collections::BTreeMap<{key_type}, {value_type}>,"
     )?;
     writeln!(w, "}}")?;
 
@@ -696,9 +708,9 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::AccountName => format!("AccountName"),
         model::Type::ResourceId => format!("ResourceID"),
         model::Type::ResourceName => format!("ResourceName"),
-        model::Type::ResourceTypeUri => format!("ResourceTypeUri"),
-        model::Type::ResourceTypeName => format!("ResourceTypeName"),
-        model::Type::ResourceTypeRef => format!("ResourceTypeRef"),
+        model::Type::TypeUri => format!("TypeUri"),
+        model::Type::TypeName => format!("TypeName"),
+        model::Type::TypeRef => format!("TypeRef"),
 
         model::Type::Flatbuffers => format!("Vec<u8>"),
         model::Type::Generic(t) => t.clone(),

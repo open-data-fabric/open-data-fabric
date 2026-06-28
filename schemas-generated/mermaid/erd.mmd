@@ -145,7 +145,6 @@ graph TD
     LabelFilter
     Resource
     ResourceAnnotations
-    ResourceCondition
     ResourceConditions
     ResourceHeaders
     ResourceLabels
@@ -154,7 +153,7 @@ graph TD
     ResourceSelector
     ResourceStatus
   end
-  class LabelFilter,Resource,ResourceAnnotations,ResourceCondition,ResourceConditions,ResourceHeaders,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
+  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHeaders,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
 
   subgraph sink["sink"]
     WebhookTarget
@@ -343,7 +342,6 @@ graph TD
   RelationsSpec -->|"attributes"| Attribute
   Resource -->|"headers"| ResourceHeaders
   Resource -->|"status"| ResourceStatus
-  ResourceConditions -->|"values"| ResourceCondition
   ResourceHeaders -->|"account"| AccountRef
   ResourceHeaders -->|"labels"| ResourceLabels
   ResourceHeaders -->|"annotations"| ResourceAnnotations

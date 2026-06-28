@@ -163,7 +163,8 @@ enum ResourcePhase: int32 {
 
 table ResourceConditionsEntry {
   key: string (key);
-  value: ResourceCondition;
+  // JSON encoded
+  value: string (json);
 }
 table ResourceConditions {
   // Key-value map
@@ -2394,26 +2395,6 @@ table Resource {
   spec: [ubyte];
   // Resource lifecycle and reconciliation inforamtion.
   status: ResourceStatus;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceCondition
-// Generic contdition that can be added by contollers to provide additional information about the state of a resource.
-//
-// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceCondition {
-  // Value of the condition.
-  value: string (json);
-  // Contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
-  reason: string;
-  // Human readable message indicating details about the transition.
-  message: string;
-  // Time when condition transitioned from one status to another.
-  last_transition_time: Timestamp;
-  // Resource generation that was last processed by the controller that added this condition.
-  observed_generation: uint64 = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

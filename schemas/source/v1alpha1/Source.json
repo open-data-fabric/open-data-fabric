@@ -12,7 +12,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "format": "resource-type-uri",
+      "format": "type-uri",
       "const": "https://opendatafabric.org/schemas/source/v1alpha1/Source",
       "description": "Identifies this resource type."
     },

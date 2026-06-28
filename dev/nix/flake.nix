@@ -14,7 +14,10 @@
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = [
+            pkgs.markdown-toc
             pkgs.mermaid-cli
+            pkgs.plantuml
+            pkgs.python3
           ];
         };
 

@@ -12,7 +12,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "format": "resource-type-uri",
+      "format": "type-uri",
       "const": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget",
       "description": "Identifies this resource type."
     },

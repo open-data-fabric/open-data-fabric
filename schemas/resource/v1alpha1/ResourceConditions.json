@@ -3,10 +3,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of URL to a schema describing this condition, e.g. `https://opendatafabric.org/schemas/resource/ConditionReady.json`.",
   "type": "object",
-  "patternProperties": {
-    ".*": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition",
-      "unevaluatedProperties": false
+  "codegen": {
+    "rust": {
+      "mapKeyFormat": "type-ref"
     }
+  },
+  "patternProperties": {
+    ".*": {}
   }
 }

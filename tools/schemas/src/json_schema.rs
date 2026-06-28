@@ -443,6 +443,11 @@ pub enum Format {
     Path,
     Regex,
 
+    // Meta-types
+    TypeName,
+    TypeUri,
+    TypeRef,
+
     // Identity and references
     AccountId,
     AccountName,
@@ -454,9 +459,6 @@ pub enum Format {
 
     ResourceId,
     ResourceName,
-    ResourceTypeName,
-    ResourceTypeUri,
-    ResourceTypeRef,
 
     // Embedding
     Flatbuffers,
@@ -480,4 +482,5 @@ pub enum CodegenHint {
     Container,
     DtoType,
     MapFormat,
+    MapKeyFormat,
 }

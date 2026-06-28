@@ -218,6 +218,11 @@ pub enum Type {
     Regex,
     Url,
 
+    // Meta-types
+    TypeName,
+    TypeUri,
+    TypeRef,
+
     // Identity & references
     AccountId,
     AccountName,
@@ -228,9 +233,6 @@ pub enum Type {
 
     ResourceId,
     ResourceName,
-    ResourceTypeName,
-    ResourceTypeUri,
-    ResourceTypeRef,
 
     // Composite
     Flatbuffers,
@@ -331,10 +333,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
         if matches!(metatype, MetaType::Manifest | MetaType::Resource) {
             if let Some(schema_prop) = schema.properties.as_ref().and_then(|p| p.get("$schema")) {
                 assert_eq!(schema_prop.r#type, Some(json_schema::Type::String));
-                assert_eq!(
-                    schema_prop.format,
-                    Some(json_schema::Format::ResourceTypeUri)
-                );
+                assert_eq!(schema_prop.format, Some(json_schema::Format::TypeUri));
                 if let Some(cid) = &schema_prop.r#const {
                     assert_eq!(id.as_str(), cid, "$schema.const must match $id: {id}");
                 }
@@ -962,15 +961,9 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
 
         (json_schema::Type::String, Some(json_schema::Format::ResourceId)) => Type::ResourceId,
         (json_schema::Type::String, Some(json_schema::Format::ResourceName)) => Type::ResourceName,
-        (json_schema::Type::String, Some(json_schema::Format::ResourceTypeUri)) => {
-            Type::ResourceTypeUri
-        }
-        (json_schema::Type::String, Some(json_schema::Format::ResourceTypeName)) => {
-            Type::ResourceTypeName
-        }
-        (json_schema::Type::String, Some(json_schema::Format::ResourceTypeRef)) => {
-            Type::ResourceTypeRef
-        }
+        (json_schema::Type::String, Some(json_schema::Format::TypeUri)) => Type::TypeUri,
+        (json_schema::Type::String, Some(json_schema::Format::TypeName)) => Type::TypeName,
+        (json_schema::Type::String, Some(json_schema::Format::TypeRef)) => Type::TypeRef,
 
         (json_schema::Type::String, Some(json_schema::Format::Flatbuffers)) => Type::Flatbuffers,
         (json_schema::Type::Object, Some(json_schema::Format::Fragment)) => {

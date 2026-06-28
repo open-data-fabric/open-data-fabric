@@ -351,13 +351,13 @@ fn as_json_type(typ: &model::Type) -> String {
         | model::Type::Path
         | model::Type::Regex
         | model::Type::Url
+        | model::Type::TypeUri
+        | model::Type::TypeName
+        | model::Type::TypeRef
         | model::Type::AccountId
         | model::Type::AccountName
         | model::Type::ResourceId
         | model::Type::ResourceName
-        | model::Type::ResourceTypeUri
-        | model::Type::ResourceTypeName
-        | model::Type::ResourceTypeRef
         | model::Type::String => format!("`string`"),
         model::Type::Generic(_) => format!("`object`"),
         model::Type::Array(t) => format!("array({})", as_json_type(&*t.item_type)),
@@ -401,9 +401,9 @@ fn as_format(typ: &model::Type) -> String {
         model::Type::AccountName => String::new(),
         model::Type::ResourceId => String::new(),
         model::Type::ResourceName => String::new(),
-        model::Type::ResourceTypeUri => String::new(),
-        model::Type::ResourceTypeName => String::new(),
-        model::Type::ResourceTypeRef => String::new(),
+        model::Type::TypeUri => String::new(),
+        model::Type::TypeName => String::new(),
+        model::Type::TypeRef => String::new(),
     }
 }
 

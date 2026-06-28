@@ -1269,7 +1269,6 @@ See also:
   - [LabelFilter](#labelfilter-schema)
   - [Resource](#resource-schema)
   - [ResourceAnnotations](#resourceannotations-schema)
-  - [ResourceCondition](#resourcecondition-schema)
   - [ResourceConditions](#resourceconditions-schema)
   - [ResourceHeaders](#resourceheaders-schema)
   - [ResourceLabels](#resourcelabels-schema)
@@ -3044,22 +3043,6 @@ Annotations is an unstructured key value map stored with a resource that may be 
 | `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
 | `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
 
-
-<a name="resourcecondition-schema"></a>
-##### ResourceCondition
-Generic contdition that can be added by contollers to provide additional information about the state of a resource.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `value` | `any` | V |  | Value of the condition. |
-| `reason` | `string` |  |  | Contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty. |
-| `message` | `string` |  |  | Human readable message indicating details about the transition. |
-| `lastTransitionTime` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when condition transitioned from one status to another. |
-| `observedGeneration` | `integer` |  | `uint64` | Resource generation that was last processed by the controller that added this condition. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceCondition.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
 
 <a name="resourceconditions-schema"></a>
 ##### ResourceConditions

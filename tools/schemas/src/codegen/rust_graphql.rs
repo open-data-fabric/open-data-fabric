@@ -921,9 +921,9 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::AccountName => format!("AccountName<'static>"),
         model::Type::ResourceId => format!("ResourceID<'static>"),
         model::Type::ResourceName => format!("ResourceName<'static>"),
-        model::Type::ResourceTypeUri => format!("ResourceTypeUri<'static>"),
-        model::Type::ResourceTypeName => format!("ResourceTypeName<'static>"),
-        model::Type::ResourceTypeRef => format!("ResourceTypeRef<'static>"),
+        model::Type::TypeUri => format!("TypeUri<'static>"),
+        model::Type::TypeName => format!("TypeName<'static>"),
+        model::Type::TypeRef => format!("TypeRef<'static>"),
     }
 }
 

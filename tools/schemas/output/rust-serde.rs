@@ -19,7 +19,7 @@ use crate::auth::{AccountID, AccountName};
 use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
 use crate::dtos;
 use crate::errors::ValidationError;
-use crate::resource::{ResourceID, ResourceName, ResourceTypeRef, ResourceTypeUri};
+use crate::resource::{ResourceID, ResourceName, TypeRef, TypeUri};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -491,7 +491,7 @@ pub mod config {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub account: Option<StructOrString<auth::AccountRef>>,
-        pub r#type: ResourceTypeRef,
+        pub r#type: TypeRef,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub id: Option<ResourceID>,
@@ -4918,7 +4918,7 @@ pub mod resource {
     #[serde(rename_all = "camelCase")]
     pub struct Resource<SpecT> {
         #[serde(rename = "$schema")]
-        pub schema: ResourceTypeUri,
+        pub schema: TypeUri,
         pub headers: resource::ResourceHeaders,
         pub spec: SpecT,
         #[serde(default)]
@@ -4976,7 +4976,7 @@ pub mod resource {
     pub struct ResourceAnnotations {
         #[serde(flatten)]
         #[serde(with = "map_value_limited_precision")]
-        pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+        pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
     impl IntoDto for ResourceAnnotations {
@@ -5001,66 +5001,12 @@ pub mod resource {
 
     implement_serde_as!(dtos::resource::ResourceAnnotations, ResourceAnnotations);
 
-    // Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition
-    #[derive(Debug, Serialize, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    #[serde(rename_all = "camelCase")]
-    pub struct ResourceCondition {
-        pub value: serde_json::Value,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub reason: Option<String>,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub message: Option<String>,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[serde(with = "datetime_rfc3339_opt")]
-        pub last_transition_time: Option<DateTime<Utc>>,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub observed_generation: Option<u64>,
-    }
-
-    impl IntoDto for ResourceCondition {
-        type Dto = dtos::resource::ResourceCondition;
-        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
-            self.try_into()
-        }
-    }
-
-    impl From<dtos::resource::ResourceCondition> for ResourceCondition {
-        fn from(v: dtos::resource::ResourceCondition) -> Self {
-            Self {
-                value: v.value,
-                reason: v.reason,
-                message: v.message,
-                last_transition_time: v.last_transition_time,
-                observed_generation: v.observed_generation,
-            }
-        }
-    }
-
-    impl TryFrom<ResourceCondition> for dtos::resource::ResourceCondition {
-        type Error = ValidationError;
-        fn try_from(v: ResourceCondition) -> Result<Self, ValidationError> {
-            Ok(Self {
-                value: v.value,
-                reason: v.reason,
-                message: v.message,
-                last_transition_time: v.last_transition_time,
-                observed_generation: v.observed_generation,
-            })
-        }
-    }
-
-    implement_serde_as!(dtos::resource::ResourceCondition, ResourceCondition);
-
     // Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceConditions
     #[derive(Debug, Serialize, Deserialize)]
     pub struct ResourceConditions {
         #[serde(flatten)]
-        pub entries: std::collections::BTreeMap<String, resource::ResourceCondition>,
+        #[serde(with = "map_value_limited_precision")]
+        pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
     impl IntoDto for ResourceConditions {
@@ -5072,22 +5018,14 @@ pub mod resource {
 
     impl From<dtos::resource::ResourceConditions> for ResourceConditions {
         fn from(v: dtos::resource::ResourceConditions) -> Self {
-            Self {
-                entries: v.entries.into_iter().map(|(k, v)| (k, v.into())).collect(),
-            }
+            Self { entries: v.entries }
         }
     }
 
     impl TryFrom<ResourceConditions> for dtos::resource::ResourceConditions {
         type Error = ValidationError;
         fn try_from(v: ResourceConditions) -> Result<Self, Self::Error> {
-            Ok(Self {
-                entries: v
-                    .entries
-                    .into_iter()
-                    .map(|(k, v)| -> Result<_, ValidationError> { Ok((k, v.try_into()?)) })
-                    .collect::<Result<_, _>>()?,
-            })
+            Ok(Self { entries: v.entries })
         }
     }
 
@@ -5184,7 +5122,7 @@ pub mod resource {
     pub struct ResourceLabels {
         #[serde(flatten)]
         #[serde(with = "map_value_limited_precision")]
-        pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+        pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
     impl IntoDto for ResourceLabels {
@@ -5263,7 +5201,7 @@ pub mod resource {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub account: Option<StructOrString<auth::AccountRef>>,
-        pub r#type: ResourceTypeRef,
+        pub r#type: TypeRef,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub id: Option<ResourceID>,
@@ -5301,7 +5239,7 @@ pub mod resource {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub account: Option<StructOrString<auth::AccountRef>>,
-        pub r#type: ResourceTypeRef,
+        pub r#type: TypeRef,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub id: Option<ResourceID>,

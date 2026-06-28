@@ -26,12 +26,8 @@ const PREAMBLE: &str = indoc::indoc!(
     use serde::{Deserialize, Serialize};
     use setty::types::{ByteSize, DurationString};
 
-    use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
-    use crate::resource::{
-        ResourceID,
-        ResourceName,
-        ResourceTypeUri,
-    };
+    use crate::dataset::*;
+    use crate::resource::*;
     "#
 );
 
@@ -177,12 +173,10 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
             let (accessor_typ, static_typ, value) = match &field.typ {
                 model::Type::String => ("&'static str", "&str", format!("{constant}")),
-                model::Type::ResourceTypeUri => (
-                    "&'static ResourceTypeUri",
-                    "std::sync::LazyLock<ResourceTypeUri>",
-                    format!(
-                        "std::sync::LazyLock::new(|| ResourceTypeUri::new_unchecked({constant}))"
-                    ),
+                model::Type::TypeUri => (
+                    "&'static TypeUri",
+                    "std::sync::LazyLock<TypeUri>",
+                    format!("std::sync::LazyLock::new(|| TypeUri::new_unchecked({constant}))"),
                 ),
                 typ => {
                     unimplemented!("Const value formatting for {typ:?} types is not implemented")
@@ -336,12 +330,24 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    // TODO: Quick hack - replace with `parse_type_scalar`
+    let key_type = match typ
+        .codegen_hints
+        .get(&CodegenLanguage::Rust)
+        .and_then(|h| h.get(&CodegenHint::MapKeyFormat))
+        .map(|s| s.as_str())
+    {
+        Some("type-ref") => model::Type::TypeRef,
+        _ => model::Type::String,
+    };
+    let key_type = format_type(&key_type);
     let value_type = format_type(&typ.value_type);
+
     writeln!(w, "#[derive(Clone, PartialEq, Eq, Debug)]")?;
     writeln!(w, "pub struct {} {{", typ.id.join(""))?;
     writeln!(
         w,
-        "pub entries: std::collections::BTreeMap<String, {value_type}>,"
+        "pub entries: std::collections::BTreeMap<{key_type}, {value_type}>,"
     )?;
     writeln!(w, "}}")?;
     Ok(())
@@ -379,9 +385,9 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::DatasetId => format!("DatasetID"),
         model::Type::ResourceId => format!("ResourceID"),
         model::Type::ResourceName => format!("ResourceName"),
-        model::Type::ResourceTypeUri => format!("ResourceTypeUri"),
-        model::Type::ResourceTypeName => format!("ResourceTypeName"),
-        model::Type::ResourceTypeRef => format!("ResourceTypeRef"),
+        model::Type::TypeUri => format!("TypeUri"),
+        model::Type::TypeName => format!("TypeName"),
+        model::Type::TypeRef => format!("TypeRef"),
 
         model::Type::Flatbuffers => format!("Vec<u8>"),
         model::Type::Generic(name) => name.clone(),

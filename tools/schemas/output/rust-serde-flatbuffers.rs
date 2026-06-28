@@ -1549,7 +1549,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::event::EventFilter {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = fb.create_string(&serde_json::to_string(value).unwrap());
                 let mut entry_builder = fb::EventFilterEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -1572,7 +1572,7 @@ impl<'fb> FlatbuffersDeserializable<fb::EventFilter<'fb>> for odf::event::EventF
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = serde_json::from_str(entry.value().unwrap()).unwrap();
                     (key, value)
                 })
@@ -2815,7 +2815,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::resource::LabelFilter {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = fb.create_string(&serde_json::to_string(value).unwrap());
                 let mut entry_builder = fb::LabelFilterEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -2838,7 +2838,7 @@ impl<'fb> FlatbuffersDeserializable<fb::LabelFilter<'fb>> for odf::resource::Lab
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = serde_json::from_str(entry.value().unwrap()).unwrap();
                     (key, value)
                 })
@@ -4284,7 +4284,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::resource::ResourceAnnotations {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = fb.create_string(&serde_json::to_string(value).unwrap());
                 let mut entry_builder = fb::ResourceAnnotationsEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -4309,52 +4309,11 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceAnnotations<'fb>>
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = serde_json::from_str(entry.value().unwrap()).unwrap();
                     (key, value)
                 })
                 .collect(),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceCondition
-// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-impl<'fb> FlatbuffersSerializable<'fb> for odf::resource::ResourceCondition {
-    type OffsetT = WIPOffset<fb::ResourceCondition<'fb>>;
-
-    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let value_offset = { fb.create_string(&serde_json::to_string(&self.value).unwrap()) };
-        let reason_offset = self.reason.as_ref().map(|v| fb.create_string(&v));
-        let message_offset = self.message.as_ref().map(|v| fb.create_string(&v));
-        let mut builder = fb::ResourceConditionBuilder::new(fb);
-        builder.add_value(value_offset);
-        reason_offset.map(|off| builder.add_reason(off));
-        message_offset.map(|off| builder.add_message(off));
-        self.last_transition_time
-            .map(|v| builder.add_last_transition_time(&datetime_to_fb(&v)));
-        self.observed_generation
-            .map(|v| builder.add_observed_generation(v));
-        builder.finish()
-    }
-}
-
-impl<'fb> FlatbuffersDeserializable<fb::ResourceCondition<'fb>>
-    for odf::resource::ResourceCondition
-{
-    fn deserialize(proxy: fb::ResourceCondition<'fb>) -> Self {
-        odf::resource::ResourceCondition {
-            value: proxy
-                .value()
-                .map(|v| serde_json::from_str(v).unwrap())
-                .unwrap(),
-            reason: proxy.reason().map(|v| v.to_owned()),
-            message: proxy.message().map(|v| v.to_owned()),
-            last_transition_time: proxy.last_transition_time().map(|v| fb_to_datetime(v)),
-            observed_generation: proxy.observed_generation().map(|v| v),
         }
     }
 }
@@ -4372,8 +4331,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::resource::ResourceConditions {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
-                let value_offset = value.serialize(fb);
+                let key_offset = fb.create_string(key.as_str());
+                let value_offset = fb.create_string(&serde_json::to_string(value).unwrap());
                 let mut entry_builder = fb::ResourceConditionsEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
                 entry_builder.add_value(value_offset);
@@ -4397,9 +4356,8 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceConditions<'fb>>
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
-                    let value =
-                        odf::resource::ResourceCondition::deserialize(entry.value().unwrap());
+                    let key = entry.key().parse().unwrap();
+                    let value = serde_json::from_str(entry.value().unwrap()).unwrap();
                     (key, value)
                 })
                 .collect(),
@@ -4478,7 +4436,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::resource::ResourceLabels {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = fb.create_string(&serde_json::to_string(value).unwrap());
                 let mut entry_builder = fb::ResourceLabelsEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -4501,7 +4459,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceLabels<'fb>> for odf::resource::
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = serde_json::from_str(entry.value().unwrap()).unwrap();
                     (key, value)
                 })
@@ -4639,7 +4597,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::config::Secrets {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = value.serialize(fb);
                 let mut entry_builder = fb::SecretsEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -4662,7 +4620,7 @@ impl<'fb> FlatbuffersDeserializable<fb::Secrets<'fb>> for odf::config::Secrets {
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = odf::config::Secret::deserialize(entry.value().unwrap());
                     (key, value)
                 })
@@ -5894,7 +5852,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::config::ValueRefs {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = value.serialize(fb);
                 let mut entry_builder = fb::ValueRefsEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -5917,7 +5875,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ValueRefs<'fb>> for odf::config::ValueRe
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = odf::config::ValueRef::deserialize(entry.value().unwrap());
                     (key, value)
                 })
@@ -5990,7 +5948,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::config::Variables {
             .entries
             .iter()
             .map(|(key, value)| {
-                let key_offset = fb.create_string(key);
+                let key_offset = fb.create_string(key.as_str());
                 let value_offset = value.serialize(fb);
                 let mut entry_builder = fb::VariablesEntryBuilder::new(fb);
                 entry_builder.add_key(key_offset);
@@ -6013,7 +5971,7 @@ impl<'fb> FlatbuffersDeserializable<fb::Variables<'fb>> for odf::config::Variabl
                 .unwrap_or_default()
                 .iter()
                 .map(|entry| {
-                    let key = entry.key().to_string();
+                    let key = entry.key().parse().unwrap();
                     let value = odf::config::Variable::deserialize(entry.value().unwrap());
                     (key, value)
                 })

@@ -1,11 +1,10 @@
 # RFC-018: Infrastructure-as-Code Resource Framework <!-- omit in toc -->
 
-[![Issue](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/108?label=Issue)](https://github.com/kamu-data/open-data-fabric/issues/108)
-[![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/116?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/116)
+[![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/126?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/126)
 
 **Start Date**: 2025-06-14
 
-**Published Date**: 2026-06-20
+**Published Date**: 2026-06-28
 
 **Authors**:
 - [Sergiy Zaychenko](mailto:sergiy.zaychenko@kamu.dev), [Kamu](https://kamu.dev)
@@ -16,23 +15,9 @@
 - [X] Backwards-compatible
 - [ ] Forwards-compatible
 
-<!--
-Backwards-compatible means:
-- whether software updated to this RFC will be able to operate on old data
-- in case of protocol updates - whether older clients will be able to communicate with newer servers
-
-Forwards-compatible means:
-- whether data written by new software still can be used by older software
-- if newer clients will be able to communicate with older servers
--->
-
 
 ## Summary <!-- omit in toc -->
-<!--
-One paragraph explanation of the feature.
--->
-
-This RFC proposes a new Open Data Fabric manifests format and a set of resource types aiming to re-center ODF around the declarative approach for defining the desired state of the system, achieve better functional decomposition of the system, and provide better framework for extensibility.
+This RFC proposes a new Open Data Fabric manifest format and a set of resource types aiming to re-center ODF around the declarative approach for defining the desired state of the system, achieve better functional decomposition of the system, and provide a better framework for extensibility.
 
 ## Table of Contents <!-- omit in toc -->
 
@@ -45,42 +30,42 @@ This RFC proposes a new Open Data Fabric manifests format and a set of resource 
     - [Versioning](#versioning)
     - [Multi-tenancy](#multi-tenancy)
     - [Identity](#identity)
+      - [IDs vs. DIDs](#ids-vs-dids)
     - [Labels \& Annotations](#labels--annotations)
     - [References](#references)
+    - [Typed References](#typed-references)
+    - [Reference resolution](#reference-resolution)
     - [Selectors](#selectors)
     - [Ownership](#ownership)
     - [Generations](#generations)
     - [Status](#status)
+  - [Resource Application](#resource-application)
   - [APIs](#apis)
     - [Current state of ODF APIs](#current-state-of-odf-apis)
-    - [Kubernetes API Overview](#kubernetes-api-overview)
     - [REST API strategy](#rest-api-strategy)
     - [GraphQL strategy](#graphql-strategy)
 - [Compatibility](#compatibility)
-- [Drawbacks](#drawbacks)
 - [Prior art](#prior-art)
   - [Kubernetes Design Notes](#kubernetes-design-notes)
+    - [Kubernetes API Overview](#kubernetes-api-overview)
 - [Rationale and alternatives](#rationale-and-alternatives)
   - [ODF objects as Kubernetes CRDs](#odf-objects-as-kubernetes-crds)
-  - [Terraform modules for Kamu API](#terraform-modules-for-kamu-api)
+  - [Terraform modules for ODF API](#terraform-modules-for-odf-api)
 - [Unresolved questions](#unresolved-questions)
 - [Future possibilities](#future-possibilities)
+  - [JSON-LD](#json-ld)
+  - [Extensibility of union types](#extensibility-of-union-types)
 - [Appendix A: Example Manifests](#appendix-a-example-manifests)
-- [QQQQQQQQQQQQQQQQQQQQQQQQQQ](#qqqqqqqqqqqqqqqqqqqqqqqqqq)
 
 
 # Motivation
-<!--
-Why are we doing this? What use cases does it support? What is the expected outcome?
--->
-
 1. 
    Open Data Fabric spec started and revolved around the single `DatasetSnapshot` manifest that defines the desired state of dataset metadata. We have used `MetadataEvent` types in the snapshot type to define quite complex features like polling data ingestion and push sources.
    
    With gained experience, we started to realize that some of these features don’t belong in dataset metadata as they not only don’t contribute to dataset provenance or validity, but may **reveal sensitive information about publisher’s infrastructure** that must remain private. This RFC proposes to move some of this information out of the dataset metadata chain to be kept private and at the same time **make core ODF format spec more lean** and easier to adopt.
 
 2. 
-   Reference implmenetations like Kamu have been adding a lot of new features that are strongly related to reusable data pipelines but clearly don’t belong in the dataset metadata:
+   Reference implementations like Kamu have been adding a lot of new features that are strongly related to reusable data pipelines but clearly don’t belong in the dataset metadata:
 
    * Flow schedules and configuration  
    * Dataset variables and secrets  
@@ -101,7 +86,7 @@ We are embracing **Infrastructure-as-Code** philosophy:
 * Configuration will describe "desired state" of the system
 * Reconciliation mechanism will be responsible for matching actual state with the desired state
 
-We introduce a **unified model of resource, identity, references, ownership**. We want to provide similar API experience whether you are configuring datasets, flows, variables, or ReBAC relations. We want representation work similarly across different flavors of APIs (REST / GQL) to reduce maintenance burden - adding new resource type should not require extending the API surface.
+We introduce a **unified model of resource, identity, references, ownership**. We want to provide similar API experience whether you are configuring datasets, flows, variables, or ReBAC relations. We want representation to work similarly across different flavors of APIs (REST / GQL) to reduce maintenance burden - adding a new resource type should not require extending the API surface.
 
 
 # Terminology
@@ -109,7 +94,7 @@ We will stick to the following terminology:
 
 * **Resource** - is a managed back-end entity that has an identity and consumes or allocates some compute or storage resources
 * **Manifest** - is a declarative configuration (e.g. a YAML file) that describes the desired resource state.  
-* **Controller** - a process that keeps track of certain manifests types and reconciles them with the state of objects under its control. The purpose of controllers is to constantly move the current resource state towards the desired state described by manifests.
+* **Controller** - a process that keeps track of certain manifest types and reconciles them with the state of objects under its control. The purpose of controllers is to constantly move the current resource state towards the desired state described by manifests.
 
 Examples:
 
@@ -118,7 +103,7 @@ Examples:
 * `Ingress` is a manifest application of which will create a high-level `Ingress` resource. The controller of `Ingress` will then generate and apply lower-level manifests for `ApiEndpoint`, a `Buffer` (e.g. Kafka topic), and a `Source`, which will in turn result in provisioning of corresponding resources.
 
 # Proposal
-The proposal will often reference Kubernetes as one of the best example of declarative IaC approach. We will draw many parallels with its design and build on its learnings.
+The proposal will often reference Kubernetes as one of the best examples of the declarative IaC approach. We will draw many parallels with its design and build on its learnings.
 
 
 ## Resource Manifests
@@ -163,7 +148,7 @@ The `$schema` URL is formatted as `{base-url}/{context}/{version}/{Name}` and ca
 
 Many IDEs recognize `$schema` field and automatically fetch the associated JSON schema to provide validation and auto-completion.
 
-Resource schemas will be registered within ODF node and, similarly to Kubernetes CRDs, assigned a **short resource type name** (e.g. `SecretSet`) that can be used instead of the schema.
+Resource schemas will be registered within ODF node and, similarly to Kubernetes CRDs, assigned a **short type name** (e.g. `SecretSet`) that can be used instead of the schema. This concept is very similar to JSON-LD expansion.
 
 
 ### Versioning
@@ -186,7 +171,7 @@ headers:
 spec: {}
 ```
 
-Unlike Kubernetes that uses RBAC and `namespace`-based isolation - ODF is based on **ReBAC account-centric model** that allows complex ownership and access control hierachies, e.g. teams, organizations, flexible permissions for accounts outside of organizations.
+Unlike Kubernetes that uses RBAC and `namespace`-based isolation - ODF is based on **ReBAC account-centric model** that allows complex ownership and access control hierarchies, e.g. teams, organizations, flexible permissions for accounts outside of organizations.
 
 
 ### Identity
@@ -199,11 +184,11 @@ headers:
 spec: {}
 ```
 
-Resource **names are immutable** - changing the name requires deleting and re-creating the resource.
+Note that resource **names are mutable** (unlike in Kubernetes).
 
-The tuple `(Account, ResourceType, ResourceName)` uniquely identifies the resource within an ODF node (see also [references](#references)). There may be multiple resources of different type under one account with the same name.
+At one point in time the tuple `(Account, ResourceType, ResourceName)` uniquely identifies a resource within an ODF node (see also [references](#references)). There may be multiple resources of different types under one account with the same name.
 
-The ODF node will additionally assign a unique `id` (UUID v4) to resources upon creation:
+Upon resource creation ODF node will additionally assign resource a unique `id` (UUID v4):
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
@@ -214,11 +199,27 @@ spec: {}
 status: {}
 ```
 
-Including `id` in the manifest can be used to ensure the manifest applies to exact needed resource, but sacrifices portability of the manifest across ODF nodes.
+The `id` is a stable identifier of a resource **within one node**.
+
+Including `id` in the manifest can be used to ensure the manifest applies to the exact needed resource, but sacrifices portability of the manifest across ODF nodes.
+
+When including both `id` and `name` the identity matching will be performed by `id` while the `name` will be synchronized with the manifest, thus allowing you to **rename** resources.
+
+
+#### IDs vs. DIDs
+As resources describe the **desired state** of the system - resource instances are separate from objects that are created to fulfill that state. Thus e.g. a `Dataset` resource is not the same thing as an ODF dataset stored in some S3 bucket. `Dataset` resource can be used to create or configure an ODF dataset, but they are separate objects.
+
+This is why resources like `Dataset` or `Account` have both:
+- `id` (UUIDv4) that identifies the resource within a node
+- and a `did` (W3C DID) that identifies an ODF dataset or a person on a global network
+
+When one ODF node populates an ODF dataset with `did:odf:xxyy` and another node replicates this dataset - they will have two `Dataset` resources with the same `did` but different `id`.
+
+Since DIDs are unique, reference types support **identifying target resources by DIDs of the corresponding objects**, purely for convenience.
 
 
 ### Labels & Annotations
-A resource can specify custom labels and annotations. Both are maps of string keys to any JSON values, but only labels get indexed and can be used for querying:
+Resources can specify custom labels and annotations. Both are maps of string keys to any JSON values, but only labels get indexed and can be used for querying:
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
@@ -232,32 +233,39 @@ headers:
 spec: {}
 ```
 
-Labels and annotations are **mutable**.
+Labels and annotations are fully **mutable**.
 
-Labels and annotations with URL-like names will be automatically validated against the respective schemas to exclude typos:
+Label and annotation keys can be either short type names or full URIs:
 
+```yaml
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/Dataset
 headers:
   name: my-dataset
   labels:
-    https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root  # Anything but Root or Derivative will fail valiation
+    # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind
+    # Anything but Root or Derivative will fail valiation
+    datasetKind: Root
+    did: did:odf:aa..bb
+  annotations:
+    # Expanded form
+    https://opendatafabric.org/schemas/labels/v1/Repo: https://github.com/open-data-fabric/spec
 spec:
   kind: Root
   metadata: []
 ```
 
-Controllers may contribute their own labels to simplify common filtering scenarios. For example a `Dataset` resource above will automatically get the `https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root` label without you needing to specify it manually because it's very common to filter datasets by `kind`.
+Thus every label and annotation has a schema and can be type-checked.
+
+Controllers may contribute their own labels to simplify common filtering scenarios. For example a `Dataset` resource above will automatically get the `datasetKind: Root` label without you needing to specify it manually because it's very common to filter datasets by `datasetKind`.
 
 
 ### References
-Resource manifests can link to other resources using **references**, forming a DAG. Cyclical references are not allowed - this can enforced by implementation via linters.
-
-Unlike Kubernetes that doesn't specify a common reference format - in ODF all refereces and selectors will have a common format and thus can be easily picked up by linters and other automation uniformly, without knowing the specifics of individual resource schemas.
+Resource manifests can link to other resources using **references**, forming a DAG.
 
 Resources can be referenced by:
 - ID
-- Type and name (optionally including the ower account name)
+- Type and name (optionally including the owner account name)
 
 Example:
 
@@ -267,13 +275,56 @@ headers:
   name: my-dataset
 spec:
   metadata: []
-  # Short form reference equivalent to `{ type: PersistentVolume, account: { name: my-org }, name: my-s3-bucket }
   volume: PersistentVolume:my-org/my-s3-bucket
 ```
+
+Short form `volume` reference above is equivalent to:
+```yaml
+volume:
+  type: PersistentVolume
+  name: my-s3-bucket
+  account:
+    name: my-org
+```
+
+Cyclical references are not allowed - this can be enforced by implementations via linters.
+
+Unlike Kubernetes that doesn't specify a common reference format - in ODF all references and selectors will have a common schema and thus can be easily picked up by linters and other automation uniformly, without knowing the specifics of individual resource schemas.
+
+
+### Typed References
+Many contexts may choose to provide extended versions of resource references that:
+- Restrict target resources to a specific type (e.g. `DatasetRef`, `VolumeRef`)
+- Provide additional features (e.g. ability to reference a sub-path of a secret via `Secret:postgres#password`)
+- Allow referencing by DIDs (e.g. `account:did:pkh:eip155:1:0xaa..`)
+
+### Reference resolution
+When setting up complex resource graphs like ingestion pipelines it's very convenient to reference all components by names, especially when target resources are not created yet and were not assigned an `id`.
+
+When operating complex graphs long-term, however, as resources get renamed and deleted referencing by name may not only become a nuisance, but cause security risks if old names get reused.
+
+This is why ODF nodes will resolve all references to stable IDs upon first apply, while account and name information will remain for annotational purposes:
+
+```yaml
+volume:
+  id: 6767a4ee-d74d-436e-84f9-709407869a26  # Stable reference
+  type: PersistentVolume
+  name: my-s3-bucket  # Remains only for human readability
+  account:
+    name: my-org
+```
+
+**Dangling references are allowed** - it's up to implementations to warn users about such situations, but:
+- It should be possible to create e.g. a `Source` that references a non-existing `Secret` and have it created later
+- It should be possible to delete a resource referenced by others
 
 
 ### Selectors
 Multiple resources can be referenced at once with **selectors**.
+
+Resources can be referenced in bulk by shared properties like:
+- Name patterns
+- Label filters
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
@@ -284,7 +335,7 @@ spec:
     type: Dataset
     name: org.opendatafabric.%
     labels:
-      https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root
+      datasetKind: Root
       env: prod
   triggers:
     - kind: Cron
@@ -295,9 +346,11 @@ spec:
       maxSliceRecords: 10_000
 ```
 
+Note that, unlike references, selectors are not resolved to IDs, so if some resource stops matching the pattern after a rename or a change of label - it will not be tracked by the selector.
+
 
 ### Ownership
-When an object is created by another higher-level object it can write the association into header as `ownerReferece`. This creation provenance trail can be used for automatic cascading deletion and garbage collection.
+When an object is created by another higher-level object it can write the association into the header as `ownerReference`. This creation provenance trail can be used for automatic cascading deletion and garbage collection.
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/source/v1alpha1/Buffer
@@ -329,32 +382,65 @@ status: {}
 
 In the `status` section `observedGeneration` can be used to see what generation the controller had a chance to process.
 
-Note that `generation` does not increment on status changes as it intended to signify changes to the desired state.
+Note that `generation` does not increment on status changes as it is intended to signify changes to the desired state.
 
 
 ### Status
 The `status` section of the resource manifest never appears in user-defined manifests. It is maintained by the ODF nodes and writeable only by resource controllers. It is used to provide detailed information about the reconciliation status of the resource.
 
-The main controller of a resource populates the `phase` and associated top-level fields during reconciliation attempts, while the `conditions` field provides a generic mechanism to attach additional information like error codes and messages. The `conditions` can be contributed by multiple controllers
+The main controller of a resource populates the `phase` and associated top-level fields during reconciliation attempts, while the `conditions` field provides a generic mechanism to attach additional information like error codes and messages. The `conditions` can be contributed by multiple controllers.
 
+Example of `Source` resource status where reconciliation attempt for `generation: 2` failed because it links to non-existing secret:
 ```yaml
-$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
+$schema: https://opendatafabric.org/schemas/source/v1/Source
 headers:
-  name: my-secrets
+  name: api-polling-source
+  generation: 2
 spec: {}
 status:
-  phase: Failed
-  observedGeneration: 4
-  reconciledAt: 2026-01-01T00:00:00Z
+  phase: Failed 
+  observedGeneration: 2
+  updatedAt: 2026-01-02T00:00:00Z
   conditions:
-    https://opendatafabric.org/schemas/config/v1/ConditionReady:
-      value: false
-      reason: decryption-key-not-found
-      message: "Decryption key X does not exist"
-      lastTransitionTime: 2026-01-01T00:00:00Z
-      observedGeneration: 4
+    https://opendatafabric.org/schemas/source/v1/SourceReconciliationError:
+      code: unresolved-reference
+      message: "Secret `new-api-key` not found"
+      updatedAt: 2026-01-02T00:00:00Z
+      observedGeneration: 2
 ```
 
+The `phase` field state machine:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Newly created
+    Pending --> Reconciling: Main controller detects<br/>(observedGen < gen)
+    Reconciling --> Ready: Reconciled successfully
+    Reconciling --> Failed: Reconciliation error
+    Ready --> Pending: Spec or headers changed<br/>(gen bump)
+    Failed --> Pending: Spec or headers changed<br/>(gen bump)
+    Ready --> [*]: Delete
+    Failed --> [*]: Delete
+    Pending --> [*]: Delete
+```
+
+The `conditions` are keyed by schema IDs to disambiguate, avoid name collisions, and provide schema checking.
+
+
+## Resource Application
+When applying manifests the following steps take place:
+1. Load each manifest in apply batch and validate against its schema
+2. Lookup if target resources already exist (by `id` or `name`)
+3. Assign `id`s to resources that do not yet exist
+4. Resolve all resource references to `id`s of existing resources or those about to be created
+5. Reorder resources in depth-first dependency order
+6. Pass every resource into `pre-apply` step of its corresponding main controller to:
+   1. Perform additional validation
+   2. Contribute additional labels (e.g. `datasetKind`)
+   3. Re-write parts of the spec (e.g. to encrypt raw secrets into `jwe` before the spec is stored)
+7. Resource `generation` is incremented
+8. Resource specs are saved into the event store
+9. Reconciliation process is initiated asynchronously
 
 ## APIs
 
@@ -369,7 +455,7 @@ Current API of the Node evolved as several groups of functionality:
   - GraphQL
   - FlightSQL
 
-![][image2]
+![](/rfcs/img/018/apis-before.png)
 
 Our REST API is currently missing the functionality for listing datasets, inspecting metadata, and manipulating other objects like accounts, flows, variables etc - this role is only filled by GraphQL.
 
@@ -379,68 +465,41 @@ As we evolve our APIs we would like:
 - Minimize the burden of maintaining two APIs (reuse object schemas as much as possible)  
 - Establish a good versioning strategy
 
-### Kubernetes API Overview
-
-Kubernetes provides a unified API that is very extensible and provides a uniform way to work with all object resources.
-
-![][image3]
-
-Basic Kubernetes API scheme is:
-
-* `/apis/<group>/<version>/<kind>/<name>`  
-  * `/apis/apps/v1/deployments`  
-  * `/apis/apps/v1/deployments/my-deployment`  
-* `/apis/<group>/<version>/namespaces/<namespace>/<kind>/<name>`  
-  * `/apis/apps/v1/namespaces/my-namespace/deployments/my-deployment`
-
-Benefits of Kubernetes REST API:
-
-* Proven, mature model  
-* API-based versioning  
-* API groups allowing different subsystems to evolve independently
-
-Problems with Kubernetes REST API:
-
-* Namespace is the only unit of multi-tenancy  
-  * In Kamu we aim for more flexible multi-tenancy model based on accounts  
-* Objects are addressed by names \- it’s not possible to use `uid`  
-  * The names in k8s are immutable, but in Kamu they can not only be changed within a node, but also be different across nodes
-
 
 ### REST API strategy
-The core idea is to introduce another core REST API protocol group: **Object protocol**.
+We will introduce another core REST API protocol group: **Resource protocol**.
 
-* Object protocol will define how to list, create, update, delete, and get the state of various objects in an ODF system  
-* It will define the top-level **object addressing scheme** and serve as a **nesting point** for other protocols like simple/smart transfer and data querying
+![](/rfcs/img/018/apis-after.png)
 
-![][image4]
+Resource protocol will define:
+* How to list, create, update, delete, and get the state of various resources in an ODF system  
+* Top-level **resource addressing scheme** and serve as a **nesting point** for other protocols like simple/smart transfer and data querying
 
-Proposed object protocol endpoint scheme:
-
-* Listing: `/<group>/<version>/<kind-plural>`  
-  * `/odf/v1/datasets`  
-  * `/rebac/v1/relations`  
-* By object ref: `/<group>/<version>/<kind-plural>/<object-ref>`  
-  * `/odf/v1/datasets/did:odf:123..321`  
-  * `/odf/v1/datasets/my-dataset` (searches current account only)  
-  * `/flow/v1/flows/1234-123-12`  
-* By account and object ref: `/<group>/<version>/accounts/<account-ref>`  
-  * `/odf/v1/accounts/sergiimk/datasets/my-dataset`  
-  * `/odf/v1/accounts/did:key:321..321/datasets/did:odf:123..123`  
+Proposed protocol endpoint scheme:
+* The account acted upon by the auth subject will be reflected in `account` query argument:
+  * no argument - same as `?account=`
+  * `?account=` - use account from the auth token
+  * `?account=opendatafabric.org` - specifies account by name
+  * `?account=did:key:...` - specifies account by DID
+* Listing: `/<context>/<version>/<type>`  
+  * `/dataset/v1/dataset`  
+  * `/auth/v1/relation`  
+* By object ref: `/<context>/<version>/<type>/<id-did-name>`  
+  * `/config/v1/secret/c27331ce-ce88-4ff9-8c5a-4ce8107cc03f`  
+  * `/dataset/v1/dataset/did:odf:123..321`
+  * `/dataset/v1/dataset/my-dataset` (searches current account only)  
 * Other HTTP-based protocols: `/<protocol>/...`  
   * `/graphql`
 
-Kubernetes compatibility can be achieved by:
-
-* Adding `/apis` prefix  
-* Replacing `accounts` as `namespaces` \- i.e. in Kamu it’s as if every account has its own namespace and shared namespaces can be created through organization accounts  
-* Projects like [kcp.io](http://kcp.io) that explore adding ReBAC support to K8s may in future allow us to completely blur the line between Kamu and K8s models
-
 
 ### GraphQL strategy
-We already generate GraphQL types for all ODF manifests. We will continue and expand on this strategy moving forward. Manifest schemas will be defined in one place - the ODF spec and code generation will be used for REST and GraphQL representations.
+Initially GQL will cover only generic resource operations (apply, rename, delete etc.) while representing the resources as plain JSON scalars.
 
-To make use of the graph nature of the GraphQL protocol we will introduce a special treatment for cross-object references where, for example a manifest like this one:
+This approach avoids having a dynamic GQL schema for types that will be registered in ODF node in runtime.
+
+In the future we will consider the benefits of representing ODF resource manifests as fully-featured types and reference graph navigation.
+
+For example a manifest like this one:
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
@@ -452,7 +511,7 @@ spec:
   volume: PersistentVolume:sergiimk/my-s3-bucket
 ```
 
-Will allow navigation of reference as:
+Could allow navigation of references as:
 
 ```gql
 datasets {
@@ -473,33 +532,10 @@ datasets {
 
 
 # Compatibility
-<!--
-Details on compatibility of these changes.
--->
-
-
-# Drawbacks
-<!--
-Why should we *not* do this?
--->
-
-- Using `$schema` URL for type identification is non-standard in YAML — editors require either explicit schema associations in workspace settings or per-file `# yaml-language-server: $schema=...` comments to enable validation and autocomplete.
+Proposed changes can be introduced in implementations in parallel with existing mechanics, gradually adopting `Dataset` and `Source` resources as replacements for `DatasetSnapshot` and in-metadata polling and push sources.
 
 
 # Prior art
-<!--
-Discuss prior art, both the good and the bad, in relation to this proposal.
-A few examples of what this can include are:
-
-- For core features: Does this feature exist in other technologies and what experience have their community had?
-- For community proposals: Is this done by some other community and what were their experiences with it?
-- For other teams: What lessons can we learn from what other communities have done here?
-- Papers: Are there any published papers or great posts that discuss this? If you have some relevant papers to refer to, this can serve as a more detailed theoretical background.
-
-This section is intended to encourage you as an author to think about the lessons from other projects, provide readers of your RFC with a fuller picture.
-If there is no prior art, that is fine - your ideas are interesting to us whether they are brand new or if it is an adaptation from other technologies.
--->
-
 
 ## Kubernetes Design Notes
 * [Generated Object API Reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#api-overview)  
@@ -512,28 +548,60 @@ If there is no prior art, that is fine - your ideas are interesting to us whethe
 * [https://github.com/Arnavion/k8s-openapi](https://github.com/Arnavion/k8s-openapi)  
 * [Kubernetes API Groups](https://github.com/kubernetes/design-proposals-archive/blob/main/api-machinery/api-group.md) (api-based versioning instead of resource-based)
 
+### Kubernetes API Overview
+
+Kubernetes provides a unified API that is very extensible and provides a uniform way to work with all object resources.
+
+![](/rfcs/img/018/k8s-apis.png)
+
+Basic Kubernetes API scheme is:
+
+* `/apis/<group>/<version>/<kind>/<name>`  
+  * `/apis/apps/v1/deployments`  
+  * `/apis/apps/v1/deployments/my-deployment`  
+* `/apis/<group>/<version>/namespaces/<namespace>/<kind>/<name>`  
+  * `/apis/apps/v1/namespaces/my-namespace/deployments/my-deployment`
+
+Benefits of Kubernetes REST API:
+
+* Proven, mature model  
+* API-based versioning  
+* API groups allowing different subsystems to evolve independently
+
+Problems with Kubernetes REST API:
+
+* Namespace is the only unit of multi-tenancy  
+  * In ODF we aim for more flexible multi-tenancy model based on accounts 
+* Objects are addressed by names \- it’s not possible to use `uid`  
+  * The names in k8s are immutable, but in ODF they can not only be changed within a node, but also be different across nodes
+
 
 # Rationale and alternatives
-<!--
-- Why is this design the best in the space of possible designs?
-- What other designs have been considered and what is the rationale for not choosing them?
-- What is the impact of not doing this?
--->
 
 ## ODF objects as Kubernetes CRDs
+If we were to piggy-back on Kubernetes:
 * Pros:
-  * Mature system with carefully thought out APIs  
+  * Mature system
   * Reusing tools and integrations  
 * Cons:
+  * We would inherit many legacy design choices
   * Namespaces and RBAC don’t provide real multi-tenancy  
     * We would like to think multi-tenant / multi-region /multi-cloud  
     * See [https://www.kcp.io/](https://www.kcp.io/)  
   * Performance concerns in case of millions of objects  
   * Excessive coupling that would be hard to undo  
+
+Building our own resource system:
+* Pros:
+  * More flexibility
+  * Can natively support ReBAC and our vision of multi-tenancy
+  * Can freely evolve manifest formats to make them easier to author
+* Cons:
+  * A lot more work
   * Templating would require re-inventing something like helm \+ helmfile
 
 
-## Terraform modules for Kamu API
+## Terraform modules for ODF API
 * Pros:
   * Can wrap existing APIs in TF modules without modifications  
   * Existing tool for complex dependency management and templating  
@@ -546,83 +614,43 @@ If there is no prior art, that is fine - your ideas are interesting to us whethe
 
 
 # Unresolved questions
-<!--
-- What parts of the design do you expect to resolve through the RFC process before this gets merged?
-- What parts of the design do you expect to resolve through the implementation of this feature before stabilization?
-- What related issues do you consider out of scope for this RFC that could be addressed in the future independently of the solution that comes out of this RFC?
--->
-
-* How will secret management work?  
-* API/manifest versioning  
-* Should we consider JSON-LD as an alternative?  
-  * More generic way to define and connect objects  
-  * Integrates with [schema.org](http://schema.org) \- if we use RDF in data it may make sense to use it in manifests  
-  * Integrates with [verifiable credentials standards](https://vcplayground.org/docs/standards/)
-
-
 - DatasetID vs ResourceID
   - should we have both?
   - two types of selectors then?
 
 
 # Future possibilities
-<!--
-Think about what the natural extension and evolution of your proposal would be and how it would affect ODF as a whole. Try to use this section as a tool to more fully consider all possible interactions with the ODF in your proposal.
 
-This is also a good place to "dump ideas", if they are out of scope for the RFC you are writing but otherwise related.
-
-If you have tried and cannot think of any future possibilities, you may simply state that you cannot think of anything.
-
-Note that having something written down in the future-possibilities section is not a reason to accept the current or a future RFC; such notes should be in the section on motivation or rationale in this or subsequent RFCs. The section merely provides additional information.
--->
-
-We are strongly [considering using JSON-LD](https://github.com/open-data-fabric/open-data-fabric/issues/123) for manifests in future. JSON-LD manifest could look like this:
+## JSON-LD
+We are [considering using JSON-LD](https://github.com/open-data-fabric/open-data-fabric/issues/123) for manifests in future. JSON-LD manifest could look like this:
 
 ```yaml
 "@context": https://opendatafabric.org/core/v1/context.jsonld
-"@type": odf:SecretSet
+"@type": config:SecretSet
 "@id": https://cluster.example.com/resources/8f3b2c1a-4d5e-6f7a-8b9c-0d1e2f3a4b5c
 headers: {}
 spec: {}
 status: {}
 ```
 
+They would provide a standard URI expansion/collapsing mechanism for types and may help with flexible versioning of schema fields.
+
+
+## Extensibility of union types
+Some union types like `TaskSpec` and `Ingress` currently provide a fixed set of variants. This is very convenient for manifest auto-completion, but will restrict implementation from experimenting with other types of tasks and sources.
+
+We should in the future extend those types with an `Ext` variant that allows specifying fully generic values, e.g.:
+```yaml
+tasks:
+- kind: Ext
+  $schema: https://kamu.dev/schemas/v1/AwesomeTask
+  makeEverythingAwesome: true
+```
+
 
 # Appendix A: Example Manifests
+Example resource manifests are provided with this RFC in the [`/examples`](/examples) directory.
 
-Example resource manifests are provided along with this RFC in the [`/examples`](/examples) directory.
+An [entity-relationship diagram](/schemas-generated/mermaid/erd.svg) is also available to see the interplay of core prototype types.
 
-We also generate an [entity-relationship diagram](/schemas-generated/mermaid/types.md) for all schemas.
-
-
-
-# QQQQQQQQQQQQQQQQQQQQQQQQQQ
-- Resource statuses
-- Renaming resources
-  - When references are resolved
-- Apply phase batching & transactionality
-- Flow compactionPolicy
-- Flow retries
-- Move ReBAC `attributes` into `spec` or `headers`?
-- Make labels / annotations / attributes full URLs?
-- DID vs ID
-  - will account/dataset have both? should we allow DIDs in references?
-  - or should we only use DIDs?
-    - might be useful for delegation of control in future
-    - but what does it mean for moving pipelines between nodes? 
-
-
-Future:
-- Extensibility of task types / ingress types ...
-  - Describe this pattern in RFC:
-    ```yaml
-    tasks:
-    - kind: Extended
-      $schema: https://kamu.dev/odf/schemas/v1/SomeTask
-    ```
-- Start moving event bus events schemas into ODF
-- Get rid of StructOrString in struct fields in favor of `serde_as`
-- Remove `Resource*` prefix from types in `resource` domain?
-- Can we replace full urls with JSON-LD like contexts:
-  - instead `https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root`
-  - have `"dataset:DatasetKind": Root`
+Note that many resource types are still in **early prototype stage** of maturity and will be refined during the reference implementation.

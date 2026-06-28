@@ -25,7 +25,7 @@
         },
         "type": {
           "type": "string",
-          "format": "resource-type-ref",
+          "format": "type-ref",
           "examples": [
             "SecretSet",
             "VariableSet",

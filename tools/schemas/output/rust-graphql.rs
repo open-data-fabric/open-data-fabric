@@ -2383,7 +2383,7 @@ impl From<odf::metadata::source::RequestHeader> for RequestHeader {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct Resource {
     /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`.
-    pub schema: ResourceTypeUri<'static>,
+    pub schema: TypeUri<'static>,
     /// Container for identity and ownership information of a resource.
     pub headers: ResourceHeaders,
     /// Specifies the desired state of a resource.
@@ -2429,37 +2429,6 @@ impl async_graphql::ScalarType for ResourceAnnotations {
         let value: odf::metadata::serde::yaml::resource::ResourceAnnotations =
             self.as_ref().clone().into();
         async_graphql::to_value(&value).unwrap()
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/// Generic contdition that can be added by contollers to provide additional information about the state of a resource.
-///
-/// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition
-#[derive(SimpleObject, Debug, Clone)]
-pub struct ResourceCondition {
-    /// Value of the condition.
-    pub value: serde_json::Value,
-    /// Contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
-    pub reason: Option<String>,
-    /// Human readable message indicating details about the transition.
-    pub message: Option<String>,
-    /// Time when condition transitioned from one status to another.
-    pub last_transition_time: Option<DateTime<Utc>>,
-    /// Resource generation that was last processed by the controller that added this condition.
-    pub observed_generation: Option<u64>,
-}
-
-impl From<odf::metadata::resource::ResourceCondition> for ResourceCondition {
-    fn from(v: odf::metadata::resource::ResourceCondition) -> Self {
-        Self {
-            value: v.value.into(),
-            reason: v.reason.map(Into::into),
-            message: v.message.map(Into::into),
-            last_transition_time: v.last_transition_time.map(Into::into),
-            observed_generation: v.observed_generation.map(Into::into),
-        }
     }
 }
 

@@ -145,9 +145,9 @@ impl Helpers {
             | model::Type::AccountName
             | model::Type::ResourceId
             | model::Type::ResourceName
-            | model::Type::ResourceTypeUri
-            | model::Type::ResourceTypeName
-            | model::Type::ResourceTypeRef
+            | model::Type::TypeUri
+            | model::Type::TypeName
+            | model::Type::TypeRef
             | model::Type::DateTime
             | model::Type::Duration
             | model::Type::Flatbuffers
@@ -357,9 +357,9 @@ fn format_pre_ser_type(
         model::Type::String => writeln!(w, "fb.create_string(&{name})")?,
         model::Type::AccountName
         | model::Type::ResourceName
-        | model::Type::ResourceTypeUri
-        | model::Type::ResourceTypeName
-        | model::Type::ResourceTypeRef
+        | model::Type::TypeUri
+        | model::Type::TypeName
+        | model::Type::TypeRef
         | model::Type::DatasetAlias
         | model::Type::DatasetRef => writeln!(w, "fb.create_string(&{name}.to_string())")?,
         model::Type::AccountId | model::Type::ResourceId => {
@@ -488,9 +488,9 @@ fn render_type_ser(
         | model::Type::AccountName
         | model::Type::ResourceId
         | model::Type::ResourceName
-        | model::Type::ResourceTypeUri
-        | model::Type::ResourceTypeName
-        | model::Type::ResourceTypeRef
+        | model::Type::TypeUri
+        | model::Type::TypeName
+        | model::Type::TypeRef
         | model::Type::Generic(_)
         | model::Type::Array(_) => (),
         model::Type::DateTime => writeln!(w, "&datetime_to_fb(&{name})")?,
@@ -644,18 +644,9 @@ fn render_type_de(
         model::Type::ResourceName => {
             writeln!(w, "odf::resource::ResourceName::try_from({name}).unwrap()")?
         }
-        model::Type::ResourceTypeUri => writeln!(
-            w,
-            "odf::resource::ResourceTypeUri::try_from({name}).unwrap()"
-        )?,
-        model::Type::ResourceTypeName => writeln!(
-            w,
-            "odf::resource::ResourceTypeName::try_from({name}).unwrap()"
-        )?,
-        model::Type::ResourceTypeRef => writeln!(
-            w,
-            "odf::resource::ResourceTypeRef::try_from({name}).unwrap()"
-        )?,
+        model::Type::TypeUri => writeln!(w, "odf::resource::TypeUri::try_from({name}).unwrap()")?,
+        model::Type::TypeName => writeln!(w, "odf::resource::TypeName::try_from({name}).unwrap()")?,
+        model::Type::TypeRef => writeln!(w, "odf::resource::TypeRef::try_from({name}).unwrap()")?,
     }
     Ok(())
 }
@@ -813,7 +804,7 @@ fn render_map_with_entry_table(
                     .entries
                     .iter()
                     .map(|(key, value)| {{
-                        let key_offset = fb.create_string(key);
+                        let key_offset = fb.create_string(key.as_str());
                         let value_offset = {value_ser};
                         let mut entry_builder = fb::{name}EntryBuilder::new(fb);
                         entry_builder.add_key(key_offset);
@@ -836,7 +827,7 @@ fn render_map_with_entry_table(
                         .unwrap_or_default()
                         .iter()
                         .map(|entry| {{
-                            let key = entry.key().to_string();
+                            let key = entry.key().parse().unwrap();
                             let value = {value_de};
                             (key, value)
                         }})

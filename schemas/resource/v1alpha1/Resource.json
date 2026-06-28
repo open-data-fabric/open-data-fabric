@@ -12,7 +12,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "format": "resource-type-uri",
+      "format": "type-uri",
       "description": "Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`."
     },
     "headers": {

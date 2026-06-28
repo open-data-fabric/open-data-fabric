@@ -11,7 +11,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "format": "resource-type-uri",
+      "format": "type-uri",
       "const": "https://opendatafabric.org/schemas/flow/v1alpha1/Task",
       "description": "Identifies this resource type."
     },

@@ -15,8 +15,8 @@ use multiformats::*;
 use serde::{Deserialize, Serialize};
 use setty::types::{ByteSize, DurationString};
 
-use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
-use crate::resource::{ResourceID, ResourceName, ResourceTypeUri};
+use crate::dataset::*;
+use crate::resource::*;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // auth
@@ -40,13 +40,13 @@ pub mod auth {
     }
 
     impl Account {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &ACCOUNT_SCHEMA
         }
     }
 
-    static ACCOUNT_SCHEMA: std::sync::LazyLock<ResourceTypeUri> = std::sync::LazyLock::new(|| {
-        ResourceTypeUri::new_unchecked("https://opendatafabric.org/schemas/auth/v1alpha1/Account")
+    static ACCOUNT_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/auth/v1alpha1/Account")
     });
 
     pub use crate::auth::AccountRef;
@@ -144,17 +144,14 @@ pub mod auth {
     }
 
     impl Relations {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &RELATIONS_SCHEMA
         }
     }
 
-    static RELATIONS_SCHEMA: std::sync::LazyLock<ResourceTypeUri> =
-        std::sync::LazyLock::new(|| {
-            ResourceTypeUri::new_unchecked(
-                "https://opendatafabric.org/schemas/auth/v1alpha1/Relations",
-            )
-        });
+    static RELATIONS_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/auth/v1alpha1/Relations")
+    });
 
     /// Specifies resource attributes and relations between resources on which auth policies act upon.
     ///
@@ -200,17 +197,14 @@ pub mod config {
     }
 
     impl SecretSet {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &SECRET_SET_SCHEMA
         }
     }
 
-    static SECRET_SET_SCHEMA: std::sync::LazyLock<ResourceTypeUri> =
-        std::sync::LazyLock::new(|| {
-            ResourceTypeUri::new_unchecked(
-                "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet",
-            )
-        });
+    static SECRET_SET_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/config/v1alpha1/SecretSet")
+    });
 
     /// Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
     ///
@@ -262,17 +256,14 @@ pub mod config {
     }
 
     impl VariableSet {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &VARIABLE_SET_SCHEMA
         }
     }
 
-    static VARIABLE_SET_SCHEMA: std::sync::LazyLock<ResourceTypeUri> =
-        std::sync::LazyLock::new(|| {
-            ResourceTypeUri::new_unchecked(
-                "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet",
-            )
-        });
+    static VARIABLE_SET_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/config/v1alpha1/VariableSet")
+    });
 
     /// Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
     ///
@@ -771,15 +762,13 @@ pub mod dataset {
     }
 
     impl Dataset {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &DATASET_SCHEMA
         }
     }
 
-    static DATASET_SCHEMA: std::sync::LazyLock<ResourceTypeUri> = std::sync::LazyLock::new(|| {
-        ResourceTypeUri::new_unchecked(
-            "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset",
-        )
+    static DATASET_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset")
     });
 
     /// Represents type of the dataset.
@@ -1052,17 +1041,14 @@ pub mod dataset {
     }
 
     impl Projection {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &PROJECTION_SCHEMA
         }
     }
 
-    static PROJECTION_SCHEMA: std::sync::LazyLock<ResourceTypeUri> =
-        std::sync::LazyLock::new(|| {
-            ResourceTypeUri::new_unchecked(
-                "https://opendatafabric.org/schemas/dataset/v1alpha1/Projection",
-            )
-        });
+    static PROJECTION_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/dataset/v1alpha1/Projection")
+    });
 
     /// Represents a projection of a dataaset history into a state for fast lookups.
     ///
@@ -1455,13 +1441,13 @@ pub mod flow {
     }
 
     impl Flow {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &FLOW_SCHEMA
         }
     }
 
-    static FLOW_SCHEMA: std::sync::LazyLock<ResourceTypeUri> = std::sync::LazyLock::new(|| {
-        ResourceTypeUri::new_unchecked("https://opendatafabric.org/schemas/flow/v1alpha1/Flow")
+    static FLOW_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/flow/v1alpha1/Flow")
     });
 
     /// Defines a sequence of tasks to be executed upon certain trigger conditions.
@@ -1554,13 +1540,13 @@ pub mod flow {
     }
 
     impl Task {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &TASK_SCHEMA
         }
     }
 
-    static TASK_SCHEMA: std::sync::LazyLock<ResourceTypeUri> = std::sync::LazyLock::new(|| {
-        ResourceTypeUri::new_unchecked("https://opendatafabric.org/schemas/flow/v1alpha1/Task")
+    static TASK_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/flow/v1alpha1/Task")
     });
 
     /// An individual work item to be executed as part of a flow.
@@ -1822,7 +1808,7 @@ pub mod resource {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct Resource<SpecT> {
         /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`.
-        pub schema: ResourceTypeUri,
+        pub schema: TypeUri,
         /// Container for identity and ownership information of a resource.
         pub headers: resource::ResourceHeaders,
         /// Specifies the desired state of a resource.
@@ -1836,24 +1822,7 @@ pub mod resource {
     /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceAnnotations
     #[derive(Clone, PartialEq, Eq, Debug)]
     pub struct ResourceAnnotations {
-        pub entries: std::collections::BTreeMap<String, serde_json::Value>,
-    }
-
-    /// Generic contdition that can be added by contollers to provide additional information about the state of a resource.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceCondition
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct ResourceCondition {
-        /// Value of the condition.
-        pub value: serde_json::Value,
-        /// Contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
-        pub reason: Option<String>,
-        /// Human readable message indicating details about the transition.
-        pub message: Option<String>,
-        /// Time when condition transitioned from one status to another.
-        pub last_transition_time: Option<DateTime<Utc>>,
-        /// Resource generation that was last processed by the controller that added this condition.
-        pub observed_generation: Option<u64>,
+        pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
     /// Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of URL to a schema describing this condition, e.g. `https://opendatafabric.org/schemas/resource/ConditionReady.json`.
@@ -1861,7 +1830,7 @@ pub mod resource {
     /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceConditions
     #[derive(Clone, PartialEq, Eq, Debug)]
     pub struct ResourceConditions {
-        pub entries: std::collections::BTreeMap<String, resource::ResourceCondition>,
+        pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
     /// Container for identity and ownership information of a resource.
@@ -1894,7 +1863,7 @@ pub mod resource {
     /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceLabels
     #[derive(Clone, PartialEq, Eq, Debug)]
     pub struct ResourceLabels {
-        pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+        pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
     /// Represents the lifecycle stage of a resource.
@@ -1949,17 +1918,14 @@ pub mod sink {
     }
 
     impl WebhookTarget {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &WEBHOOK_TARGET_SCHEMA
         }
     }
 
-    static WEBHOOK_TARGET_SCHEMA: std::sync::LazyLock<ResourceTypeUri> =
-        std::sync::LazyLock::new(|| {
-            ResourceTypeUri::new_unchecked(
-                "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget",
-            )
-        });
+    static WEBHOOK_TARGET_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget")
+    });
 
     /// Defines a webhook target endpoint that can receive event notifications and data.
     ///
@@ -2803,13 +2769,13 @@ pub mod source {
     }
 
     impl Source {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &SOURCE_SCHEMA
         }
     }
 
-    static SOURCE_SCHEMA: std::sync::LazyLock<ResourceTypeUri> = std::sync::LazyLock::new(|| {
-        ResourceTypeUri::new_unchecked("https://opendatafabric.org/schemas/source/v1alpha1/Source")
+    static SOURCE_SCHEMA: std::sync::LazyLock<TypeUri> = std::sync::LazyLock::new(|| {
+        TypeUri::new_unchecked("https://opendatafabric.org/schemas/source/v1alpha1/Source")
     });
 
     /// Defines how external data should be cached.
@@ -2905,14 +2871,14 @@ pub mod storage {
     }
 
     impl PersistentVolume {
-        pub fn schema() -> &'static ResourceTypeUri {
+        pub fn schema() -> &'static TypeUri {
             &PERSISTENT_VOLUME_SCHEMA
         }
     }
 
-    static PERSISTENT_VOLUME_SCHEMA: std::sync::LazyLock<ResourceTypeUri> =
+    static PERSISTENT_VOLUME_SCHEMA: std::sync::LazyLock<TypeUri> =
         std::sync::LazyLock::new(|| {
-            ResourceTypeUri::new_unchecked(
+            TypeUri::new_unchecked(
                 "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume",
             )
         });

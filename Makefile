@@ -1,11 +1,4 @@
-ifeq (, $(shell which podman 2>/dev/null))
-RUNTIME = docker
-else
-RUNTIME = podman
-endif
-
-PLANTUML_IMG = "docker.io/plantuml/plantuml:1.2022.14"
-PLANTUML = $(RUNTIME) run --rm -v $(PWD):/opt/workdir --workdir /opt/workdir $(PLANTUML_IMG)
+PLANTUML = plantuml
 
 MDTPL = tools/template_markdown.py
 
@@ -18,20 +11,12 @@ DIAGRAMS_RAW = $(subst src/images,images,$(DIAGRAMS_SRC_RAW))
 SCHEMAS_SRC = $(shell find schemas/ -type f -name '*.json')
 SCHEMAS_UTILS_SRC = $(shell find tools/schemas/ -type f -name '*.rs')
 
-SCHEMA_MARKDOWN = build/metadata-reference.md
-SCHEMA_FLATBUFFERS = schemas-generated/flatbuffers/opendatafabric.fbs
-SCHEMA_MERMAID_ERD = schemas-generated/mermaid/erd.mmd
-SCHEMA_ERD_SVG = schemas-generated/mermaid/erd.svg
-
-MMDC = nix shell "path:dev/nix\#mermaid-cli" --command mmdc
-
 CODEGEN_CMD = RUST_BACKTRACE=1 cargo run -q -- codegen
 RUSTFMT = rustfmt --edition 2024 --style-edition 2024
 
-all: build/ $(DIAGRAMS) $(DIAGRAMS_RAW) schema-lint codegen $(SCHEMA_MARKDOWN) open-data-fabric.md
 
-build/:
-	mkdir -p build/
+all: lint test-examples codegen $(SCHEMA_MERMAID_ERD_SVG) $(DIAGRAMS) $(DIAGRAMS_RAW) open-data-fabric.md
+
 
 $(DIAGRAMS): images/%.svg: src/images/%.puml
 	$(PLANTUML) -o ../../images -tsvg $^
@@ -39,22 +24,16 @@ $(DIAGRAMS): images/%.svg: src/images/%.puml
 $(DIAGRAMS_RAW): images/%.svg: src/images/%.svg
 	cp $^ $@
 
-schema-lint: $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
-	RUST_BACKTRACE=1 cargo run -q -- lint
+schemas-generated/mermaid/erd.svg: schemas-generated/mermaid/erd.mmd
+	mmdc -i schemas-generated/mermaid/erd.mmd -o $@
 
-$(SCHEMA_MARKDOWN): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
-	$(CODEGEN_CMD) markdown > $@
-
-$(SCHEMA_FLATBUFFERS): $(SCHEMAS_SRC) $(SCHEMAS_UTILS_SRC)
-	$(CODEGEN_CMD) flatbuffers-schema > $@
 
 .PHONY: codegen
 codegen:
-	$(CODEGEN_CMD) markdown > $(SCHEMA_MARKDOWN)
-	$(CODEGEN_CMD) flatbuffers-schema > $(SCHEMA_FLATBUFFERS)
-	mkdir -p $(dir $(SCHEMA_MERMAID_ERD))
-	$(CODEGEN_CMD) mermaid-erd > $(SCHEMA_MERMAID_ERD)
-	$(MMDC) -i $(SCHEMA_MERMAID_ERD) -o $(SCHEMA_ERD_SVG)
+	@mkdir -p build/
+	$(CODEGEN_CMD) markdown > build/metadata-reference.md
+	$(CODEGEN_CMD) flatbuffers-schema > schemas-generated/flatbuffers/opendatafabric.fbs
+	$(CODEGEN_CMD) mermaid-erd > schemas-generated/mermaid/erd.mmd
 	$(CODEGEN_CMD) rust-dtos > tools/schemas/output/rust-dtos.rs
 	$(CODEGEN_CMD) rust-serde > tools/schemas/output/rust-serde.rs
 	$(CODEGEN_CMD) rust-serde-flatbuffers > tools/schemas/output/rust-serde-flatbuffers.rs
@@ -91,6 +70,6 @@ clean:
 image:
 	cd tools/image && $(RUNTIME) build -t odf-dev .
 
-.PHONY: all-in-container
-all-in-container:
-	$(RUNTIME) run --rm -v "$(PWD)":/workspace odf-dev make
+.PHONY: all-nix
+all-nix:
+	nix develop ./dev/nix -c make

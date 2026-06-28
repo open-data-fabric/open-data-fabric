@@ -528,6 +528,10 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Regex => format!("string"),
         model::Type::Url => format!("string"),
 
+        model::Type::TypeUri => format!("string"),
+        model::Type::TypeName => format!("string"),
+        model::Type::TypeRef => format!("string"),
+
         model::Type::AccountId => format!("[ubyte]"),
         model::Type::AccountName => format!("string"),
         model::Type::DatasetAlias => format!("string"),
@@ -535,9 +539,6 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::DatasetRef => format!("string"),
         model::Type::ResourceId => format!("[ubyte]"),
         model::Type::ResourceName => format!("string"),
-        model::Type::ResourceTypeUri => format!("string"),
-        model::Type::ResourceTypeName => format!("string"),
-        model::Type::ResourceTypeRef => format!("string"),
 
         model::Type::Flatbuffers => format!("[ubyte]"),
         model::Type::Generic(_) => format!("[ubyte]"),
