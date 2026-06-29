@@ -126,6 +126,8 @@ table Secret {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table AccountSpec {
+  // DID associated with the account by ODF or an external system
+  did: [ubyte];
   // Type of the account.
   //
   // Defaults to: "User"
@@ -1702,6 +1704,8 @@ table PersistentVolumeRef {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table DatasetSpec {
+  // DID of the dataset in global ODF network
+  did: [ubyte];
   // Type of the dataset.
   kind: DatasetKind;
   // An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.

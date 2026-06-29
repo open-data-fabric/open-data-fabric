@@ -7,6 +7,11 @@
     "email"
   ],
   "properties": {
+    "did": {
+      "type": "string",
+      "format": "account-id",
+      "description": "DID associated with the account by ODF or an external system"
+    },
     "accountType": {
       "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountType",
       "description": "Type of the account.",

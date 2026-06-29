@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.38.0
+Version: 0.39.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1341,6 +1341,7 @@ Predefined account specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `did` | `string` |  |  | DID associated with the account by ODF or an external system |
 | `accountType` | [AccountType](#accounttype-schema) |  |  | Type of the account.<br/><br/>Default: "User" |
 | `displayName` | `string` |  |  | Human-friendly display name. |
 | `email` | `string` | V |  | Email address of the account. |
@@ -2105,6 +2106,7 @@ Represents a desired state of the dataset metadata.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `did` | `string` |  | [dataset-id](#dataset-identity) | DID of the dataset in a global ODF network |
 | `kind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
 | `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
 | `volume` | [PersistentVolumeRef](#persistentvolumeref-schema) |  |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |

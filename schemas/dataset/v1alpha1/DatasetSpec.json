@@ -8,6 +8,11 @@
     "metadata"
   ],
   "properties": {
+    "did": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "DID of the dataset in global ODF network"
+    },
     "kind": {
       "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind",
       "description": "Type of the dataset.",

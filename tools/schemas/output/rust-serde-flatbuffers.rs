@@ -45,11 +45,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::AccountSpec {
     type OffsetT = WIPOffset<fb::AccountSpec<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let did_offset = self.did.as_ref().map(|v| fb.create_vector(&v.as_bytes()));
         let display_name_offset = self.display_name.as_ref().map(|v| fb.create_string(&v));
         let email_offset = { fb.create_string(&self.email) };
         let avatar_url_offset = self.avatar_url.as_ref().map(|v| fb.create_string(&v));
         let password_offset = self.password.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::AccountSpecBuilder::new(fb);
+        did_offset.map(|off| builder.add_did(off));
         self.account_type
             .map(|v| builder.add_account_type(v.into()));
         display_name_offset.map(|off| builder.add_display_name(off));
@@ -63,6 +65,9 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::AccountSpec {
 impl<'fb> FlatbuffersDeserializable<fb::AccountSpec<'fb>> for odf::auth::AccountSpec {
     fn deserialize(proxy: fb::AccountSpec<'fb>) -> Self {
         odf::auth::AccountSpec {
+            did: proxy
+                .did()
+                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap()),
             account_type: proxy.account_type().map(|v| v.into()),
             display_name: proxy.display_name().map(|v| v.to_owned()),
             email: proxy.email().map(|v| v.to_owned()).unwrap(),
@@ -1372,6 +1377,10 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::dataset::DatasetSpec {
     type OffsetT = WIPOffset<fb::DatasetSpec<'fb>>;
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let did_offset = self
+            .did
+            .as_ref()
+            .map(|v| fb.create_vector(&v.as_bytes().as_slice()));
         let metadata_offset = {
             let offsets: Vec<_> = self
                 .metadata
@@ -1388,6 +1397,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::dataset::DatasetSpec {
         };
         let volume_offset = self.volume.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::DatasetSpecBuilder::new(fb);
+        did_offset.map(|off| builder.add_did(off));
         builder.add_kind(self.kind.into());
         builder.add_metadata(metadata_offset);
         volume_offset.map(|off| builder.add_volume(off));
@@ -1398,6 +1408,9 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::dataset::DatasetSpec {
 impl<'fb> FlatbuffersDeserializable<fb::DatasetSpec<'fb>> for odf::dataset::DatasetSpec {
     fn deserialize(proxy: fb::DatasetSpec<'fb>) -> Self {
         odf::dataset::DatasetSpec {
+            did: proxy
+                .did()
+                .map(|v| odf::dataset::DatasetID::from_bytes(v.bytes()).unwrap()),
             kind: proxy.kind().into(),
             metadata: proxy
                 .metadata()

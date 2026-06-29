@@ -33,15 +33,3 @@ jobs:
         run: make codegen
       - name: Check generated files
         run: git diff && git diff-index --quiet HEAD
-  
-  test_examples:
-    name: Test / Examples
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-      - name: Run tests
-        run: make test-examples

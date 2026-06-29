@@ -15,7 +15,11 @@ CODEGEN_CMD = RUST_BACKTRACE=1 cargo run -q -- codegen
 RUSTFMT = rustfmt --edition 2024 --style-edition 2024
 
 
-all: lint test-examples codegen $(SCHEMA_MERMAID_ERD_SVG) $(DIAGRAMS) $(DIAGRAMS_RAW) open-data-fabric.md
+all: lint codegen $(SCHEMA_MERMAID_ERD_SVG) $(DIAGRAMS) $(DIAGRAMS_RAW) open-data-fabric.md
+
+.PHONY: nix
+nix:
+	nix develop ./tools/nix
 
 
 $(DIAGRAMS): images/%.svg: src/images/%.puml
@@ -44,11 +48,6 @@ codegen:
 	$(RUSTFMT) tools/schemas/output/rust-graphql.rs
 
 
-.PHONY: test-examples
-test-examples:
-	cargo test
-
-
 open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 	$(MDTPL) src/open-data-fabric.md open-data-fabric.md
 	@# Dependency: nodejs-markdown-toc (npm install -g markdown-toc)
@@ -58,18 +57,9 @@ open-data-fabric.md: src/open-data-fabric.md $(SCHEMA_MARKDOWN)
 .PHONY: lint
 lint:
 	RUST_BACKTRACE=1 cargo run -q -- lint
+	cargo test
 
 
 .PHONY: clean
 clean:
 	rm -rf build/ open-data-fabric.md
-
-
-# Image with all tools pre-installed
-.PHONY: image
-image:
-	cd tools/image && $(RUNTIME) build -t odf-dev .
-
-.PHONY: all-nix
-all-nix:
-	nix develop ./dev/nix -c make

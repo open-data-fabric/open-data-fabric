@@ -26,6 +26,7 @@ const PREAMBLE: &str = indoc::indoc!(
     use serde::{Deserialize, Serialize};
     use setty::types::{ByteSize, DurationString};
 
+    use crate::auth::*;
     use crate::dataset::*;
     use crate::resource::*;
     "#

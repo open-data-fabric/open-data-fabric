@@ -119,6 +119,9 @@ pub mod auth {
     pub struct AccountSpec {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub did: Option<AccountID>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub account_type: Option<auth::AccountType>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -142,6 +145,7 @@ pub mod auth {
     impl From<dtos::auth::AccountSpec> for AccountSpec {
         fn from(v: dtos::auth::AccountSpec) -> Self {
             Self {
+                did: v.did,
                 account_type: v.account_type.map(|v| v.into()),
                 display_name: v.display_name,
                 email: v.email,
@@ -155,6 +159,7 @@ pub mod auth {
         type Error = ValidationError;
         fn try_from(v: AccountSpec) -> Result<Self, ValidationError> {
             Ok(Self {
+                did: v.did,
                 account_type: v
                     .account_type
                     .map(|v| dtos::auth::AccountType::try_from(v))
@@ -2208,6 +2213,9 @@ pub mod dataset {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct DatasetSpec {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub did: Option<DatasetID>,
         pub kind: dataset::DatasetKind,
         pub metadata: Vec<dataset::MetadataEvent>,
         #[serde(default)]
@@ -2225,6 +2233,7 @@ pub mod dataset {
     impl From<dtos::dataset::DatasetSpec> for DatasetSpec {
         fn from(v: dtos::dataset::DatasetSpec) -> Self {
             Self {
+                did: v.did,
                 kind: v.kind.into(),
                 metadata: v.metadata.into_iter().map(Into::into).collect(),
                 volume: v.volume.map(|v| v.into()),
@@ -2236,6 +2245,7 @@ pub mod dataset {
         type Error = ValidationError;
         fn try_from(v: DatasetSpec) -> Result<Self, ValidationError> {
             Ok(Self {
+                did: v.did,
                 kind: dtos::dataset::DatasetKind::try_from(v.kind)?,
                 metadata: v
                     .metadata

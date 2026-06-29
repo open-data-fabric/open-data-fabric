@@ -23,6 +23,8 @@ use crate::queries::Dataset;
 /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec
 #[derive(SimpleObject, Debug, Clone)]
 pub struct AccountSpec {
+    /// DID associated with the account by ODF or an external system
+    pub did: Option<AccountID<'static>>,
     /// Type of the account.
     ///
     /// Defaults to: "User"
@@ -40,6 +42,7 @@ pub struct AccountSpec {
 impl From<odf::metadata::auth::AccountSpec> for AccountSpec {
     fn from(v: odf::metadata::auth::AccountSpec) -> Self {
         Self {
+            did: v.did.map(Into::into),
             account_type: v.account_type.map(Into::into),
             display_name: v.display_name.map(Into::into),
             email: v.email.into(),
@@ -361,6 +364,8 @@ impl From<odf::metadata::legacy::DatasetSnapshot> for DatasetSnapshot {
 /// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec
 #[derive(SimpleObject, Debug, Clone)]
 pub struct DatasetSpec {
+    /// DID of the dataset in global ODF network
+    pub did: Option<DatasetID<'static>>,
     /// Type of the dataset.
     pub kind: DatasetKind,
     /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
@@ -372,6 +377,7 @@ pub struct DatasetSpec {
 impl From<odf::metadata::dataset::DatasetSpec> for DatasetSpec {
     fn from(v: odf::metadata::dataset::DatasetSpec) -> Self {
         Self {
+            did: v.did.map(Into::into),
             kind: v.kind.into(),
             metadata: v.metadata.into_iter().map(Into::into).collect(),
             volume: v.volume.map(Into::into),

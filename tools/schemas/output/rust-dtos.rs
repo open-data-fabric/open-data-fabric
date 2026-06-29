@@ -15,6 +15,7 @@ use multiformats::*;
 use serde::{Deserialize, Serialize};
 use setty::types::{ByteSize, DurationString};
 
+use crate::auth::*;
 use crate::dataset::*;
 use crate::resource::*;
 
@@ -56,6 +57,8 @@ pub mod auth {
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec
     #[derive(Clone, Debug, Eq)]
     pub struct AccountSpec {
+        /// DID associated with the account by ODF or an external system
+        pub did: Option<AccountID>,
         /// Type of the account.
         ///
         /// Defaults to: "User"
@@ -81,11 +84,13 @@ pub mod auth {
 
     impl PartialEq for AccountSpec {
         fn eq(&self, other: &Self) -> bool {
-            self.account_type
-                .or_else(|| Some(Self::default_account_type()))
-                == other
+            self.did == other.did
+                && self
                     .account_type
                     .or_else(|| Some(Self::default_account_type()))
+                    == other
+                        .account_type
+                        .or_else(|| Some(Self::default_account_type()))
                 && self.display_name == other.display_name
                 && self.email == other.email
                 && self.avatar_url == other.avatar_url
@@ -787,6 +792,8 @@ pub mod dataset {
     /// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct DatasetSpec {
+        /// DID of the dataset in global ODF network
+        pub did: Option<DatasetID>,
         /// Type of the dataset.
         pub kind: dataset::DatasetKind,
         /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
