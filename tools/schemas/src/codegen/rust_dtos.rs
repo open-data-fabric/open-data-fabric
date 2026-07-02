@@ -192,6 +192,11 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
             // For TypeUri, split into string literal + LazyLock
             if matches!(&field.typ, model::Type::TypeUri) {
                 let str_static_name = format!("{}_STR", static_name);
+                let str_accessor_name = format!("{}_str", accessor_name);
+                writeln!(
+                    w,
+                    "pub fn {str_accessor_name}() -> &'static str {{ {str_static_name} }}"
+                )?;
                 statics.push(format!("static {str_static_name}: &str = {constant};"));
                 statics.push(format!("static {static_name}: {static_typ} = std::sync::LazyLock::new(|| {{ TypeUri::new_unchecked({str_static_name}) }});"));
             } else {
