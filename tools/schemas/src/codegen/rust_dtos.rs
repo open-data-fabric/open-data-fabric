@@ -195,7 +195,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
                 let str_accessor_name = format!("{}_str", accessor_name);
                 writeln!(
                     w,
-                    "pub fn {str_accessor_name}() -> &'static str {{ {str_static_name} }}"
+                    "pub const fn {str_accessor_name}() -> &'static str {{ {str_static_name} }}"
                 )?;
                 statics.push(format!("static {str_static_name}: &str = {constant};"));
                 statics.push(format!("static {static_name}: {static_typ} = std::sync::LazyLock::new(|| {{ TypeUri::new_unchecked({str_static_name}) }});"));
