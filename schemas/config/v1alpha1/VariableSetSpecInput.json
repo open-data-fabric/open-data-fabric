@@ -1,0 +1,17 @@
+{
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSetSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSetSpec",
+  "description": "Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.",
+  "type": "object",
+  "required": [
+    "variables"
+  ],
+  "properties": {
+    "variables": {
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Variables",
+      "description": "Key value pairs of variables.",
+      "unevaluatedProperties": false
+    }
+  }
+}

@@ -7,11 +7,6 @@ spec:
   secret:
     value: <jwe>
     contentEncoding: jwe
-status:
-  phase: Failed
-  conditions:
-    https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus:
-      value: Failed
 
 # TODO!: Retry strategies?
 

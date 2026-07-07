@@ -1,17 +1,11 @@
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
   "description": "Container for identity and ownership information of a resource.",
   "type": "object",
   "required": [
-    "id",
-    "name",
-    "account",
-    "labels",
-    "annotations",
-    "generation",
-    "createdAt",
-    "updatedAt"
+    "name"
   ],
   "properties": {
     "id": {
@@ -38,26 +32,6 @@
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceAnnotations",
       "description": "Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.",
       "unevaluatedProperties": false
-    },
-    "generation": {
-      "type": "integer",
-      "format": "uint64",
-      "description": "A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`."
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time when the resource was first applied and assigned an identity."
-    },
-    "updatedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time when the resource was last updated, including header, spec, and status updates."
-    },
-    "deletedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Time when the resource was deleted."
     }
   }
 }

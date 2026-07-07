@@ -4,7 +4,8 @@
   "description": "Resource lifecycle and reconciliation information.",
   "type": "object",
   "required": [
-    "phase"
+    "phase",
+    "conditions"
   ],
   "properties": {
     "phase": {

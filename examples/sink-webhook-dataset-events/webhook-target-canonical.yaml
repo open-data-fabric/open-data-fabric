@@ -1,0 +1,21 @@
+# $schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+$schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+headers:
+  id: aa-11
+  account: foo
+  name: com.example.hook
+  labels: {}
+  annotations: {}
+  generation: 1
+  createdAt: 2020-01-01T00:00:00Z
+  updatedAt: 2020-01-01T00:00:00Z
+spec:
+  url: https://example.com/hook/
+  secret:
+    value: <jwe>
+    contentEncoding: jwe
+status:
+  phase: Failed
+  conditions:
+    https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus:
+      value: Failed

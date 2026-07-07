@@ -1,0 +1,35 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpec",
+  "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
+  "type": "object",
+  "required": [
+    "target",
+    "triggers",
+    "tasks"
+  ],
+  "properties": {
+    "target": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceSelector",
+      "unevaluatedProperties": false,
+      "description": "Defines resources for which this flow will be instantiated."
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger",
+        "unevaluatedProperties": false
+      },
+      "description": "Conditions that cause this flow to execute."
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpecInput",
+        "unevaluatedProperties": false
+      },
+      "description": "List of tasks to run consecutively."
+    }
+  }
+}

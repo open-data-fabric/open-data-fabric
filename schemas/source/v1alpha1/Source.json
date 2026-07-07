@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/source/v1alpha1/Source",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
   "description": "Defines an external source of data for ingestion.",
   "type": "object",
   "unevaluatedProperties": false,
@@ -17,18 +17,13 @@
       "description": "Identifies this resource type."
     },
     "headers": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceSpec",
+      "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/SourceSpecInput",
       "description": "Specifies the desired state of the resource.",
-      "unevaluatedProperties": false
-    },
-    "status": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus",
-      "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }
   }

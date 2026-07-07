@@ -1,0 +1,22 @@
+{
+  "$id": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetSpec",
+  "description": "Defines a webhook target endpoint that can receive event notifications and data.",
+  "type": "object",
+  "required": [
+    "url"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Target url of the webhook."
+    },
+    "secret": {
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Secret",
+      "description": "Shared secret used for HMAC signature of the request payload for authentication.",
+      "unevaluatedProperties": false
+    }
+  }
+}
