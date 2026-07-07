@@ -74,7 +74,7 @@ pub struct AddData {
     /// Hash of the checkpoint file used to restore ingestion state, if any.
     pub prev_checkpoint: Option<Multihash<'static>>,
     /// Last offset of the previous data slice, if any. Must be equal to the last non-empty `newData.offsetInterval.end`.
-    pub prev_offset: Option<u64>,
+    pub prev_offset: Option<UInt64>,
     /// Describes output data written during this transaction, if any.
     pub new_data: Option<DataSlice>,
     /// Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified.
@@ -245,7 +245,7 @@ pub struct Checkpoint {
     /// Hash sum of the checkpoint file.
     pub physical_hash: Multihash<'static>,
     /// Size of checkpoint file in bytes.
-    pub size: u64,
+    pub size: UInt64,
 }
 
 impl From<odf::metadata::dataset::Checkpoint> for Checkpoint {
@@ -267,7 +267,7 @@ pub struct CompactionParams {
     /// Target maximum size of each compacted data slice e.g. `100MiB`.
     pub max_slice_size: Option<ByteSize>,
     /// Target maximum number of records per compacted data slice.
-    pub max_slice_records: Option<u64>,
+    pub max_slice_records: Option<UInt64>,
 }
 
 impl From<odf::metadata::dataset::CompactionParams> for CompactionParams {
@@ -305,7 +305,7 @@ pub struct DataSlice {
     /// Data slice produced by the transaction.
     pub offset_interval: OffsetInterval,
     /// Size of data file in bytes.
-    pub size: u64,
+    pub size: UInt64,
 }
 
 impl From<odf::metadata::dataset::DataSlice> for DataSlice {
@@ -596,7 +596,7 @@ pub struct ExecuteTransform {
     /// Hash of the checkpoint file used to restore transformation state, if any.
     pub prev_checkpoint: Option<Multihash<'static>>,
     /// Last offset of the previous data slice, if any. Must be equal to the last non-empty `newData.offsetInterval.end`.
-    pub prev_offset: Option<u64>,
+    pub prev_offset: Option<UInt64>,
     /// Describes output data written during this transaction, if any.
     pub new_data: Option<DataSlice>,
     /// Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified.
@@ -632,9 +632,9 @@ pub struct ExecuteTransformInput {
     /// Hash of the last block that will be incorporated into the derivative transformation. When present, defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction.
     pub new_block_hash: Option<Multihash<'static>>,
     /// Last data record offset in the input dataset that was previously incorporated into the derivative transformation, if any. Must be equal to the last non-empty `newOffset`. Together with `newOffset` defines a half-open `(prevOffset, newOffset]` interval of data records that will be considered in this transaction.
-    pub prev_offset: Option<u64>,
+    pub prev_offset: Option<UInt64>,
     /// Offset of the last data record that will be incorporated into the derivative transformation, if any. When present, defines a half-open `(prevOffset, newOffset]` interval of data records that will be considered in this transaction.
-    pub new_offset: Option<u64>,
+    pub new_offset: Option<UInt64>,
 }
 
 impl From<odf::metadata::dataset::ExecuteTransformInput> for ExecuteTransformInput {
@@ -739,7 +739,7 @@ impl From<odf::metadata::legacy::FetchStepContainer> for FetchStepContainer {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct FetchStepEthereumLogs {
     /// Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain.
-    pub chain_id: Option<u64>,
+    pub chain_id: Option<UInt64>,
     /// Url of the node.
     pub node_url: Option<String>,
     /// An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.
@@ -934,7 +934,7 @@ pub struct FlowTriggerEvent {
     /// The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
     pub cooldown: Option<DurationString>,
     /// If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
-    pub cooldown_max_batch: Option<u64>,
+    pub cooldown_max_batch: Option<UInt64>,
 }
 
 impl From<odf::metadata::flow::FlowTriggerEvent> for FlowTriggerEvent {
@@ -976,7 +976,7 @@ pub struct FlowTriggerSource {
     /// Reference to the source resource that drives this trigger.
     pub source: ResourceRef,
     /// Minimum number of new records to accumulate before triggering.
-    pub min_records_to_await: Option<u64>,
+    pub min_records_to_await: Option<UInt64>,
     /// Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
     pub max_await_interval: Option<DurationString>,
 }
@@ -999,7 +999,7 @@ impl From<odf::metadata::flow::FlowTriggerSource> for FlowTriggerSource {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct IngestParams {
     /// Target number of records to ingest per data slice.
-    pub target_slice_records: Option<u64>,
+    pub target_slice_records: Option<UInt64>,
 }
 
 impl From<odf::metadata::source::IngestParams> for IngestParams {
@@ -1074,7 +1074,7 @@ impl From<odf::metadata::source::IngressContainer> for IngressContainer {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct IngressEvmLogs {
     /// Identifier of the chain to scan logs from. This parameter may be used for RPC endpoint lookup as well as asserting that provided `nodeUrl` corresponds to the expected chain.
-    pub chain_id: Option<u64>,
+    pub chain_id: Option<UInt64>,
     /// Url of the node.
     pub node_url: Option<String>,
     /// An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node.
@@ -1231,7 +1231,7 @@ impl From<odf::metadata::source::IngressBuffer> for IngressBuffer {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct IngressBufferMemory {
     /// Maximum number of records to hold in the buffer.
-    pub buffer_size: Option<u64>,
+    pub buffer_size: Option<UInt64>,
     /// Policy applied when the buffer is full.
     pub overflow_policy: Option<String>,
 }
@@ -1429,7 +1429,7 @@ pub struct MetadataBlock {
     /// Hash sum of the preceding block.
     pub prev_block_hash: Option<Multihash<'static>>,
     /// Block sequence number, starting from zero at the seed block.
-    pub sequence_number: u64,
+    pub sequence_number: UInt64,
     /// Event data.
     pub event: MetadataEvent,
 }
@@ -1546,9 +1546,9 @@ impl From<odf::metadata::source::MqttTopicSubscription> for MqttTopicSubscriptio
 #[derive(SimpleObject, Debug, Clone)]
 pub struct OffsetInterval {
     /// Start of the closed interval [start; end].
-    pub start: u64,
+    pub start: UInt64,
     /// End of the closed interval [start; end].
-    pub end: u64,
+    pub end: UInt64,
 }
 
 impl From<odf::metadata::dataset::OffsetInterval> for OffsetInterval {
@@ -1813,7 +1813,7 @@ impl From<odf::metadata::engine::RawQueryResponseProgress> for RawQueryResponseP
 #[derive(SimpleObject, Debug, Clone)]
 pub struct RawQueryResponseSuccess {
     /// Number of records produced by the query
-    pub num_records: u64,
+    pub num_records: UInt64,
 }
 
 impl From<odf::metadata::engine::RawQueryResponseSuccess> for RawQueryResponseSuccess {
@@ -2394,7 +2394,7 @@ pub struct Resource {
     pub headers: ResourceHeaders,
     /// Specifies the desired state of a resource.
     pub spec: serde_json::Value,
-    /// Resource lifecycle and reconciliation inforamtion.
+    /// Resource lifecycle and reconciliation information.
     pub status: Option<ResourceStatus>,
 }
 
@@ -2485,7 +2485,7 @@ pub struct ResourceHeaders {
     /// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
     pub annotations: Option<ResourceAnnotations>,
     /// A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
-    pub generation: Option<u64>,
+    pub generation: Option<UInt64>,
     /// Time when the resource was first applied and assigned an identity.
     pub created_at: Option<DateTime<Utc>>,
     /// Time when the resource was last updated, including header, spec, and status updates.
@@ -2555,7 +2555,7 @@ pub enum ResourcePhase {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Resource lifecycle and reconciliation inforamtion.
+/// Resource lifecycle and reconciliation information.
 ///
 /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus
 #[derive(SimpleObject, Debug, Clone)]
@@ -2563,7 +2563,7 @@ pub struct ResourceStatus {
     /// Represents the lifecycle stage of a resource.
     pub phase: ResourcePhase,
     /// Resource generation that was last processed by the main resource controller.
-    pub observed_generation: Option<u64>,
+    pub observed_generation: Option<UInt64>,
     /// Time when the controller last reconciled the desired resource state as defined in `observedGeneration`.
     pub reconciled_at: Option<DateTime<Utc>>,
     /// Detailed conditions describing the state of the resource that are added by controllers.
@@ -3256,7 +3256,7 @@ pub struct TransformRequest {
     /// Defines inputs used in this transaction. Slices corresponding to every input dataset must be present.
     pub query_inputs: Vec<TransformRequestInput>,
     /// Starting offset to use for new data records.
-    pub next_offset: u64,
+    pub next_offset: UInt64,
     /// TODO: This will be removed when coordinator will be speaking to engines purely through Arrow.
     pub prev_checkpoint_path: Option<OSPath>,
     /// TODO: This will be removed when coordinator will be speaking to engines purely through Arrow.

@@ -899,7 +899,7 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::UInt8 => format!("u8"),
         model::Type::UInt16 => format!("u16"),
         model::Type::UInt32 => format!("u32"),
-        model::Type::UInt64 => format!("u64"),
+        model::Type::UInt64 => format!("UInt64"), // custom scalar
         model::Type::String => format!("String"),
         model::Type::ByteSize => format!("ByteSize"),
         model::Type::DatasetAlias => format!("DatasetAlias<'static>"),

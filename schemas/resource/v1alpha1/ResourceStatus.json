@@ -1,7 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Resource lifecycle and reconciliation inforamtion.",
+  "description": "Resource lifecycle and reconciliation information.",
   "type": "object",
   "required": [
     "phase"

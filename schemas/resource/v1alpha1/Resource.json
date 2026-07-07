@@ -27,7 +27,7 @@
     },
     "status": {
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus",
-      "description": "Resource lifecycle and reconciliation inforamtion.",
+      "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }
   }

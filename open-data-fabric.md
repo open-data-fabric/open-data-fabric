@@ -2106,7 +2106,7 @@ Represents a desired state of the dataset metadata.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `did` | `string` |  | [dataset-id](#dataset-identity) | DID of the dataset in a global ODF network |
+| `did` | `string` |  | [dataset-id](#dataset-identity) | DID of the dataset in global ODF network |
 | `kind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
 | `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
 | `volume` | [PersistentVolumeRef](#persistentvolumeref-schema) |  |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
@@ -3012,7 +3012,7 @@ Top-level container for resources that specifies the type and version of the res
 | `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`. |
 | `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | `object` | V | `generic` | Specifies the desired state of a resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation inforamtion. |
+| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/Resource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3170,7 +3170,7 @@ Matches zero or many resources using identity and label filters.
 
 <a name="resourcestatus-schema"></a>
 ##### ResourceStatus
-Resource lifecycle and reconciliation inforamtion.
+Resource lifecycle and reconciliation information.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
