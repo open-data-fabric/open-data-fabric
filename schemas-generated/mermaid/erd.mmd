@@ -16,6 +16,7 @@ graph TD
 
   subgraph auth["auth"]
     Account
+    AccountHandle
     AccountRef
     AccountSpec
     AccountSpecInput
@@ -26,7 +27,7 @@ graph TD
     RelationsSpec
     RelationsSpecInput
   end
-  class Account,AccountRef,AccountSpec,AccountSpecInput,AccountType,Attribute,Relation,Relations,RelationsSpec,RelationsSpecInput ctx_auth
+  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Attribute,Relation,Relations,RelationsSpec,RelationsSpecInput ctx_auth
 
   subgraph config["config"]
     Secret
@@ -369,7 +370,7 @@ graph TD
   RelationsSpecInput -->|"attributes"| Attribute
   Resource -->|"headers"| ResourceHeaders
   Resource -->|"status"| ResourceStatus
-  ResourceHeaders -->|"account"| AccountRef
+  ResourceHeaders -->|"account"| AccountHandle
   ResourceHeaders -->|"labels"| ResourceLabels
   ResourceHeaders -->|"annotations"| ResourceAnnotations
   ResourceHeadersInput -->|"account"| AccountRef

@@ -4779,7 +4779,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceHeaders<'fb>> for odf::resource:
                 .unwrap(),
             account: proxy
                 .account()
-                .map(|v| odf::auth::AccountRef::deserialize(v))
+                .map(|v| odf::auth::AccountHandle::deserialize(v))
                 .unwrap(),
             labels: proxy
                 .labels()

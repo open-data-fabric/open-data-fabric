@@ -20,7 +20,7 @@
     },
     "account": {
       "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
-      "description": "Reference to an account that owns the resource.",
+      "description": "Reference to the account that owns the resource.",
       "unevaluatedProperties": false
     },
     "labels": {

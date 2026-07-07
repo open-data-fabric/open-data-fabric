@@ -2,7 +2,9 @@
 $schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
 headers:
   id: aa-11
-  account: foo
+  account:
+    id: did:odf:fed018
+    name: foo
   name: com.example.hook
   labels: {}
   annotations: {}

@@ -2663,8 +2663,8 @@ pub struct ResourceHeaders {
     pub id: ResourceID<'static>,
     /// Symbolic name of a resource that identifies it within a scope of an onwing account.
     pub name: ResourceName<'static>,
-    /// Reference to an account that owns the resource.
-    pub account: AccountRef,
+    /// Link to the account that owns the resource.
+    pub account: AccountHandle,
     /// Map of string keys and values that can be used to organize, categorize, and query resources.
     pub labels: ResourceLabels,
     /// Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
@@ -2706,7 +2706,7 @@ pub struct ResourceHeadersInput {
     pub id: Option<ResourceID<'static>>,
     /// Symbolic name of a resource that identifies it within a scope of an onwing account.
     pub name: ResourceName<'static>,
-    /// Reference to an account that owns the resource.
+    /// Reference to the account that owns the resource.
     pub account: Option<AccountRef>,
     /// Map of string keys and values that can be used to organize, categorize, and query resources.
     pub labels: Option<ResourceLabels>,

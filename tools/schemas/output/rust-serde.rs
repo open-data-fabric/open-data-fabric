@@ -78,6 +78,24 @@ pub mod auth {
     #[allow(unused_imports)]
     use super::*;
 
+    // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct AccountHandle {
+        pub id: AccountID,
+        pub name: AccountName,
+    }
+
+    impl IntoDto for AccountHandle {
+        type Dto = dtos::auth::AccountHandle;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    implement_serde_as!(dtos::auth::AccountHandle, AccountHandle);
+
     // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -5560,7 +5578,7 @@ pub mod resource {
     pub struct ResourceHeaders {
         pub id: ResourceID,
         pub name: ResourceName,
-        pub account: StructOrString<auth::AccountRef>,
+        pub account: auth::AccountHandle,
         pub labels: resource::ResourceLabels,
         pub annotations: resource::ResourceAnnotations,
         pub generation: u64,
@@ -5603,7 +5621,7 @@ pub mod resource {
             Ok(Self {
                 id: v.id,
                 name: v.name,
-                account: dtos::auth::AccountRef::try_from(v.account)?,
+                account: dtos::auth::AccountHandle::try_from(v.account)?,
                 labels: dtos::resource::ResourceLabels::try_from(v.labels)?,
                 annotations: dtos::resource::ResourceAnnotations::try_from(v.annotations)?,
                 generation: v.generation,

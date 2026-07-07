@@ -25,8 +25,8 @@
       "description": "Symbolic name of a resource that identifies it within a scope of an onwing account."
     },
     "account": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
-      "description": "Reference to an account that owns the resource.",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "description": "Link to the account that owns the resource.",
       "unevaluatedProperties": false
     },
     "labels": {

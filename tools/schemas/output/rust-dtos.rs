@@ -52,6 +52,8 @@ pub mod auth {
     static ACCOUNT_SCHEMA: std::sync::LazyLock<TypeUri> =
         std::sync::LazyLock::new(|| TypeUri::new_unchecked(ACCOUNT_SCHEMA_STR));
 
+    pub use crate::auth::AccountHandle;
+
     pub use crate::auth::AccountRef;
 
     /// Predefined account specification.
@@ -2039,8 +2041,8 @@ pub mod resource {
         pub id: ResourceID,
         /// Symbolic name of a resource that identifies it within a scope of an onwing account.
         pub name: ResourceName,
-        /// Reference to an account that owns the resource.
-        pub account: auth::AccountRef,
+        /// Link to the account that owns the resource.
+        pub account: auth::AccountHandle,
         /// Map of string keys and values that can be used to organize, categorize, and query resources.
         pub labels: resource::ResourceLabels,
         /// Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
@@ -2064,7 +2066,7 @@ pub mod resource {
         pub id: Option<ResourceID>,
         /// Symbolic name of a resource that identifies it within a scope of an onwing account.
         pub name: ResourceName,
-        /// Reference to an account that owns the resource.
+        /// Reference to the account that owns the resource.
         pub account: Option<auth::AccountRef>,
         /// Map of string keys and values that can be used to organize, categorize, and query resources.
         pub labels: Option<resource::ResourceLabels>,

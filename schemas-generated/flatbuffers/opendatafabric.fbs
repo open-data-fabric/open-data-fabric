@@ -76,7 +76,7 @@ table ResourceHeadersInput {
   id: [ubyte];
   // Symbolic name of a resource that identifies it within a scope of an onwing account.
   name: string;
-  // Reference to an account that owns the resource.
+  // Reference to the account that owns the resource.
   account: AccountRef;
   // Map of string keys and values that can be used to organize, categorize, and query resources.
   labels: ResourceLabels;
@@ -132,6 +132,20 @@ table AccountSpecInput {
   avatar_url: string;
   // Password for local authentication. Absent for SSO or DID-based accounts.
   password: Secret;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AccountHandle
+// Link to an account.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table AccountHandle {
+  // DID of the account.
+  id: [ubyte];
+  // Name of the account.
+  name: string;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2528,8 +2542,8 @@ table ResourceHeaders {
   id: [ubyte];
   // Symbolic name of a resource that identifies it within a scope of an onwing account.
   name: string;
-  // Reference to an account that owns the resource.
-  account: AccountRef;
+  // Link to the account that owns the resource.
+  account: AccountHandle;
   // Map of string keys and values that can be used to organize, categorize, and query resources.
   labels: ResourceLabels;
   // Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
