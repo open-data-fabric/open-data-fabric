@@ -5,7 +5,7 @@ headers:
   account: sergiimk
   labels:
     env: prod  # Simple
-    https://opendatafabric.org/schemas/datset/v1alpha1/DatasetKind: Root  # Typed
+    https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind: Root  # Typed
   annotations:
     repo:  # Nested
       url: https://github.com/open-data-fabric
