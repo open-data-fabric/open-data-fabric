@@ -1,12 +1,10 @@
 {
-  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpecInput",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec",
   "description": "Specifies resource attributes and relations between resources on which auth policies act upon.",
   "type": "object",
-  "required": [
-    "relations",
-    "attributes"
-  ],
+  "required": [],
   "properties": {
     "relations": {
       "type": "array",

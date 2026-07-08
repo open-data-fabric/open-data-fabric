@@ -1,13 +1,12 @@
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec",
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpecInput",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec",
   "description": "Represents a desired state of the dataset metadata.",
   "type": "object",
   "required": [
-    "did",
     "kind",
-    "metadata",
-    "volume"
+    "metadata"
   ],
   "properties": {
     "did": {

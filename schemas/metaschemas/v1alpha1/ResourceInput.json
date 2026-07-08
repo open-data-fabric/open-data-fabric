@@ -1,7 +1,8 @@
 {
-  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Metaschema for the canonical resource representation.",
+  "canonicalType": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
+  "description": "Metaschema for the user-authored resource manifests.",
   "allOf": [
     {
       "$ref": "https://json-schema.org/draft/2020-12/schema"
@@ -14,14 +15,12 @@
           "required": [
             "$schema",
             "headers",
-            "spec",
-            "status"
+            "spec"
           ],
           "properties": {
             "$schema": {},
             "headers": {},
-            "spec": {},
-            "status": {}
+            "spec": {}
           }
         }
       }

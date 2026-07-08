@@ -1187,23 +1187,28 @@ See also:
 
 - [auth](#reference-auth)
   - [Account](#account-schema)
+  - [AccountHandle](#accounthandle-schema)
   - [AccountRef](#accountref-schema)
   - [AccountSpec](#accountspec-schema)
+  - [AccountSpecInput](#accountspecinput-schema)
   - [AccountType](#accounttype-schema)
   - [Attribute](#attribute-schema)
   - [Relation](#relation-schema)
   - [Relations](#relations-schema)
   - [RelationsSpec](#relationsspec-schema)
+  - [RelationsSpecInput](#relationsspecinput-schema)
 - [config](#reference-config)
   - [Secret](#secret-schema)
   - [SecretSet](#secretset-schema)
   - [SecretSetSpec](#secretsetspec-schema)
+  - [SecretSetSpecInput](#secretsetspecinput-schema)
   - [Secrets](#secrets-schema)
   - [ValueRef](#valueref-schema)
   - [ValueRefs](#valuerefs-schema)
   - [Variable](#variable-schema)
   - [VariableSet](#variableset-schema)
   - [VariableSetSpec](#variablesetspec-schema)
+  - [VariableSetSpecInput](#variablesetspecinput-schema)
   - [Variables](#variables-schema)
 - [data](#reference-data)
   - [DataField](#datafield-schema)
@@ -1223,6 +1228,7 @@ See also:
   - [DatasetKind](#datasetkind-schema)
   - [DatasetSelector](#datasetselector-schema)
   - [DatasetSpec](#datasetspec-schema)
+  - [DatasetSpecInput](#datasetspecinput-schema)
   - [DatasetVocabulary](#datasetvocabulary-schema)
   - [ExecuteTransform](#executetransform-schema)
   - [ExecuteTransformInput](#executetransforminput-schema)
@@ -1231,6 +1237,7 @@ See also:
   - [OffsetInterval](#offsetinterval-schema)
   - [Projection](#projection-schema)
   - [ProjectionSpec](#projectionspec-schema)
+  - [ProjectionSpecInput](#projectionspecinput-schema)
   - [Seed](#seed-schema)
   - [SetAttachments](#setattachments-schema)
   - [SetDataSchema](#setdataschema-schema)
@@ -1254,9 +1261,11 @@ See also:
 - [flow](#reference-flow)
   - [Flow](#flow-schema)
   - [FlowSpec](#flowspec-schema)
+  - [FlowSpecInput](#flowspecinput-schema)
   - [FlowTrigger](#flowtrigger-schema)
   - [Task](#task-schema)
   - [TaskSpec](#taskspec-schema)
+  - [TaskSpecInput](#taskspecinput-schema)
 - [legacy](#reference-legacy)
   - [AddPushSource](#addpushsource-schema)
   - [DatasetSnapshot](#datasetsnapshot-schema)
@@ -1271,6 +1280,8 @@ See also:
   - [ResourceAnnotations](#resourceannotations-schema)
   - [ResourceConditions](#resourceconditions-schema)
   - [ResourceHeaders](#resourceheaders-schema)
+  - [ResourceHeadersInput](#resourceheadersinput-schema)
+  - [ResourceInput](#resourceinput-schema)
   - [ResourceLabels](#resourcelabels-schema)
   - [ResourcePhase](#resourcephase-schema)
   - [ResourceRef](#resourceref-schema)
@@ -1279,6 +1290,7 @@ See also:
 - [sink](#reference-sink)
   - [WebhookTarget](#webhooktarget-schema)
   - [WebhookTargetSpec](#webhooktargetspec-schema)
+  - [WebhookTargetSpecInput](#webhooktargetspecinput-schema)
   - [WebhookTargetStatus](#webhooktargetstatus-schema)
 - [source](#reference-source)
   - [CompressionFormat](#compressionformat-schema)
@@ -1297,12 +1309,14 @@ See also:
   - [SourceCaching](#sourcecaching-schema)
   - [SourceOrdering](#sourceordering-schema)
   - [SourceSpec](#sourcespec-schema)
+  - [SourceSpecInput](#sourcespecinput-schema)
   - [SourceState](#sourcestate-schema)
 - [storage](#reference-storage)
   - [AwsCredentials](#awscredentials-schema)
   - [PersistentVolume](#persistentvolume-schema)
   - [PersistentVolumeRef](#persistentvolumeref-schema)
   - [PersistentVolumeSpec](#persistentvolumespec-schema)
+  - [PersistentVolumeSpecInput](#persistentvolumespecinput-schema)
   - [VolumeCapacity](#volumecapacity-schema)
 
 <a name="reference-auth"></a>
@@ -1314,11 +1328,23 @@ Registers an account in an predefined account provider.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [AccountSpec](#accountspec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [AccountSpecInput](#accountspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Account.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="accounthandle-schema"></a>
+##### AccountHandle
+Link to an account.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `id` | `string` | V |  | DID of the account. |
+| `name` | `string` | V |  | Name of the account. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountHandle.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1349,6 +1375,23 @@ Predefined account specification.
 | `password` | [Secret](#secret-schema) |  |  | Password for local authentication. Absent for SSO or DID-based accounts. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="accountspecinput-schema"></a>
+##### AccountSpecInput
+Predefined account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `did` | `string` |  |  | DID associated with the account by ODF or an external system |
+| `accountType` | [AccountType](#accounttype-schema) |  |  | Type of the account.<br/><br/>Default: "User" |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `email` | `string` | V |  | Email address of the account. |
+| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
+| `password` | [Secret](#secret-schema) |  |  | Password for local authentication. Absent for SSO or DID-based accounts. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1401,9 +1444,8 @@ Specified relations between resources on which auth policies act upon.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [RelationsSpec](#relationsspec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [RelationsSpecInput](#relationsspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Relations.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1415,10 +1457,23 @@ Specifies resource attributes and relations between resources on which auth poli
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `relations` | array([Relation](#relation-schema)) | V |  | Relations between resources. |
+| `attributes` | array([Attribute](#attribute-schema)) | V |  | Resource attributes. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="relationsspecinput-schema"></a>
+##### RelationsSpecInput
+Specifies resource attributes and relations between resources on which auth policies act upon.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
 | `relations` | array([Relation](#relation-schema)) |  |  | Relations between resources. |
 | `attributes` | array([Attribute](#attribute-schema)) |  |  | Resource attributes. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1444,9 +1499,8 @@ Defines a set of secrets stored and managed by the ODF node.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [SecretSetSpec](#secretsetspec-schema) | V |  | Specifies the desired state of the secret set. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [SecretSetSpecInput](#secretsetspecinput-schema) | V |  | Specifies the desired state of the secret set. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/SecretSet.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1461,6 +1515,18 @@ Defines a set of secrets stored and managed by the ODF node and accessible via e
 | `secrets` | [Secrets](#secrets-schema) | V |  | Key value pairs of secrets. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/SecretSetSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="secretsetspecinput-schema"></a>
+##### SecretSetSpecInput
+Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `secrets` | [Secrets](#secrets-schema) | V |  | Key value pairs of secrets. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/SecretSetSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1555,9 +1621,8 @@ Defines a set of variables stored and managed by the ODF node.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [VariableSetSpec](#variablesetspec-schema) | V |  | Specifies the desired state of the variable set. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [VariableSetSpecInput](#variablesetspecinput-schema) | V |  | Specifies the desired state of the variable set. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/VariableSet.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1572,6 +1637,18 @@ Defines a set of variables stored and managed by the ODF node and accessible via
 | `variables` | [Variables](#variables-schema) | V |  | Key value pairs of variables. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/VariableSetSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="variablesetspecinput-schema"></a>
+##### VariableSetSpecInput
+Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `variables` | [Variables](#variables-schema) | V |  | Key value pairs of variables. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/VariableSetSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2063,9 +2140,8 @@ Represents a desired state of a dataset.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [DatasetSpec](#datasetspec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [DatasetSpecInput](#datasetspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Dataset.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2106,12 +2182,27 @@ Represents a desired state of the dataset metadata.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `did` | `string` | V | [dataset-id](#dataset-identity) | DID of the dataset in global ODF network |
+| `kind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
+| `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
+| `volume` | [PersistentVolumeRef](#persistentvolumeref-schema) | V |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datasetspecinput-schema"></a>
+##### DatasetSpecInput
+Represents a desired state of the dataset metadata.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
 | `did` | `string` |  | [dataset-id](#dataset-identity) | DID of the dataset in global ODF network |
 | `kind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
 | `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
 | `volume` | [PersistentVolumeRef](#persistentvolumeref-schema) |  |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2222,9 +2313,8 @@ Represents a projection of a dataaset history into a state for fast lookups.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [ProjectionSpec](#projectionspec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [ProjectionSpecInput](#projectionspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Projection.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2240,6 +2330,19 @@ Represents a projection of a dataaset history into a state for fast lookups.
 | `project` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ProjectionSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="projectionspecinput-schema"></a>
+##### ProjectionSpecInput
+Represents a projection of a dataaset history into a state for fast lookups.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `inputs` | array([TransformInput](#transforminput-schema)) | V |  | Datasets that will be used as sources. |
+| `project` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ProjectionSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2633,9 +2736,8 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [FlowSpec](#flowspec-schema) | V |  | Specifies the desired state of the flow. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [FlowSpecInput](#flowspecinput-schema) | V |  | Specifies the desired state of the flow. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/Flow.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2652,6 +2754,20 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | `tasks` | array([TaskSpec](#taskspec-schema)) | V |  | List of tasks to run consecutively. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowspecinput-schema"></a>
+##### FlowSpecInput
+Defines a sequence of tasks to be executed upon certain trigger conditions.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `target` | [ResourceSelector](#resourceselector-schema) | V |  | Defines resources for which this flow will be instantiated. |
+| `triggers` | array([FlowTrigger](#flowtrigger-schema)) | V |  | Conditions that cause this flow to execute. |
+| `tasks` | array([TaskSpecInput](#taskspecinput-schema)) | V |  | List of tasks to run consecutively. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2730,9 +2846,8 @@ An individual work item to be executed.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [TaskSpec](#taskspec-schema) |  |  | Specifies the desired state of the task. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [TaskSpecInput](#taskspecinput-schema) |  |  | Specifies the desired state of the task. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/Task.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2796,6 +2911,67 @@ Dispatches a certain payload to a specific `WebhookTarget`.
 | `payload` | `string` |  |  | The payload to send. May include templating. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-schema"></a>
+##### TaskSpecInput
+An individual work item to be executed as part of a flow.
+
+| Union Type | Description |
+| :---: | --- |
+| [TaskSpecInput::Ingest](#taskspecinput-ingest-schema) | Fetches data from a source and appends it to a dataset. |
+| [TaskSpecInput::Compaction](#taskspecinput-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
+| [TaskSpecInput::GarbageCollection](#taskspecinput-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
+| [TaskSpecInput::WebhookCall](#taskspecinput-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-compaction-schema"></a>
+##### TaskSpecInput::Compaction
+Compacts data files in matching datasets to improve query performance.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-garbagecollection-schema"></a>
+##### TaskSpecInput::GarbageCollection
+Removes unreferenced data files from matching datasets.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-ingest-schema"></a>
+##### TaskSpecInput::Ingest
+Fetches data from a source and appends it to a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
+| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-webhookcall-schema"></a>
+##### TaskSpecInput::WebhookCall
+Dispatches a certain payload to a specific `WebhookTarget`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `target` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookTarget`. |
+| `payload` | `string` |  |  | The payload to send. May include templating. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3005,14 +3181,14 @@ Filters that work on resource labels and identity headers.
 
 <a name="resource-schema"></a>
 ##### Resource
-Top-level container for resources that specifies the type and version of the resource it's specifying and carries identity, ownership, and status information.
+Top-level container for canonical representation of a resource that specifies the type and version of the resource, carries identity, ownership, and status information.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`. |
 | `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | `object` | V | `generic` | Specifies the desired state of a resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `status` | [ResourceStatus](#resourcestatus-schema) | V |  | Resource lifecycle and reconciliation information. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/Resource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3080,17 +3256,47 @@ Container for identity and ownership information of a resource.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `id` | `string` |  |  | Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation. |
+| `id` | `string` | V |  | Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation. |
 | `name` | `string` | V |  | Symbolic name of a resource that identifies it within a scope of an onwing account. |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the resource. |
-| `labels` | [ResourceLabels](#resourcelabels-schema) |  |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
-| `annotations` | [ResourceAnnotations](#resourceannotations-schema) |  |  | Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
-| `generation` | `integer` |  | `uint64` | A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`. |
-| `createdAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was first applied and assigned an identity. |
-| `updatedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was last updated, including header, spec, and status updates. |
+| `account` | [AccountHandle](#accounthandle-schema) | V |  | Link to the account that owns the resource. |
+| `labels` | [ResourceLabels](#resourcelabels-schema) | V |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
+| `annotations` | [ResourceAnnotations](#resourceannotations-schema) | V |  | Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
+| `generation` | `integer` | V | `uint64` | A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`. |
+| `createdAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was first applied and assigned an identity. |
+| `updatedAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was last updated, including header, spec, and status updates. |
 | `deletedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was deleted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceHeaders.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="resourceheadersinput-schema"></a>
+##### ResourceHeadersInput
+Container for identity and ownership information of a resource.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `id` | `string` |  |  | Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation. |
+| `name` | `string` | V |  | Symbolic name of a resource that identifies it within a scope of an onwing account. |
+| `account` | [AccountRef](#accountref-schema) |  |  | Reference to the account that owns the resource. |
+| `labels` | [ResourceLabels](#resourcelabels-schema) |  |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
+| `annotations` | [ResourceAnnotations](#resourceannotations-schema) |  |  | Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceHeadersInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="resourceinput-schema"></a>
+##### ResourceInput
+Top-level container for user-authored representation of a resource that specifies the type and version of the resource and its desired state.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | `object` | V | `generic` | Specifies the desired state of a resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3177,7 +3383,7 @@ Resource lifecycle and reconciliation information.
 | `phase` | [ResourcePhase](#resourcephase-schema) | V |  | Represents the lifecycle stage of a resource. |
 | `observedGeneration` | `integer` |  | `uint64` | Resource generation that was last processed by the main resource controller. |
 | `reconciledAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the controller last reconciled the desired resource state as defined in `observedGeneration`. |
-| `conditions` | [ResourceConditions](#resourceconditions-schema) |  |  | Detailed conditions describing the state of the resource that are added by controllers. |
+| `conditions` | [ResourceConditions](#resourceconditions-schema) | V |  | Detailed conditions describing the state of the resource that are added by controllers. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3192,9 +3398,8 @@ Defines a webhook target endpoint that can receive event notifications and data.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [WebhookTargetSpec](#webhooktargetspec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [WebhookTargetSpecInput](#webhooktargetspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTarget.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3210,6 +3415,19 @@ Defines a webhook target endpoint that can receive event notifications and data.
 | `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="webhooktargetspecinput-schema"></a>
+##### WebhookTargetSpecInput
+Defines a webhook target endpoint that can receive event notifications and data.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `url` | `string` | V | `url` | Target url of the webhook. |
+| `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3754,9 +3972,8 @@ Defines an external source of data for ingestion.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [SourceSpec](#sourcespec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [SourceSpecInput](#sourcespecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Source.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3813,6 +4030,24 @@ Specifies an external source of data for ingestion.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+<a name="sourcespecinput-schema"></a>
+##### SourceSpecInput
+Specifies an external source of data for ingestion.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `config` | [ValueRefs](#valuerefs-schema) |  |  | Brings the configuration values into the local `config` context. |
+| `ingress` | [Ingress](#ingress-schema) |  |  | Determines where data is sourced from. |
+| `prepare` | array([PrepStep](#prepstep-schema)) |  |  | Defines how raw data is prepared before reading. |
+| `read` | [ReadStep](#readstep-schema) | V |  | Defines how data is read into structured format. |
+| `preprocess` | [Transform](#transform-schema) |  |  | Pre-processing query that shapes the data. |
+| `merge` | [MergeStrategy](#mergestrategy-schema) |  |  | Determines how newly-ingested data should be merged with existing history. |
+| `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Defines the mapping of system fields to dataset column names. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="sourcestate-schema"></a>
 ##### SourceState
 The state of the source the data was added from to allow fast resuming.
@@ -3849,9 +4084,8 @@ Defines a storage volume where data can be stored and its access credentials.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [PersistentVolumeSpec](#persistentvolumespec-schema) | V |  | Specifies the desired state of the resource. |
-| `status` | [ResourceStatus](#resourcestatus-schema) |  |  | Resource lifecycle and reconciliation information. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [PersistentVolumeSpecInput](#persistentvolumespecinput-schema) | V |  | Specifies the desired state of the resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/PersistentVolume.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3897,6 +4131,35 @@ An Amazon S3 or S3-compatible object storage bucket.
 | `credentials` | [AwsCredentials](#awscredentials-schema) |  |  | Access credentials for the bucket. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/PersistentVolumeSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="persistentvolumespecinput-schema"></a>
+##### PersistentVolumeSpecInput
+Defines a storage volume where data can be stored and its access credentials.
+
+| Union Type | Description |
+| :---: | --- |
+| [PersistentVolumeSpecInput::S3](#persistentvolumespecinput-s3-schema) | An Amazon S3 or S3-compatible object storage bucket. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/PersistentVolumeSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="persistentvolumespecinput-s3-schema"></a>
+##### PersistentVolumeSpecInput::S3
+An Amazon S3 or S3-compatible object storage bucket.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `endpoint` | `string` |  | `url` | S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores e.g. `https://s3.amazonaws.com`. |
+| `region` | `string` |  |  | AWS region where the bucket is located e.g. `us-west-2`. |
+| `bucket` | `string` | V |  | Name of the S3 bucket. |
+| `prefix` | `string` |  |  | Optional path prefix within the bucket. |
+| `capacity` | [VolumeCapacity](#volumecapacity-schema) |  |  | Storage capacity allocation. |
+| `credentials` | [AwsCredentials](#awscredentials-schema) |  |  | Access credentials for the bucket. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/PersistentVolumeSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 

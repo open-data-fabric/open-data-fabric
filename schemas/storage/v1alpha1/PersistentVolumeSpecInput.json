@@ -1,0 +1,52 @@
+{
+  "$id": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolumeSpec",
+  "description": "Defines a storage volume where data can be stored and its access credentials.",
+  "$defs": {
+    "S3": {
+      "description": "An Amazon S3 or S3-compatible object storage bucket.",
+      "type": "object",
+      "required": [
+        "bucket"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores e.g. `https://s3.amazonaws.com`."
+        },
+        "region": {
+          "type": "string",
+          "description": "AWS region where the bucket is located e.g. `us-west-2`."
+        },
+        "bucket": {
+          "type": "string",
+          "description": "Name of the S3 bucket."
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Optional path prefix within the bucket."
+        },
+        "capacity": {
+          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/VolumeCapacity",
+          "description": "Storage capacity allocation.",
+          "unevaluatedProperties": false
+        },
+        "credentials": {
+          "$ref": "https://opendatafabric.org/schemas/storage/v1alpha1/AwsCredentials",
+          "description": "Access credentials for the bucket.",
+          "unevaluatedProperties": false
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "S3" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/S3" }
+      ]
+    }
+  ]
+}

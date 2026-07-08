@@ -1,0 +1,27 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Link to an account.",
+  "type": "object",
+  "codegen": {
+    "rust": {
+      "dtoType": "AccountHandle"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "account-id",
+      "description": "DID of the account."
+    },
+    "name": {
+      "type": "string",
+      "format": "account-name",
+      "description": "Name of the account."
+    }
+  }
+}

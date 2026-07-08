@@ -192,6 +192,7 @@ fn render_impl(
         if typ.id().name() == "Manifest"
             || typ.id().name() == "DatasetSnapshot"
             || typ.id().name() == "Resource"
+            || typ.id().name() == "ResourceInput"
         {
             continue;
         }

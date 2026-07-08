@@ -16,29 +16,34 @@ graph TD
 
   subgraph auth["auth"]
     Account
+    AccountHandle
     AccountRef
     AccountSpec
+    AccountSpecInput
     AccountType
     Attribute
     Relation
     Relations
     RelationsSpec
+    RelationsSpecInput
   end
-  class Account,AccountRef,AccountSpec,AccountType,Attribute,Relation,Relations,RelationsSpec ctx_auth
+  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Attribute,Relation,Relations,RelationsSpec,RelationsSpecInput ctx_auth
 
   subgraph config["config"]
     Secret
     SecretSet
     SecretSetSpec
+    SecretSetSpecInput
     Secrets
     ValueRef
     ValueRefs
     Variable
     VariableSet
     VariableSetSpec
+    VariableSetSpecInput
     Variables
   end
-  class Secret,SecretSet,SecretSetSpec,Secrets,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,Variables ctx_config
+  class Secret,SecretSet,SecretSetSpec,SecretSetSpecInput,Secrets,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,VariableSetSpecInput,Variables ctx_config
 
   subgraph data["data"]
     DataField
@@ -62,6 +67,7 @@ graph TD
     DatasetKind
     DatasetSelector
     DatasetSpec
+    DatasetSpecInput
     DatasetVocabulary
     ExecuteTransform
     ExecuteTransformInput
@@ -70,6 +76,7 @@ graph TD
     OffsetInterval
     Projection
     ProjectionSpec
+    ProjectionSpecInput
     Seed
     SetAttachments
     SetDataSchema
@@ -84,7 +91,7 @@ graph TD
     TransformInput
     Watermark
   end
-  class AddData,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetSelector,DatasetSpec,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
+  class AddData,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
 
   subgraph engine["engine"]
     RawQueryRequest
@@ -111,6 +118,7 @@ graph TD
   subgraph flow["flow"]
     Flow
     FlowSpec
+    FlowSpecInput
     FlowTrigger
     FlowTrigger_Dataset["FlowTrigger::Dataset"]
     FlowTrigger_Event["FlowTrigger::Event"]
@@ -122,8 +130,13 @@ graph TD
     TaskSpec_GarbageCollection["TaskSpec::GarbageCollection"]
     TaskSpec_Ingest["TaskSpec::Ingest"]
     TaskSpec_WebhookCall["TaskSpec::WebhookCall"]
+    TaskSpecInput
+    TaskSpecInput_Compaction["TaskSpecInput::Compaction"]
+    TaskSpecInput_GarbageCollection["TaskSpecInput::GarbageCollection"]
+    TaskSpecInput_Ingest["TaskSpecInput::Ingest"]
+    TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
   end
-  class Flow,FlowSpec,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Schedule,FlowTrigger_Source,Task,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_WebhookCall ctx_flow
+  class Flow,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Schedule,FlowTrigger_Source,Task,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_WebhookCall ctx_flow
 
   subgraph legacy["legacy"]
     AddPushSource
@@ -147,21 +160,24 @@ graph TD
     ResourceAnnotations
     ResourceConditions
     ResourceHeaders
+    ResourceHeadersInput
+    ResourceInput
     ResourceLabels
     ResourcePhase
     ResourceRef
     ResourceSelector
     ResourceStatus
   end
-  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHeaders,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
+  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
 
   subgraph sink["sink"]
     WebhookTarget
     WebhookTargetSpec
+    WebhookTargetSpecInput
     WebhookTargetStatus
     WebhookTargetStatus_Value["WebhookTargetStatus::Value"]
   end
-  class WebhookTarget,WebhookTargetSpec,WebhookTargetStatus,WebhookTargetStatus_Value ctx_sink
+  class WebhookTarget,WebhookTargetSpec,WebhookTargetSpecInput,WebhookTargetStatus,WebhookTargetStatus_Value ctx_sink
 
   subgraph source["source"]
     CompressionFormat
@@ -198,9 +214,10 @@ graph TD
     SourceCaching_Forever["SourceCaching::Forever"]
     SourceOrdering
     SourceSpec
+    SourceSpecInput
     SourceState
   end
-  class CompressionFormat,EnvVar,EventTimeSource,EventTimeSource_FromMetadata,EventTimeSource_FromPath,EventTimeSource_FromSystemTime,IngestParams,Ingress,Ingress_Container,Ingress_EvmLogs,Ingress_FilesGlob,Ingress_Mqtt,Ingress_RestEndpoint,Ingress_Url,IngressBuffer,IngressBuffer_Memory,MergeStrategy,MergeStrategy_Append,MergeStrategy_ChangelogStream,MergeStrategy_Ledger,MergeStrategy_Snapshot,MergeStrategy_UpsertStream,MqttQos,MqttTopicSubscription,PrepStep,PrepStep_Decompress,PrepStep_Pipe,ReadStep,RequestHeader,Source,SourceCaching,SourceCaching_Forever,SourceOrdering,SourceSpec,SourceState ctx_source
+  class CompressionFormat,EnvVar,EventTimeSource,EventTimeSource_FromMetadata,EventTimeSource_FromPath,EventTimeSource_FromSystemTime,IngestParams,Ingress,Ingress_Container,Ingress_EvmLogs,Ingress_FilesGlob,Ingress_Mqtt,Ingress_RestEndpoint,Ingress_Url,IngressBuffer,IngressBuffer_Memory,MergeStrategy,MergeStrategy_Append,MergeStrategy_ChangelogStream,MergeStrategy_Ledger,MergeStrategy_Snapshot,MergeStrategy_UpsertStream,MqttQos,MqttTopicSubscription,PrepStep,PrepStep_Decompress,PrepStep_Pipe,ReadStep,RequestHeader,Source,SourceCaching,SourceCaching_Forever,SourceOrdering,SourceSpec,SourceSpecInput,SourceState ctx_source
 
   subgraph storage["storage"]
     AwsCredentials
@@ -208,15 +225,18 @@ graph TD
     PersistentVolumeRef
     PersistentVolumeSpec
     PersistentVolumeSpec_S3["PersistentVolumeSpec::S3"]
+    PersistentVolumeSpecInput
+    PersistentVolumeSpecInput_S3["PersistentVolumeSpecInput::S3"]
     VolumeCapacity
   end
-  class AwsCredentials,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,VolumeCapacity ctx_storage
+  class AwsCredentials,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
 
-  Account -->|"headers"| ResourceHeaders
-  Account -->|"spec"| AccountSpec
-  Account -->|"status"| ResourceStatus
+  Account -->|"headers"| ResourceHeadersInput
+  Account -->|"spec"| AccountSpecInput
   AccountSpec -->|"account_type"| AccountType
   AccountSpec -->|"password"| Secret
+  AccountSpecInput -->|"account_type"| AccountType
+  AccountSpecInput -->|"password"| Secret
   AddData -->|"new_data"| DataSlice
   AddData -->|"new_checkpoint"| Checkpoint
   AddData -->|"new_source_state"| SourceState
@@ -234,9 +254,8 @@ graph TD
   DataSchema -->|"fields"| DataField
   DataSchema -->|"extra"| ExtraAttributes
   DataSlice -->|"offset_interval"| OffsetInterval
-  Dataset -->|"headers"| ResourceHeaders
-  Dataset -->|"spec"| DatasetSpec
-  Dataset -->|"status"| ResourceStatus
+  Dataset -->|"headers"| ResourceHeadersInput
+  Dataset -->|"spec"| DatasetSpecInput
   DatasetSelector -->|"account"| AccountRef
   DatasetSelector -->|"labels"| LabelFilter
   DatasetSelector -->|"kind"| DatasetKind
@@ -245,6 +264,9 @@ graph TD
   DatasetSpec -->|"kind"| DatasetKind
   DatasetSpec -->|"metadata"| MetadataEvent
   DatasetSpec -->|"volume"| PersistentVolumeRef
+  DatasetSpecInput -->|"kind"| DatasetKind
+  DatasetSpecInput -->|"metadata"| MetadataEvent
+  DatasetSpecInput -->|"volume"| PersistentVolumeRef
   EventTimeSource -->|"variant"| EventTimeSource_FromMetadata
   EventTimeSource -->|"variant"| EventTimeSource_FromPath
   EventTimeSource -->|"variant"| EventTimeSource_FromSystemTime
@@ -264,12 +286,14 @@ graph TD
   FetchStep_Url -->|"event_time"| EventTimeSource
   FetchStep_Url -->|"cache"| SourceCaching
   FetchStep_Url -->|"headers"| RequestHeader
-  Flow -->|"headers"| ResourceHeaders
-  Flow -->|"spec"| FlowSpec
-  Flow -->|"status"| ResourceStatus
+  Flow -->|"headers"| ResourceHeadersInput
+  Flow -->|"spec"| FlowSpecInput
   FlowSpec -->|"target"| ResourceSelector
   FlowSpec -->|"triggers"| FlowTrigger
   FlowSpec -->|"tasks"| TaskSpec
+  FlowSpecInput -->|"target"| ResourceSelector
+  FlowSpecInput -->|"triggers"| FlowTrigger
+  FlowSpecInput -->|"tasks"| TaskSpecInput
   FlowTrigger -->|"variant"| FlowTrigger_Schedule
   FlowTrigger -->|"variant"| FlowTrigger_Event
   FlowTrigger -->|"variant"| FlowTrigger_Source
@@ -313,21 +337,24 @@ graph TD
   MetadataEvent -->|"variant"| DisablePushSource
   MetadataEvent -->|"variant"| DisablePollingSource
   MqttTopicSubscription -->|"qos"| MqttQos
-  PersistentVolume -->|"headers"| ResourceHeaders
-  PersistentVolume -->|"spec"| PersistentVolumeSpec
-  PersistentVolume -->|"status"| ResourceStatus
+  PersistentVolume -->|"headers"| ResourceHeadersInput
+  PersistentVolume -->|"spec"| PersistentVolumeSpecInput
   PersistentVolumeRef -->|"account"| AccountRef
   PersistentVolumeSpec -->|"variant"| PersistentVolumeSpec_S3
   PersistentVolumeSpec_S3 -->|"capacity"| VolumeCapacity
   PersistentVolumeSpec_S3 -->|"credentials"| AwsCredentials
+  PersistentVolumeSpecInput -->|"variant"| PersistentVolumeSpecInput_S3
+  PersistentVolumeSpecInput_S3 -->|"capacity"| VolumeCapacity
+  PersistentVolumeSpecInput_S3 -->|"credentials"| AwsCredentials
   PrepStep -->|"variant"| PrepStep_Decompress
   PrepStep -->|"variant"| PrepStep_Pipe
   PrepStep_Decompress -->|"format"| CompressionFormat
-  Projection -->|"headers"| ResourceHeaders
-  Projection -->|"spec"| ProjectionSpec
-  Projection -->|"status"| ResourceStatus
+  Projection -->|"headers"| ResourceHeadersInput
+  Projection -->|"spec"| ProjectionSpecInput
   ProjectionSpec -->|"inputs"| TransformInput
   ProjectionSpec -->|"project"| Transform
+  ProjectionSpecInput -->|"inputs"| TransformInput
+  ProjectionSpecInput -->|"project"| Transform
   RawQueryRequest -->|"transform"| Transform
   RawQueryResponse -->|"variant"| RawQueryResponse_Progress
   RawQueryResponse -->|"variant"| RawQueryResponse_Success
@@ -335,25 +362,30 @@ graph TD
   RawQueryResponse -->|"variant"| RawQueryResponse_InternalError
   Relation -->|"subject"| ResourceRef
   Relation -->|"object"| ResourceRef
-  Relations -->|"headers"| ResourceHeaders
-  Relations -->|"spec"| RelationsSpec
-  Relations -->|"status"| ResourceStatus
+  Relations -->|"headers"| ResourceHeadersInput
+  Relations -->|"spec"| RelationsSpecInput
   RelationsSpec -->|"relations"| Relation
   RelationsSpec -->|"attributes"| Attribute
+  RelationsSpecInput -->|"relations"| Relation
+  RelationsSpecInput -->|"attributes"| Attribute
   Resource -->|"headers"| ResourceHeaders
   Resource -->|"status"| ResourceStatus
-  ResourceHeaders -->|"account"| AccountRef
+  ResourceHeaders -->|"account"| AccountHandle
   ResourceHeaders -->|"labels"| ResourceLabels
   ResourceHeaders -->|"annotations"| ResourceAnnotations
+  ResourceHeadersInput -->|"account"| AccountRef
+  ResourceHeadersInput -->|"labels"| ResourceLabels
+  ResourceHeadersInput -->|"annotations"| ResourceAnnotations
+  ResourceInput -->|"headers"| ResourceHeadersInput
   ResourceRef -->|"account"| AccountRef
   ResourceSelector -->|"account"| AccountRef
   ResourceSelector -->|"labels"| LabelFilter
   ResourceStatus -->|"phase"| ResourcePhase
   ResourceStatus -->|"conditions"| ResourceConditions
-  SecretSet -->|"headers"| ResourceHeaders
-  SecretSet -->|"spec"| SecretSetSpec
-  SecretSet -->|"status"| ResourceStatus
+  SecretSet -->|"headers"| ResourceHeadersInput
+  SecretSet -->|"spec"| SecretSetSpecInput
   SecretSetSpec -->|"secrets"| Secrets
+  SecretSetSpecInput -->|"secrets"| Secrets
   Secrets -->|"values"| Secret
   Seed -->|"dataset_kind"| DatasetKind
   SetAttachments -->|"attachments"| Attachments
@@ -365,9 +397,8 @@ graph TD
   SetPollingSource -->|"merge"| MergeStrategy
   SetTransform -->|"inputs"| TransformInput
   SetTransform -->|"transform"| Transform
-  Source -->|"headers"| ResourceHeaders
-  Source -->|"spec"| SourceSpec
-  Source -->|"status"| ResourceStatus
+  Source -->|"headers"| ResourceHeadersInput
+  Source -->|"spec"| SourceSpecInput
   SourceCaching -->|"variant"| SourceCaching_Forever
   SourceSpec -->|"config"| ValueRefs
   SourceSpec -->|"ingress"| Ingress
@@ -376,9 +407,15 @@ graph TD
   SourceSpec -->|"preprocess"| Transform
   SourceSpec -->|"merge"| MergeStrategy
   SourceSpec -->|"vocab"| DatasetVocabulary
-  Task -->|"headers"| ResourceHeaders
-  Task -->|"spec"| TaskSpec
-  Task -->|"status"| ResourceStatus
+  SourceSpecInput -->|"config"| ValueRefs
+  SourceSpecInput -->|"ingress"| Ingress
+  SourceSpecInput -->|"prepare"| PrepStep
+  SourceSpecInput -->|"read"| ReadStep
+  SourceSpecInput -->|"preprocess"| Transform
+  SourceSpecInput -->|"merge"| MergeStrategy
+  SourceSpecInput -->|"vocab"| DatasetVocabulary
+  Task -->|"headers"| ResourceHeadersInput
+  Task -->|"spec"| TaskSpecInput
   TaskSpec -->|"variant"| TaskSpec_Ingest
   TaskSpec -->|"variant"| TaskSpec_Compaction
   TaskSpec -->|"variant"| TaskSpec_GarbageCollection
@@ -387,6 +424,14 @@ graph TD
   TaskSpec_Ingest -->|"source"| ResourceRef
   TaskSpec_Ingest -->|"params"| IngestParams
   TaskSpec_WebhookCall -->|"target"| ResourceRef
+  TaskSpecInput -->|"variant"| TaskSpecInput_Ingest
+  TaskSpecInput -->|"variant"| TaskSpecInput_Compaction
+  TaskSpecInput -->|"variant"| TaskSpecInput_GarbageCollection
+  TaskSpecInput -->|"variant"| TaskSpecInput_WebhookCall
+  TaskSpecInput_Compaction -->|"params"| CompactionParams
+  TaskSpecInput_Ingest -->|"source"| ResourceRef
+  TaskSpecInput_Ingest -->|"params"| IngestParams
+  TaskSpecInput_WebhookCall -->|"target"| ResourceRef
   Transform -->|"variant"| Transform_Sql
   Transform_Sql -->|"queries"| SqlQueryStep
   Transform_Sql -->|"temporal_tables"| TemporalTable
@@ -403,13 +448,13 @@ graph TD
   TransformResponse_Success -->|"new_offset_interval"| OffsetInterval
   ValueRef -->|"account"| AccountRef
   ValueRefs -->|"values"| ValueRef
-  VariableSet -->|"headers"| ResourceHeaders
-  VariableSet -->|"spec"| VariableSetSpec
-  VariableSet -->|"status"| ResourceStatus
+  VariableSet -->|"headers"| ResourceHeadersInput
+  VariableSet -->|"spec"| VariableSetSpecInput
   VariableSetSpec -->|"variables"| Variables
+  VariableSetSpecInput -->|"variables"| Variables
   Variables -->|"values"| Variable
-  WebhookTarget -->|"headers"| ResourceHeaders
-  WebhookTarget -->|"spec"| WebhookTargetSpec
-  WebhookTarget -->|"status"| ResourceStatus
+  WebhookTarget -->|"headers"| ResourceHeadersInput
+  WebhookTarget -->|"spec"| WebhookTargetSpecInput
   WebhookTargetSpec -->|"secret"| Secret
+  WebhookTargetSpecInput -->|"secret"| Secret
   WebhookTargetStatus -->|"value"| WebhookTargetStatus_Value

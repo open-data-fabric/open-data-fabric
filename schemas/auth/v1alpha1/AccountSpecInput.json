@@ -1,0 +1,42 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec",
+  "description": "Predefined account specification.",
+  "type": "object",
+  "required": [
+    "email"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "format": "account-id",
+      "description": "DID associated with the account by ODF or an external system"
+    },
+    "accountType": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountType",
+      "description": "Type of the account.",
+      "unevaluatedProperties": false,
+      "default": "User"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-friendly display name."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email address of the account."
+    },
+    "avatarUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the account's avatar image."
+    },
+    "password": {
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Secret",
+      "description": "Password for local authentication. Absent for SSO or DID-based accounts.",
+      "unevaluatedProperties": false
+    }
+  }
+}

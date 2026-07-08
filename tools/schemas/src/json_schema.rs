@@ -47,7 +47,11 @@ pub struct Schema {
 
     pub r#const: Option<serde_json::Value>,
 
-    // ODF Extensions
+    // ODF Extensions ///////////////////////////////////////////////////////////////////////////////////
+    //
+    /// Links input type with its canonical form
+    pub canonical_type: Option<SchemaId>,
+
     pub format: Option<Format>,
 
     /// Specifies the default value that all implementations must fall back onto if the property is not defined.
@@ -148,6 +152,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
         items: None,
         r#ref: None,
         r#const: None,
+        canonical_type: None,
         format: None,
         default: None,
         description: None,
@@ -203,7 +208,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
         id.as_str() != SchemaId::METASCHEMA_JSONSCHEMA
             && (id.as_str().starts_with(SchemaId::METASCHEMA_BASE_URL)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_MANIFEST)
-                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_INPUT)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_CONDITION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ENGINE_MESSAGE)
                 || id.name() == "Manifest"
@@ -219,6 +224,16 @@ pub fn lint(top_level_schemas: &[Schema]) {
         let (id, schema) = to_explore.pop().unwrap();
 
         explored.insert(id.clone());
+
+        if let Some(c) = &schema.canonical_type
+            && !explored.contains(c)
+        {
+            let schema = schemas
+                .get(&c)
+                .expect(&format!("Schema {c} referenced by {id} not found"));
+
+            to_explore.push((c.clone(), schema));
+        }
 
         for reff in extract_refs(schema) {
             let ref_id = match reff {
@@ -236,13 +251,15 @@ pub fn lint(top_level_schemas: &[Schema]) {
         }
     }
 
-    let unused_schemas: Vec<_> = schemas
+    let mut unused_schemas: Vec<_> = schemas
         .keys()
         .filter(|name| !explored.contains(*name))
         .map(|id| id.to_string())
         .collect();
 
     if !unused_schemas.is_empty() {
+        unused_schemas.sort();
+
         panic!(
             "Some schemas are never used:\n  {}",
             unused_schemas.join("\n  ")
@@ -323,8 +340,10 @@ impl SchemaId {
     pub const METASCHEMA_JSONSCHEMA: &str = "https://json-schema.org/draft/2020-12/schema";
     pub const METASCHEMA_MANIFEST: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest";
-    pub const METASCHEMA_RESOURCE: &str =
+    pub const METASCHEMA_RESOURCE_: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource";
+    pub const METASCHEMA_RESOURCE_INPUT: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput";
     pub const METASCHEMA_RESOURCE_CONDITION: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition";
     pub const METASCHEMA_ENGINE_MESSAGE: &str =

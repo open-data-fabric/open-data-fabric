@@ -1,0 +1,137 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec",
+  "description": "An individual work item to be executed as part of a flow.",
+  "$defs": {
+    "Ingest": {
+      "description": "Fetches data from a source and appends it to a dataset.",
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "description": "Reference to the source resource that defines how to fetch data.",
+          "unevaluatedProperties": false
+        },
+        "params": {
+          "$ref": "https://opendatafabric.org/schemas/source/v1alpha1/IngestParams",
+          "description": "Optional parameters to control ingestion behavior.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "Compaction": {
+      "description": "Compacts data files in matching datasets to improve query performance.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "params": {
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/CompactionParams",
+          "description": "Optional parameters to control ingestion behavior.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "GarbageCollection": {
+      "description": "Removes unreferenced data files from matching datasets.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "WebhookCall": {
+      "description": "Dispatches a certain payload to a specific `WebhookTarget`.",
+      "type": "object",
+      "required": [
+        "target"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "description": "Reference to the `WebhookTarget`.",
+          "unevaluatedProperties": false
+        },
+        "payload": {
+          "type": "string",
+          "description": "The payload to send. May include templating."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Ingest"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Ingest"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Compaction"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Compaction"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "GarbageCollection"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/GarbageCollection"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "WebhookCall"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/WebhookCall"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/Flow",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
   "description": "Defines a sequence of tasks to be executed upon certain trigger conditions.",
   "type": "object",
   "unevaluatedProperties": false,
@@ -17,18 +17,13 @@
       "description": "Identifies this resource type."
     },
     "headers": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpec",
+      "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowSpecInput",
       "description": "Specifies the desired state of the flow.",
-      "unevaluatedProperties": false
-    },
-    "status": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus",
-      "description": "Resource lifecycle and reconciliation information.",
       "unevaluatedProperties": false
     }
   }
