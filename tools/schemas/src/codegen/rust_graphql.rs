@@ -19,7 +19,6 @@ const PREAMBLE: &str = indoc::indoc!(
     use std::sync::Arc;
 
     use chrono::{DateTime, Utc};
-    use setty::types::{ByteSize, DurationString};
 
     use crate::prelude::*;
     use crate::queries::Dataset;
@@ -648,12 +647,85 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn collect_types(
+    model: &model::Model,
+    roots: &[&str],
+) -> std::collections::BTreeSet<model::TypeId> {
+    let roots: Vec<_> = roots
+        .iter()
+        .map(|id| {
+            model
+                .types
+                .get(&model::TypeId::new(crate::json_schema::SchemaId::new(*id)))
+                .unwrap_or_else(|| panic!("No such schema: {id}"))
+        })
+        .collect();
+
+    let mut types = Default::default();
+    for root in roots {
+        collect_types_rec(&model, root.id(), &mut types);
+    }
+
+    types
+}
+
+fn collect_types_rec(
+    model: &model::Model,
+    typ: &model::TypeId,
+    types: &mut std::collections::BTreeSet<model::TypeId>,
+) {
+    if types.contains(typ) {
+        return;
+    }
+
+    types.insert(typ.clone());
+    let typ = &model.types[typ];
+
+    match typ {
+        model::TypeDefinition::Struct(t) => {
+            for f in t.fields.values() {
+                collect_types_rec_2(model, &f.typ, types);
+            }
+        }
+        model::TypeDefinition::Union(t) => {
+            for v in &t.variants {
+                collect_types_rec(model, v, types);
+            }
+        }
+        model::TypeDefinition::Enum(_) => {}
+        model::TypeDefinition::Map(map) => {
+            collect_types_rec_2(model, &map.value_type, types);
+        }
+    }
+}
+
+fn collect_types_rec_2(
+    model: &model::Model,
+    typ: &model::Type,
+    types: &mut std::collections::BTreeSet<model::TypeId>,
+) {
+    match typ {
+        model::Type::Array(t) => collect_types_rec_2(model, &t.item_type, types),
+        model::Type::Custom(t) => collect_types_rec(model, t, types),
+        _ => {}
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+    let roots = [
+        "https://opendatafabric.org/schemas/resource/v1alpha1/Resource",
+        "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataBlock",
+    ];
+    let types = collect_types(&model, &roots);
     let custom_types = std::collections::BTreeMap::from(CUSTOM_TYPES);
 
     writeln!(w, "{}", PREAMBLE)?;
 
-    for typ in model.types.values() {
+    for typ in types {
+        let typ = &model.types[&typ];
+
         if typ.id().name() == "Manifest" {
             continue;
         }
@@ -669,9 +741,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         }
 
         if typ
-            .codegen_hints()
-            .get(&CodegenLanguage::Rust)
-            .and_then(|h| h.get(&CodegenHint::DtoType))
+            .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
             .is_some()
         {
             // Externally defined type
@@ -731,10 +801,8 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
             w,
         )?;
         let mut typ = format_type(&field.typ);
-        if let Some(container) = field
-            .codegen_hints
-            .get(&CodegenLanguage::Rust)
-            .and_then(|m| m.get(&CodegenHint::Container))
+        if let Some(container) =
+            field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container)
         {
             typ = format!("{container}<{typ}>");
         }
@@ -764,10 +832,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     for field in typ.fields.values() {
         let fname = format_ident(&field.name);
 
-        let container = field
-            .codegen_hints
-            .get(&CodegenLanguage::Rust)
-            .and_then(|m| m.get(&CodegenHint::Container));
+        let container = field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container);
 
         let convert = match &field.typ {
             model::Type::Array(_) => {
@@ -913,6 +978,7 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Path => format!("OSPath"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
+        model::Type::Did => format!("Did<'static>"),
         model::Type::Generic(_) => format!("serde_json::Value"),
         model::Type::Array(t) => format!("Vec<{}>", format_type(&t.item_type)),
         model::Type::Custom(name) => name.join("").to_string(),

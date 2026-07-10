@@ -1,7 +1,7 @@
 {
-  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition",
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Metaschema for the custom resource status condition.",
+  "description": "Metaschema for resolved resource references.",
   "allOf": [
     {
       "$ref": "https://json-schema.org/draft/2020-12/schema"
@@ -13,10 +13,14 @@
         "properties": {
           "type": "object",
           "required": [
-            "value"
+            "id",
+            "name"
           ],
           "properties": {
-            "value": {}
+            "account": {},
+            "type": {},
+            "id": {},
+            "name": {}
           }
         }
       }

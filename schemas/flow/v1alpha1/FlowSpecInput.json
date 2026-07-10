@@ -18,7 +18,7 @@
     "triggers": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger",
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTriggerInput",
         "unevaluatedProperties": false
       },
       "description": "Conditions that cause this flow to execute."

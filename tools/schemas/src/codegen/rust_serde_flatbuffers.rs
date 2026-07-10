@@ -1,5 +1,5 @@
 use crate::codegen::rust_common::format_ident;
-use crate::json_schema::{CodegenHint, CodegenLanguage};
+use crate::json_schema::{CodegenHint, CodegenLanguage, FlatbuffersMapFormat};
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::borrow::Cow;
@@ -156,6 +156,7 @@ impl Helpers {
             | model::Type::Path
             | model::Type::Regex
             | model::Type::Url
+            | model::Type::Did
             | model::Type::Generic(_)
             | model::Type::Array(_)
             | model::Type::Custom(_)
@@ -203,9 +204,7 @@ fn render_impl(
         }
 
         if typ
-            .codegen_hints()
-            .get(&CodegenLanguage::Rust)
-            .and_then(|h| h.get(&CodegenHint::DtoType))
+            .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
             .is_some()
         {
             // Externally defined types should implement their own
@@ -363,10 +362,10 @@ fn format_pre_ser_type(
         | model::Type::TypeRef
         | model::Type::DatasetAlias
         | model::Type::DatasetRef => writeln!(w, "fb.create_string(&{name}.to_string())")?,
-        model::Type::AccountId | model::Type::ResourceId => {
-            writeln!(w, "fb.create_vector(&{name}.as_bytes())")?
-        }
-        model::Type::DatasetId => writeln!(w, "fb.create_vector(&{name}.as_bytes().as_slice())")?,
+        model::Type::Did
+        | model::Type::AccountId
+        | model::Type::DatasetId
+        | model::Type::ResourceId => writeln!(w, "fb.create_vector(&{name}.as_bytes())")?,
         model::Type::Flatbuffers | model::Type::Generic(_) => {
             writeln!(w, "fb.create_vector(&{name}[..])")?
         }
@@ -476,6 +475,7 @@ fn render_type_ser(
         | model::Type::UInt64 => writeln!(w, "{name}")?,
         model::Type::ByteSize => writeln!(w, "{name}.as_u64()")?,
         model::Type::String
+        | model::Type::Did
         | model::Type::DatasetAlias
         | model::Type::DatasetId
         | model::Type::DatasetRef
@@ -517,10 +517,7 @@ fn render_field_de(
     let name = format_ident(&field.name);
     let accessor = format_accessor(&field.name);
 
-    let container = field
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|m| m.get(&CodegenHint::Container));
+    let container = field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container);
 
     writeln!(w, "{name}:")?;
     if !field.optional
@@ -537,7 +534,7 @@ fn render_field_de(
         )?;
     } else {
         writeln!(w, "proxy.{accessor}().map(|v| {{")?;
-        if let Some(container) = container {
+        if let Some(container) = &container {
             writeln!(w, "{container}::new(")?;
         }
         render_type_de(
@@ -578,6 +575,7 @@ fn render_type_de(
         | model::Type::UInt64 => writeln!(w, "{name}")?,
         model::Type::ByteSize => writeln!(w, "ByteSize::from({name})")?,
         model::Type::String => writeln!(w, "{name}.to_owned()")?,
+        model::Type::Did => writeln!(w, "odf::Did::from_bytes({name}.bytes()).unwrap()")?,
         model::Type::DatasetAlias => {
             writeln!(w, "odf::dataset::DatasetAlias::try_from({name}).unwrap()")?
         }
@@ -755,18 +753,10 @@ fn render_enum(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    if let Some(format) = typ
-        .codegen_hints
-        .get(&CodegenLanguage::Flatbuffers)
-        .and_then(|h| h.get(&CodegenHint::MapFormat))
+    match typ.get_hint::<FlatbuffersMapFormat>(CodegenLanguage::Flatbuffers, CodegenHint::MapFormat)
     {
-        if format == "json-encoded-string" {
-            render_map_json_encoded_string(typ, w)
-        } else {
-            panic!("Unknown map format: {format} in {:?}", typ.id);
-        }
-    } else {
-        render_map_with_entry_table(typ, w)
+        None => render_map_with_entry_table(typ, w),
+        Some(FlatbuffersMapFormat::JsonEncodedString) => render_map_json_encoded_string(typ, w),
     }
 }
 

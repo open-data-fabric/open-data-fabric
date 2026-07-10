@@ -41,13 +41,19 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         })
         .collect();
 
-    writeln!(w, "%%{{init: {{\"flowchart\": {{\"defaultRenderer\": \"elk\"}}}} }}%%")?;
+    writeln!(
+        w,
+        "%%{{init: {{\"flowchart\": {{\"defaultRenderer\": \"elk\"}}}} }}%%"
+    )?;
     writeln!(w, "graph TD")?;
     writeln!(w)?;
 
     // classDef per context
     for (context, color) in CONTEXT_COLORS {
-        writeln!(w, "  classDef ctx_{context} fill:{color},stroke:#999,color:#000")?;
+        writeln!(
+            w,
+            "  classDef ctx_{context} fill:{color},stroke:#999,color:#000"
+        )?;
     }
     writeln!(w)?;
 

@@ -83,6 +83,8 @@ impl Ord for TypeId {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[derive(Debug, Clone)]
 pub enum TypeDefinition {
     Struct(Struct),
@@ -119,7 +121,7 @@ impl TypeDefinition {
         }
     }
 
-    pub fn codegen_hints(&self) -> &IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>> {
+    pub fn codegen_hints(&self) -> &CodegenHints {
         match self {
             TypeDefinition::Struct(v) => &v.codegen_hints,
             TypeDefinition::Union(v) => &v.codegen_hints,
@@ -136,7 +138,17 @@ impl TypeDefinition {
             TypeDefinition::Map(v) => &v.src,
         }
     }
+
+    pub fn get_hint<V: serde::de::DeserializeOwned>(
+        &self,
+        lang: CodegenLanguage,
+        key: CodegenHint,
+    ) -> Option<V> {
+        get_hint(self.codegen_hints(), lang, key)
+    }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TypeContext {
@@ -151,6 +163,8 @@ pub enum TypeContext {
     Resource,
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[derive(Debug, Clone)]
 pub struct Struct {
     pub id: TypeId,
@@ -159,8 +173,18 @@ pub struct Struct {
     pub generics: Vec<String>,
     pub description: String,
     pub from_string: bool,
-    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
+    pub codegen_hints: CodegenHints,
     pub src: PathBuf,
+}
+
+impl Struct {
+    pub fn get_hint<V: serde::de::DeserializeOwned>(
+        &self,
+        lang: CodegenLanguage,
+        key: CodegenHint,
+    ) -> Option<V> {
+        get_hint(&self.codegen_hints, lang, key)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -170,7 +194,7 @@ pub struct Union {
     pub variants: Vec<TypeId>,
     pub description: String,
     pub from_string: bool,
-    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
+    pub codegen_hints: CodegenHints,
     pub src: PathBuf,
 }
 
@@ -181,7 +205,7 @@ pub struct Enum {
     pub variants: Vec<String>,
     pub description: String,
     pub src: PathBuf,
-    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
+    pub codegen_hints: CodegenHints,
     pub format: Type,
 }
 
@@ -191,9 +215,34 @@ pub struct Map {
     pub metatype: MetaType,
     pub description: String,
     pub value_type: Type,
-    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
+    pub codegen_hints: CodegenHints,
     pub src: PathBuf,
 }
+
+impl Map {
+    pub fn get_hint<V: serde::de::DeserializeOwned>(
+        &self,
+        lang: CodegenLanguage,
+        key: CodegenHint,
+    ) -> Option<V> {
+        get_hint(&self.codegen_hints, lang, key)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type CodegenHints = IndexMap<CodegenLanguage, IndexMap<CodegenHint, serde_json::Value>>;
+
+fn get_hint<V: serde::de::DeserializeOwned>(
+    hints: &CodegenHints,
+    lang: CodegenLanguage,
+    key: CodegenHint,
+) -> Option<V> {
+    let val = hints.get(&lang)?.get(&key)?;
+    Some(serde_json::from_value(val.clone()).unwrap())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone)]
 pub enum Type {
@@ -217,6 +266,7 @@ pub enum Type {
     Path,
     Regex,
     Url,
+    Did,
 
     // Meta-types
     TypeName,
@@ -246,6 +296,8 @@ pub enum Type {
 pub enum MetaType {
     Manifest,
     Resource,
+    ResourceRef,
+    ResourceHandle,
     ResourceCondition,
     EngineMessage,
     Fragment,
@@ -259,6 +311,8 @@ impl MetaType {
         match id {
             json_schema::SchemaId::METASCHEMA_MANIFEST => Self::Manifest,
             json_schema::SchemaId::METASCHEMA_RESOURCE_INPUT => Self::Resource,
+            json_schema::SchemaId::METASCHEMA_RESOURCE_REF => Self::ResourceRef,
+            json_schema::SchemaId::METASCHEMA_RESOURCE_HANDLE => Self::ResourceHandle,
             json_schema::SchemaId::METASCHEMA_RESOURCE_CONDITION => Self::ResourceCondition,
             json_schema::SchemaId::METASCHEMA_ENGINE_MESSAGE => Self::EngineMessage,
             json_schema::SchemaId::METASCHEMA_JSONSCHEMA => Self::Fragment,
@@ -284,7 +338,17 @@ pub struct Field {
     pub constant: Option<serde_json::Value>,
     pub explicit_tag: Option<u32>,
     pub deprecated: bool,
-    pub codegen_hints: IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>,
+    pub codegen_hints: CodegenHints,
+}
+
+impl Field {
+    pub fn get_hint<V: serde::de::DeserializeOwned>(
+        &self,
+        lang: CodegenLanguage,
+        key: CodegenHint,
+    ) -> Option<V> {
+        get_hint(&self.codegen_hints, lang, key)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -318,7 +382,13 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             schema.unevaluated_properties.take() == Some(false),
         ) {
             (MetaType::Manifest | MetaType::Resource | MetaType::EngineMessage, true) => (),
-            (MetaType::Fragment | MetaType::ResourceCondition, false) => (),
+            (
+                MetaType::Fragment
+                | MetaType::ResourceRef
+                | MetaType::ResourceHandle
+                | MetaType::ResourceCondition,
+                false,
+            ) => (),
             (_, false) => {
                 panic!("Top-level schemas should define `unevaluatedProperties: false`: {id}")
             }
@@ -790,7 +860,7 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
         items: None,
         r#ref: None,
         r#const: None,
-        canonical_type: None,
+        canonical_type: _,
         format: None,
         default: None,
         description: Some(description),
@@ -959,6 +1029,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         (json_schema::Type::String, Some(json_schema::Format::Path)) => Type::Path,
         (json_schema::Type::String, Some(json_schema::Format::Regex)) => Type::Regex,
         (json_schema::Type::String, Some(json_schema::Format::Uri)) => Type::Url,
+        (json_schema::Type::String, Some(json_schema::Format::Did)) => Type::Did,
 
         (json_schema::Type::String, Some(json_schema::Format::AccountId)) => Type::AccountId,
         (json_schema::Type::String, Some(json_schema::Format::AccountName)) => Type::AccountName,

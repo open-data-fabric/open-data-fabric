@@ -11,7 +11,7 @@
       ],
       "properties": {
         "source": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
           "description": "Reference to the source resource that defines how to fetch data.",
           "unevaluatedProperties": false
         },
@@ -48,7 +48,7 @@
       ],
       "properties": {
         "target": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
           "description": "Reference to the `WebhookTarget`.",
           "unevaluatedProperties": false
         },

@@ -1,6 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceInput",
   "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest",
+  "canonicalType": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource",
   "description": "Top-level container for user-authored representation of a resource that specifies the type and version of the resource and its desired state.",
   "type": "object",
   "unevaluatedProperties": false,

@@ -14,6 +14,7 @@
 - [Maps](#maps)
 - [Strict Validation \& Composability](#strict-validation--composability)
 - [Generic Fragments](#generic-fragments)
+- [Input vs. Canonical Types](#input-vs-canonical-types)
 - [Future Ideas](#future-ideas)
 
 
@@ -337,8 +338,31 @@ Codegen notes:
 - In GraphQL the generic field will be returned as JSON scalar
 
 
-## Future Ideas
-- Separating input types and normalized data forms that are stored in the system
-- Using RDF ontology and JSON-LD
+## Input vs. Canonical Types
+Often we want to give users more convenience and expressiveness when authoring manifests by creating alternative ways to define somthing. But at the same time we don't want these alternatives seeping into the core layer where strictness and lack of ambiguity is preferred. A good example is `ResourceRef` type that allows users to reference a resource in variety of ways: by name, ID, DID or all the above - in the core layer we want references to always include stable identifiers.
 
-TODO: Link tickets?
+Similarly, some parts of resources are not meant to be modified by users and presence of those fields in schemas would cause confusion.
+
+For these reasons we allow separating "input" (user-authored) and "canoncial" (system) schemas.
+
+A good example are [`ResourceHeaders`](/schemas/resource/v1alpha1/ResourceHeaders.json) and [`ResourceHeadersInput`](/schemas/resource/v1alpha1/ResourceHeadersInput.json) schemas:
+
+- The input schema contains only fields that user can modify, while system fields like `generation` are only present in the canonical type
+- The input schema is using `AccountRef` type to allow referencing the owning `account` by name or ID, while canonical type is using `AccountHandle` to represent a fully resolved reference.
+
+Note that input type references its canonical type like so:
+
+```json
+{
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
+  "canonicalType": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+}
+```
+
+Canonical types should be trivially convertible into input types.
+
+Input types may require additional identity and reference resolution information to be canonicalized.
+
+
+## Future Ideas
+- Using RDF ontology and JSON-LD

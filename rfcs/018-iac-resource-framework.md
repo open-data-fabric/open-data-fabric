@@ -164,12 +164,18 @@ Resources can explicitly define which `account` they belong to:
 ```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
 headers:
-  account: alice  # Short form can parse DID or name
-  account:  # Full form
-    id: did:odf:123..321
+  account:
     name: alice
 spec: {}
 ```
+
+Or using a short form:
+
+```yaml
+account: alice  # Short form can parse UID, DID, or name
+```
+
+See [resource references](#references) for details about referring to accounts.
 
 Unlike Kubernetes that uses RBAC and `namespace`-based isolation - ODF is based on **ReBAC account-centric model** that allows complex ownership and access control hierarchies, e.g. teams, organizations, flexible permissions for accounts outside of organizations.
 
@@ -264,10 +270,12 @@ Controllers may contribute their own labels to simplify common filtering scenari
 Resource manifests can link to other resources using **references**, forming a DAG.
 
 Resources can be referenced by:
-- ID
-- Type and name (optionally including the owner account name)
+- ID (unique within a node)
+- DID (unique globlly)
+- Type, name, and the (optional) owning account
+  - When account is not specified the name is resolved within the current account (auth subject)
 
-Example:
+Example of referencing a `PersistentVolume` by name and owning account:
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
@@ -275,16 +283,32 @@ headers:
   name: my-dataset
 spec:
   metadata: []
-  volume: PersistentVolume:my-org/my-s3-bucket
+  volume:
+    type: PersistentVolume
+    name: my-s3-bucket
+    account:
+      name: my-org
 ```
 
-Short form `volume` reference above is equivalent to:
+Or in short form:
+```yaml
+volume: PersistentVolume:my-org/my-s3-bucket
+```
+
+Example of referencing by ID:
+
 ```yaml
 volume:
   type: PersistentVolume
-  name: my-s3-bucket
-  account:
-    name: my-org
+  id: 6767a4ee-d74d-436e-84f9-709407869a26
+```
+
+Example of referencing by DID:
+
+```yaml
+account:
+  type: Account
+  did: did:odf:0xfa..bc
 ```
 
 Cyclical references are not allowed - this can be enforced by implementations via linters.
@@ -296,7 +320,7 @@ Unlike Kubernetes that doesn't specify a common reference format - in ODF all re
 Many contexts may choose to provide extended versions of resource references that:
 - Restrict target resources to a specific type (e.g. `DatasetRef`, `VolumeRef`)
 - Provide additional features (e.g. ability to reference a sub-path of a secret via `Secret:postgres#password`)
-- Allow referencing by DIDs (e.g. `account:did:pkh:eip155:1:0xaa..`)
+
 
 ### Reference resolution
 When setting up complex resource graphs like ingestion pipelines it's very convenient to reference all components by names, especially when target resources are not created yet and were not assigned an `id`.
@@ -504,7 +528,7 @@ For example a manifest like this one:
 ```yaml
 $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 headers:
-  id: did:odf:123..321
+  did: did:odf:123..321
   name: foo
   account: sergiimk
 spec:

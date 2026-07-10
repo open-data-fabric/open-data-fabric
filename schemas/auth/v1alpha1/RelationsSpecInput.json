@@ -10,7 +10,7 @@
       "type": "array",
       "description": "Relations between resources.",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/Relation",
+        "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationInput",
         "unevaluatedProperties": false
       }
     },
@@ -18,7 +18,7 @@
       "type": "array",
       "description": "Resource attributes.",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/Attribute",
+        "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AttributeInput",
         "unevaluatedProperties": false
       }
     }

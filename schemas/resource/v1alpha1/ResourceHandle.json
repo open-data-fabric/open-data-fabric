@@ -1,0 +1,39 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle",
+  "description": "Lint to another resolved resource.",
+  "type": "object",
+  "required": [
+    "account",
+    "type",
+    "id",
+    "name"
+  ],
+  "properties": {
+    "account": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "description": "Account that owns the target resource.",
+      "unevaluatedProperties": false
+    },
+    "type": {
+      "type": "string",
+      "format": "type-uri",
+      "description": "Type URI of the target resource."
+    },
+    "id": {
+      "type": "string",
+      "format": "resource-id",
+      "description": "ID of the resource within a node."
+    },
+    "did": {
+      "type": "string",
+      "format": "did",
+      "description": "DID of the resource, if applicable."
+    },
+    "name": {
+      "type": "string",
+      "format": "resource-name",
+      "description": "Name of a resource."
+    }
+  }
+}

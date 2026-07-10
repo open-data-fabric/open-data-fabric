@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceRef",
   "description": "Reference to an account.",
   "format": "struct-or-string",
   "required": [],
@@ -10,14 +10,14 @@
     },
     {
       "type": "object",
-      "codegen": {
-        "rust": {
-          "dtoType": "AccountRef"
-        }
-      },
       "required": [],
       "properties": {
         "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "UUID of the account resource."
+        },
+        "did": {
           "type": "string",
           "format": "account-id",
           "description": "DID of the account."

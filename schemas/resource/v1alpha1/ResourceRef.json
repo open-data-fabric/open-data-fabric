@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceRef",
   "description": "Reference to another resource.",
   "format": "struct-or-string",
   "oneOf": [
@@ -9,11 +9,6 @@
     },
     {
       "type": "object",
-      "codegen": {
-        "rust": {
-          "dtoType": "ResourceRef"
-        }
-      },
       "required": [
         "type"
       ],
@@ -35,7 +30,12 @@
         "id": {
           "type": "string",
           "format": "resource-id",
-          "description": "ID of a resource."
+          "description": "ID of the resource within a node."
+        },
+        "did": {
+          "type": "string",
+          "format": "did",
+          "description": "DID of the resource."
         },
         "name": {
           "type": "string",

@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/config/v1alpha1/ValueRef",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceRef",
   "description": "Reference to a value within a `VariableSet` or a `SecretSet`.",
   "format": "struct-or-string",
   "oneOf": [
@@ -9,11 +9,6 @@
     },
     {
       "type": "object",
-      "codegen": {
-        "rust": {
-          "dtoType": "SecretRef"
-        }
-      },
       "required": [
         "type"
       ],

@@ -22,12 +22,14 @@ graph TD
     AccountSpecInput
     AccountType
     Attribute
+    AttributeInput
     Relation
+    RelationInput
     Relations
     RelationsSpec
     RelationsSpecInput
   end
-  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Attribute,Relation,Relations,RelationsSpec,RelationsSpecInput ctx_auth
+  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Attribute,AttributeInput,Relation,RelationInput,Relations,RelationsSpec,RelationsSpecInput ctx_auth
 
   subgraph config["config"]
     Secret
@@ -35,6 +37,7 @@ graph TD
     SecretSetSpec
     SecretSetSpecInput
     Secrets
+    ValueHandle
     ValueRef
     ValueRefs
     Variable
@@ -43,7 +46,7 @@ graph TD
     VariableSetSpecInput
     Variables
   end
-  class Secret,SecretSet,SecretSetSpec,SecretSetSpecInput,Secrets,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,VariableSetSpecInput,Variables ctx_config
+  class Secret,SecretSet,SecretSetSpec,SecretSetSpecInput,Secrets,ValueHandle,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,VariableSetSpecInput,Variables ctx_config
 
   subgraph data["data"]
     DataField
@@ -124,6 +127,11 @@ graph TD
     FlowTrigger_Event["FlowTrigger::Event"]
     FlowTrigger_Schedule["FlowTrigger::Schedule"]
     FlowTrigger_Source["FlowTrigger::Source"]
+    FlowTriggerInput
+    FlowTriggerInput_Dataset["FlowTriggerInput::Dataset"]
+    FlowTriggerInput_Event["FlowTriggerInput::Event"]
+    FlowTriggerInput_Schedule["FlowTriggerInput::Schedule"]
+    FlowTriggerInput_Source["FlowTriggerInput::Source"]
     Task
     TaskSpec
     TaskSpec_Compaction["TaskSpec::Compaction"]
@@ -136,7 +144,7 @@ graph TD
     TaskSpecInput_Ingest["TaskSpecInput::Ingest"]
     TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
   end
-  class Flow,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Schedule,FlowTrigger_Source,Task,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_WebhookCall ctx_flow
+  class Flow,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Dataset,FlowTriggerInput_Event,FlowTriggerInput_Schedule,FlowTriggerInput_Source,Task,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_WebhookCall ctx_flow
 
   subgraph legacy["legacy"]
     AddPushSource
@@ -159,6 +167,7 @@ graph TD
     Resource
     ResourceAnnotations
     ResourceConditions
+    ResourceHandle
     ResourceHeaders
     ResourceHeadersInput
     ResourceInput
@@ -168,7 +177,7 @@ graph TD
     ResourceSelector
     ResourceStatus
   end
-  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
+  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
 
   subgraph sink["sink"]
     WebhookTarget
@@ -221,6 +230,7 @@ graph TD
 
   subgraph storage["storage"]
     AwsCredentials
+    AwsCredentialsInput
     PersistentVolume
     PersistentVolumeRef
     PersistentVolumeSpec
@@ -229,7 +239,7 @@ graph TD
     PersistentVolumeSpecInput_S3["PersistentVolumeSpecInput::S3"]
     VolumeCapacity
   end
-  class AwsCredentials,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
+  class AwsCredentials,AwsCredentialsInput,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
 
   Account -->|"headers"| ResourceHeadersInput
   Account -->|"spec"| AccountSpecInput
@@ -246,9 +256,12 @@ graph TD
   AddPushSource -->|"merge"| MergeStrategy
   Attachments -->|"variant"| Attachments_Embedded
   Attachments_Embedded -->|"items"| AttachmentEmbedded
-  Attribute -->|"object"| ResourceRef
-  AwsCredentials -->|"access_key"| ValueRef
-  AwsCredentials -->|"secret_key"| ValueRef
+  Attribute -->|"object"| ResourceHandle
+  AttributeInput -->|"object"| ResourceRef
+  AwsCredentials -->|"access_key"| ValueHandle
+  AwsCredentials -->|"secret_key"| ValueHandle
+  AwsCredentialsInput -->|"access_key"| ValueRef
+  AwsCredentialsInput -->|"secret_key"| ValueRef
   DataField -->|"type"| DataType
   DataField -->|"extra"| ExtraAttributes
   DataSchema -->|"fields"| DataField
@@ -263,7 +276,7 @@ graph TD
   DatasetSnapshot -->|"metadata"| MetadataEvent
   DatasetSpec -->|"kind"| DatasetKind
   DatasetSpec -->|"metadata"| MetadataEvent
-  DatasetSpec -->|"volume"| PersistentVolumeRef
+  DatasetSpec -->|"volume"| ResourceHandle
   DatasetSpecInput -->|"kind"| DatasetKind
   DatasetSpecInput -->|"metadata"| MetadataEvent
   DatasetSpecInput -->|"volume"| PersistentVolumeRef
@@ -292,7 +305,7 @@ graph TD
   FlowSpec -->|"triggers"| FlowTrigger
   FlowSpec -->|"tasks"| TaskSpec
   FlowSpecInput -->|"target"| ResourceSelector
-  FlowSpecInput -->|"triggers"| FlowTrigger
+  FlowSpecInput -->|"triggers"| FlowTriggerInput
   FlowSpecInput -->|"tasks"| TaskSpecInput
   FlowTrigger -->|"variant"| FlowTrigger_Schedule
   FlowTrigger -->|"variant"| FlowTrigger_Event
@@ -300,7 +313,14 @@ graph TD
   FlowTrigger -->|"variant"| FlowTrigger_Dataset
   FlowTrigger_Dataset -->|"dataset"| DatasetSelector
   FlowTrigger_Event -->|"events"| EventFilter
-  FlowTrigger_Source -->|"source"| ResourceRef
+  FlowTrigger_Source -->|"source"| ResourceHandle
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_Schedule
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_Event
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_Source
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_Dataset
+  FlowTriggerInput_Dataset -->|"dataset"| DatasetSelector
+  FlowTriggerInput_Event -->|"events"| EventFilter
+  FlowTriggerInput_Source -->|"source"| ResourceRef
   Ingress -->|"variant"| Ingress_Url
   Ingress -->|"variant"| Ingress_FilesGlob
   Ingress -->|"variant"| Ingress_Container
@@ -345,7 +365,7 @@ graph TD
   PersistentVolumeSpec_S3 -->|"credentials"| AwsCredentials
   PersistentVolumeSpecInput -->|"variant"| PersistentVolumeSpecInput_S3
   PersistentVolumeSpecInput_S3 -->|"capacity"| VolumeCapacity
-  PersistentVolumeSpecInput_S3 -->|"credentials"| AwsCredentials
+  PersistentVolumeSpecInput_S3 -->|"credentials"| AwsCredentialsInput
   PrepStep -->|"variant"| PrepStep_Decompress
   PrepStep -->|"variant"| PrepStep_Pipe
   PrepStep_Decompress -->|"format"| CompressionFormat
@@ -360,16 +380,19 @@ graph TD
   RawQueryResponse -->|"variant"| RawQueryResponse_Success
   RawQueryResponse -->|"variant"| RawQueryResponse_InvalidQuery
   RawQueryResponse -->|"variant"| RawQueryResponse_InternalError
-  Relation -->|"subject"| ResourceRef
-  Relation -->|"object"| ResourceRef
+  Relation -->|"subject"| ResourceHandle
+  Relation -->|"object"| ResourceHandle
+  RelationInput -->|"subject"| ResourceRef
+  RelationInput -->|"object"| ResourceRef
   Relations -->|"headers"| ResourceHeadersInput
   Relations -->|"spec"| RelationsSpecInput
   RelationsSpec -->|"relations"| Relation
   RelationsSpec -->|"attributes"| Attribute
-  RelationsSpecInput -->|"relations"| Relation
-  RelationsSpecInput -->|"attributes"| Attribute
+  RelationsSpecInput -->|"relations"| RelationInput
+  RelationsSpecInput -->|"attributes"| AttributeInput
   Resource -->|"headers"| ResourceHeaders
   Resource -->|"status"| ResourceStatus
+  ResourceHandle -->|"account"| AccountHandle
   ResourceHeaders -->|"account"| AccountHandle
   ResourceHeaders -->|"labels"| ResourceLabels
   ResourceHeaders -->|"annotations"| ResourceAnnotations
@@ -421,9 +444,9 @@ graph TD
   TaskSpec -->|"variant"| TaskSpec_GarbageCollection
   TaskSpec -->|"variant"| TaskSpec_WebhookCall
   TaskSpec_Compaction -->|"params"| CompactionParams
-  TaskSpec_Ingest -->|"source"| ResourceRef
+  TaskSpec_Ingest -->|"source"| ResourceHandle
   TaskSpec_Ingest -->|"params"| IngestParams
-  TaskSpec_WebhookCall -->|"target"| ResourceRef
+  TaskSpec_WebhookCall -->|"target"| ResourceHandle
   TaskSpecInput -->|"variant"| TaskSpecInput_Ingest
   TaskSpecInput -->|"variant"| TaskSpecInput_Compaction
   TaskSpecInput -->|"variant"| TaskSpecInput_GarbageCollection
@@ -446,6 +469,7 @@ graph TD
   TransformResponse -->|"variant"| TransformResponse_InvalidQuery
   TransformResponse -->|"variant"| TransformResponse_InternalError
   TransformResponse_Success -->|"new_offset_interval"| OffsetInterval
+  ValueHandle -->|"account"| AccountHandle
   ValueRef -->|"account"| AccountRef
   ValueRefs -->|"values"| ValueRef
   VariableSet -->|"headers"| ResourceHeadersInput

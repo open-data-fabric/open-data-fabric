@@ -351,6 +351,7 @@ fn as_json_type(typ: &model::Type) -> String {
         | model::Type::Path
         | model::Type::Regex
         | model::Type::Url
+        | model::Type::Did
         | model::Type::TypeUri
         | model::Type::TypeName
         | model::Type::TypeRef
@@ -380,6 +381,7 @@ fn as_format(typ: &model::Type) -> String {
         model::Type::UInt32 => format!("`uint32`"),
         model::Type::UInt64 => format!("`uint64`"),
         model::Type::String => String::new(),
+        model::Type::Did => format!("`did`"),
         model::Type::DatasetAlias => format!("[dataset-alias](#dataset-identity)"),
         model::Type::DatasetId => format!("[dataset-id](#dataset-identity)"),
         model::Type::DatasetRef => format!("[dataset-ref](#dataset-identity)"),

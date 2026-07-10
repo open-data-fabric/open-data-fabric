@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     codegen::rust_common::format_ident,
-    json_schema::{CodegenHint, CodegenLanguage},
+    json_schema::{self, CodegenHint, CodegenLanguage},
     model,
 };
 use convert_case::{Case, Casing};
@@ -22,7 +22,6 @@ const PREAMBLE: &str = indoc::indoc!(
 
     use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
     use chrono::{DateTime, Utc};
-    use multiformats::*;
     use setty::types::{ByteSize, DurationString};
 
     use super::formats::*;
@@ -30,6 +29,7 @@ const PREAMBLE: &str = indoc::indoc!(
     use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
     use crate::dtos;
     use crate::errors::ValidationError;
+    use crate::formats::*;
     use crate::resource::{ResourceID, ResourceName, TypeRef, TypeUri};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,9 +147,7 @@ fn render_struct(
     let name = typ.id.join("");
     let generics = format!("<{}>", typ.generics.join(", "));
     let is_external = typ
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|h| h.get(&CodegenHint::DtoType))
+        .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
         .is_some();
 
     writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
@@ -195,6 +193,23 @@ fn render_struct(
 
     if typ.from_string {
         writeln!(w)?;
+
+        writeln!(
+            w,
+            "{}",
+            indoc::formatdoc!(
+                "
+                impl std::str::FromStr for {name} {{
+                    type Err = String;
+
+                    fn from_str(s: &str) -> Result<Self, Self::Err> {{
+                        let v = dtos::{context}::{name}::try_from(s).map_err(|e| e.to_string())?;
+                        Ok(v.into())
+                    }}
+                }}
+                "
+            )
+        )?;
 
         writeln!(
             w,
@@ -297,10 +312,7 @@ fn render_field(
         writeln!(w, "#[serde(rename = \"{}\")]", field.name)?;
     }
 
-    let container = field
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|m| m.get(&CodegenHint::Container));
+    let container = field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container);
 
     if field.optional {
         if let model::Type::Generic(_) = &field.typ {
@@ -355,10 +367,7 @@ fn render_field_into(
     field: &model::Field,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
-    let container = field
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|m| m.get(&CodegenHint::Container));
+    let container = field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container);
 
     let fname = format_ident(&field.name);
 
@@ -392,10 +401,7 @@ fn render_field_try_into(
     field: &model::Field,
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
-    let container = field
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|m| m.get(&CodegenHint::Container));
+    let container = field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container);
 
     let fname = format_ident(&field.name);
 
@@ -584,30 +590,29 @@ fn render_map(
     let context = typ.id.context();
     let name = typ.id.join("");
 
-    // TODO: Quick hack - replace with type parsing
     let key_type = match typ
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|h| h.get(&CodegenHint::MapKeyFormat))
-        .map(|s| s.as_str())
+        .get_hint::<json_schema::Format>(CodegenLanguage::Rust, CodegenHint::MapKeyFormat)
     {
-        Some("type-ref") => model::Type::TypeRef,
-        _ => model::Type::String,
+        None => model::Type::String,
+        Some(json_schema::Format::TypeRef) => model::Type::TypeRef,
+        Some(fmt) => panic!("Unsupported map key format {fmt:?}"),
     };
+
     let key_type = format_type(model, &key_type);
     let value_type = format_type(model, &typ.value_type);
 
     writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
     writeln!(w, "pub struct {name} {{")?;
     writeln!(w, "#[serde(flatten)]")?;
-    match typ.value_type {
-        model::Type::AnyJson => writeln!(w, "#[serde(with = \"map_value_limited_precision\")]")?,
-        _ => (),
+
+    if matches!(typ.value_type, model::Type::AnyJson) {
+        writeln!(w, "#[serde(with = \"map_value_limited_precision\")]")?
     }
     writeln!(
         w,
         "pub entries: std::collections::BTreeMap<{key_type}, {value_type}>,"
     )?;
+
     writeln!(w, "}}")?;
 
     writeln!(w)?;
@@ -700,6 +705,7 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::Path => format!("PathBuf"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
+        model::Type::Did => format!("Did"),
 
         model::Type::DatasetAlias => format!("DatasetAlias"),
         model::Type::DatasetId => format!("DatasetID"),

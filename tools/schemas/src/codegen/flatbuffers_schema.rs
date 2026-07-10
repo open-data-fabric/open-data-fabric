@@ -1,6 +1,6 @@
 use indexmap::IndexMap;
 
-use crate::json_schema::{self, CodegenHint, CodegenLanguage};
+use crate::json_schema::{self, CodegenHint, CodegenLanguage, FlatbuffersMapFormat};
 use crate::model;
 use crate::utils::indent_writer::IndentWriter;
 use std::borrow::Cow;
@@ -438,18 +438,10 @@ fn render_map(
     typ: &model::Map,
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
-    if let Some(format) = typ
-        .codegen_hints
-        .get(&CodegenLanguage::Flatbuffers)
-        .and_then(|h| h.get(&CodegenHint::MapFormat))
+    match typ.get_hint::<FlatbuffersMapFormat>(CodegenLanguage::Flatbuffers, CodegenHint::MapFormat)
     {
-        if format == "json-encoded-string" {
-            render_map_json_encoded_string(typ, w)
-        } else {
-            panic!("Unknown map format: {format} in {:?}", typ.id);
-        }
-    } else {
-        render_map_with_entry_table(typ, w)
+        None => render_map_with_entry_table(typ, w),
+        Some(FlatbuffersMapFormat::JsonEncodedString) => render_map_json_encoded_string(typ, w),
     }
 }
 
@@ -527,6 +519,7 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Path => format!("string"),
         model::Type::Regex => format!("string"),
         model::Type::Url => format!("string"),
+        model::Type::Did => format!("[ubyte]"),
 
         model::Type::TypeUri => format!("string"),
         model::Type::TypeName => format!("string"),

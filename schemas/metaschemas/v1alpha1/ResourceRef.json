@@ -1,0 +1,10 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceRef",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Metaschema for unresolved resource references.",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    }
+  ]
+}

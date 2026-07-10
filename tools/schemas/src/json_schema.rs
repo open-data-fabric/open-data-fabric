@@ -64,7 +64,7 @@ pub struct Schema {
     pub tag: Option<u32>,
 
     /// Code generation hints per language
-    pub codegen: Option<IndexMap<CodegenLanguage, IndexMap<CodegenHint, String>>>,
+    pub codegen: Option<IndexMap<CodegenLanguage, IndexMap<CodegenHint, serde_json::Value>>>,
 
     /// Marks schema as deprecated
     pub deprecated: Option<bool>,
@@ -340,10 +340,14 @@ impl SchemaId {
     pub const METASCHEMA_JSONSCHEMA: &str = "https://json-schema.org/draft/2020-12/schema";
     pub const METASCHEMA_MANIFEST: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest";
-    pub const METASCHEMA_RESOURCE_: &str =
+    pub const METASCHEMA_RESOURCE: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource";
     pub const METASCHEMA_RESOURCE_INPUT: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput";
+    pub const METASCHEMA_RESOURCE_REF: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceRef";
+    pub const METASCHEMA_RESOURCE_HANDLE: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle";
     pub const METASCHEMA_RESOURCE_CONDITION: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition";
     pub const METASCHEMA_ENGINE_MESSAGE: &str =
@@ -461,6 +465,7 @@ pub enum Format {
     Multihash,
     Path,
     Regex,
+    Did,
 
     // Meta-types
     TypeName,
@@ -502,4 +507,18 @@ pub enum CodegenHint {
     DtoType,
     MapFormat,
     MapKeyFormat,
+}
+
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum FlatbuffersMapFormat {
+    JsonEncodedString,
+}
+
+impl std::str::FromStr for FlatbuffersMapFormat {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_value(serde_json::Value::String(s.into()))
+    }
 }

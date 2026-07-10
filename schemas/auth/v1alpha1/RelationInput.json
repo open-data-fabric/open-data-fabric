@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Relation",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationInput",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "A directed relationship between two resources, optionally carrying a typed value.",
   "type": "object",
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "subject": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
       "description": "The resource that holds the relation.",
       "unevaluatedProperties": false
     },
@@ -22,7 +22,7 @@
       "description": "Optional value associated with the relation e.g. `maintainer` for a `role` relation."
     },
     "object": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
       "description": "The resource that is the target of the relation.",
       "unevaluatedProperties": false
     }

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use super::rust_common::format_ident;
 use crate::{
-    json_schema::{CodegenHint, CodegenLanguage},
+    json_schema::{self, CodegenHint, CodegenLanguage},
     model,
 };
 use convert_case::{Case, Casing};
@@ -22,12 +22,12 @@ const PREAMBLE: &str = indoc::indoc!(
     use bitflags::bitflags;
     use chrono::{DateTime, Utc};
     use enum_variants::*;
-    use multiformats::*;
     use serde::{Deserialize, Serialize};
     use setty::types::{ByteSize, DurationString};
 
     use crate::auth::*;
     use crate::dataset::*;
+    use crate::formats::*;
     use crate::resource::*;
     "#
 );
@@ -63,9 +63,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
 
         for typ in types.values() {
             if typ
-                .codegen_hints()
-                .get(&CodegenLanguage::Rust)
-                .and_then(|h| h.get(&CodegenHint::DtoType))
+                .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
                 .is_some()
             {
                 // Externally defined types are re-exported from the module
@@ -134,10 +132,8 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
         )?;
 
         let mut typ = format_type(&field.typ);
-        if let Some(container) = field
-            .codegen_hints
-            .get(&CodegenLanguage::Rust)
-            .and_then(|m| m.get(&CodegenHint::Container))
+        if let Some(container) =
+            field.get_hint::<String>(CodegenLanguage::Rust, CodegenHint::Container)
         {
             typ = format!("{container}<{typ}>");
         }
@@ -288,6 +284,13 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
         writeln!(w, "}} }}\n")?;
     }
 
+    match typ.metatype {
+        model::MetaType::ResourceRef | model::MetaType::ResourceHandle => {
+            writeln!(w, "impl IntoResourceRef for {name} {{}}\n")?
+        }
+        _ => (),
+    }
+
     Ok(())
 }
 
@@ -343,16 +346,14 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    // TODO: Quick hack - replace with `parse_type_scalar`
     let key_type = match typ
-        .codegen_hints
-        .get(&CodegenLanguage::Rust)
-        .and_then(|h| h.get(&CodegenHint::MapKeyFormat))
-        .map(|s| s.as_str())
+        .get_hint::<json_schema::Format>(CodegenLanguage::Rust, CodegenHint::MapKeyFormat)
     {
-        Some("type-ref") => model::Type::TypeRef,
-        _ => model::Type::String,
+        None => model::Type::String,
+        Some(json_schema::Format::TypeRef) => model::Type::TypeRef,
+        Some(fmt) => panic!("Unsupported map key format {fmt:?}"),
     };
+
     let key_type = format_type(&key_type);
     let value_type = format_type(&typ.value_type);
 
@@ -390,6 +391,7 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::Path => format!("PathBuf"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
+        model::Type::Did => format!("Did"),
 
         model::Type::AccountId => format!("AccountID"),
         model::Type::AccountName => format!("AccountName"),

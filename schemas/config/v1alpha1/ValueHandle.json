@@ -1,0 +1,42 @@
+{
+  "$id": "https://opendatafabric.org/schemas/config/v1alpha1/ValueHandle",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle",
+  "description": "Reference to a value within a `VariableSet` or a `SecretSet`.",
+  "type": "object",
+  "required": [
+    "account",
+    "type",
+    "id",
+    "name"
+  ],
+  "properties": {
+    "account": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "description": "Account that owns the target resource.",
+      "unevaluatedProperties": false
+    },
+    "type": {
+      "type": "string",
+      "format": "type-uri",
+      "description": "Type URI of the target resource."
+    },
+    "id": {
+      "type": "string",
+      "format": "resource-id",
+      "description": "ID of the resource within a node."
+    },
+    "name": {
+      "type": "string",
+      "format": "resource-name",
+      "description": "Name of a resource."
+    },
+    "path": {
+      "type": "string",
+      "examples": [
+        "port",
+        "postgres.schemaName"
+      ],
+      "description": "JSON path to a value within a `VariableSet` or a `SecretSet`."
+    }
+  }
+}

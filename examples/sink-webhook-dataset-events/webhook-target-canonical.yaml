@@ -3,11 +3,14 @@ $schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
 headers:
   id: aa-11
   account:
-    id: did:odf:fed018
+    id: 6767a4ee-d74d-436e-84f9-709407869a26
+    did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
     name: foo
   name: com.example.hook
-  labels: {}
-  annotations: {}
+  labels:
+    env: prod
+  annotations:
+    description: canonical view of the webhook resource
   generation: 1
   createdAt: 2020-01-01T00:00:00Z
   updatedAt: 2020-01-01T00:00:00Z

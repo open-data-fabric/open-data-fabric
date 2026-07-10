@@ -37,7 +37,17 @@ impl Schemas {
             .unwrap_or_else(|| panic!("Metaschema not found: {metaschema_id}"));
 
         let resources = self.by_id.iter().filter_map(|(id, value)| {
-            let resource = Resource::from_contents(value.clone()).ok()?;
+            // Schemas with a custom ODF $schema fail Resource::from_contents with
+            // UnknownSpecification. Strip $schema so the library treats them as
+            // standard-draft documents and registers them in the resource registry
+            // (needed for $ref resolution during metaschema compilation).
+            let mut value = value.clone();
+            if let Some(schema) = value.get("$schema").and_then(Value::as_str) {
+                if schema.starts_with(ODF_METASCHEMA_PREFIX) {
+                    value.as_object_mut()?.remove("$schema");
+                }
+            }
+            let resource = Resource::from_contents(value).ok()?;
             Some((id.clone(), resource))
         });
 
@@ -70,10 +80,7 @@ fn test_schemas() {
             .and_then(Value::as_str)
             .unwrap_or(STANDARD_DRAFT);
         if meta.starts_with(ODF_METASCHEMA_PREFIX) && !validators.contains_key(meta) {
-            validators.insert(
-                meta.to_string(),
-                schemas.validator_for_metaschema(meta),
-            );
+            validators.insert(meta.to_string(), schemas.validator_for_metaschema(meta));
         }
     }
 
@@ -98,9 +105,7 @@ fn test_schemas() {
         let errors: Vec<_> = validator.iter_errors(schema).collect();
         if !errors.is_empty() {
             failed = true;
-            eprintln!(
-                "Schema {schema_id} failed validation against metaschema {meta}:"
-            );
+            eprintln!("Schema {schema_id} failed validation against metaschema {meta}:");
             for err in &errors {
                 eprintln!("  - {err} (path: {})", err.instance_path);
             }

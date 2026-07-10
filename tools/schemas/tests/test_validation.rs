@@ -35,7 +35,8 @@ impl Schemas {
         let schema = Self::normalize_meta_schema(schema.clone());
 
         let resources = self.by_id.iter().filter_map(|(id, value)| {
-            let resource = Resource::from_contents(Self::normalize_meta_schema(value.clone())).ok()?;
+            let resource =
+                Resource::from_contents(Self::normalize_meta_schema(value.clone())).ok()?;
             Some((id.clone(), resource))
         });
 
@@ -47,8 +48,7 @@ impl Schemas {
 
     fn normalize_meta_schema(mut schema: Value) -> Value {
         const STANDARD_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
-        const ODF_METASCHEMA_PREFIX: &str =
-            "https://opendatafabric.org/schemas/metaschemas/";
+        const ODF_METASCHEMA_PREFIX: &str = "https://opendatafabric.org/schemas/metaschemas/";
         if let Some(s) = schema.get("$schema").and_then(Value::as_str) {
             if s.starts_with(ODF_METASCHEMA_PREFIX) {
                 schema["$schema"] = Value::String(STANDARD_DRAFT.to_string());

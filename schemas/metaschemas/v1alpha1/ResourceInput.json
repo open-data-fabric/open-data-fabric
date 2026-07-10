@@ -1,7 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "canonicalType": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource",
   "description": "Metaschema for the user-authored resource manifests.",
   "allOf": [
     {
