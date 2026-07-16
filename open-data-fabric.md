@@ -1193,7 +1193,9 @@ See also:
   - [AccountSpecInput](#accountspecinput-schema)
   - [AccountType](#accounttype-schema)
   - [Attribute](#attribute-schema)
+  - [AttributeInput](#attributeinput-schema)
   - [Relation](#relation-schema)
+  - [RelationInput](#relationinput-schema)
   - [Relations](#relations-schema)
   - [RelationsSpec](#relationsspec-schema)
   - [RelationsSpecInput](#relationsspecinput-schema)
@@ -1203,6 +1205,7 @@ See also:
   - [SecretSetSpec](#secretsetspec-schema)
   - [SecretSetSpecInput](#secretsetspecinput-schema)
   - [Secrets](#secrets-schema)
+  - [ValueHandle](#valuehandle-schema)
   - [ValueRef](#valueref-schema)
   - [ValueRefs](#valuerefs-schema)
   - [Variable](#variable-schema)
@@ -1263,6 +1266,7 @@ See also:
   - [FlowSpec](#flowspec-schema)
   - [FlowSpecInput](#flowspecinput-schema)
   - [FlowTrigger](#flowtrigger-schema)
+  - [FlowTriggerInput](#flowtriggerinput-schema)
   - [Task](#task-schema)
   - [TaskSpec](#taskspec-schema)
   - [TaskSpecInput](#taskspecinput-schema)
@@ -1279,6 +1283,7 @@ See also:
   - [Resource](#resource-schema)
   - [ResourceAnnotations](#resourceannotations-schema)
   - [ResourceConditions](#resourceconditions-schema)
+  - [ResourceHandle](#resourcehandle-schema)
   - [ResourceHeaders](#resourceheaders-schema)
   - [ResourceHeadersInput](#resourceheadersinput-schema)
   - [ResourceInput](#resourceinput-schema)
@@ -1313,6 +1318,7 @@ See also:
   - [SourceState](#sourcestate-schema)
 - [storage](#reference-storage)
   - [AwsCredentials](#awscredentials-schema)
+  - [AwsCredentialsInput](#awscredentialsinput-schema)
   - [PersistentVolume](#persistentvolume-schema)
   - [PersistentVolumeRef](#persistentvolumeref-schema)
   - [PersistentVolumeSpec](#persistentvolumespec-schema)
@@ -1341,7 +1347,8 @@ Link to an account.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `id` | `string` | V |  | DID of the account. |
+| `id` | `string` | V |  | ID of the account resource. |
+| `did` | `string` | V |  | DID of the account. |
 | `name` | `string` | V |  | Name of the account. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountHandle.json)
@@ -1354,7 +1361,8 @@ Reference to an account.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `id` | `string` |  |  | DID of the account. |
+| `id` | `string` |  |  | UUID of the account resource. |
+| `did` | `string` |  |  | DID of the account. |
 | `name` | `string` |  |  | Name of the account. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountRef.json)
@@ -1414,11 +1422,25 @@ A named attribute attached to a resource, used by auth policies for access contr
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `object` | [ResourceHandle](#resourcehandle-schema) | V |  | The resource this attribute is attached to. |
+| `name` | `string` | V |  | Name of the attribute. |
+| `value` | `any` | V |  | Value of the attribute. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Attribute.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="attributeinput-schema"></a>
+##### AttributeInput
+A named attribute attached to a resource, used by auth policies for access control decisions.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
 | `object` | [ResourceRef](#resourceref-schema) | V |  | The resource this attribute is attached to. |
 | `name` | `string` | V |  | Name of the attribute e.g. `allowPublicRead`. |
 | `value` | `any` | V |  | Value of the attribute. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Attribute.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AttributeInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1428,12 +1450,27 @@ A directed relationship between two resources, optionally carrying a typed value
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `subject` | [ResourceHandle](#resourcehandle-schema) | V |  | The resource that holds the relation. |
+| `relation` | `string` | V |  | Name of the relation e.g. `role`, `member`, `owner`. |
+| `value` | `any` |  |  | Optional value associated with the relation e.g. `maintainer` for a `role` relation. |
+| `object` | [ResourceHandle](#resourcehandle-schema) | V |  | The resource that is the target of the relation. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Relation.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="relationinput-schema"></a>
+##### RelationInput
+A directed relationship between two resources, optionally carrying a typed value.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
 | `subject` | [ResourceRef](#resourceref-schema) | V |  | The resource that holds the relation. |
 | `relation` | `string` | V |  | Name of the relation e.g. `role`, `member`, `owner`. |
 | `value` | `any` |  |  | Optional value associated with the relation e.g. `maintainer` for a `role` relation. |
 | `object` | [ResourceRef](#resourceref-schema) | V |  | The resource that is the target of the relation. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Relation.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -1470,8 +1507,8 @@ Specifies resource attributes and relations between resources on which auth poli
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `relations` | array([Relation](#relation-schema)) |  |  | Relations between resources. |
-| `attributes` | array([Attribute](#attribute-schema)) |  |  | Resource attributes. |
+| `relations` | array([RelationInput](#relationinput-schema)) |  |  | Relations between resources. |
+| `attributes` | array([AttributeInput](#attributeinput-schema)) |  |  | Resource attributes. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1557,6 +1594,22 @@ Container for key-value secrets. Every key must be a string. Values may be strin
 | `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
 | `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
 
+
+<a name="valuehandle-schema"></a>
+##### ValueHandle
+Reference to a value within a `VariableSet` or a `SecretSet`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `account` | [AccountHandle](#accounthandle-schema) | V |  | Account that owns the target resource. |
+| `type` | `string` | V |  | Type URI of the target resource. |
+| `id` | `string` | V |  | ID of the resource within a node. |
+| `name` | `string` | V |  | Name of a resource. |
+| `path` | `string` |  |  | JSON path to a value within a `VariableSet` or a `SecretSet`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/ValueHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
 
 <a name="valueref-schema"></a>
 ##### ValueRef
@@ -2185,7 +2238,7 @@ Represents a desired state of the dataset metadata.
 | `did` | `string` | V | [dataset-id](#dataset-identity) | DID of the dataset in global ODF network |
 | `kind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
 | `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
-| `volume` | [PersistentVolumeRef](#persistentvolumeref-schema) | V |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
+| `volume` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -2764,7 +2817,7 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `target` | [ResourceSelector](#resourceselector-schema) | V |  | Defines resources for which this flow will be instantiated. |
-| `triggers` | array([FlowTrigger](#flowtrigger-schema)) | V |  | Conditions that cause this flow to execute. |
+| `triggers` | array([FlowTriggerInput](#flowtriggerinput-schema)) | V |  | Conditions that cause this flow to execute. |
 | `tasks` | array([TaskSpecInput](#taskspecinput-schema)) | V |  | List of tasks to run consecutively. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowSpecInput.json)
@@ -2831,11 +2884,79 @@ Triggers the flow when a source receives new data, with optional batching contro
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that drives this trigger. |
+| `source` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the source resource that drives this trigger. |
 | `minRecordsToAwait` | `integer` |  | `uint64` | Minimum number of new records to accumulate before triggering. |
 | `maxAwaitInterval` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtriggerinput-schema"></a>
+##### FlowTriggerInput
+Condition that causes a flow to be executed.
+
+| Union Type | Description |
+| :---: | --- |
+| [FlowTriggerInput::Schedule](#flowtriggerinput-schedule-schema) | Triggers the flow on a cron schedule. |
+| [FlowTriggerInput::Event](#flowtriggerinput-event-schema) | Triggers the flow when an event bus event matching one of the filters is observed. |
+| [FlowTriggerInput::Source](#flowtriggerinput-source-schema) | Triggers the flow when a source receives new data, with optional batching controls. |
+| [FlowTriggerInput::Dataset](#flowtriggerinput-dataset-schema) | Triggers the flow when matching datasets are updated. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtriggerinput-dataset-schema"></a>
+##### FlowTriggerInput::Dataset
+Triggers the flow when matching datasets are updated.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `dataset` | [DatasetSelector](#datasetselector-schema) | V |  | Selector that identifies which datasets can trigger this flow. |
+| `events` | array(`string`) |  |  | Set of event bus event IDs that this trigger will react to |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtriggerinput-event-schema"></a>
+##### FlowTriggerInput::Event
+Triggers the flow when an event bus event matching one of the filters is observed.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `events` | [EventFilter](#eventfilter-schema) | V |  | Filters the event by type and fields. |
+| `cooldown` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run. |
+| `cooldownMaxBatch` | `integer` |  | `uint64` | If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtriggerinput-schedule-schema"></a>
+##### FlowTriggerInput::Schedule
+Triggers the flow on a cron schedule.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `cron` | `string` | V |  | Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtriggerinput-source-schema"></a>
+##### FlowTriggerInput::Source
+Triggers the flow when a source receives new data, with optional batching controls.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that drives this trigger. |
+| `minRecordsToAwait` | `integer` |  | `uint64` | Minimum number of new records to accumulate before triggering. |
+| `maxAwaitInterval` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2894,7 +3015,7 @@ Fetches data from a source and appends it to a dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
+| `source` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the source resource that defines how to fetch data. |
 | `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
@@ -2907,7 +3028,7 @@ Dispatches a certain payload to a specific `WebhookTarget`.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `target` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookTarget`. |
+| `target` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the `WebhookTarget`. |
 | `payload` | `string` |  |  | The payload to send. May include templating. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
@@ -3250,6 +3371,22 @@ Container of feneric contditions that can be added by contollers to provide addi
 | `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
 
 
+<a name="resourcehandle-schema"></a>
+##### ResourceHandle
+Lint to another resolved resource.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `account` | [AccountHandle](#accounthandle-schema) | V |  | Account that owns the target resource. |
+| `type` | `string` | V |  | Type URI of the target resource. |
+| `id` | `string` | V |  | ID of the resource within a node. |
+| `did` | `string` |  | `did` | DID of the resource, if applicable. |
+| `name` | `string` | V |  | Name of a resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="resourceheaders-schema"></a>
 ##### ResourceHeaders
 Container for identity and ownership information of a resource.
@@ -3351,7 +3488,8 @@ Reference to another resource.
 | :---: | :---: | :---: | :---: | --- |
 | `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resource. |
 | `type` | `string` | V |  | Short type name or full type URI of the target resource. |
-| `id` | `string` |  |  | ID of a resource. |
+| `id` | `string` |  |  | ID of the resource within a node. |
+| `did` | `string` |  | `did` | DID of the resource. |
 | `name` | `string` |  |  | Name of a resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceRef.json)
@@ -4070,10 +4208,23 @@ Access credentials for AWS or an AWS-compatible service.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `accessKey` | [ValueHandle](#valuehandle-schema) |  |  | Reference to a secret containing the AWS access key ID. |
+| `secretKey` | [ValueHandle](#valuehandle-schema) |  |  | Reference to a secret containing the AWS secret access key. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/AwsCredentials.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="awscredentialsinput-schema"></a>
+##### AwsCredentialsInput
+Access credentials for AWS or an AWS-compatible service.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
 | `accessKey` | [ValueRef](#valueref-schema) |  |  | Reference to a secret containing the AWS access key ID. |
 | `secretKey` | [ValueRef](#valueref-schema) |  |  | Reference to a secret containing the AWS secret access key. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/AwsCredentials.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/AwsCredentialsInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4157,7 +4308,7 @@ An Amazon S3 or S3-compatible object storage bucket.
 | `bucket` | `string` | V |  | Name of the S3 bucket. |
 | `prefix` | `string` |  |  | Optional path prefix within the bucket. |
 | `capacity` | [VolumeCapacity](#volumecapacity-schema) |  |  | Storage capacity allocation. |
-| `credentials` | [AwsCredentials](#awscredentials-schema) |  |  | Access credentials for the bucket. |
+| `credentials` | [AwsCredentialsInput](#awscredentialsinput-schema) |  |  | Access credentials for the bucket. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/PersistentVolumeSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
