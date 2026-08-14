@@ -14,24 +14,27 @@
           "dtoType": "ResourceSelector"
         }
       },
-      "required": [
-        "type"
-      ],
+      "required": [],
       "properties": {
         "account": {
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
           "description": "Reference to an account that owns the target resources.",
           "unevaluatedProperties": false
         },
-        "type": {
-          "type": "string",
-          "format": "type-ref",
-          "description": "Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`."
-        },
         "id": {
           "type": "string",
           "format": "resource-id",
           "description": "ID of the singular resource."
+        },
+        "did": {
+          "type": "string",
+          "format": "did",
+          "description": "DID of the resource."
+        },
+        "type": {
+          "type": "string",
+          "format": "type-ref",
+          "description": "Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`."
         },
         "name": {
           "type": "string",

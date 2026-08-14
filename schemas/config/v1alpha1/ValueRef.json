@@ -9,14 +9,17 @@
     },
     {
       "type": "object",
-      "required": [
-        "type"
-      ],
+      "required": [],
       "properties": {
         "account": {
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
           "description": "Reference to an account that owns the `VariableSet` or the `SecretSet`.",
           "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of a resource."
         },
         "type": {
           "type": "string",
@@ -27,11 +30,6 @@
             "https://opendatafabric.org/config/v1/SecretSet"
           ],
           "description": "Short type name or full type URI of the target resource."
-        },
-        "id": {
-          "type": "string",
-          "format": "resource-id",
-          "description": "ID of a resource."
         },
         "name": {
           "type": "string",

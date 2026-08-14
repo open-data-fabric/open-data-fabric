@@ -437,10 +437,10 @@ fn render_field_ser(
             if helpers.is_union(&field.typ) {
                 writeln!(
                     w,
-                    "{name}_offset.map(|(e, off)| {{ builder.add_{name}_type(e); builder.add_{name}(off) }});"
+                    "{name}_offset.map(|(e, off)| {{ builder.add_{name}_type(e); builder.add_{accessor}(off) }});"
                 )?;
             } else {
-                writeln!(w, "{name}_offset.map(|off| builder.add_{name}(off));")?;
+                writeln!(w, "{name}_offset.map(|off| builder.add_{accessor}(off));")?;
             }
         }
     } else {
@@ -449,7 +449,7 @@ fn render_field_ser(
             render_type_ser(format!("self.{name}"), &field.typ, helpers, w)?;
             writeln!(w, ");")?;
         } else {
-            writeln!(w, "self.{name}.map(|v| builder.add_{name}(")?;
+            writeln!(w, "self.{name}.map(|v| builder.add_{accessor}(")?;
             render_type_ser(format!("v"), &field.typ, helpers, w)?;
             writeln!(w, "));")?;
         }

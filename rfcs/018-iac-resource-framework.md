@@ -347,7 +347,9 @@ volume:
 Multiple resources can be referenced at once with **selectors**.
 
 Resources can be referenced in bulk by shared properties like:
-- Name patterns
+- Owning account
+- Resource type
+- Name pattern
 - Label filters
 
 ```yaml
@@ -370,7 +372,11 @@ spec:
       maxSliceRecords: 10_000
 ```
 
-Note that, unlike references, selectors are not resolved to IDs, so if some resource stops matching the pattern after a rename or a change of label - it will not be tracked by the selector.
+Being a superset of reference type, selectors can match singular resources by:
+- ID and DID
+- Type and a name (without wildcards)
+
+Note however that, unlike references, selectors are not resolved to specific IDs during the apply process. Whether a reasource matches a selector is determined repeatedly during controller operations, so resources can start and stop matching selector criteria after the initial application of a resource containing the selector.
 
 
 ### Ownership
