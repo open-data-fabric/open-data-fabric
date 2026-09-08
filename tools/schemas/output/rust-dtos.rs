@@ -181,35 +181,6 @@ pub mod auth {
         Organization,
     }
 
-    /// A named attribute attached to a resource, used by auth policies for access control decisions.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Attribute
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct Attribute {
-        /// The resource this attribute is attached to.
-        pub object: resource::ResourceHandle,
-        /// Name of the attribute.
-        ///
-        /// Examples:
-        /// - "allowPublicRead"
-        pub name: String,
-        /// Value of the attribute.
-        pub value: serde_json::Value,
-    }
-
-    /// A named attribute attached to a resource, used by auth policies for access control decisions.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AttributeInput
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct AttributeInput {
-        /// The resource this attribute is attached to.
-        pub object: resource::ResourceRef,
-        /// Name of the attribute e.g. `allowPublicRead`.
-        pub name: String,
-        /// Value of the attribute.
-        pub value: serde_json::Value,
-    }
-
     /// A directed relationship between two resources, optionally carrying a typed value.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
@@ -266,26 +237,22 @@ pub mod auth {
     static RELATIONS_SCHEMA: std::sync::LazyLock<TypeUri> =
         std::sync::LazyLock::new(|| TypeUri::new_unchecked(RELATIONS_SCHEMA_STR));
 
-    /// Specifies resource attributes and relations between resources on which auth policies act upon.
+    /// Specifies relations between resources on which auth policies act upon.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct RelationsSpec {
         /// Relations between resources.
         pub relations: Vec<auth::Relation>,
-        /// Resource attributes.
-        pub attributes: Vec<auth::Attribute>,
     }
 
-    /// Specifies resource attributes and relations between resources on which auth policies act upon.
+    /// Specifies relations between resources on which auth policies act upon.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpecInput
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct RelationsSpecInput {
         /// Relations between resources.
         pub relations: Option<Vec<auth::RelationInput>>,
-        /// Resource attributes.
-        pub attributes: Option<Vec<auth::AttributeInput>>,
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

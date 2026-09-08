@@ -1,11 +1,10 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Specifies resource attributes and relations between resources on which auth policies act upon.",
+  "description": "Specifies relations between resources on which auth policies act upon.",
   "type": "object",
   "required": [
-    "relations",
-    "attributes"
+    "relations"
   ],
   "properties": {
     "relations": {
@@ -13,14 +12,6 @@
       "description": "Relations between resources.",
       "items": {
         "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/Relation",
-        "unevaluatedProperties": false
-      }
-    },
-    "attributes": {
-      "type": "array",
-      "description": "Resource attributes.",
-      "items": {
-        "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/Attribute",
         "unevaluatedProperties": false
       }
     }

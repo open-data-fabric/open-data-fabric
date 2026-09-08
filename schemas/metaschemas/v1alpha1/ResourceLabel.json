@@ -1,0 +1,38 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Metaschema for label schemas. Labels are indexed key-value pairs attached to resources that can be used for querying and filtering. Labels whose `labelProperties.isAuthAttribute` is true are additionally materialized into the ReBAC attribute store by the resource controller.",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "labelProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "ODF-specific metadata for this label schema.",
+          "properties": {
+            "isAuthAttribute": {
+              "type": "boolean",
+              "description": "When true, this label is materialized into the ReBAC attribute store by the resource controller. Labels with this flag must appear under `labels`, not `annotations`, and will be validated as such."
+            },
+            "isRequired": {
+              "type": "boolean",
+              "description": "When true, this label must be present on all resources listed in `resourceTypes`."
+            },
+            "resourceTypes": {
+              "type": "array",
+              "description": "List of resource type URIs this label is valid for. When absent the label is allowed on any resource type.",
+              "items": {
+                "type": "string",
+                "format": "type-uri"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

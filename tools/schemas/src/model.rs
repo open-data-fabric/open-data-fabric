@@ -91,6 +91,7 @@ pub enum TypeDefinition {
     Union(Union),
     Enum(Enum),
     Map(Map),
+    Scalar(Scalar),
 }
 
 impl TypeDefinition {
@@ -100,6 +101,7 @@ impl TypeDefinition {
             TypeDefinition::Union(v) => &v.id,
             TypeDefinition::Enum(v) => &v.id,
             TypeDefinition::Map(v) => &v.id,
+            TypeDefinition::Scalar(v) => &v.id,
         }
     }
 
@@ -109,6 +111,7 @@ impl TypeDefinition {
             TypeDefinition::Union(v) => v.metatype,
             TypeDefinition::Enum(v) => v.metatype,
             TypeDefinition::Map(v) => v.metatype,
+            TypeDefinition::Scalar(v) => v.metatype,
         }
     }
 
@@ -118,6 +121,7 @@ impl TypeDefinition {
             TypeDefinition::Union(v) => &v.description,
             TypeDefinition::Enum(v) => &v.description,
             TypeDefinition::Map(v) => &v.description,
+            TypeDefinition::Scalar(v) => &v.description,
         }
     }
 
@@ -127,6 +131,7 @@ impl TypeDefinition {
             TypeDefinition::Union(v) => &v.codegen_hints,
             TypeDefinition::Enum(v) => &v.codegen_hints,
             TypeDefinition::Map(v) => &v.codegen_hints,
+            TypeDefinition::Scalar(v) => &v.codegen_hints,
         }
     }
 
@@ -136,6 +141,7 @@ impl TypeDefinition {
             TypeDefinition::Union(v) => &v.src,
             TypeDefinition::Enum(v) => &v.src,
             TypeDefinition::Map(v) => &v.src,
+            TypeDefinition::Scalar(v) => &v.src,
         }
     }
 
@@ -229,6 +235,16 @@ impl Map {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Scalar {
+    pub id: TypeId,
+    pub metatype: MetaType,
+    pub typ: Type,
+    pub description: String,
+    pub src: PathBuf,
+    pub codegen_hints: CodegenHints,
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type CodegenHints = IndexMap<CodegenLanguage, IndexMap<CodegenHint, serde_json::Value>>;
@@ -296,6 +312,8 @@ pub enum Type {
 pub enum MetaType {
     Manifest,
     Resource,
+    ResourceLabel,
+    ResourceAnnotation,
     ResourceRef,
     ResourceHandle,
     ResourceCondition,
@@ -311,6 +329,8 @@ impl MetaType {
         match id {
             json_schema::SchemaId::METASCHEMA_MANIFEST => Self::Manifest,
             json_schema::SchemaId::METASCHEMA_RESOURCE_INPUT => Self::Resource,
+            json_schema::SchemaId::METASCHEMA_RESOURCE_LABEL => Self::ResourceLabel,
+            json_schema::SchemaId::METASCHEMA_RESOURCE_ANNOTATION => Self::ResourceAnnotation,
             json_schema::SchemaId::METASCHEMA_RESOURCE_REF => Self::ResourceRef,
             json_schema::SchemaId::METASCHEMA_RESOURCE_HANDLE => Self::ResourceHandle,
             json_schema::SchemaId::METASCHEMA_RESOURCE_CONDITION => Self::ResourceCondition,
@@ -376,19 +396,25 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 
         let metatype = MetaType::from_metaschema(schema.schema.as_ref());
 
+        let is_top_level_schema = match metatype {
+            MetaType::Manifest => true,
+            MetaType::Resource => true,
+            MetaType::ResourceLabel => false,
+            MetaType::ResourceAnnotation => false,
+            MetaType::ResourceRef => false,
+            MetaType::ResourceHandle => false,
+            MetaType::ResourceCondition => false,
+            MetaType::EngineMessage => true,
+            MetaType::Fragment => false,
+        };
+
         // Validate `unevaluatedProperties: false` is specified only for root schemas
         match (
-            metatype,
+            is_top_level_schema,
             schema.unevaluated_properties.take() == Some(false),
         ) {
-            (MetaType::Manifest | MetaType::Resource | MetaType::EngineMessage, true) => (),
-            (
-                MetaType::Fragment
-                | MetaType::ResourceRef
-                | MetaType::ResourceHandle
-                | MetaType::ResourceCondition,
-                false,
-            ) => (),
+            (true, true) => (),
+            (false, false) => (),
             (_, false) => {
                 panic!("Top-level schemas should define `unevaluatedProperties: false`: {id}")
             }
@@ -416,6 +442,8 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 
         let src = schema.src.take().expect("Schema without source path");
 
+        let _ = schema.label_properties.take();
+
         // Extract all $defs into top-level types
         for (dname, dsch) in schema.defs.take().unwrap_or_default() {
             let def_id = root_id.subtype(dname);
@@ -423,14 +451,20 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             let typ = parse_type_definition(
                 def_id.clone(),
                 dsch,
+                MetaType::Fragment,
                 src.clone(),
                 format!("{}.$defs.{}", root_id.name(), def_id.name()),
             );
             types.insert(typ.id().clone(), typ);
         }
 
-        let typ =
-            parse_type_definition(root_id.clone(), schema, src, format!("{}", root_id.name()));
+        let typ = parse_type_definition(
+            root_id.clone(),
+            schema,
+            metatype,
+            src,
+            format!("{}", root_id.name()),
+        );
         types.insert(typ.id().clone(), typ);
     }
 
@@ -442,6 +476,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 fn parse_type_definition(
     id: TypeId,
     schema: json_schema::Schema,
+    metatype: MetaType,
     src: PathBuf,
     ctx: String,
 ) -> TypeDefinition {
@@ -511,6 +546,7 @@ fn parse_type_definition(
                 codegen: obj.codegen,
                 deprecated: obj.deprecated,
                 examples: obj.examples,
+                label_properties: None,
                 src: obj.src,
             };
             TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, true))
@@ -528,6 +564,16 @@ fn parse_type_definition(
             r#type: Some(json_schema::Type::Object),
             ..
         } => TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, false)),
+        json_schema::Schema {
+            r#type: Some(json_schema::Type::Boolean),
+            ..
+        } if matches!(
+            metatype,
+            MetaType::ResourceLabel | MetaType::ResourceAnnotation
+        ) =>
+        {
+            parse_fragment_type_scalar(id, schema, src, ctx)
+        }
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
 }
@@ -567,6 +613,7 @@ fn parse_type_struct(
         codegen,
         deprecated: None,
         examples: _,
+        label_properties: None,
         src: None,
     } = schema
     else {
@@ -674,6 +721,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         codegen: None,
         deprecated: None,
         examples: _,
+        label_properties: None,
         src: None,
     } = schema
     else {
@@ -729,6 +777,7 @@ fn parse_type_union_variant(parent: &TypeId, schema: json_schema::Schema, ctx: S
         codegen: None,
         deprecated: None,
         examples: None,
+        label_properties: None,
         src: None,
     } = schema
     else {
@@ -794,6 +843,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         codegen,
         deprecated: None,
         examples: None,
+        label_properties: None,
         src: None,
     } = schema
     else {
@@ -868,6 +918,7 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
         codegen,
         deprecated: None,
         examples: _,
+        label_properties: None,
         src: None,
     } = schema
     else {
@@ -895,6 +946,66 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
         codegen_hints: codegen.unwrap_or_default(),
         src,
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn parse_fragment_type_scalar(
+    id: TypeId,
+    mut schema: json_schema::Schema,
+    src: PathBuf,
+    ctx: String,
+) -> TypeDefinition {
+    let json_schema::Schema {
+        id: Some(_),
+        schema: metaschema,
+        defs: None,
+        r#type: Some(json_schema::Type::Boolean),
+        required: None,
+        properties: None,
+        pattern_properties: None,
+        additional_properties: None,
+        unevaluated_properties: None,
+        one_of: None,
+        all_of: None,
+        r#enum: None,
+        items: None,
+        r#ref: None,
+        r#const: None,
+        canonical_type: _,
+        format: None,
+        default: None,
+        description: Some(_),
+        tag: None,
+        codegen: None,
+        deprecated: None,
+        examples: _,
+        label_properties: None,
+        src: None,
+    } = &schema
+    else {
+        panic!(
+            "Invalid scalar fragment schema: {ctx}: {}",
+            schema.display()
+        )
+    };
+
+    let metatype = MetaType::from_metaschema(metaschema.as_ref());
+    let description = schema.description.take().unwrap();
+
+    let _ = schema.id.take();
+    let _ = schema.schema.take();
+
+    let typ = parse_type_scalar(schema, ctx);
+
+    TypeDefinition::Scalar(Scalar {
+        id,
+        metatype,
+        typ,
+        description,
+        src,
+        codegen_hints: Default::default(),
+    })
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -961,6 +1072,7 @@ fn parse_type_array(schema: json_schema::Schema, root: &TypeId, ctx: String) -> 
         codegen: None,
         deprecated: None,
         examples: _,
+        label_properties: None,
         src: None,
     } = schema
     else {
@@ -999,6 +1111,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         codegen: None,
         deprecated: None,
         examples: _,
+        label_properties: None,
         src: None,
     } = &schema
     else {
@@ -1096,6 +1209,7 @@ fn parse_ref(
         codegen: None,
         deprecated: None,
         examples: None,
+        label_properties: None,
         src: None,
     } = schema
     else {

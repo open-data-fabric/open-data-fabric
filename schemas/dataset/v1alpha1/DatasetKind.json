@@ -1,10 +1,16 @@
 {
   "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
   "description": "Represents type of the dataset.",
   "type": "string",
   "enum": [
     "Root",
     "Derivative"
-  ]
+  ],
+  "labelProperties": {
+    "isRequired": true,
+    "resourceTypes": [
+      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
+    ]
+  }
 }

@@ -1,13 +1,12 @@
-# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
 headers:
   name: bobs-dataset
   account: bob
+  labels:
+    # Full URI form
+    https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead: true
+    # Short form
+    AllowAnonymousRead: false
 spec:
   kind: Root
   metadata: []
-  # attributes:
-  #   allowPublicRead: true
-  #   allowAnonymousRead: false
-  #   extra:
-  #     foo: bar

@@ -419,78 +419,6 @@ impl<'fb> FlatbuffersDeserializable<fb::AttachmentsEmbedded<'fb>>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Attribute
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Attribute
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::Attribute {
-    type OffsetT = WIPOffset<fb::Attribute<'fb>>;
-
-    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let object_offset = { self.object.serialize(fb) };
-        let name_offset = { fb.create_string(&self.name) };
-        let value_offset = { fb.create_string(&serde_json::to_string(&self.value).unwrap()) };
-        let mut builder = fb::AttributeBuilder::new(fb);
-        builder.add_object(object_offset);
-        builder.add_name(name_offset);
-        builder.add_value(value_offset);
-        builder.finish()
-    }
-}
-
-impl<'fb> FlatbuffersDeserializable<fb::Attribute<'fb>> for odf::auth::Attribute {
-    fn deserialize(proxy: fb::Attribute<'fb>) -> Self {
-        odf::auth::Attribute {
-            object: proxy
-                .object()
-                .map(|v| odf::resource::ResourceHandle::deserialize(v))
-                .unwrap(),
-            name: proxy.name().map(|v| v.to_owned()).unwrap(),
-            value: proxy
-                .value()
-                .map(|v| serde_json::from_str(v).unwrap())
-                .unwrap(),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AttributeInput
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AttributeInput
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::AttributeInput {
-    type OffsetT = WIPOffset<fb::AttributeInput<'fb>>;
-
-    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let object_offset = { self.object.serialize(fb) };
-        let name_offset = { fb.create_string(&self.name) };
-        let value_offset = { fb.create_string(&serde_json::to_string(&self.value).unwrap()) };
-        let mut builder = fb::AttributeInputBuilder::new(fb);
-        builder.add_object(object_offset);
-        builder.add_name(name_offset);
-        builder.add_value(value_offset);
-        builder.finish()
-    }
-}
-
-impl<'fb> FlatbuffersDeserializable<fb::AttributeInput<'fb>> for odf::auth::AttributeInput {
-    fn deserialize(proxy: fb::AttributeInput<'fb>) -> Self {
-        odf::auth::AttributeInput {
-            object: proxy
-                .object()
-                .map(|v| odf::resource::ResourceRef::deserialize(v))
-                .unwrap(),
-            name: proxy.name().map(|v| v.to_owned()).unwrap(),
-            value: proxy
-                .value()
-                .map(|v| serde_json::from_str(v).unwrap())
-                .unwrap(),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AwsCredentials
 // Schema: https://opendatafabric.org/schemas/storage/v1alpha1/AwsCredentials
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4959,13 +4887,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::RelationsSpec {
             let offsets: Vec<_> = self.relations.iter().map(|i| i.serialize(fb)).collect();
             fb.create_vector(&offsets)
         };
-        let attributes_offset = {
-            let offsets: Vec<_> = self.attributes.iter().map(|i| i.serialize(fb)).collect();
-            fb.create_vector(&offsets)
-        };
         let mut builder = fb::RelationsSpecBuilder::new(fb);
         builder.add_relations(relations_offset);
-        builder.add_attributes(attributes_offset);
         builder.finish()
     }
 }
@@ -4978,14 +4901,6 @@ impl<'fb> FlatbuffersDeserializable<fb::RelationsSpec<'fb>> for odf::auth::Relat
                 .map(|v| {
                     v.iter()
                         .map(|i| odf::auth::Relation::deserialize(i))
-                        .collect()
-                })
-                .unwrap(),
-            attributes: proxy
-                .attributes()
-                .map(|v| {
-                    v.iter()
-                        .map(|i| odf::auth::Attribute::deserialize(i))
                         .collect()
                 })
                 .unwrap(),
@@ -5006,13 +4921,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::RelationsSpecInput {
             let offsets: Vec<_> = v.iter().map(|i| i.serialize(fb)).collect();
             fb.create_vector(&offsets)
         });
-        let attributes_offset = self.attributes.as_ref().map(|v| {
-            let offsets: Vec<_> = v.iter().map(|i| i.serialize(fb)).collect();
-            fb.create_vector(&offsets)
-        });
         let mut builder = fb::RelationsSpecInputBuilder::new(fb);
         relations_offset.map(|off| builder.add_relations(off));
-        attributes_offset.map(|off| builder.add_attributes(off));
         builder.finish()
     }
 }
@@ -5023,11 +4933,6 @@ impl<'fb> FlatbuffersDeserializable<fb::RelationsSpecInput<'fb>> for odf::auth::
             relations: proxy.relations().map(|v| {
                 v.iter()
                     .map(|i| odf::auth::RelationInput::deserialize(i))
-                    .collect()
-            }),
-            attributes: proxy.attributes().map(|v| {
-                v.iter()
-                    .map(|i| odf::auth::AttributeInput::deserialize(i))
                     .collect()
             }),
         }

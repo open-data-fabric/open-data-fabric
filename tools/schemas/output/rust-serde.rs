@@ -353,86 +353,6 @@ pub mod auth {
 
     implement_serde_as!(dtos::auth::AccountType, AccountType);
 
-    // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Attribute
-    #[derive(Debug, Serialize, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    #[serde(rename_all = "camelCase")]
-    pub struct Attribute {
-        pub object: resource::ResourceHandle,
-        pub name: String,
-        pub value: serde_json::Value,
-    }
-
-    impl IntoDto for Attribute {
-        type Dto = dtos::auth::Attribute;
-        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
-            self.try_into()
-        }
-    }
-
-    impl From<dtos::auth::Attribute> for Attribute {
-        fn from(v: dtos::auth::Attribute) -> Self {
-            Self {
-                object: v.object.into(),
-                name: v.name,
-                value: v.value,
-            }
-        }
-    }
-
-    impl TryFrom<Attribute> for dtos::auth::Attribute {
-        type Error = ValidationError;
-        fn try_from(v: Attribute) -> Result<Self, ValidationError> {
-            Ok(Self {
-                object: dtos::resource::ResourceHandle::try_from(v.object)?,
-                name: v.name,
-                value: v.value,
-            })
-        }
-    }
-
-    implement_serde_as!(dtos::auth::Attribute, Attribute);
-
-    // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AttributeInput
-    #[derive(Debug, Serialize, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    #[serde(rename_all = "camelCase")]
-    pub struct AttributeInput {
-        pub object: StructOrString<resource::ResourceRef>,
-        pub name: String,
-        pub value: serde_json::Value,
-    }
-
-    impl IntoDto for AttributeInput {
-        type Dto = dtos::auth::AttributeInput;
-        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
-            self.try_into()
-        }
-    }
-
-    impl From<dtos::auth::AttributeInput> for AttributeInput {
-        fn from(v: dtos::auth::AttributeInput) -> Self {
-            Self {
-                object: v.object.into(),
-                name: v.name,
-                value: v.value,
-            }
-        }
-    }
-
-    impl TryFrom<AttributeInput> for dtos::auth::AttributeInput {
-        type Error = ValidationError;
-        fn try_from(v: AttributeInput) -> Result<Self, ValidationError> {
-            Ok(Self {
-                object: dtos::resource::ResourceRef::try_from(v.object)?,
-                name: v.name,
-                value: v.value,
-            })
-        }
-    }
-
-    implement_serde_as!(dtos::auth::AttributeInput, AttributeInput);
-
     // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -529,7 +449,6 @@ pub mod auth {
     #[serde(rename_all = "camelCase")]
     pub struct RelationsSpec {
         pub relations: Vec<auth::Relation>,
-        pub attributes: Vec<auth::Attribute>,
     }
 
     impl IntoDto for RelationsSpec {
@@ -543,7 +462,6 @@ pub mod auth {
         fn from(v: dtos::auth::RelationsSpec) -> Self {
             Self {
                 relations: v.relations.into_iter().map(Into::into).collect(),
-                attributes: v.attributes.into_iter().map(Into::into).collect(),
             }
         }
     }
@@ -556,11 +474,6 @@ pub mod auth {
                     .relations
                     .into_iter()
                     .map(|i| dtos::auth::Relation::try_from(i))
-                    .collect::<Result<_, _>>()?,
-                attributes: v
-                    .attributes
-                    .into_iter()
-                    .map(|i| dtos::auth::Attribute::try_from(i))
                     .collect::<Result<_, _>>()?,
             })
         }
@@ -576,9 +489,6 @@ pub mod auth {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub relations: Option<Vec<auth::RelationInput>>,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub attributes: Option<Vec<auth::AttributeInput>>,
     }
 
     impl IntoDto for RelationsSpecInput {
@@ -592,9 +502,6 @@ pub mod auth {
         fn from(v: dtos::auth::RelationsSpecInput) -> Self {
             Self {
                 relations: v.relations.map(|v| v.into_iter().map(Into::into).collect()),
-                attributes: v
-                    .attributes
-                    .map(|v| v.into_iter().map(Into::into).collect()),
             }
         }
     }
@@ -608,14 +515,6 @@ pub mod auth {
                     .map(|v| {
                         v.into_iter()
                             .map(|i| dtos::auth::RelationInput::try_from(i))
-                            .collect::<Result<_, _>>()
-                    })
-                    .transpose()?,
-                attributes: v
-                    .attributes
-                    .map(|v| {
-                        v.into_iter()
-                            .map(|i| dtos::auth::AttributeInput::try_from(i))
                             .collect::<Result<_, _>>()
                     })
                     .transpose()?,

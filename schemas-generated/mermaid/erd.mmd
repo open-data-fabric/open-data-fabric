@@ -21,15 +21,13 @@ graph TD
     AccountSpec
     AccountSpecInput
     AccountType
-    Attribute
-    AttributeInput
     Relation
     RelationInput
     Relations
     RelationsSpec
     RelationsSpecInput
   end
-  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Attribute,AttributeInput,Relation,RelationInput,Relations,RelationsSpec,RelationsSpecInput ctx_auth
+  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Relation,RelationInput,Relations,RelationsSpec,RelationsSpecInput ctx_auth
 
   subgraph config["config"]
     Secret
@@ -60,6 +58,8 @@ graph TD
 
   subgraph dataset["dataset"]
     AddData
+    AllowAnonymousRead
+    AllowPublicRead
     AttachmentEmbedded
     Attachments
     Attachments_Embedded["Attachments::Embedded"]
@@ -94,7 +94,7 @@ graph TD
     TransformInput
     Watermark
   end
-  class AddData,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
+  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
 
   subgraph engine["engine"]
     RawQueryRequest
@@ -256,8 +256,6 @@ graph TD
   AddPushSource -->|"merge"| MergeStrategy
   Attachments -->|"variant"| Attachments_Embedded
   Attachments_Embedded -->|"items"| AttachmentEmbedded
-  Attribute -->|"object"| ResourceHandle
-  AttributeInput -->|"object"| ResourceRef
   AwsCredentials -->|"access_key"| ValueHandle
   AwsCredentials -->|"secret_key"| ValueHandle
   AwsCredentialsInput -->|"access_key"| ValueRef
@@ -387,9 +385,7 @@ graph TD
   Relations -->|"headers"| ResourceHeadersInput
   Relations -->|"spec"| RelationsSpecInput
   RelationsSpec -->|"relations"| Relation
-  RelationsSpec -->|"attributes"| Attribute
   RelationsSpecInput -->|"relations"| RelationInput
-  RelationsSpecInput -->|"attributes"| AttributeInput
   Resource -->|"headers"| ResourceHeaders
   Resource -->|"status"| ResourceStatus
   ResourceHandle -->|"account"| AccountHandle
