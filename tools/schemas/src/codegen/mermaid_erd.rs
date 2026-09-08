@@ -107,6 +107,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 }
             }
             TypeDefinition::Enum(_) => {}
+            TypeDefinition::Scalar(_) => {}
         }
     }
 

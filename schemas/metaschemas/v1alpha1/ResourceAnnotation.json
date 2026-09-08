@@ -1,0 +1,23 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceAnnotation",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Metaschema for annotation schemas. Annotations are non-indexed key-value pairs attached to resources intended for human readers and external tooling. Unlike labels, annotations are not queryable via the resource system.",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "resourceTypes": {
+          "type": "array",
+          "description": "List of resource type URIs this annotation is valid for. When absent the annotation is allowed on any resource type.",
+          "items": {
+            "type": "string",
+            "format": "type-uri"
+          }
+        }
+      }
+    }
+  ]
+}

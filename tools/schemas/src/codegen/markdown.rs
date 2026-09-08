@@ -135,6 +135,8 @@ fn render_type(
         model::TypeDefinition::Union(t) => render_union(t, lvl, model, w)?,
         model::TypeDefinition::Enum(t) => render_enum(t, lvl, w)?,
         model::TypeDefinition::Map(t) => render_map(t, lvl, w)?,
+        // TODO: Not supporting top-level scalar types yet
+        model::TypeDefinition::Scalar(_) => (),
     }
     Ok(())
 }

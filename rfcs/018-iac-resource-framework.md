@@ -32,6 +32,7 @@ This RFC proposes a new Open Data Fabric manifest format and a set of resource t
     - [Identity](#identity)
       - [IDs vs. DIDs](#ids-vs-dids)
     - [Labels \& Annotations](#labels--annotations)
+    - [Auth Attributes](#auth-attributes)
     - [References](#references)
     - [Typed References](#typed-references)
     - [Reference resolution](#reference-resolution)
@@ -264,6 +265,50 @@ spec:
 Thus every label and annotation has a schema and can be type-checked.
 
 Controllers may contribute their own labels to simplify common filtering scenarios. For example a `Dataset` resource above will automatically get the `datasetKind: Root` label without you needing to specify it manually because it's very common to filter datasets by `datasetKind`.
+
+
+### Auth Attributes
+ODF uses a **Relationship-Based Access Control (ReBAC)** model. In addition to relations between resources (e.g. "alice has role `maintainer` on `bobs-dataset`"), ReBAC policies can act on **attributes** — typed facts attached to individual resources (e.g. "this dataset allows public read").
+
+Rather than introducing a separate manifest type for attributes, ODF expresses them as **labels**. A label schema that declares `labelProperties.isAuthAttribute: true` signals that any resource carrying that label should have its value materialized into the ReBAC attribute store by the resource controller.
+
+```json
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
+  "description": "Controls whether the dataset is readable by any authenticated user.",
+  "type": "boolean",
+  "labelProperties": {
+    "isAuthAttribute": true,
+    "resourceTypes": [
+      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
+    ]
+  }
+}
+```
+
+A dataset owner sets the attribute by placing the label on their resource:
+
+```yaml
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+headers:
+  name: my-dataset
+  labels:
+    # Full URI form
+    https://opendatafabric.org/schemas/dataset/v1alpha1/AllowAnonymousRead: false
+    # Short form - resolved into https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead
+    allowPublicRead: true
+spec:
+  kind: Root
+  metadata: []
+```
+
+Important properties:
+- **Resource owns the attributes** - attributes live on the resource they describe
+- **Typed and validated** - the auth attributes are always type-checked against schemas
+- **Indexed** - because auth attributes are labels, they are always queryable
+
+> **Note:** In future it will be necessary to introduce a form of control on who has permissions to set certain labels or change some fields of the spec. For example enabling `AllowPublicRead` is a very dangerous operation that may require approval of a senior management and thus should be rejected when manifest is applied by a user without necessary priliveges.
 
 
 ### References

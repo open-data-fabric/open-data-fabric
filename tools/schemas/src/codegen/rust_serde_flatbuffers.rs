@@ -212,6 +212,11 @@ fn render_impl(
             continue;
         }
 
+        if matches!(typ, model::TypeDefinition::Scalar(_)) {
+            // TODO: Not supporting top-level scalar types yet
+            continue;
+        }
+
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -229,6 +234,7 @@ fn render_impl(
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
             model::TypeDefinition::Map(t) => render_map(t, w)?,
+            model::TypeDefinition::Scalar(_) => unreachable!(),
         }
         writeln!(w)?;
     }
@@ -627,6 +633,7 @@ fn render_type_de(
                 type_id.context(),
                 type_id.join("")
             )?,
+            model::TypeDefinition::Scalar(_) => unreachable!(),
         },
         model::Type::AnyJson => writeln!(w, "serde_json::from_str({name}).unwrap()")?,
         model::Type::AccountId => writeln!(

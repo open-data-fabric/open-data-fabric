@@ -10,10 +10,3 @@ spec:
       relation: role
       value: maintainer
       object: Dataset:bob/bobs-dataset  # Short form, equivalent to { type: Dataset, account: { name: bob }, name: bobs-dataset }
-  attributes:
-    - object: Dataset:bob/bobs-dataset
-      name: allowPublicRead
-      value: true
-    - object: Dataset:bob/bobs-dataset
-      name: allowAnonymousRead
-      value: false
