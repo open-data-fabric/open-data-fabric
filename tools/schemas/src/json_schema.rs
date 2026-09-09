@@ -71,6 +71,12 @@ pub struct Schema {
 
     pub examples: Option<Vec<serde_json::Value>>,
 
+    /// ODF-specific metadata for label schemas (used when `$schema` is `ResourceLabel`)
+    pub label_properties: Option<LabelProperties>,
+
+    /// ODF-specific metadata for relation value schemas (used when `$schema` is `Relation`)
+    pub relation_properties: Option<RelationProperties>,
+
     pub src: Option<PathBuf>,
 }
 
@@ -82,6 +88,41 @@ impl Schema {
     pub fn to_value(&self) -> serde_json::Value {
         serde_json::to_value(self).unwrap()
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[skip_serializing_none]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct LabelProperties {
+    /// When true, this label is materialized into the ReBAC attribute store by the resource
+    /// controller. Labels with this flag must appear under `labels`, not `annotations`.
+    pub is_auth_attribute: Option<bool>,
+
+    /// When true, this label must be present on all resources listed in `resource_types`.
+    pub is_required: Option<bool>,
+
+    /// Resource type URIs this label is valid for. When absent the label is allowed on any
+    /// resource type.
+    pub resource_types: Option<Vec<String>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[skip_serializing_none]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationProperties {
+    /// Resource type URIs that are valid subjects of this relation. When absent any resource type
+    /// is allowed as subject.
+    pub subject_resource_types: Option<Vec<String>>,
+
+    /// Resource type URIs that are valid objects of this relation. When absent any resource type
+    /// is allowed as object.
+    pub object_resource_types: Option<Vec<String>>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,6 +201,8 @@ pub fn lint(top_level_schemas: &[Schema]) {
         codegen: None,
         deprecated: None,
         examples: None,
+        label_properties: None,
+        relation_properties: None,
         src: None,
     };
     schemas.insert(SchemaId::new(SchemaId::METASCHEMA_JSONSCHEMA), &jsonschema);
@@ -209,7 +252,10 @@ pub fn lint(top_level_schemas: &[Schema]) {
             && (id.as_str().starts_with(SchemaId::METASCHEMA_BASE_URL)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_MANIFEST)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_INPUT)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_LABEL)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_ANNOTATION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_CONDITION)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RELATION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ENGINE_MESSAGE)
                 || id.name() == "Manifest"
                 || id.name() == "DatasetSnapshot"
@@ -342,6 +388,10 @@ impl SchemaId {
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest";
     pub const METASCHEMA_RESOURCE: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource";
+    pub const METASCHEMA_RESOURCE_LABEL: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel";
+    pub const METASCHEMA_RESOURCE_ANNOTATION: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceAnnotation";
     pub const METASCHEMA_RESOURCE_INPUT: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput";
     pub const METASCHEMA_RESOURCE_REF: &str =
@@ -350,6 +400,8 @@ impl SchemaId {
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle";
     pub const METASCHEMA_RESOURCE_CONDITION: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition";
+    pub const METASCHEMA_RELATION: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation";
     pub const METASCHEMA_ENGINE_MESSAGE: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/EngineMessage";
 
@@ -430,6 +482,7 @@ enum Ref {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Type {
+    Null,
     Boolean,
     Integer,
     Number,

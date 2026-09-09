@@ -62,6 +62,11 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         writeln!(w, "use super::*;\n")?;
 
         for typ in types.values() {
+            if matches!(typ, model::TypeDefinition::Scalar(_)) {
+                // TODO: Not supporting top-level scalar types yet
+                continue;
+            }
+
             if typ
                 .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
                 .is_some()
@@ -92,6 +97,8 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 }
                 model::TypeDefinition::Enum(t) => render_enum(t, w)?,
                 model::TypeDefinition::Map(t) => render_map(t, w)?,
+                // TODO: Not supporting top-level scalar types yet
+                model::TypeDefinition::Scalar(_) => unreachable!(),
             }
             writeln!(w)?;
         }
@@ -371,6 +378,7 @@ fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::i
 
 fn format_type(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),

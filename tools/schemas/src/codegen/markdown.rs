@@ -135,6 +135,8 @@ fn render_type(
         model::TypeDefinition::Union(t) => render_union(t, lvl, model, w)?,
         model::TypeDefinition::Enum(t) => render_enum(t, lvl, w)?,
         model::TypeDefinition::Map(t) => render_map(t, lvl, w)?,
+        // TODO: Not supporting top-level scalar types yet
+        model::TypeDefinition::Scalar(_) => (),
     }
     Ok(())
 }
@@ -330,6 +332,7 @@ fn render_map(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 fn as_json_type(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("`boolean`"),
         model::Type::Int8
         | model::Type::Int16
@@ -371,6 +374,7 @@ fn as_json_type(typ: &model::Type) -> String {
 
 fn as_format(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => String::new(),
         model::Type::Int8 => format!("`int8`"),
         model::Type::Int16 => format!("`int16`"),

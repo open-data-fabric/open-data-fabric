@@ -89,6 +89,8 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         .types
         .values()
         .filter(|t| !matches!(t.metatype(), model::MetaType::Resource))
+        // TODO: Not supporting top-level scalar types yet
+        .filter(|t| !matches!(t, model::TypeDefinition::Scalar(_)))
         .fold(BTreeMap::new(), |mut map, t| {
             map.entry(t.id().context())
                 .or_insert_with(BTreeMap::new)
@@ -119,6 +121,7 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 model::TypeDefinition::Union(t) => render_union(t, w)?,
                 model::TypeDefinition::Enum(t) => render_enum(t, w)?,
                 model::TypeDefinition::Map(t) => render_map(&model, t, w)?,
+                model::TypeDefinition::Scalar(_) => unreachable!(),
             }
 
             writeln!(w)?;
@@ -686,6 +689,7 @@ fn render_aliases(name: &str, w: &mut dyn std::io::Write) -> Result<(), std::io:
 
 fn format_type(model: &model::Model, typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),

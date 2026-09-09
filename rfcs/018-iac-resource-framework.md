@@ -39,6 +39,9 @@ This RFC proposes a new Open Data Fabric manifest format and a set of resource t
     - [Ownership](#ownership)
     - [Generations](#generations)
     - [Status](#status)
+  - [Authorization](#authorization)
+    - [Attributes](#attributes)
+    - [Relations](#relations)
   - [Resource Application](#resource-application)
   - [APIs](#apis)
     - [Current state of ODF APIs](#current-state-of-odf-apis)
@@ -244,13 +247,12 @@ Labels and annotations are fully **mutable**.
 Label and annotation keys can be either short type names or full URIs:
 
 ```yaml
-```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/Dataset
 headers:
   name: my-dataset
   labels:
     # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind
-    # Anything but Root or Derivative will fail valiation
+    # Anything but Root or Derivative will fail validation
     datasetKind: Root
     did: did:odf:aa..bb
   annotations:
@@ -271,7 +273,7 @@ Resource manifests can link to other resources using **references**, forming a D
 
 Resources can be referenced by:
 - ID (unique within a node)
-- DID (unique globlly)
+- DID (unique globally)
 - Type, name, and the (optional) owning account
   - When account is not specified the name is resolved within the current account (auth subject)
 
@@ -359,7 +361,7 @@ headers:
 spec:
   target:
     type: Dataset
-    name: org.opendatafabric.%
+    name: org.opendatafabric.%  # A SQL LIKE-style wildcard that matches names starting with 'org.opendatafabric.'
     labels:
       datasetKind: Root
       env: prod
@@ -376,7 +378,7 @@ Being a superset of reference type, selectors can match singular resources by:
 - ID and DID
 - Type and a name (without wildcards)
 
-Note however that, unlike references, selectors are not resolved to specific IDs during the apply process. Whether a reasource matches a selector is determined repeatedly during controller operations, so resources can start and stop matching selector criteria after the initial application of a resource containing the selector.
+Note however that, unlike references, selectors are not resolved to specific IDs during the apply process. Whether a resource matches a selector is determined repeatedly during controller operations, so resources can start and stop matching selector criteria after the initial application of a resource containing the selector.
 
 
 ### Ownership
@@ -455,6 +457,109 @@ stateDiagram-v2
 ```
 
 The `conditions` are keyed by schema IDs to disambiguate, avoid name collisions, and provide schema checking.
+
+
+## Authorization
+ODF uses a **Relationship-Based Access Control (ReBAC)** model. Access decisions are based on two kinds of facts materialized into the ReBAC engine by resource controllers:
+
+- **Attributes** — typed facts attached to individual resources (e.g. "this dataset allows public read")
+- **Relations** — directed links between resources carrying a typed role (e.g. "alice has role `Maintainer` on `acme/foo`")
+
+Both are declared in resource manifests and version-controlled alongside the resources they protect.
+
+
+### Attributes
+ReBAC attributes reuse the existing [labels](#labels--annotations) mechanism. A label schema that declares `labelProperties.isAuthAttribute: true` signals that any resource carrying that label should have its value materialized into a ReBAC attribute.
+
+Example ReBAC attribute label:
+```json
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
+  "description": "Controls whether the dataset is readable by any authenticated user.",
+  "type": "boolean",
+  "labelProperties": {
+    "isAuthAttribute": true,
+    "resourceTypes": [
+      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
+    ]
+  }
+}
+```
+
+It now can be defined like any other resource label:
+```yaml
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+headers:
+  name: my-dataset
+  labels:
+    # Short form - resolved to https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead
+    AllowPublicRead: true
+    # Full URI form
+    https://opendatafabric.org/schemas/dataset/v1alpha1/AllowAnonymousRead: false
+spec:
+  kind: Root
+  metadata: []
+```
+
+Key properties:
+- **Single authoring surface** — attributes live on the resource they describe, eliminating cross-ownership ambiguity
+- **Typed and validated** — the label schema's `type` field is enforced at apply time
+- **Indexed** — because auth attributes are labels, they are also queryable in the resource listing API
+- **Schema-discoverable** — implementations enumerate label schemas with `isAuthAttribute: true` at startup to know which labels to materialize, without hardcoding a list
+- **Auth attributes must be labels, not annotations** — validators reject a resource that places an `isAuthAttribute` label under `annotations`
+- **Admission control** — changing a label with `isAuthAttribute: true` may require elevated permissions beyond those needed to update the rest of the resource spec; the flag is the hook that admission controllers use to enforce this
+
+
+### Relations
+ReBAC relations between resources are declared using the `Relations` manifest. Each relation is a triple `(subject, relation, object)` where `relation` resolves to a schema that defines valid `value` types, subject types, and object types:
+
+```json
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Role",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation",
+  "description": "Access role granted to a subject on a dataset.",
+  "type": "string",
+  "enum": ["Reader", "Editor", "Maintainer"],
+  "relationProperties": {
+    "subjectResourceTypes": ["https://opendatafabric.org/schemas/auth/v1alpha1/Account"],
+    "objectResourceTypes": ["https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"]
+  }
+}
+```
+
+Example relation that grants Alice the `Maintainer` role on Bob's dataset:
+```yaml
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+headers:
+  account: bob  # account that owns the objects being protected
+  name: alice--role--bobs-dataset
+spec:
+  relations:
+    - subject: Account:alice
+      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+      value: Maintainer
+      object: Dataset:bob/bobs-dataset
+```
+
+An example of value-less relation is `Member` used to define group membership:
+
+```yaml
+# relations-admin.yaml
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+headers:
+  name: admins
+  account: system
+spec:
+  relations:
+    - subject: Account:alice
+      relation: Member  # resolves to https://opendatafabric.org/schemas/auth/v1alpha1/Member
+      object: Group:system/admin
+```
+
+**Authorization:** the caller applying a `Relations` manifest must hold sufficient permission on `headers.account` to create a resource in that scope and have necessary permissions on `subject` and `object` resources to establish the relation. The `subject` and `object` permissions are specific to every relation type and checked by the controllers.
+
+**Cascading cleanup:** - implementation should use the same [resource referential integrity](#references) mechanism to detect when subject or object is deleted. Implementations may either cascade-delete the stale triples automatically or surface them as a reconciliation warning for the operator to resolve.
 
 
 ## Resource Application

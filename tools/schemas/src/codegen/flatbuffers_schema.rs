@@ -52,6 +52,11 @@ fn render_impl(
             continue;
         }
 
+        if matches!(typ, model::TypeDefinition::Scalar(_)) {
+            // TODO: Not supporting top-level scalar types yet
+            continue;
+        }
+
         if !wrappers.contains(typ.id()) && !roots.contains(typ.id()) {
             writeln!(
                 w,
@@ -73,6 +78,7 @@ fn render_impl(
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
             model::TypeDefinition::Map(t) => render_map(t, w)?,
+            model::TypeDefinition::Scalar(_) => unreachable!(),
         }
         writeln!(w, "")?;
     }
@@ -285,6 +291,7 @@ fn in_dependency_order_rec(
         model::TypeDefinition::Enum(_) | model::TypeDefinition::Map(_) => {
             res.push(typ.clone());
         }
+        model::TypeDefinition::Scalar(_) => res.push(typ.clone()),
     }
 }
 
@@ -499,6 +506,7 @@ fn format_ident(name: &str) -> Cow<'_, str> {
 
 fn format_type(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("byte"),
         model::Type::Int16 => format!("int16"),

@@ -136,7 +136,8 @@ impl Helpers {
             | model::Type::UInt32
             | model::Type::UInt64
             | model::Type::ByteSize => true,
-            model::Type::Boolean
+            model::Type::Null
+            | model::Type::Boolean
             | model::Type::String
             | model::Type::DatasetAlias
             | model::Type::DatasetId
@@ -212,6 +213,11 @@ fn render_impl(
             continue;
         }
 
+        if matches!(typ, model::TypeDefinition::Scalar(_)) {
+            // TODO: Not supporting top-level scalar types yet
+            continue;
+        }
+
         writeln!(
             w,
             "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
@@ -229,6 +235,7 @@ fn render_impl(
             model::TypeDefinition::Union(t) => render_union(t, w)?,
             model::TypeDefinition::Enum(t) => render_enum(t, w)?,
             model::TypeDefinition::Map(t) => render_map(t, w)?,
+            model::TypeDefinition::Scalar(_) => unreachable!(),
         }
         writeln!(w)?;
     }
@@ -342,6 +349,7 @@ fn format_pre_ser_type(
     let name = format_ident(&name);
 
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean
         | model::Type::Int8
         | model::Type::Int16
@@ -464,6 +472,7 @@ fn render_type_ser(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean
         | model::Type::Int8
         | model::Type::Int16
@@ -564,6 +573,7 @@ fn render_type_de(
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean
         | model::Type::Int8
         | model::Type::Int16
@@ -627,6 +637,7 @@ fn render_type_de(
                 type_id.context(),
                 type_id.join("")
             )?,
+            model::TypeDefinition::Scalar(_) => unreachable!(),
         },
         model::Type::AnyJson => writeln!(w, "serde_json::from_str({name}).unwrap()")?,
         model::Type::AccountId => writeln!(

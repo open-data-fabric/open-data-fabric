@@ -1,0 +1,13 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+headers:
+  # Relation lives under the account that has the right to specify it.
+  # In our case Bob grants maintainer status to Alice on his dataset.
+  account: bob
+  name: alice-bobsdataset
+spec:
+  relations:
+    - subject: Account:alice  # Short form, equivalent to { type: Account, name: alice }
+      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+      value: Maintainer
+      object: Dataset:bob/bobs-dataset  # Short form, equivalent to { type: Dataset, account: { name: bob }, name: bobs-dataset }
