@@ -42,7 +42,6 @@ This RFC proposes a new Open Data Fabric manifest format and a set of resource t
   - [Authorization](#authorization)
     - [Attributes](#attributes)
     - [Relations](#relations)
-    - [Groups](#groups)
   - [Resource Application](#resource-application)
   - [APIs](#apis)
     - [Current state of ODF APIs](#current-state-of-odf-apis)
@@ -248,13 +247,12 @@ Labels and annotations are fully **mutable**.
 Label and annotation keys can be either short type names or full URIs:
 
 ```yaml
-```yaml
 $schema: https://opendatafabric.org/schemas/config/v1alpha1/Dataset
 headers:
   name: my-dataset
   labels:
     # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind
-    # Anything but Root or Derivative will fail valiation
+    # Anything but Root or Derivative will fail validation
     datasetKind: Root
     did: did:odf:aa..bb
   annotations:
@@ -275,7 +273,7 @@ Resource manifests can link to other resources using **references**, forming a D
 
 Resources can be referenced by:
 - ID (unique within a node)
-- DID (unique globlly)
+- DID (unique globally)
 - Type, name, and the (optional) owning account
   - When account is not specified the name is resolved within the current account (auth subject)
 
@@ -363,7 +361,7 @@ headers:
 spec:
   target:
     type: Dataset
-    name: org.opendatafabric.%
+    name: org.opendatafabric.%  # A SQL LIKE-style wildcard that matches names starting with 'org.opendatafabric.'
     labels:
       datasetKind: Root
       env: prod
@@ -380,7 +378,7 @@ Being a superset of reference type, selectors can match singular resources by:
 - ID and DID
 - Type and a name (without wildcards)
 
-Note however that, unlike references, selectors are not resolved to specific IDs during the apply process. Whether a reasource matches a selector is determined repeatedly during controller operations, so resources can start and stop matching selector criteria after the initial application of a resource containing the selector.
+Note however that, unlike references, selectors are not resolved to specific IDs during the apply process. Whether a resource matches a selector is determined repeatedly during controller operations, so resources can start and stop matching selector criteria after the initial application of a resource containing the selector.
 
 
 ### Ownership
@@ -561,22 +559,7 @@ spec:
 
 **Authorization:** the caller applying a `Relations` manifest must hold sufficient permission on `headers.account` to create a resource in that scope and have necessary permissions on `subject` and `object` resources to establish the relation. The `subject` and `object` permissions are specific to every relation type and checked by the controllers.
 
-**Cascading cleanup:** - implementation should use the same [resource referrential integrity](#references) mechanism to detect when subject or object is deleted. Implementations may either cascade-delete the stale triples automatically or surface them as a reconciliation warning for the operator to resolve.
-
-
-### Groups
-`Group` is a named collection of accounts. It exists purely as an identity anchor — the group has no intrinsic properties of its own; everything is expressed through relations:
-
-- **Membership** is declared via the `Member` relation (a binary relation with no value)
-- **Permissions** are granted to the group the same way they are granted to accounts — via a `Role` relation on a dataset or other resource
-
-This allows permissions to be managed at the group level: granting `Reader` to `Group:acme/analysts` automatically covers all current and future members, without updating individual grants.
-
-
-
-The `Member` relation schema is `type: null` — membership is binary and carries no value. The `system` account owns the `admin` group, so the `Relations` manifest lives there. Any account with sufficient permission on `system` can manage group membership.
-
-Node-level roles like "admin" are naturally expressed this way rather than as a boolean label on an account — it keeps the permission model uniform (relations all the way down) and allows multiple groups with different node-level privileges without inventing new label schemas for each.
+**Cascading cleanup:** - implementation should use the same [resource referential integrity](#references) mechanism to detect when subject or object is deleted. Implementations may either cascade-delete the stale triples automatically or surface them as a reconciliation warning for the operator to resolve.
 
 
 ## Resource Application
