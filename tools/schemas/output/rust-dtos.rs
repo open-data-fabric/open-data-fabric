@@ -181,6 +181,43 @@ pub mod auth {
         Organization,
     }
 
+    /// A named group of accounts. Members are assigned via the `Member` relation. Groups can be granted roles on resources, allowing permissions to be managed at the group level rather than per-account.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct Group {
+        /// Container for identity and ownership information of a resource.
+        pub headers: resource::ResourceHeadersInput,
+        /// Specifies the desired state of the resource.
+        pub spec: auth::GroupSpecInput,
+    }
+
+    impl Group {
+        pub fn schema() -> &'static TypeUri {
+            &GROUP_SCHEMA
+        }
+        pub const fn schema_str() -> &'static str {
+            GROUP_SCHEMA_STR
+        }
+    }
+
+    static GROUP_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Group";
+
+    static GROUP_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(GROUP_SCHEMA_STR));
+
+    /// Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct GroupSpec {}
+
+    /// Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct GroupSpecInput {}
+
     /// A directed relationship between two resources, optionally carrying a typed value.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
@@ -942,6 +979,16 @@ pub mod dataset {
     pub enum DatasetKind {
         Root,
         Derivative,
+    }
+
+    /// Access role granted to a subject on a dataset. Note: in future this fixed enum schema will likely be replaced by a reference to a `DatasetRole` resources that defines granular permissions on different actions available on a dataset.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+    pub enum DatasetRole {
+        Reader,
+        Editor,
+        Maintainer,
     }
 
     pub use crate::dataset::DatasetSelector;

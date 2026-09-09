@@ -1,0 +1,38 @@
+{
+  "$id": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Metaschema for relation value schemas. A relation schema describes the valid values for the `value` field of a relation triple `(subject, relation, object)`. The schema URI is used as the `relation` field in the triple, allowing the node to look up and validate the value.",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "relationProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "ODF-specific metadata for this relation schema.",
+          "properties": {
+            "subjectResourceTypes": {
+              "type": "array",
+              "description": "List of resource type URIs that are valid subjects of this relation. When absent any resource type is allowed as subject.",
+              "items": {
+                "type": "string",
+                "format": "type-uri"
+              }
+            },
+            "objectResourceTypes": {
+              "type": "array",
+              "description": "List of resource type URIs that are valid objects of this relation. When absent any resource type is allowed as object.",
+              "items": {
+                "type": "string",
+                "format": "type-uri"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

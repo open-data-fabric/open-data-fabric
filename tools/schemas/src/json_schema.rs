@@ -74,6 +74,9 @@ pub struct Schema {
     /// ODF-specific metadata for label schemas (used when `$schema` is `ResourceLabel`)
     pub label_properties: Option<LabelProperties>,
 
+    /// ODF-specific metadata for relation value schemas (used when `$schema` is `Relation`)
+    pub relation_properties: Option<RelationProperties>,
+
     pub src: Option<PathBuf>,
 }
 
@@ -104,6 +107,22 @@ pub struct LabelProperties {
     /// Resource type URIs this label is valid for. When absent the label is allowed on any
     /// resource type.
     pub resource_types: Option<Vec<String>>,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[skip_serializing_none]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationProperties {
+    /// Resource type URIs that are valid subjects of this relation. When absent any resource type
+    /// is allowed as subject.
+    pub subject_resource_types: Option<Vec<String>>,
+
+    /// Resource type URIs that are valid objects of this relation. When absent any resource type
+    /// is allowed as object.
+    pub object_resource_types: Option<Vec<String>>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,6 +202,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
         deprecated: None,
         examples: None,
         label_properties: None,
+        relation_properties: None,
         src: None,
     };
     schemas.insert(SchemaId::new(SchemaId::METASCHEMA_JSONSCHEMA), &jsonschema);
@@ -235,6 +255,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_LABEL)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_ANNOTATION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_CONDITION)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RELATION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ENGINE_MESSAGE)
                 || id.name() == "Manifest"
                 || id.name() == "DatasetSnapshot"
@@ -379,6 +400,8 @@ impl SchemaId {
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle";
     pub const METASCHEMA_RESOURCE_CONDITION: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition";
+    pub const METASCHEMA_RELATION: &str =
+        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation";
     pub const METASCHEMA_ENGINE_MESSAGE: &str =
         "https://opendatafabric.org/schemas/metaschemas/v1alpha1/EngineMessage";
 
@@ -459,6 +482,7 @@ enum Ref {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Type {
+    Null,
     Boolean,
     Integer,
     Number,

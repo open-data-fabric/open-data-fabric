@@ -136,7 +136,8 @@ impl Helpers {
             | model::Type::UInt32
             | model::Type::UInt64
             | model::Type::ByteSize => true,
-            model::Type::Boolean
+            model::Type::Null
+            | model::Type::Boolean
             | model::Type::String
             | model::Type::DatasetAlias
             | model::Type::DatasetId
@@ -348,6 +349,7 @@ fn format_pre_ser_type(
     let name = format_ident(&name);
 
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean
         | model::Type::Int8
         | model::Type::Int16
@@ -470,6 +472,7 @@ fn render_type_ser(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean
         | model::Type::Int8
         | model::Type::Int16
@@ -570,6 +573,7 @@ fn render_type_de(
     w: &mut IndentWriter<&mut dyn std::io::Write>,
 ) -> Result<(), std::io::Error> {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean
         | model::Type::Int8
         | model::Type::Int16

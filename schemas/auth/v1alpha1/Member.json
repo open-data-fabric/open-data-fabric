@@ -1,0 +1,14 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Member",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation",
+  "description": "Declares an account as a member of a group. Membership is binary — no value is carried by this relation.",
+  "type": "null",
+  "relationProperties": {
+    "subjectResourceTypes": [
+      "https://opendatafabric.org/schemas/auth/v1alpha1/Account"
+    ],
+    "objectResourceTypes": [
+      "https://opendatafabric.org/schemas/auth/v1alpha1/Group"
+    ]
+  }
+}

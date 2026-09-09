@@ -1,0 +1,19 @@
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation",
+  "description": "Access role granted to a subject on a dataset. Note: in future this fixed enum schema will likely be replaced by a reference to a `DatasetRole` resources that defines granular permissions on different actions available on a dataset.",
+  "type": "string",
+  "enum": [
+    "Reader",
+    "Editor",
+    "Maintainer"
+  ],
+  "relationProperties": {
+    "subjectResourceTypes": [
+      "https://opendatafabric.org/schemas/auth/v1alpha1/Account"
+    ],
+    "objectResourceTypes": [
+      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
+    ]
+  }
+}

@@ -332,6 +332,7 @@ fn render_map(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 fn as_json_type(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("`boolean`"),
         model::Type::Int8
         | model::Type::Int16
@@ -373,6 +374,7 @@ fn as_json_type(typ: &model::Type) -> String {
 
 fn as_format(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => String::new(),
         model::Type::Int8 => format!("`int8`"),
         model::Type::Int16 => format!("`int16`"),

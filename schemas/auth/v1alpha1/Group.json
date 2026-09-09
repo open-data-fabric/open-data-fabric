@@ -1,0 +1,30 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Group",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
+  "description": "A named group of accounts. Members are assigned via the `Member` relation. Groups can be granted roles on resources, allowing permissions to be managed at the group level rather than per-account.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "type-uri",
+      "const": "https://opendatafabric.org/schemas/auth/v1alpha1/Group",
+      "description": "Identifies this resource type."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput",
+      "description": "Specifies the desired state of the resource.",
+      "unevaluatedProperties": false
+    }
+  }
+}

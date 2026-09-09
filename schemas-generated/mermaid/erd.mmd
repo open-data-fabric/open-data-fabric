@@ -21,13 +21,17 @@ graph TD
     AccountSpec
     AccountSpecInput
     AccountType
+    Group
+    GroupSpec
+    GroupSpecInput
+    Member
     Relation
     RelationInput
     Relations
     RelationsSpec
     RelationsSpecInput
   end
-  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Relation,RelationInput,Relations,RelationsSpec,RelationsSpecInput ctx_auth
+  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Group,GroupSpec,GroupSpecInput,Member,Relation,RelationInput,Relations,RelationsSpec,RelationsSpecInput ctx_auth
 
   subgraph config["config"]
     Secret
@@ -68,6 +72,7 @@ graph TD
     DataSlice
     Dataset
     DatasetKind
+    DatasetRole
     DatasetSelector
     DatasetSpec
     DatasetSpecInput
@@ -94,7 +99,7 @@ graph TD
     TransformInput
     Watermark
   end
-  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
+  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetRole,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
 
   subgraph engine["engine"]
     RawQueryRequest
@@ -319,6 +324,8 @@ graph TD
   FlowTriggerInput_Dataset -->|"dataset"| DatasetSelector
   FlowTriggerInput_Event -->|"events"| EventFilter
   FlowTriggerInput_Source -->|"source"| ResourceRef
+  Group -->|"headers"| ResourceHeadersInput
+  Group -->|"spec"| GroupSpecInput
   Ingress -->|"variant"| Ingress_Url
   Ingress -->|"variant"| Ingress_FilesGlob
   Ingress -->|"variant"| Ingress_Container

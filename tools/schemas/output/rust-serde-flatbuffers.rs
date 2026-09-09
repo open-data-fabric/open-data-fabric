@@ -1484,6 +1484,32 @@ impl Into<odf::dataset::DatasetKind> for fb::DatasetKind {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DatasetRole
+// Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl From<odf::dataset::DatasetRole> for fb::DatasetRole {
+    fn from(v: odf::dataset::DatasetRole) -> Self {
+        match v {
+            odf::dataset::DatasetRole::Reader => fb::DatasetRole::Reader,
+            odf::dataset::DatasetRole::Editor => fb::DatasetRole::Editor,
+            odf::dataset::DatasetRole::Maintainer => fb::DatasetRole::Maintainer,
+        }
+    }
+}
+
+impl Into<odf::dataset::DatasetRole> for fb::DatasetRole {
+    fn into(self) -> odf::dataset::DatasetRole {
+        match self {
+            fb::DatasetRole::Reader => odf::dataset::DatasetRole::Reader,
+            fb::DatasetRole::Editor => odf::dataset::DatasetRole::Editor,
+            fb::DatasetRole::Maintainer => odf::dataset::DatasetRole::Maintainer,
+            _ => panic!("Invalid enum value: {}", self.0),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DatasetSpec
 // Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2855,6 +2881,46 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputSource<'fb>>
             min_records_to_await: proxy.min_records_to_await().map(|v| v),
             max_await_interval: proxy.max_await_interval().map(|v| fb_to_duration(v)),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GroupSpec
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::GroupSpec {
+    type OffsetT = WIPOffset<fb::GroupSpec<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let mut builder = fb::GroupSpecBuilder::new(fb);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::GroupSpec<'fb>> for odf::auth::GroupSpec {
+    fn deserialize(proxy: fb::GroupSpec<'fb>) -> Self {
+        odf::auth::GroupSpec {}
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GroupSpecInput
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::auth::GroupSpecInput {
+    type OffsetT = WIPOffset<fb::GroupSpecInput<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let mut builder = fb::GroupSpecInputBuilder::new(fb);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::GroupSpecInput<'fb>> for odf::auth::GroupSpecInput {
+    fn deserialize(proxy: fb::GroupSpecInput<'fb>) -> Self {
+        odf::auth::GroupSpecInput {}
     }
 }
 

@@ -263,6 +263,7 @@ fn get_hint<V: serde::de::DeserializeOwned>(
 #[derive(Debug, Clone)]
 pub enum Type {
     // Scalars
+    Null,
     Boolean,
     Int8,
     Int16,
@@ -317,6 +318,7 @@ pub enum MetaType {
     ResourceRef,
     ResourceHandle,
     ResourceCondition,
+    Relation,
     EngineMessage,
     Fragment,
 }
@@ -334,6 +336,7 @@ impl MetaType {
             json_schema::SchemaId::METASCHEMA_RESOURCE_REF => Self::ResourceRef,
             json_schema::SchemaId::METASCHEMA_RESOURCE_HANDLE => Self::ResourceHandle,
             json_schema::SchemaId::METASCHEMA_RESOURCE_CONDITION => Self::ResourceCondition,
+            json_schema::SchemaId::METASCHEMA_RELATION => Self::Relation,
             json_schema::SchemaId::METASCHEMA_ENGINE_MESSAGE => Self::EngineMessage,
             json_schema::SchemaId::METASCHEMA_JSONSCHEMA => Self::Fragment,
             _ => panic!("Unrecognized meta-schema: {id}"),
@@ -404,6 +407,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             MetaType::ResourceRef => false,
             MetaType::ResourceHandle => false,
             MetaType::ResourceCondition => false,
+            MetaType::Relation => false,
             MetaType::EngineMessage => true,
             MetaType::Fragment => false,
         };
@@ -443,6 +447,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
         let src = schema.src.take().expect("Schema without source path");
 
         let _ = schema.label_properties.take();
+        let _ = schema.relation_properties.take();
 
         // Extract all $defs into top-level types
         for (dname, dsch) in schema.defs.take().unwrap_or_default() {
@@ -451,20 +456,14 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             let typ = parse_type_definition(
                 def_id.clone(),
                 dsch,
-                MetaType::Fragment,
                 src.clone(),
                 format!("{}.$defs.{}", root_id.name(), def_id.name()),
             );
             types.insert(typ.id().clone(), typ);
         }
 
-        let typ = parse_type_definition(
-            root_id.clone(),
-            schema,
-            metatype,
-            src,
-            format!("{}", root_id.name()),
-        );
+        let typ =
+            parse_type_definition(root_id.clone(), schema, src, format!("{}", root_id.name()));
         types.insert(typ.id().clone(), typ);
     }
 
@@ -476,7 +475,6 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 fn parse_type_definition(
     id: TypeId,
     schema: json_schema::Schema,
-    metatype: MetaType,
     src: PathBuf,
     ctx: String,
 ) -> TypeDefinition {
@@ -547,6 +545,7 @@ fn parse_type_definition(
                 deprecated: obj.deprecated,
                 examples: obj.examples,
                 label_properties: None,
+                relation_properties: None,
                 src: obj.src,
             };
             TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, true))
@@ -565,15 +564,15 @@ fn parse_type_definition(
             ..
         } => TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, false)),
         json_schema::Schema {
-            r#type: Some(json_schema::Type::Boolean),
+            r#type:
+                Some(
+                    json_schema::Type::Null
+                    | json_schema::Type::Boolean
+                    | json_schema::Type::String
+                    | json_schema::Type::Integer,
+                ),
             ..
-        } if matches!(
-            metatype,
-            MetaType::ResourceLabel | MetaType::ResourceAnnotation
-        ) =>
-        {
-            parse_fragment_type_scalar(id, schema, src, ctx)
-        }
+        } => parse_fragment_type_scalar(id, schema, src, ctx),
         _ => panic!("Invalid schema: {ctx}: {}", schema.display()),
     }
 }
@@ -614,6 +613,7 @@ fn parse_type_struct(
         deprecated: None,
         examples: _,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
@@ -722,6 +722,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         deprecated: None,
         examples: _,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
@@ -778,6 +779,7 @@ fn parse_type_union_variant(parent: &TypeId, schema: json_schema::Schema, ctx: S
         deprecated: None,
         examples: None,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
@@ -844,6 +846,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         deprecated: None,
         examples: None,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
@@ -919,6 +922,7 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
         deprecated: None,
         examples: _,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
@@ -960,7 +964,13 @@ fn parse_fragment_type_scalar(
         id: Some(_),
         schema: metaschema,
         defs: None,
-        r#type: Some(json_schema::Type::Boolean),
+        r#type:
+            Some(
+                json_schema::Type::Null
+                | json_schema::Type::Boolean
+                | json_schema::Type::String
+                | json_schema::Type::Integer,
+            ),
         required: None,
         properties: None,
         pattern_properties: None,
@@ -981,6 +991,7 @@ fn parse_fragment_type_scalar(
         deprecated: None,
         examples: _,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = &schema
     else {
@@ -1073,6 +1084,7 @@ fn parse_type_array(schema: json_schema::Schema, root: &TypeId, ctx: String) -> 
         deprecated: None,
         examples: _,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
@@ -1112,6 +1124,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         deprecated: None,
         examples: _,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = &schema
     else {
@@ -1119,6 +1132,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
     };
 
     match (typ, format) {
+        (json_schema::Type::Null, None) => Type::Null,
         (json_schema::Type::Boolean, None) => Type::Boolean,
         (json_schema::Type::Integer, Some(format)) => match format {
             json_schema::Format::Int8 => Type::Int8,
@@ -1210,6 +1224,7 @@ fn parse_ref(
         deprecated: None,
         examples: None,
         label_properties: None,
+        relation_properties: None,
         src: None,
     } = schema
     else {
