@@ -506,6 +506,7 @@ fn format_ident(name: &str) -> Cow<'_, str> {
 
 fn format_type(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("byte"),
         model::Type::Int16 => format!("int16"),

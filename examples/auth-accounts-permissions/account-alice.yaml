@@ -7,9 +7,4 @@ spec:
   displayName: Alice
   accountType: User
   avatarUrl: https://example.com/alice.jpg
-  password: swordfish  # Plain password
-  # attributes:
-  #   admin: true
-
-# TODO: Support externally-provided DIDs?
-# TODO: How will DIDs for ETH accounts work?
+  password: swordfish  # Plain password will be encrypted on first apply

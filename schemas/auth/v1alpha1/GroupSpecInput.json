@@ -1,0 +1,9 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec",
+  "description": "Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.",
+  "type": "object",
+  "required": [],
+  "properties": {}
+}

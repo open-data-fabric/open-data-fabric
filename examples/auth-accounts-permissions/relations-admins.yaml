@@ -1,0 +1,10 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+headers:
+  account: system
+  name: admins
+spec:
+  relations:
+    - subject: Account:alice
+      relation: Member  # resolves to https://opendatafabric.org/schemas/auth/v1alpha1/Member
+      object: Group:system/admin  # Assuming this group should exists on the ODF node implicitly 

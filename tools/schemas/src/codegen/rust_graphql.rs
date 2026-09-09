@@ -963,6 +963,7 @@ fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::i
 
 fn format_type(typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),

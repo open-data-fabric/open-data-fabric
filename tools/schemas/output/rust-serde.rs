@@ -353,6 +353,62 @@ pub mod auth {
 
     implement_serde_as!(dtos::auth::AccountType, AccountType);
 
+    // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct GroupSpec {}
+
+    impl IntoDto for GroupSpec {
+        type Dto = dtos::auth::GroupSpec;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::auth::GroupSpec> for GroupSpec {
+        fn from(v: dtos::auth::GroupSpec) -> Self {
+            Self {}
+        }
+    }
+
+    impl TryFrom<GroupSpec> for dtos::auth::GroupSpec {
+        type Error = ValidationError;
+        fn try_from(v: GroupSpec) -> Result<Self, ValidationError> {
+            Ok(Self {})
+        }
+    }
+
+    implement_serde_as!(dtos::auth::GroupSpec, GroupSpec);
+
+    // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct GroupSpecInput {}
+
+    impl IntoDto for GroupSpecInput {
+        type Dto = dtos::auth::GroupSpecInput;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::auth::GroupSpecInput> for GroupSpecInput {
+        fn from(v: dtos::auth::GroupSpecInput) -> Self {
+            Self {}
+        }
+    }
+
+    impl TryFrom<GroupSpecInput> for dtos::auth::GroupSpecInput {
+        type Error = ValidationError;
+        fn try_from(v: GroupSpecInput) -> Result<Self, ValidationError> {
+            Ok(Self {})
+        }
+    }
+
+    implement_serde_as!(dtos::auth::GroupSpecInput, GroupSpecInput);
+
     // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -2504,6 +2560,48 @@ pub mod dataset {
     }
 
     implement_serde_as!(dtos::dataset::DatasetKind, DatasetKind);
+
+    // Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub enum DatasetRole {
+        #[serde(alias = "reader")]
+        Reader,
+        #[serde(alias = "editor")]
+        Editor,
+        #[serde(alias = "maintainer")]
+        Maintainer,
+    }
+
+    impl IntoDto for DatasetRole {
+        type Dto = dtos::dataset::DatasetRole;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::dataset::DatasetRole> for DatasetRole {
+        fn from(v: dtos::dataset::DatasetRole) -> Self {
+            match v {
+                dtos::dataset::DatasetRole::Reader => Self::Reader,
+                dtos::dataset::DatasetRole::Editor => Self::Editor,
+                dtos::dataset::DatasetRole::Maintainer => Self::Maintainer,
+            }
+        }
+    }
+
+    impl TryFrom<DatasetRole> for dtos::dataset::DatasetRole {
+        type Error = ValidationError;
+        fn try_from(v: DatasetRole) -> Result<Self, Self::Error> {
+            match v {
+                DatasetRole::Reader => Ok(Self::Reader),
+                DatasetRole::Editor => Ok(Self::Editor),
+                DatasetRole::Maintainer => Ok(Self::Maintainer),
+            }
+        }
+    }
+
+    implement_serde_as!(dtos::dataset::DatasetRole, DatasetRole);
 
     // Schema: https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetSelector
     #[derive(Debug, Serialize, Deserialize)]

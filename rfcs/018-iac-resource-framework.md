@@ -32,7 +32,6 @@ This RFC proposes a new Open Data Fabric manifest format and a set of resource t
     - [Identity](#identity)
       - [IDs vs. DIDs](#ids-vs-dids)
     - [Labels \& Annotations](#labels--annotations)
-    - [Auth Attributes](#auth-attributes)
     - [References](#references)
     - [Typed References](#typed-references)
     - [Reference resolution](#reference-resolution)
@@ -40,6 +39,10 @@ This RFC proposes a new Open Data Fabric manifest format and a set of resource t
     - [Ownership](#ownership)
     - [Generations](#generations)
     - [Status](#status)
+  - [Authorization](#authorization)
+    - [Attributes](#attributes)
+    - [Relations](#relations)
+    - [Groups](#groups)
   - [Resource Application](#resource-application)
   - [APIs](#apis)
     - [Current state of ODF APIs](#current-state-of-odf-apis)
@@ -267,50 +270,6 @@ Thus every label and annotation has a schema and can be type-checked.
 Controllers may contribute their own labels to simplify common filtering scenarios. For example a `Dataset` resource above will automatically get the `datasetKind: Root` label without you needing to specify it manually because it's very common to filter datasets by `datasetKind`.
 
 
-### Auth Attributes
-ODF uses a **Relationship-Based Access Control (ReBAC)** model. In addition to relations between resources (e.g. "alice has role `maintainer` on `bobs-dataset`"), ReBAC policies can act on **attributes** — typed facts attached to individual resources (e.g. "this dataset allows public read").
-
-Rather than introducing a separate manifest type for attributes, ODF expresses them as **labels**. A label schema that declares `labelProperties.isAuthAttribute: true` signals that any resource carrying that label should have its value materialized into the ReBAC attribute store by the resource controller.
-
-```json
-{
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
-  "description": "Controls whether the dataset is readable by any authenticated user.",
-  "type": "boolean",
-  "labelProperties": {
-    "isAuthAttribute": true,
-    "resourceTypes": [
-      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
-    ]
-  }
-}
-```
-
-A dataset owner sets the attribute by placing the label on their resource:
-
-```yaml
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
-headers:
-  name: my-dataset
-  labels:
-    # Full URI form
-    https://opendatafabric.org/schemas/dataset/v1alpha1/AllowAnonymousRead: false
-    # Short form - resolved into https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead
-    allowPublicRead: true
-spec:
-  kind: Root
-  metadata: []
-```
-
-Important properties:
-- **Resource owns the attributes** - attributes live on the resource they describe
-- **Typed and validated** - the auth attributes are always type-checked against schemas
-- **Indexed** - because auth attributes are labels, they are always queryable
-
-> **Note:** In future it will be necessary to introduce a form of control on who has permissions to set certain labels or change some fields of the spec. For example enabling `AllowPublicRead` is a very dangerous operation that may require approval of a senior management and thus should be rejected when manifest is applied by a user without necessary priliveges.
-
-
 ### References
 Resource manifests can link to other resources using **references**, forming a DAG.
 
@@ -500,6 +459,124 @@ stateDiagram-v2
 ```
 
 The `conditions` are keyed by schema IDs to disambiguate, avoid name collisions, and provide schema checking.
+
+
+## Authorization
+ODF uses a **Relationship-Based Access Control (ReBAC)** model. Access decisions are based on two kinds of facts materialized into the ReBAC engine by resource controllers:
+
+- **Attributes** — typed facts attached to individual resources (e.g. "this dataset allows public read")
+- **Relations** — directed links between resources carrying a typed role (e.g. "alice has role `Maintainer` on `acme/foo`")
+
+Both are declared in resource manifests and version-controlled alongside the resources they protect.
+
+
+### Attributes
+ReBAC attributes reuse the existing [labels](#labels--annotations) mechanism. A label schema that declares `labelProperties.isAuthAttribute: true` signals that any resource carrying that label should have its value materialized into a ReBAC attribute.
+
+Example ReBAC attribute label:
+```json
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
+  "description": "Controls whether the dataset is readable by any authenticated user.",
+  "type": "boolean",
+  "labelProperties": {
+    "isAuthAttribute": true,
+    "resourceTypes": [
+      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
+    ]
+  }
+}
+```
+
+It now can be defined like any other resource label:
+```yaml
+$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+headers:
+  name: my-dataset
+  labels:
+    # Short form - resolved to https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead
+    AllowPublicRead: true
+    # Full URI form
+    https://opendatafabric.org/schemas/dataset/v1alpha1/AllowAnonymousRead: false
+spec:
+  kind: Root
+  metadata: []
+```
+
+Key properties:
+- **Single authoring surface** — attributes live on the resource they describe, eliminating cross-ownership ambiguity
+- **Typed and validated** — the label schema's `type` field is enforced at apply time
+- **Indexed** — because auth attributes are labels, they are also queryable in the resource listing API
+- **Schema-discoverable** — implementations enumerate label schemas with `isAuthAttribute: true` at startup to know which labels to materialize, without hardcoding a list
+- **Auth attributes must be labels, not annotations** — validators reject a resource that places an `isAuthAttribute` label under `annotations`
+- **Admission control** — changing a label with `isAuthAttribute: true` may require elevated permissions beyond those needed to update the rest of the resource spec; the flag is the hook that admission controllers use to enforce this
+
+
+### Relations
+ReBAC relations between resources are declared using the `Relations` manifest. Each relation is a triple `(subject, relation, object)` where `relation` resolves to a schema that defines valid `value` types, subject types, and object types:
+
+```json
+{
+  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Role",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation",
+  "description": "Access role granted to a subject on a dataset.",
+  "type": "string",
+  "enum": ["Reader", "Editor", "Maintainer"],
+  "relationProperties": {
+    "subjectResourceTypes": ["https://opendatafabric.org/schemas/auth/v1alpha1/Account"],
+    "objectResourceTypes": ["https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"]
+  }
+}
+```
+
+Example relation that grants Alice the `Maintainer` role on Bob's dataset:
+```yaml
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+headers:
+  account: bob  # account that owns the objects being protected
+  name: alice--role--bobs-dataset
+spec:
+  relations:
+    - subject: Account:alice
+      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+      value: Maintainer
+      object: Dataset:bob/bobs-dataset
+```
+
+An example of value-less relation is `Member` used to define group membership:
+
+```yaml
+# relations-admin.yaml
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
+headers:
+  name: admins
+  account: system
+spec:
+  relations:
+    - subject: Account:alice
+      relation: Member  # resolves to https://opendatafabric.org/schemas/auth/v1alpha1/Member
+      object: Group:system/admin
+```
+
+**Authorization:** the caller applying a `Relations` manifest must hold sufficient permission on `headers.account` to create a resource in that scope and have necessary permissions on `subject` and `object` resources to establish the relation. The `subject` and `object` permissions are specific to every relation type and checked by the controllers.
+
+**Cascading cleanup:** - implementation should use the same [resource referrential integrity](#references) mechanism to detect when subject or object is deleted. Implementations may either cascade-delete the stale triples automatically or surface them as a reconciliation warning for the operator to resolve.
+
+
+### Groups
+`Group` is a named collection of accounts. It exists purely as an identity anchor — the group has no intrinsic properties of its own; everything is expressed through relations:
+
+- **Membership** is declared via the `Member` relation (a binary relation with no value)
+- **Permissions** are granted to the group the same way they are granted to accounts — via a `Role` relation on a dataset or other resource
+
+This allows permissions to be managed at the group level: granting `Reader` to `Group:acme/analysts` automatically covers all current and future members, without updating individual grants.
+
+
+
+The `Member` relation schema is `type: null` — membership is binary and carries no value. The `system` account owns the `admin` group, so the `Relations` manifest lives there. Any account with sufficient permission on `system` can manage group membership.
+
+Node-level roles like "admin" are naturally expressed this way rather than as a boolean label on an account — it keeps the permission model uniform (relations all the way down) and allows multiple groups with different node-level privileges without inventing new label schemas for each.
 
 
 ## Resource Application

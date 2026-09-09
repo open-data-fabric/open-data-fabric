@@ -689,6 +689,7 @@ fn render_aliases(name: &str, w: &mut dyn std::io::Write) -> Result<(), std::io:
 
 fn format_type(model: &model::Model, typ: &model::Type) -> String {
     match typ {
+        model::Type::Null => unreachable!(),
         model::Type::Boolean => format!("bool"),
         model::Type::Int8 => format!("i8"),
         model::Type::Int16 => format!("i16"),
