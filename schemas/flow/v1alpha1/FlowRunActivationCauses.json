@@ -1,0 +1,27 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunActivationCauses",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition",
+  "description": "Condition capturing what caused this FlowRun to be scheduled. Set by the controller at creation time; never written by users. In case of a retry, the causes of the original run are preserved.",
+  "type": "object",
+  "required": [
+    "activationCauses"
+  ],
+  "properties": {
+    "activationCauses": {
+      "type": "array",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunActivationCause",
+        "unevaluatedProperties": false
+      },
+      "description": "Triggers that caused this run to be scheduled."
+    },
+    "lateActivationCauses": {
+      "type": "array",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunActivationCause",
+        "unevaluatedProperties": false
+      },
+      "description": "Additional triggers that fired while this run was already queued or executing."
+    }
+  }
+}

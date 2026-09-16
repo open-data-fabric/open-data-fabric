@@ -15,13 +15,6 @@ spec:
       cooldown: 10min
   tasks:
     - kind: Compaction
-      # if: ????  # GH actions like preconditions
-      # compactionPolicy:
-      #   minUncompactedRows: ???  # Take a look at compaction RFC
       params:
         maxSliceSize: 100MiB
         maxSliceRecords: 10000
-
-# TODO!: Specify Event Bus event IDs in ODF
-
-# TODO: Relation to Arweave RFC?

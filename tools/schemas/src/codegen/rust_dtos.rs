@@ -403,8 +403,8 @@ fn format_type(typ: &model::Type) -> String {
 
         model::Type::AccountId => format!("AccountID"),
         model::Type::AccountName => format!("AccountName"),
-        model::Type::DatasetAlias => format!("DatasetAlias"),
-        model::Type::DatasetRef => format!("DatasetRef"),
+        model::Type::DatasetAlias => format!("crate::dataset::legacy::DatasetAlias"),
+        model::Type::DatasetRef => format!("crate::dataset::legacy::DatasetRef"),
         model::Type::DatasetId => format!("DatasetID"),
         model::Type::ResourceId => format!("ResourceID"),
         model::Type::ResourceName => format!("ResourceName"),

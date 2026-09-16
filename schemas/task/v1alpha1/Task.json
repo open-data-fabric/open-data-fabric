@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/Task",
+  "$id": "https://opendatafabric.org/schemas/task/v1alpha1/Task",
   "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
   "description": "An individual work item to be executed.",
   "type": "object",
@@ -12,7 +12,7 @@
     "$schema": {
       "type": "string",
       "format": "type-uri",
-      "const": "https://opendatafabric.org/schemas/flow/v1alpha1/Task",
+      "const": "https://opendatafabric.org/schemas/task/v1alpha1/Task",
       "description": "Identifies this resource type."
     },
     "headers": {
@@ -21,7 +21,7 @@
       "unevaluatedProperties": false
     },
     "spec": {
-      "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpecInput",
+      "$ref": "https://opendatafabric.org/schemas/task/v1alpha1/TaskSpecInput",
       "description": "Specifies the desired state of the task.",
       "unevaluatedProperties": false
     }

@@ -23,6 +23,58 @@ impl Schemas {
         Self { by_id }
     }
 
+    fn validate_conditions(
+        &self,
+        value: &Value,
+        path: &std::path::Path,
+        failed: &mut bool,
+    ) {
+        let Some(conditions) = value
+            .get("status")
+            .and_then(|s| s.get("conditions"))
+            .and_then(Value::as_object)
+        else {
+            return;
+        };
+
+        for (condition_id, condition_value) in conditions {
+            let Some(schema) = self.by_id.get(condition_id.as_str()) else {
+                eprintln!(
+                    "Unknown condition schema '{}' in {}",
+                    condition_id,
+                    path.display()
+                );
+                *failed = true;
+                continue;
+            };
+
+            // Condition schemas use ResourceCondition metaschema — normalize before compiling
+            let schema = Self::normalize_meta_schema(schema.clone());
+            let resources = self.by_id.iter().filter_map(|(id, value)| {
+                let resource =
+                    Resource::from_contents(Self::normalize_meta_schema(value.clone())).ok()?;
+                Some((id.clone(), resource))
+            });
+            let validator = jsonschema::options()
+                .with_resources(resources)
+                .build(&schema)
+                .unwrap_or_else(|e| panic!("Failed to compile condition schema {condition_id}: {e}"));
+
+            let errors: Vec<_> = validator.iter_errors(condition_value).collect();
+            if !errors.is_empty() {
+                *failed = true;
+                eprintln!(
+                    "Condition validation failed for '{}' in {}:",
+                    condition_id,
+                    path.display()
+                );
+                for err in &errors {
+                    eprintln!("  - {err} (path: {})", err.instance_path);
+                }
+            }
+        }
+    }
+
     fn validator_for(&self, schema_id: &str) -> Validator {
         let schema = self
             .by_id
@@ -106,6 +158,8 @@ fn test_examples() {
                 eprintln!("  - {err} (path: {})", err.instance_path);
             }
         }
+
+        schemas.validate_conditions(&value, path, &mut failed);
     }
 
     assert!(!failed, "Some example files failed validation");

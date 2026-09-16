@@ -21,6 +21,4 @@ spec:
     contentEncoding: jwe
 status:
   phase: Failed
-  conditions:
-    https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTargetStatus:
-      value: Failed
+  conditions: {}

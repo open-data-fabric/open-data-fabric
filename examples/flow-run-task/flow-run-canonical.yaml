@@ -1,0 +1,83 @@
+# $schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+$schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+headers:
+  id: bb-6767a4ee
+  account:
+    id: 6767a4ee-d74d-436e-84f9-709407869a26
+    did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+    name: foo
+  name: flow-run-123456
+  ownerReferences:
+    - type: Flow
+      id: c27331ce-ce88-4ff9-8c5a-4ce8107cc03f
+      name: flow-c27331ce
+      account:
+        id: 6767a4ee-d74d-436e-84f9-709407869a26
+        did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+        name: foo
+  labels: {}
+  annotations: {}
+  generation: 1
+  createdAt: 2020-01-01T00:00:00Z
+  updatedAt: 2020-01-01T00:00:00Z
+spec:
+  target: Dataset:sergiimk/foo
+  tasks:
+    - kind: Transform   # Implicit name: task-0-transform
+    - kind: GarbageCollection
+      name: gc
+status:
+  phase: Ready  # NOTE: FlowRun resource is retained for a TTL period, then deleted
+  conditions:
+    # Tracks the overall status and the tasks that were spawned during the execution
+    https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunStatus:
+      status: Running  # Waiting / Running / Retrying / Finished
+      tasks:
+        - name: task-0-transform  # Corresponds to spec.tasks[0]
+          task:
+            type: Task
+            id: a1b2c3d4-1111-2222-3333-444444444444
+            name: task-a1b2c3d4
+            account:
+              id: 6767a4ee-d74d-436e-84f9-709407869a26
+              did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+              name: foo
+          status: Finished
+          outcome:
+            kind: Success
+          lastUpdatedAt: 2026-09-11T02:00:00Z
+        - name: gc   # Corresponds to spec.tasks[1]
+          task:
+            type: Task
+            id: e5f6a7b8-5555-6666-7777-888888888888
+            name: task-e5f6a7b8
+            account:
+              id: 6767a4ee-d74d-436e-84f9-709407869a26
+              did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+              name: foo
+          status: Finished
+          outcome:
+            kind: Success
+          lastUpdatedAt: 2026-09-11T02:02:00Z
+    # Explains what led to execution of this flow
+    # In case of a retry - the causes of the original run are preserved
+    https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunActivationCauses:
+      activationCauses:
+        - activationTime: 2026-09-11T02:00:00Z
+          initiator:
+            id: aa-123123
+            did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+            name: system
+          trigger:  # Copy of the trigger's configuration in the parent Flow
+            kind: Manual
+      lateActivationCauses: []
+    # Links to the previous FlowRun, if this is a retry
+    https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunRetry:
+      retryOf:
+        type: FlowRun
+        id: 9b2e4f1a-3c7d-4e8b-a1f2-6d5e7c8b9a0d
+        name: flow-run-9b2e4f1a
+        account:
+          id: aa-123123
+          did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+          name: system

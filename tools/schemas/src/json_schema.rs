@@ -530,7 +530,6 @@ pub enum Format {
     AccountName,
 
     DatasetId,
-    DatasetName,
     DatasetAlias, // TODO: Should this be replaced by DatasetRef everywhere?
     DatasetRef,
 

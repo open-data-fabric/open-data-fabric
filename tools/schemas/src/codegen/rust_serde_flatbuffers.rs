@@ -586,16 +586,18 @@ fn render_type_de(
         model::Type::ByteSize => writeln!(w, "ByteSize::from({name})")?,
         model::Type::String => writeln!(w, "{name}.to_owned()")?,
         model::Type::Did => writeln!(w, "odf::Did::from_bytes({name}.bytes()).unwrap()")?,
-        model::Type::DatasetAlias => {
-            writeln!(w, "odf::dataset::DatasetAlias::try_from({name}).unwrap()")?
-        }
+        model::Type::DatasetAlias => writeln!(
+            w,
+            "odf::dataset::legacy::DatasetAlias::try_from({name}).unwrap()"
+        )?,
         model::Type::DatasetId => writeln!(
             w,
             "odf::dataset::DatasetID::from_bytes({name}.bytes()).unwrap()"
         )?,
-        model::Type::DatasetRef => {
-            writeln!(w, "odf::dataset::DatasetRef::try_from({name}).unwrap()")?
-        }
+        model::Type::DatasetRef => writeln!(
+            w,
+            "odf::dataset::legacy::DatasetRef::try_from({name}).unwrap()"
+        )?,
         model::Type::DateTime => writeln!(w, "fb_to_datetime({name})")?,
         model::Type::Duration => writeln!(w, "fb_to_duration({name})")?,
         model::Type::Flatbuffers | model::Type::Generic(_) => {

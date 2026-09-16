@@ -1,7 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
   "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle",
-  "description": "Lint to another resolved resource.",
+  "description": "Link to another resolved resource.",
   "type": "object",
   "required": [
     "account",

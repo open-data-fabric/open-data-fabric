@@ -4,6 +4,12 @@
   "canonicalType": "https://opendatafabric.org/schemas/flow/v1alpha1/FlowTrigger",
   "description": "Condition that causes a flow to be executed.",
   "$defs": {
+    "Manual": {
+      "description": "Triggers the flow via an API call or UI action.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
     "Schedule": {
       "description": "Triggers the flow on a cron schedule.",
       "type": "object",
@@ -86,6 +92,12 @@
     }
   },
   "oneOf": [
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Manual" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Manual" }
+      ]
+    },
     {
       "allOf": [
         { "properties": { "kind": { "type": "string", "const": "Schedule" } }, "required": ["kind"] },

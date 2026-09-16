@@ -12,10 +12,12 @@ spec:
     - kind: WebhookCall
       target: com.example.hook
       payload: '${{ trigger.event }}'
-      # retryPolicy:
-      #   maxTries: 3
-  # retryPolicy: # ????
-  #   consecutiveFailures: ??  # Disables the flow after X failures in a row
+      retryPolicy:  # Task-level retries
+        maxAttempts: 3
+  retryPolicy:  # Flow-level retries
+    maxAttempts: 3
+    minDelay: 1min
+    backoff: Exponential
 
 
 # TODO!: Events should have ODF schemas too

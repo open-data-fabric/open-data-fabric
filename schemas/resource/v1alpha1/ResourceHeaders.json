@@ -39,6 +39,14 @@
       "description": "Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.",
       "unevaluatedProperties": false
     },
+    "ownerReferences": {
+      "type": "array",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
+        "unevaluatedProperties": false
+      },
+      "description": "References to resources that created this resource. Used for lineage tracking and cascading cleanup."
+    },
     "generation": {
       "type": "integer",
       "format": "uint64",

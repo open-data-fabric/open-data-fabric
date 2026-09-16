@@ -1,0 +1,13 @@
+# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowRun
+$schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowRun
+headers:
+  name: flow-run-123456
+  ownerReferences:
+    - Flow:c27331ce-ce88-4ff9-8c5a-4ce8107cc03f
+spec:
+  target: Dataset:sergiimk/foo
+  tasks:
+    - kind: Transform   # Implicit name: task-0-transform
+    - kind: GarbageCollection
+      name: gc
+

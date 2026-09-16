@@ -71,7 +71,9 @@ graph TD
     CompactionParams
     DataSlice
     Dataset
+    DatasetHandle
     DatasetKind
+    DatasetRef
     DatasetRole
     DatasetSelector
     DatasetSpec
@@ -99,7 +101,7 @@ graph TD
     TransformInput
     Watermark
   end
-  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetKind,DatasetRole,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
+  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetHandle,DatasetKind,DatasetRef,DatasetRole,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
 
   subgraph engine["engine"]
     RawQueryRequest
@@ -125,31 +127,33 @@ graph TD
 
   subgraph flow["flow"]
     Flow
+    FlowRun
+    FlowRunActivationCause
+    FlowRunActivationCauses
+    FlowRunRetry
+    FlowRunSpec
+    FlowRunSpecInput
+    FlowRunStatus
+    FlowRunStatus_TaskEntry["FlowRunStatus::TaskEntry"]
+    FlowRunStatus_Value["FlowRunStatus::Value"]
     FlowSpec
     FlowSpecInput
     FlowTrigger
     FlowTrigger_Dataset["FlowTrigger::Dataset"]
     FlowTrigger_Event["FlowTrigger::Event"]
+    FlowTrigger_Manual["FlowTrigger::Manual"]
     FlowTrigger_Schedule["FlowTrigger::Schedule"]
     FlowTrigger_Source["FlowTrigger::Source"]
     FlowTriggerInput
     FlowTriggerInput_Dataset["FlowTriggerInput::Dataset"]
     FlowTriggerInput_Event["FlowTriggerInput::Event"]
+    FlowTriggerInput_Manual["FlowTriggerInput::Manual"]
     FlowTriggerInput_Schedule["FlowTriggerInput::Schedule"]
     FlowTriggerInput_Source["FlowTriggerInput::Source"]
-    Task
-    TaskSpec
-    TaskSpec_Compaction["TaskSpec::Compaction"]
-    TaskSpec_GarbageCollection["TaskSpec::GarbageCollection"]
-    TaskSpec_Ingest["TaskSpec::Ingest"]
-    TaskSpec_WebhookCall["TaskSpec::WebhookCall"]
-    TaskSpecInput
-    TaskSpecInput_Compaction["TaskSpecInput::Compaction"]
-    TaskSpecInput_GarbageCollection["TaskSpecInput::GarbageCollection"]
-    TaskSpecInput_Ingest["TaskSpecInput::Ingest"]
-    TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
+    RetryBackoff
+    RetryPolicy
   end
-  class Flow,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Dataset,FlowTriggerInput_Event,FlowTriggerInput_Schedule,FlowTriggerInput_Source,Task,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_WebhookCall ctx_flow
+  class Flow,FlowRun,FlowRunActivationCause,FlowRunActivationCauses,FlowRunRetry,FlowRunSpec,FlowRunSpecInput,FlowRunStatus,FlowRunStatus_TaskEntry,FlowRunStatus_Value,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Manual,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Dataset,FlowTriggerInput_Event,FlowTriggerInput_Manual,FlowTriggerInput_Schedule,FlowTriggerInput_Source,RetryBackoff,RetryPolicy ctx_flow
 
   subgraph legacy["legacy"]
     AddPushSource
@@ -188,10 +192,8 @@ graph TD
     WebhookTarget
     WebhookTargetSpec
     WebhookTargetSpecInput
-    WebhookTargetStatus
-    WebhookTargetStatus_Value["WebhookTargetStatus::Value"]
   end
-  class WebhookTarget,WebhookTargetSpec,WebhookTargetSpecInput,WebhookTargetStatus,WebhookTargetStatus_Value ctx_sink
+  class WebhookTarget,WebhookTargetSpec,WebhookTargetSpecInput ctx_sink
 
   subgraph source["source"]
     CompressionFormat
@@ -246,6 +248,30 @@ graph TD
   end
   class AwsCredentials,AwsCredentialsInput,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
 
+  subgraph task["task"]
+    Task
+    TaskOutcome
+    TaskOutcome_Cancelled["TaskOutcome::Cancelled"]
+    TaskOutcome_Failed["TaskOutcome::Failed"]
+    TaskOutcome_NoOp["TaskOutcome::NoOp"]
+    TaskOutcome_Success["TaskOutcome::Success"]
+    TaskPlan
+    TaskSpec
+    TaskSpec_Compaction["TaskSpec::Compaction"]
+    TaskSpec_GarbageCollection["TaskSpec::GarbageCollection"]
+    TaskSpec_Ingest["TaskSpec::Ingest"]
+    TaskSpec_Transform["TaskSpec::Transform"]
+    TaskSpec_WebhookCall["TaskSpec::WebhookCall"]
+    TaskSpecInput
+    TaskSpecInput_Compaction["TaskSpecInput::Compaction"]
+    TaskSpecInput_GarbageCollection["TaskSpecInput::GarbageCollection"]
+    TaskSpecInput_Ingest["TaskSpecInput::Ingest"]
+    TaskSpecInput_Transform["TaskSpecInput::Transform"]
+    TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
+    TaskStatus
+  end
+  class Task,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Transform,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Transform,TaskSpecInput_WebhookCall,TaskStatus ctx_task
+
   Account -->|"headers"| ResourceHeadersInput
   Account -->|"spec"| AccountSpecInput
   AccountSpec -->|"account_type"| AccountType
@@ -272,6 +298,8 @@ graph TD
   DataSlice -->|"offset_interval"| OffsetInterval
   Dataset -->|"headers"| ResourceHeadersInput
   Dataset -->|"spec"| DatasetSpecInput
+  DatasetHandle -->|"account"| AccountHandle
+  DatasetRef -->|"account"| AccountRef
   DatasetSelector -->|"account"| AccountRef
   DatasetSelector -->|"labels"| LabelFilter
   DatasetSelector -->|"kind"| DatasetKind
@@ -304,12 +332,31 @@ graph TD
   FetchStep_Url -->|"headers"| RequestHeader
   Flow -->|"headers"| ResourceHeadersInput
   Flow -->|"spec"| FlowSpecInput
+  FlowRun -->|"headers"| ResourceHeadersInput
+  FlowRun -->|"spec"| FlowRunSpecInput
+  FlowRunActivationCause -->|"initiator"| AccountHandle
+  FlowRunActivationCause -->|"trigger"| FlowTrigger
+  FlowRunActivationCauses -->|"activation_causes"| FlowRunActivationCause
+  FlowRunActivationCauses -->|"late_activation_causes"| FlowRunActivationCause
+  FlowRunRetry -->|"retry_of"| ResourceHandle
+  FlowRunSpec -->|"target"| ResourceHandle
+  FlowRunSpec -->|"tasks"| TaskSpec
+  FlowRunSpecInput -->|"target"| ResourceRef
+  FlowRunSpecInput -->|"tasks"| TaskSpecInput
+  FlowRunStatus -->|"status"| FlowRunStatus_Value
+  FlowRunStatus -->|"tasks"| FlowRunStatus_TaskEntry
+  FlowRunStatus_TaskEntry -->|"task"| ResourceHandle
+  FlowRunStatus_TaskEntry -->|"status"| TaskStatus
+  FlowRunStatus_TaskEntry -->|"outcome"| TaskOutcome
   FlowSpec -->|"target"| ResourceSelector
   FlowSpec -->|"triggers"| FlowTrigger
   FlowSpec -->|"tasks"| TaskSpec
+  FlowSpec -->|"retry_policy"| RetryPolicy
   FlowSpecInput -->|"target"| ResourceSelector
   FlowSpecInput -->|"triggers"| FlowTriggerInput
   FlowSpecInput -->|"tasks"| TaskSpecInput
+  FlowSpecInput -->|"retry_policy"| RetryPolicy
+  FlowTrigger -->|"variant"| FlowTrigger_Manual
   FlowTrigger -->|"variant"| FlowTrigger_Schedule
   FlowTrigger -->|"variant"| FlowTrigger_Event
   FlowTrigger -->|"variant"| FlowTrigger_Source
@@ -317,6 +364,7 @@ graph TD
   FlowTrigger_Dataset -->|"dataset"| DatasetSelector
   FlowTrigger_Event -->|"events"| EventFilter
   FlowTrigger_Source -->|"source"| ResourceHandle
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_Manual
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Schedule
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Event
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Source
@@ -399,15 +447,18 @@ graph TD
   ResourceHeaders -->|"account"| AccountHandle
   ResourceHeaders -->|"labels"| ResourceLabels
   ResourceHeaders -->|"annotations"| ResourceAnnotations
+  ResourceHeaders -->|"owner_references"| ResourceHandle
   ResourceHeadersInput -->|"account"| AccountRef
   ResourceHeadersInput -->|"labels"| ResourceLabels
   ResourceHeadersInput -->|"annotations"| ResourceAnnotations
+  ResourceHeadersInput -->|"owner_references"| ResourceRef
   ResourceInput -->|"headers"| ResourceHeadersInput
   ResourceRef -->|"account"| AccountRef
   ResourceSelector -->|"account"| AccountRef
   ResourceSelector -->|"labels"| LabelFilter
   ResourceStatus -->|"phase"| ResourcePhase
   ResourceStatus -->|"conditions"| ResourceConditions
+  RetryPolicy -->|"backoff"| RetryBackoff
   SecretSet -->|"headers"| ResourceHeadersInput
   SecretSet -->|"spec"| SecretSetSpecInput
   SecretSetSpec -->|"secrets"| Secrets
@@ -442,22 +493,31 @@ graph TD
   SourceSpecInput -->|"vocab"| DatasetVocabulary
   Task -->|"headers"| ResourceHeadersInput
   Task -->|"spec"| TaskSpecInput
+  TaskOutcome -->|"variant"| TaskOutcome_Success
+  TaskOutcome -->|"variant"| TaskOutcome_Failed
+  TaskOutcome -->|"variant"| TaskOutcome_NoOp
+  TaskOutcome -->|"variant"| TaskOutcome_Cancelled
   TaskSpec -->|"variant"| TaskSpec_Ingest
+  TaskSpec -->|"variant"| TaskSpec_Transform
   TaskSpec -->|"variant"| TaskSpec_Compaction
   TaskSpec -->|"variant"| TaskSpec_GarbageCollection
   TaskSpec -->|"variant"| TaskSpec_WebhookCall
   TaskSpec_Compaction -->|"params"| CompactionParams
   TaskSpec_Ingest -->|"source"| ResourceHandle
   TaskSpec_Ingest -->|"params"| IngestParams
+  TaskSpec_Transform -->|"target"| DatasetHandle
   TaskSpec_WebhookCall -->|"target"| ResourceHandle
   TaskSpecInput -->|"variant"| TaskSpecInput_Ingest
+  TaskSpecInput -->|"variant"| TaskSpecInput_Transform
   TaskSpecInput -->|"variant"| TaskSpecInput_Compaction
   TaskSpecInput -->|"variant"| TaskSpecInput_GarbageCollection
   TaskSpecInput -->|"variant"| TaskSpecInput_WebhookCall
   TaskSpecInput_Compaction -->|"params"| CompactionParams
   TaskSpecInput_Ingest -->|"source"| ResourceRef
   TaskSpecInput_Ingest -->|"params"| IngestParams
+  TaskSpecInput_Transform -->|"target"| DatasetRef
   TaskSpecInput_WebhookCall -->|"target"| ResourceRef
+  TaskSpecInput_WebhookCall -->|"retry_policy"| RetryPolicy
   Transform -->|"variant"| Transform_Sql
   Transform_Sql -->|"queries"| SqlQueryStep
   Transform_Sql -->|"temporal_tables"| TemporalTable
@@ -484,4 +544,3 @@ graph TD
   WebhookTarget -->|"spec"| WebhookTargetSpecInput
   WebhookTargetSpec -->|"secret"| Secret
   WebhookTargetSpecInput -->|"secret"| Secret
-  WebhookTargetStatus -->|"value"| WebhookTargetStatus_Value

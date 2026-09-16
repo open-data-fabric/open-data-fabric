@@ -1,11 +1,17 @@
 # $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 $schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
 headers:
-  name: gc-datasets
+  name: update-all-deriv
 spec:
-  target: Dataset:%  # Matches all dataset of the subject account
+  target:
+    type: Dataset
+    name: '%'
+    labels:
+      kind: Derivative
   triggers:
     - kind: Schedule
       cron: "@daily"
   tasks:
+    - kind: Transform
     - kind: GarbageCollection
+      name: gc

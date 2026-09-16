@@ -1,0 +1,65 @@
+{
+  "$id": "https://opendatafabric.org/schemas/task/v1alpha1/TaskOutcome",
+  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition",
+  "description": "Result of the execution of a task.",
+  "$defs": {
+    "Success": {
+      "description": "Task completed successfully.",
+      "type": "object",
+      "patternProperties": {
+        ".*": {}
+      }
+    },
+    "Failed": {
+      "description": "Task failed.",
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Human-readable description of the failure."
+        }
+      }
+    },
+    "NoOp": {
+      "description": "Task completed with no work done (e.g. no new data to process).",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "Cancelled": {
+      "description": "Task was cancelled before completion.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Success" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Success" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Failed" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Failed" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "NoOp" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/NoOp" }
+      ]
+    },
+    {
+      "allOf": [
+        { "properties": { "kind": { "type": "string", "const": "Cancelled" } }, "required": ["kind"] },
+        { "$ref": "#/$defs/Cancelled" }
+      ]
+    }
+  ]
+}

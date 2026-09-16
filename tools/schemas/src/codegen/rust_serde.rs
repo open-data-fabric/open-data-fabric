@@ -25,12 +25,9 @@ const PREAMBLE: &str = indoc::indoc!(
     use setty::types::{ByteSize, DurationString};
 
     use super::formats::*;
-    use crate::auth::{AccountID, AccountName};
-    use crate::dataset::{DatasetAlias, DatasetID, DatasetRef};
+    use crate as odf;
     use crate::dtos;
-    use crate::errors::ValidationError;
-    use crate::formats::*;
-    use crate::resource::{ResourceID, ResourceName, TypeRef, TypeUri};
+    use crate::errors::*;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -705,22 +702,22 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::Duration => format!("DurationString"),
         // model::Type::Multicodec => format!("Multicodec"),
         model::Type::Multicodec => format!("String"),
-        model::Type::Multihash => format!("Multihash"),
+        model::Type::Multihash => format!("odf::Multihash"),
         model::Type::Path => format!("PathBuf"),
         model::Type::Regex => format!("String"),
         model::Type::Url => format!("String"),
-        model::Type::Did => format!("Did"),
+        model::Type::Did => format!("odf::Did"),
 
-        model::Type::DatasetAlias => format!("DatasetAlias"),
-        model::Type::DatasetId => format!("DatasetID"),
-        model::Type::DatasetRef => format!("DatasetRef"),
-        model::Type::AccountId => format!("AccountID"),
-        model::Type::AccountName => format!("AccountName"),
-        model::Type::ResourceId => format!("ResourceID"),
-        model::Type::ResourceName => format!("ResourceName"),
-        model::Type::TypeUri => format!("TypeUri"),
-        model::Type::TypeName => format!("TypeName"),
-        model::Type::TypeRef => format!("TypeRef"),
+        model::Type::DatasetAlias => format!("odf::dataset::legacy::DatasetAlias"),
+        model::Type::DatasetId => format!("odf::dataset::DatasetID"),
+        model::Type::DatasetRef => format!("odf::dataset::legacy::DatasetRef"),
+        model::Type::AccountId => format!("odf::auth::AccountID"),
+        model::Type::AccountName => format!("odf::auth::AccountName"),
+        model::Type::ResourceId => format!("odf::resource::ResourceID"),
+        model::Type::ResourceName => format!("odf::resource::ResourceName"),
+        model::Type::TypeUri => format!("odf::resource::TypeUri"),
+        model::Type::TypeName => format!("odf::resource::TypeName"),
+        model::Type::TypeRef => format!("odf::resource::TypeRef"),
 
         model::Type::Flatbuffers => format!("Vec<u8>"),
         model::Type::Generic(t) => t.clone(),

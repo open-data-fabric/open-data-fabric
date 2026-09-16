@@ -1,0 +1,55 @@
+# $schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+$schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+headers:
+  id: task-6767a4ee
+  account:
+    id: 6767a4ee-d74d-436e-84f9-709407869a26
+    did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+    name: foo
+  name: task-123456
+  ownerReferences:
+    - type: FlowRun
+      id: c27331ce-ce88-4ff9-8c5a-4ce8107cc03f
+      name: flow-run-c27331ce
+      account:
+        id: 6767a4ee-d74d-436e-84f9-709407869a26
+        did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+        name: foo
+  labels: {}
+  annotations: {}
+  generation: 1
+  createdAt: 2020-01-01T00:00:00Z
+  updatedAt: 2020-01-01T00:00:00Z
+spec:
+  kind: Transform
+  target: Dataset:sergiimk/foo  # ResourceRef
+status:
+  phase: Ready  # NOTE: Task resource is retained for a TTL period, then deleted
+  observedGeneration: 1
+  conditions:
+    https://opendatafabric.org/schemas/task/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
+    https://opendatafabric.org/schemas/task/v1alpha1/TaskPlan:
+      kind: TransformPlan
+      datasetId: did:odf:fed0..17bf
+      systemTime: 2026-09-11T02:22:52Z
+      queryInputs:
+        - datasetId: did:odf:fed0..685b
+          offsetInterval:
+            start: 0
+            end: 399493
+          dataPaths:
+            - s3://repo/f162..8a9f/data/0a..fa
+      transform:
+        kind: Sql
+        query: SELECT ... FROM ...
+      newDataPath: s3://repo/f162..8a9f/data/...
+      newCheckpointPath: s3://repo/f162..8a9f/checkpoint/...
+    https://opendatafabric.org/schemas/task/v1alpha1/TaskOutcome:
+      kind: Success  # Success / Failed / NoOp / Cancelled
+      result:
+        kind: TransformResult
+        newBlockHash: f162..f008
+        newOffsetInterval:
+          start: 0
+          end: 1050
+        newWatermark: 2023-04-15T00:00:00Z

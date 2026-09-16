@@ -1,7 +1,6 @@
 {
-  "$id": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpecInput",
+  "$id": "https://opendatafabric.org/schemas/task/v1alpha1/TaskSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "canonicalType": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec",
   "description": "An individual work item to be executed as part of a flow.",
   "$defs": {
     "Ingest": {
@@ -11,8 +10,12 @@
         "source"
       ],
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
         "source": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
           "description": "Reference to the source resource that defines how to fetch data.",
           "unevaluatedProperties": false
         },
@@ -23,11 +26,31 @@
         }
       }
     },
+    "Transform": {
+      "description": "Executes transformation of data defined in a derivative dataset.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetHandle",
+          "description": "Reference to the derivative dataset that defines how to transform data.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
     "Compaction": {
       "description": "Compacts data files in matching datasets to improve query performance.",
       "type": "object",
       "required": [],
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
         "params": {
           "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/CompactionParams",
           "description": "Optional parameters to control ingestion behavior.",
@@ -39,7 +62,12 @@
       "description": "Removes unreferenced data files from matching datasets.",
       "type": "object",
       "required": [],
-      "properties": {}
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        }
+      }
     },
     "WebhookCall": {
       "description": "Dispatches a certain payload to a specific `WebhookTarget`.",
@@ -48,8 +76,12 @@
         "target"
       ],
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
         "target": {
-          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceRef",
+          "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHandle",
           "description": "Reference to the `WebhookTarget`.",
           "unevaluatedProperties": false
         },
@@ -76,6 +108,24 @@
         },
         {
           "$ref": "#/$defs/Ingest"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Transform"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Transform"
         }
       ]
     },

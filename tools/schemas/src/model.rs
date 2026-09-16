@@ -294,9 +294,9 @@ pub enum Type {
     AccountId,
     AccountName,
 
-    DatasetAlias,
+    DatasetAlias, // DEPRECATED in favor of `DatasetRef` schema
     DatasetId,
-    DatasetRef,
+    DatasetRef, // DEPRECATED in favor of `DatasetRef` schema
 
     ResourceId,
     ResourceName,

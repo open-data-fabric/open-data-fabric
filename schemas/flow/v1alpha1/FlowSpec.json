@@ -25,10 +25,15 @@
     "tasks": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/TaskSpec",
+        "$ref": "https://opendatafabric.org/schemas/task/v1alpha1/TaskSpec",
         "unevaluatedProperties": false
       },
       "description": "List of tasks to run consecutively."
+    },
+    "retryPolicy": {
+      "$ref": "https://opendatafabric.org/schemas/flow/v1alpha1/RetryPolicy",
+      "unevaluatedProperties": false,
+      "description": "Defines how a flow should react to failures."
     }
   }
 }
