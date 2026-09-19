@@ -418,9 +418,9 @@ Note that `generation` does not increment on status changes as it is intended to
 ### Status
 The `status` section of the resource manifest never appears in user-defined manifests. It is maintained by the ODF nodes and writeable only by resource controllers. It is used to provide detailed information about the reconciliation status of the resource.
 
-The main controller of a resource populates the `phase` and associated top-level fields during reconciliation attempts, while the `conditions` field provides a generic mechanism to attach additional information like error codes and messages. The `conditions` can be contributed by multiple controllers.
+Controllers may act asynchronously, so a combination of `observedGeneration` and `reconciledGeneration` fields tells which generation of the resource spec main controller have last seen, and which it was able to successfully reconcile.
 
-Example of `Source` resource status where reconciliation attempt for `generation: 2` failed because it links to non-existing secret:
+Example of `Source` resource status where reconciliation attempt for `generation: 2` failed because it links to non-existing secret, leaving the previous generation running:
 ```yaml
 $schema: https://opendatafabric.org/schemas/source/v1/Source
 headers:
@@ -428,33 +428,31 @@ headers:
   generation: 2
 spec: {}
 status:
-  phase: Failed 
+  phase: Degraded
   observedGeneration: 2
-  updatedAt: 2026-01-02T00:00:00Z
+  observedAt: 2026-01-02T00:00:00Z
+  reconciledGeneration: 1
+  reconciledAt: 2026-01-01T00:00:00Z
   conditions:
-    https://opendatafabric.org/schemas/source/v1/SourceReconciliationError:
+    https://opendatafabric.org/schemas/resource/v1/ReconciliationError:
       code: unresolved-reference
       message: "Secret `new-api-key` not found"
-      updatedAt: 2026-01-02T00:00:00Z
-      observedGeneration: 2
 ```
 
-The `phase` field state machine:
+The `phase` field is populated as follows:
 
-```mermaid
-stateDiagram-v2
-    [*] --> Pending: Newly created
-    Pending --> Reconciling: Main controller detects<br/>(observedGen < gen)
-    Reconciling --> Ready: Reconciled successfully
-    Reconciling --> Failed: Reconciliation error
-    Ready --> Pending: Spec or headers changed<br/>(gen bump)
-    Failed --> Pending: Spec or headers changed<br/>(gen bump)
-    Ready --> [*]: Delete
-    Failed --> [*]: Delete
-    Pending --> [*]: Delete
-```
+| `generation` | `observedGeneration` | `reconciledGeneration` | `phase` | Meaning |
+|:---:|:---:|:---:|:---:|---|
+| 1 | — | — | `Pending` | Controller has not seen the resource yet |
+| 3 | 2 | 2 | `Pending` | Controller has not seen gen 3 yet |
+| 3 | 3 | 2 | `Reconciling` | Controller is actively applying gen 3 |
+| 3 | 3 | 3 | `Ready` | Fully reconciled, running current spec |
+| 3 | 3 | 2 | `Degraded` | Reconcile of gen 3 failed, but gen 2 is still running |
+| 3 | 3 | — | `Failed` | Controller saw gen 3, but never successfully reconciled anything |
 
-The `conditions` are keyed by schema IDs to disambiguate, avoid name collisions, and provide schema checking.
+The `conditions` field provides extended information about the state of a specific resource type. Conditions can be contributed by multiple controllers. They are keyed by schema IDs to disambiguate, avoid name collisions, and provide schema checking.
+
+Conditions contributed by controllers other than the main resource controller should carry their own `observedGeneration` and `reconciledGeneration` fields to reflect that they may lag behind or be ahead of the main controller's `status.observedGeneration`.
 
 
 ## Resource Application
@@ -471,6 +469,7 @@ When applying manifests the following steps take place:
 7. Resource `generation` is incremented
 8. Resource specs are saved into the event store
 9. Reconciliation process is initiated asynchronously
+
 
 ## APIs
 
@@ -568,13 +567,15 @@ Proposed changes can be introduced in implementations in parallel with existing 
 # Prior art
 
 ## Kubernetes Design Notes
+* [Kubernetes Architectural Principles](https://github.com/kubernetes/design-proposals-archive/blob/main/architecture/principles.md)
+* [Kubernetes API Conventions](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md)
 * [Generated Object API Reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#api-overview)  
 * OpenAPI Spec
   * [Schema link](https://raw.githubusercontent.com/kubernetes/kubernetes/refs/heads/master/api/openapi-spec/swagger.json)  
   * [OpenAPI Editor](https://editor-next.swagger.io/)  
 * [apimachinery](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go)  
 * [Kubernetes API concepts](https://kubernetes.io/docs/reference/using-api/api-concepts/)  
-* [kube.rs](http://kube.rs)  
+* [kube.rs](http://kube.rs)
 * [https://github.com/Arnavion/k8s-openapi](https://github.com/Arnavion/k8s-openapi)  
 * [Kubernetes API Groups](https://github.com/kubernetes/design-proposals-archive/blob/main/api-machinery/api-group.md) (api-based versioning instead of resource-based)
 

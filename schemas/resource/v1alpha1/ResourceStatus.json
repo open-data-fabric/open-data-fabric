@@ -10,18 +10,28 @@
   "properties": {
     "phase": {
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourcePhase",
-      "description": "Represents the lifecycle stage of a resource.",
+      "description": "Represents the reconciliation phase of a resource as seen by the main resource controller.",
       "unevaluatedProperties": false
     },
     "observedGeneration": {
       "type": "integer",
       "format": "uint64",
-      "description": "Resource generation that was last processed by the main resource controller."
+      "description": "Resource generation that was last seen by the main resource controller."
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the controller seen the resource state as defined in `observedGeneration`."
+    },
+    "reconciledGeneration": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Resource generation that was last successfully reconciled by the main resource controller."
     },
     "reconciledAt": {
       "type": "string",
       "format": "date-time",
-      "description": "Time when the controller last reconciled the desired resource state as defined in `observedGeneration`."
+      "description": "Time when the controller last reconciled the desired resource state as defined in `reconciledGeneration`."
     },
     "conditions": {
       "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceConditions",

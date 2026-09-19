@@ -10,7 +10,7 @@ headers:
   labels:
     env: prod
   annotations:
-    description: canonical view of the webhook resource
+    description: Canonical view of the webhook resource
   generation: 1
   createdAt: 2020-01-01T00:00:00Z
   updatedAt: 2020-01-01T00:00:00Z

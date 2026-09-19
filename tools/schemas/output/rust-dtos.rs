@@ -2278,7 +2278,7 @@ pub mod resource {
         pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
-    /// Represents the lifecycle stage of a resource.
+    /// Represents the reconciliation phase of a resource.
     ///
     /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourcePhase
     #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -2286,6 +2286,7 @@ pub mod resource {
         Pending,
         Reconciling,
         Ready,
+        Degraded,
         Failed,
     }
 
@@ -2318,11 +2319,15 @@ pub mod resource {
     /// Schema: https://opendatafabric.org/schemas/resource/v1alpha1/ResourceStatus
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct ResourceStatus {
-        /// Represents the lifecycle stage of a resource.
+        /// Represents the reconciliation phase of a resource as seen by the main resource controller.
         pub phase: resource::ResourcePhase,
-        /// Resource generation that was last processed by the main resource controller.
+        /// Resource generation that was last seen by the main resource controller.
         pub observed_generation: Option<u64>,
-        /// Time when the controller last reconciled the desired resource state as defined in `observedGeneration`.
+        /// Time when the controller seen the resource state as defined in `observedGeneration`.
+        pub observed_at: Option<DateTime<Utc>>,
+        /// Resource generation that was last successfully reconciled by the main resource controller.
+        pub reconciled_generation: Option<u64>,
+        /// Time when the controller last reconciled the desired resource state as defined in `reconciledGeneration`.
         pub reconciled_at: Option<DateTime<Utc>>,
         /// Detailed conditions describing the state of the resource that are added by controllers.
         pub conditions: resource::ResourceConditions,
