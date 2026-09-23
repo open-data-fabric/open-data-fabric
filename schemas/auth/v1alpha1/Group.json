@@ -1,7 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Group",
   "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceInput",
-  "description": "A named group of accounts. Members are assigned via the `Member` relation. Groups can be granted roles on resources, allowing permissions to be managed at the group level rather than per-account.",
+  "description": "A named, possibly nested set of principals. Policies can be bound to groups so that permissions are granted to all members at once. Some group names are reserved, e.g. `{org}/admins` and `{org}/members` are created together with an organization.",
   "type": "object",
   "unevaluatedProperties": false,
   "required": [

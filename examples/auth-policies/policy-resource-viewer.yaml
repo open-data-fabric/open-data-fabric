@@ -1,0 +1,9 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+headers:
+  account: node
+  name: resource-viewer
+spec:
+  kind: Generic
+  actions:
+    - https://opendatafabric.org/schemas/resources/v1alpha1/actions/View

@@ -1,0 +1,30 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/Organization",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceInput",
+  "description": "An account that owns resources on behalf of a group of users but cannot authenticate or act itself. Upon creation the node creates reserved groups `{org}/admins`, whose members have owner rights over all resources of the organization, and `{org}/members`.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "type-uri",
+      "const": "https://opendatafabric.org/schemas/auth/v1alpha1/Organization",
+      "description": "Identifies this resource type."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/OrganizationSpecInput",
+      "description": "Specifies the desired state of the resource.",
+      "unevaluatedProperties": false
+    }
+  }
+}

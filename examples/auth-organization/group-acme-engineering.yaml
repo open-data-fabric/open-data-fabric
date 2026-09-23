@@ -1,0 +1,13 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+headers:
+  # An ordinary group representing a team within the organization
+  account: acme
+  name: engineering
+spec:
+  members:
+    - User:bob
+    # Full form of a subject reference
+    - kind: Resource
+      type: User
+      name: carol

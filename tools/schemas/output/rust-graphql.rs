@@ -17,31 +17,6 @@ use crate::queries::Dataset;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Link to an account.
-///
-/// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle
-#[derive(SimpleObject, Debug, Clone)]
-pub struct AccountHandle {
-    /// ID of the account resource.
-    pub id: ResourceID<'static>,
-    /// DID of the account.
-    pub did: AccountID<'static>,
-    /// Name of the account.
-    pub name: AccountName<'static>,
-}
-
-impl From<odf::metadata::auth::AccountHandle> for AccountHandle {
-    fn from(v: odf::metadata::auth::AccountHandle) -> Self {
-        Self {
-            id: v.id.into(),
-            did: v.did.into(),
-            name: v.name.into(),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /// Indicates that data has been ingested into a root dataset.
 ///
 /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/AddData
@@ -1589,7 +1564,7 @@ impl async_graphql::ScalarType for ResourceConditions {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct ResourceHandle {
     /// Account that owns the target resource.
-    pub account: AccountHandle,
+    pub account: ResourceOwnerHandle,
     /// Type URI of the target resource.
     pub r#type: TypeUri<'static>,
     /// ID of the resource within a node.
@@ -1624,7 +1599,7 @@ pub struct ResourceHeaders {
     /// Symbolic name of a resource that identifies it within a scope of an onwing account.
     pub name: ResourceName<'static>,
     /// Link to the account that owns the resource.
-    pub account: AccountHandle,
+    pub account: ResourceOwnerHandle,
     /// Map of string keys and values that can be used to organize, categorize, and query resources.
     pub labels: ResourceLabels,
     /// Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
@@ -1692,6 +1667,31 @@ impl async_graphql::ScalarType for ResourceLabels {
         let value: odf::metadata::serde::yaml::resources::ResourceLabels =
             self.as_ref().clone().into();
         async_graphql::to_value(&value).unwrap()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.
+///
+/// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle
+#[derive(SimpleObject, Debug, Clone)]
+pub struct ResourceOwnerHandle {
+    /// ID of the account resource.
+    pub id: ResourceID<'static>,
+    /// DID of the account.
+    pub did: AccountID<'static>,
+    /// Name of the account.
+    pub name: AccountName<'static>,
+}
+
+impl From<odf::metadata::auth::ResourceOwnerHandle> for ResourceOwnerHandle {
+    fn from(v: odf::metadata::auth::ResourceOwnerHandle) -> Self {
+        Self {
+            id: v.id.into(),
+            did: v.did.into(),
+            name: v.name.into(),
+        }
     }
 }
 

@@ -1,0 +1,18 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+headers:
+  # Reserved group created together with the organization
+  account: acme
+  name: members
+spec:
+  # Being a member of the organization doesn't grant any permissions by itself.
+  # Access to organization resources is granted to members (or teams)
+  # via policy bindings.
+  members:
+    - User:alice
+    - User:dave
+    - User:bob
+    - User:carol
+
+# TODO: should admins be always duplicated in members?
+# TODO: should members allow nested groups?

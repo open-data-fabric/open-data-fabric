@@ -1186,22 +1186,36 @@ See also:
 ## Metadata Reference
 
 - [auth](#reference-auth)
-  - [Account](#account-schema)
-  - [AccountHandle](#accounthandle-schema)
-  - [AccountRef](#accountref-schema)
-  - [AccountSpec](#accountspec-schema)
-  - [AccountSpecInput](#accountspecinput-schema)
-  - [AccountType](#accounttype-schema)
   - [Group](#group-schema)
   - [GroupSpec](#groupspec-schema)
   - [GroupSpecInput](#groupspecinput-schema)
-  - [Member](#member-schema)
-  - [Relation](#relation-schema)
-  - [RelationInput](#relationinput-schema)
-  - [Relations](#relations-schema)
-  - [RelationsSpec](#relationsspec-schema)
-  - [RelationsSpecInput](#relationsspecinput-schema)
+  - [Node](#node-schema)
+  - [NodeSpec](#nodespec-schema)
+  - [NodeSpecInput](#nodespecinput-schema)
+  - [Organization](#organization-schema)
+  - [OrganizationSpec](#organizationspec-schema)
+  - [OrganizationSpecInput](#organizationspecinput-schema)
+  - [Policy](#policy-schema)
+  - [PolicyBinding](#policybinding-schema)
+  - [PolicyBindingSpec](#policybindingspec-schema)
+  - [PolicyBindingSpecInput](#policybindingspecinput-schema)
+  - [PolicyRef](#policyref-schema)
+  - [PolicySpec](#policyspec-schema)
+  - [PolicySpecInput](#policyspecinput-schema)
+  - [PrincipalHandle](#principalhandle-schema)
+  - [PrincipalRef](#principalref-schema)
+  - [ResourceOwnerHandle](#resourceownerhandle-schema)
+  - [ResourceOwnerRef](#resourceownerref-schema)
+  - [ServiceAccount](#serviceaccount-schema)
+  - [ServiceAccountSpec](#serviceaccountspec-schema)
+  - [ServiceAccountSpecInput](#serviceaccountspecinput-schema)
+  - [SubjectHandle](#subjecthandle-schema)
+  - [SubjectRef](#subjectref-schema)
+  - [User](#user-schema)
+  - [UserSpec](#userspec-schema)
+  - [UserSpecInput](#userspecinput-schema)
 - [config](#reference-config)
+  - [Decrypt](#decrypt-schema)
   - [Secret](#secret-schema)
   - [SecretSet](#secretset-schema)
   - [SecretSetSpec](#secretsetspec-schema)
@@ -1226,6 +1240,7 @@ See also:
   - [AddData](#adddata-schema)
   - [AllowAnonymousRead](#allowanonymousread-schema)
   - [AllowPublicRead](#allowpublicread-schema)
+  - [AlterHistory](#alterhistory-schema)
   - [AttachmentEmbedded](#attachmentembedded-schema)
   - [Attachments](#attachments-schema)
   - [Checkpoint](#checkpoint-schema)
@@ -1234,7 +1249,6 @@ See also:
   - [DatasetHandle](#datasethandle-schema)
   - [DatasetKind](#datasetkind-schema)
   - [DatasetRef](#datasetref-schema)
-  - [DatasetRole](#datasetrole-schema)
   - [DatasetSelector](#datasetselector-schema)
   - [DatasetSpec](#datasetspec-schema)
   - [DatasetSpecInput](#datasetspecinput-schema)
@@ -1247,6 +1261,7 @@ See also:
   - [Projection](#projection-schema)
   - [ProjectionSpec](#projectionspec-schema)
   - [ProjectionSpecInput](#projectionspecinput-schema)
+  - [Read](#read-schema)
   - [Seed](#seed-schema)
   - [SetAttachments](#setattachments-schema)
   - [SetDataSchema](#setdataschema-schema)
@@ -1259,6 +1274,7 @@ See also:
   - [Transform](#transform-schema)
   - [TransformInput](#transforminput-schema)
   - [Watermark](#watermark-schema)
+  - [Write](#write-schema)
 - [engines](#reference-engines)
   - [RawQueryRequest](#rawqueryrequest-schema)
   - [RawQueryResponse](#rawqueryresponse-schema)
@@ -1292,7 +1308,14 @@ See also:
   - [Manifest](#manifest-schema)
   - [SetPollingSource](#setpollingsource-schema)
 - [resources](#reference-resources)
+  - [AddLabel](#addlabel-schema)
+  - [BindPolicy](#bindpolicy-schema)
+  - [Create](#create-schema)
+  - [Delete](#delete-schema)
+  - [Edit](#edit-schema)
   - [LabelFilter](#labelfilter-schema)
+  - [List](#list-schema)
+  - [RemoveLabel](#removelabel-schema)
   - [Resource](#resource-schema)
   - [ResourceAnnotations](#resourceannotations-schema)
   - [ResourceConditions](#resourceconditions-schema)
@@ -1305,6 +1328,7 @@ See also:
   - [ResourceRef](#resourceref-schema)
   - [ResourceSelector](#resourceselector-schema)
   - [ResourceStatus](#resourcestatus-schema)
+  - [View](#view-schema)
 - [sinks](#reference-sinks)
   - [WebhookEndpoint](#webhookendpoint-schema)
   - [WebhookEndpointSpec](#webhookendpointspec-schema)
@@ -1336,7 +1360,14 @@ See also:
   - [PersistentVolumeSpecInput](#persistentvolumespecinput-schema)
   - [VolumeCapacity](#volumecapacity-schema)
 - [tasks](#reference-tasks)
+  - [SyncAuth](#syncauth-schema)
+  - [SyncAuthHeader](#syncauthheader-schema)
+  - [SyncAuthHeaderInput](#syncauthheaderinput-schema)
+  - [SyncAuthInput](#syncauthinput-schema)
+  - [SyncEndpoint](#syncendpoint-schema)
+  - [SyncEndpointInput](#syncendpointinput-schema)
   - [Task](#task-schema)
+  - [TaskError](#taskerror-schema)
   - [TaskOutcome](#taskoutcome-schema)
   - [TaskPlan](#taskplan-schema)
   - [TaskSpec](#taskspec-schema)
@@ -1345,98 +1376,9 @@ See also:
 
 <a name="reference-auth"></a>
 #### auth
-<a name="account-schema"></a>
-##### Account
-Registers an account in an predefined account provider.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [AccountSpecInput](#accountspecinput-schema) | V |  | Specifies the desired state of the resource. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Account.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="accounthandle-schema"></a>
-##### AccountHandle
-Link to an account.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `id` | `string` | V |  | ID of the account resource. |
-| `did` | `string` | V |  | DID of the account. |
-| `name` | `string` | V |  | Name of the account. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountHandle.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="accountref-schema"></a>
-##### AccountRef
-Reference to an account.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `id` | `string` |  |  | UUID of the account resource. |
-| `did` | `string` |  |  | DID of the account. |
-| `name` | `string` |  |  | Name of the account. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountRef.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="accountspec-schema"></a>
-##### AccountSpec
-Predefined account specification.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `did` | `string` |  |  | DID associated with the account by ODF or an external system |
-| `accountType` | [AccountType](#accounttype-schema) |  |  | Type of the account.<br/><br/>Default: "User" |
-| `displayName` | `string` |  |  | Human-friendly display name. |
-| `email` | `string` | V |  | Email address of the account. |
-| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
-| `password` | [Secret](#secret-schema) |  |  | Password for local authentication. Absent for SSO or DID-based accounts. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountSpec.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="accountspecinput-schema"></a>
-##### AccountSpecInput
-Predefined account specification.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `did` | `string` |  |  | DID associated with the account by ODF or an external system |
-| `accountType` | [AccountType](#accounttype-schema) |  |  | Type of the account.<br/><br/>Default: "User" |
-| `displayName` | `string` |  |  | Human-friendly display name. |
-| `email` | `string` | V |  | Email address of the account. |
-| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
-| `password` | [Secret](#secret-schema) |  |  | Password for local authentication. Absent for SSO or DID-based accounts. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountSpecInput.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="accounttype-schema"></a>
-##### AccountType
-Represents the type of an account.
-
-| Enum Value |
-| :---: |
-| User |
-| Organization |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AccountType.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
 <a name="group-schema"></a>
 ##### Group
-A named group of accounts. Members are assigned via the `Member` relation. Groups can be granted roles on resources, allowing permissions to be managed at the group level rather than per-account.
+A named, possibly nested set of principals. Policies can be bound to groups so that permissions are granted to all members at once. Some group names are reserved, e.g. `{org}/admins` and `{org}/members` are created together with an organization.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -1450,7 +1392,11 @@ A named group of accounts. Members are assigned via the `Member` relation. Group
 
 <a name="groupspec-schema"></a>
 ##### GroupSpec
-Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+Group specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `members` | array([SubjectHandle](#subjecthandle-schema)) |  |  | Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/GroupSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1458,83 +1404,509 @@ Group specification. Groups have no intrinsic properties — membership and perm
 
 <a name="groupspecinput-schema"></a>
 ##### GroupSpecInput
-Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+Group specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `members` | array([SubjectRef](#subjectref-schema)) |  |  | Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/GroupSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-
-<a name="relation-schema"></a>
-##### Relation
-A directed relationship between two resources, optionally carrying a typed value.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `subject` | [ResourceHandle](#resourcehandle-schema) | V |  | The resource that holds the relation. |
-| `relation` | `string` | V |  | Name of the relation e.g. `role`, `member`, `owner`. |
-| `value` | `any` |  |  | Optional value associated with the relation e.g. `maintainer` for a `role` relation. |
-| `object` | [ResourceHandle](#resourcehandle-schema) | V |  | The resource that is the target of the relation. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Relation.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="relationinput-schema"></a>
-##### RelationInput
-A directed relationship between two resources, optionally carrying a typed value.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `subject` | [ResourceRef](#resourceref-schema) | V |  | The resource that holds the relation. |
-| `relation` | `string` | V |  | Name of the relation e.g. `role`, `member`, `owner`. |
-| `value` | `any` |  |  | Optional value associated with the relation e.g. `maintainer` for a `role` relation. |
-| `object` | [ResourceRef](#resourceref-schema) | V |  | The resource that is the target of the relation. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationInput.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="relations-schema"></a>
-##### Relations
-Specified relations between resources on which auth policies act upon.
+<a name="node-schema"></a>
+##### Node
+An entire ODF deployment acting under a single identity. The node acts as a principal in system tasks and node-to-node communications and owns node-wide resources like the reserved `{node}/admins` group.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [RelationsSpecInput](#relationsspecinput-schema) | V |  | Specifies the desired state of the resource. |
+| `spec` | [NodeSpecInput](#nodespecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Relations.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Node.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="relationsspec-schema"></a>
-##### RelationsSpec
-Specifies relations between resources on which auth policies act upon.
+<a name="nodespec-schema"></a>
+##### NodeSpec
+Node account specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `relations` | array([Relation](#relation-schema)) | V |  | Relations between resources. |
+| `did` | `string` |  |  | DID associated with the account by ODF or an external system. |
+| `displayName` | `string` |  |  | Human-friendly display name. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/NodeSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="relationsspecinput-schema"></a>
-##### RelationsSpecInput
-Specifies relations between resources on which auth policies act upon.
+<a name="nodespecinput-schema"></a>
+##### NodeSpecInput
+Node account specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `relations` | array([RelationInput](#relationinput-schema)) |  |  | Relations between resources. |
+| `did` | `string` |  |  | DID associated with the account by ODF or an external system. |
+| `displayName` | `string` |  |  | Human-friendly display name. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/NodeSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="organization-schema"></a>
+##### Organization
+An account that owns resources on behalf of a group of users but cannot authenticate or act itself. Upon creation the node creates reserved groups `{org}/admins`, whose members have owner rights over all resources of the organization, and `{org}/members`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [OrganizationSpecInput](#organizationspecinput-schema) | V |  | Specifies the desired state of the resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Organization.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="organizationspec-schema"></a>
+##### OrganizationSpec
+Organization account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
+| `disabled` | `boolean` |  |  | Suspends the account. Effects of suspension are implementation-specific.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/OrganizationSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="organizationspecinput-schema"></a>
+##### OrganizationSpecInput
+Organization account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
+| `disabled` | `boolean` |  |  | Suspends the account. Effects of suspension are implementation-specific.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/OrganizationSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policy-schema"></a>
+##### Policy
+A reusable grant of permissions. Policies with subject and object slots are templates instantiated via `PolicyBinding`, while policies without slots take effect on their own.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [PolicySpecInput](#policyspecinput-schema) | V |  | Specifies the desired state of the resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Policy.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policybinding-schema"></a>
+##### PolicyBinding
+Instantiates a `Policy` template for a concrete subject and object.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [PolicyBindingSpecInput](#policybindingspecinput-schema) | V |  | Specifies the desired state of the resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicyBinding.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policybindingspec-schema"></a>
+##### PolicyBindingSpec
+Policy binding specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `policy` | [ResourceHandle](#resourcehandle-schema) | V |  | Policy template to instantiate. |
+| `subject` | [SubjectHandle](#subjecthandle-schema) | V |  | Party the permissions are granted to. |
+| `object` | [ResourceHandle](#resourcehandle-schema) | V |  | Resource the permissions are granted on. Refers to both the resource and the entity materialized from it. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicyBindingSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policybindingspecinput-schema"></a>
+##### PolicyBindingSpecInput
+Policy binding specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `policy` | [PolicyRef](#policyref-schema) | V |  | Policy template to instantiate. |
+| `subject` | [SubjectRef](#subjectref-schema) | V |  | Party the permissions are granted to. |
+| `object` | [ResourceRef](#resourceref-schema) | V |  | Resource the permissions are granted on. Refers to both the resource and the entity materialized from it. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicyBindingSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyref-schema"></a>
+##### PolicyRef
+Reference to a `Policy`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the `Policy`. |
+| `id` | `string` |  |  | ID of the resource. |
+| `name` | `string` |  |  | Name of the resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicyRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyspec-schema"></a>
+##### PolicySpec
+Policy specification. The `kind` selects the policy language.
+
+| Union Type | Description |
+| :---: | --- |
+| [PolicySpec::Generic](#policyspec-generic-schema) | Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`. |
+| [PolicySpec::Cedar](#policyspec-cedar-schema) | Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicySpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyspec-cedar-schema"></a>
+##### PolicySpec::Cedar
+Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `body` | `string` | V |  | Cedar policy source. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicySpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyspec-generic-schema"></a>
+##### PolicySpec::Generic
+Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `actions` | array(`string`) | V |  | Schema URIs of actions granted by the policy. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicySpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyspecinput-schema"></a>
+##### PolicySpecInput
+Policy specification. The `kind` selects the policy language.
+
+| Union Type | Description |
+| :---: | --- |
+| [PolicySpecInput::Generic](#policyspecinput-generic-schema) | Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`. |
+| [PolicySpecInput::Cedar](#policyspecinput-cedar-schema) | Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicySpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyspecinput-cedar-schema"></a>
+##### PolicySpecInput::Cedar
+Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `body` | `string` | V |  | Cedar policy source. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicySpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="policyspecinput-generic-schema"></a>
+##### PolicySpecInput::Generic
+Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `actions` | array(`string`) | V |  | Schema URIs of actions granted by the policy. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PolicySpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="principalhandle-schema"></a>
+##### PrincipalHandle
+Link to a resolved identity that can act as a principal: `User`, `ServiceAccount`, or `Node`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `type` | `string` | V |  | Type URI of the principal. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Account that owns the service account. |
+| `id` | `string` | V |  | ID of the principal resource. |
+| `did` | `string` |  | `did` | DID of the principal, if applicable. |
+| `name` | `string` | V |  | Name of the principal resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PrincipalHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="principalref-schema"></a>
+##### PrincipalRef
+Reference to an identity that can act as a principal: `User`, `ServiceAccount`, or `Node`. Short form requires a type prefix, e.g. `ServiceAccount:acme/ingest-prod`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `type` | `string` |  |  | Short type name or full type URI of the principal. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the service account. |
+| `id` | `string` |  |  | ID of the principal resource. |
+| `did` | `string` |  | `did` | DID of the principal. |
+| `name` | `string` |  |  | Name of the principal resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/PrincipalRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="resourceownerhandle-schema"></a>
+##### ResourceOwnerHandle
+Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `id` | `string` | V |  | ID of the account resource. |
+| `did` | `string` | V |  | DID of the account. |
+| `name` | `string` | V |  | Name of the account. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/ResourceOwnerHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="resourceownerref-schema"></a>
+##### ResourceOwnerRef
+Reference to an account that can own resources: `User`, `Organization`, or `Node`. Short form is the account name, as names of these accounts are unique within a node.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `id` | `string` |  |  | UUID of the account resource. |
+| `did` | `string` |  |  | DID of the account. |
+| `name` | `string` |  |  | Name of the account. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/ResourceOwnerRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="serviceaccount-schema"></a>
+##### ServiceAccount
+A non-human identity used by automation (scheduled flows, CI, installed applications). Service accounts are scoped under an owning account and can act as principals, but cannot own resources.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [ServiceAccountSpecInput](#serviceaccountspecinput-schema) | V |  | Specifies the desired state of the resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/ServiceAccount.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="serviceaccountspec-schema"></a>
+##### ServiceAccountSpec
+Service account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `disabled` | `boolean` |  |  | Suspends the account. Effects of suspension are implementation-specific.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/ServiceAccountSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="serviceaccountspecinput-schema"></a>
+##### ServiceAccountSpecInput
+Service account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `disabled` | `boolean` |  |  | Suspends the account. Effects of suspension are implementation-specific.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/ServiceAccountSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjecthandle-schema"></a>
+##### SubjectHandle
+Resolved reference to a party a grant is given to.
+
+| Union Type | Description |
+| :---: | --- |
+| [SubjectHandle::Resource](#subjecthandle-resource-schema) | A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`. |
+| [SubjectHandle::Authenticated](#subjecthandle-authenticated-schema) | Matches any authenticated principal. |
+| [SubjectHandle::Anonymous](#subjecthandle-anonymous-schema) | Matches any unauthenticated principal. |
+| [SubjectHandle::Everyone](#subjecthandle-everyone-schema) | Matches any principal, authenticated or not. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjecthandle-anonymous-schema"></a>
+##### SubjectHandle::Anonymous
+Matches any unauthenticated principal.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjecthandle-authenticated-schema"></a>
+##### SubjectHandle::Authenticated
+Matches any authenticated principal.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjecthandle-everyone-schema"></a>
+##### SubjectHandle::Everyone
+Matches any principal, authenticated or not.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjecthandle-resource-schema"></a>
+##### SubjectHandle::Resource
+A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `type` | `string` | V |  | Type URI of the subject resource. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Account that owns the subject resource (for service accounts and groups). |
+| `id` | `string` | V |  | ID of the subject resource. |
+| `did` | `string` |  | `did` | DID of the subject resource, if applicable. |
+| `name` | `string` | V |  | Name of the subject resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjectref-schema"></a>
+##### SubjectRef
+Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form is either a well-known subject name (e.g. `Authenticated`) or a resource reference with a type prefix, DID, or ID (e.g. `Group:acme/engineering`).
+
+| Union Type | Description |
+| :---: | --- |
+| [SubjectRef::Resource](#subjectref-resource-schema) | A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`. |
+| [SubjectRef::Authenticated](#subjectref-authenticated-schema) | Matches any authenticated principal. |
+| [SubjectRef::Anonymous](#subjectref-anonymous-schema) | Matches any unauthenticated principal. |
+| [SubjectRef::Everyone](#subjectref-everyone-schema) | Matches any principal, authenticated or not. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjectref-anonymous-schema"></a>
+##### SubjectRef::Anonymous
+Matches any unauthenticated principal.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjectref-authenticated-schema"></a>
+##### SubjectRef::Authenticated
+Matches any authenticated principal.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjectref-everyone-schema"></a>
+##### SubjectRef::Everyone
+Matches any principal, authenticated or not.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="subjectref-resource-schema"></a>
+##### SubjectRef::Resource
+A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `type` | `string` |  |  | Short type name or full type URI of the subject resource. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the subject resource (for service accounts and groups). |
+| `id` | `string` |  |  | ID of the subject resource. |
+| `did` | `string` |  | `did` | DID of the subject resource. |
+| `name` | `string` |  |  | Name of the subject resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/SubjectRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="user-schema"></a>
+##### User
+An individual person who can authenticate and act as a principal.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [UserSpecInput](#userspecinput-schema) | V |  | Specifies the desired state of the resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/User.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="userspec-schema"></a>
+##### UserSpec
+User account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `did` | `string` |  |  | DID associated with the account by ODF or an external system. |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `email` | `string` |  |  | Email address of the user. |
+| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
+| `password` | [Secret](#secret-schema) |  |  | Password for local authentication, stored as a hash upon apply. Absent for SSO or DID-based accounts. |
+| `disabled` | `boolean` |  |  | Suspends the account. Effects of suspension are implementation-specific.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/UserSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="userspecinput-schema"></a>
+##### UserSpecInput
+User account specification.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `did` | `string` |  |  | DID associated with the account by ODF or an external system. |
+| `displayName` | `string` |  |  | Human-friendly display name. |
+| `email` | `string` |  |  | Email address of the user. |
+| `avatarUrl` | `string` |  | `url` | URL of the account's avatar image. |
+| `password` | [Secret](#secret-schema) |  |  | Password for local authentication, stored as a hash upon apply. Absent for SSO or DID-based accounts. |
+| `disabled` | `boolean` |  |  | Suspends the account. Effects of suspension are implementation-specific.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/UserSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
 <a name="reference-config"></a>
 #### config
+<a name="decrypt-schema"></a>
+##### Decrypt
+Decrypt a secret from a `SecretSet`.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/config/v1alpha1/actions/Decrypt.json)
+[^](#reference-information)
+
 <a name="secret-schema"></a>
 ##### Secret
 Individual secret in raw or encrypted form.
@@ -1620,7 +1992,7 @@ Reference to a value within a `VariableSet` or a `SecretSet`.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountHandle](#accounthandle-schema) | V |  | Account that owns the target resource. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Account that owns the target resource. |
 | `type` | `string` | V |  | Type URI of the target resource. |
 | `id` | `string` | V |  | ID of the resource within a node. |
 | `name` | `string` | V |  | Name of a resource. |
@@ -1636,7 +2008,7 @@ Reference to a value within a `VariableSet` or a `SecretSet`.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the `VariableSet` or the `SecretSet`. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the `VariableSet` or the `SecretSet`. |
 | `id` | `string` |  |  | ID of a resource. |
 | `type` | `string` |  |  | Short type name or full type URI of the target resource. |
 | `name` | `string` |  |  | Name of a resource. |
@@ -2129,6 +2501,13 @@ Indicates that data has been ingested into a root dataset.
 
 
 
+<a name="alterhistory-schema"></a>
+##### AlterHistory
+Rewrite or truncate dataset history.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/actions/AlterHistory.json)
+[^](#reference-information)
+
 <a name="attachmentembedded-schema"></a>
 ##### AttachmentEmbedded
 Embedded attachment item.
@@ -2214,7 +2593,7 @@ Link to a dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountHandle](#accounthandle-schema) |  |  | Reference to an account that owns the dataset. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Reference to an account that owns the dataset. |
 | `id` | `string` | V |  | ID of the dataset resource. |
 | `did` | `string` | V | [dataset-id](#dataset-identity) | DID of the dataset. |
 | `name` | `string` | V |  | Name of the dataset. |
@@ -2242,26 +2621,12 @@ Reference to a dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the dataset. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the dataset. |
 | `id` | `string` |  |  | UUID of the dataset resource. |
 | `did` | `string` |  | [dataset-id](#dataset-identity) | DID of the dataset. |
 | `name` | `string` |  |  | Name of the dataset. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetRef.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="datasetrole-schema"></a>
-##### DatasetRole
-Access role granted to a subject on a dataset. Note: in future this fixed enum schema will likely be replaced by a reference to a `DatasetRole` resources that defines granular permissions on different actions available on a dataset.
-
-| Enum Value |
-| :---: |
-| Reader |
-| Editor |
-| Maintainer |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetRole.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2271,7 +2636,7 @@ Selects one or more datasets by name pattern and optional filters.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resources. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the target resources. |
 | `id` | `string` |  |  | ID of the singular resource. |
 | `name` | `string` |  |  | Name pattern in SQL `LIKE` format. |
 | `labels` | [LabelFilter](#labelfilter-schema) |  |  | Filter by resource labels. |
@@ -2451,6 +2816,13 @@ Represents a projection of a dataaset history into a state for fast lookups.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
+<a name="read-schema"></a>
+##### Read
+Read dataset data (query, download).
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/actions/Read.json)
+[^](#reference-information)
+
 <a name="seed-schema"></a>
 ##### Seed
 Establishes the identity of the dataset. Always the first metadata event in the chain.
@@ -2623,6 +2995,13 @@ Represents a watermark in the event stream.
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Watermark.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="write-schema"></a>
+##### Write
+Append new data to the dataset.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/actions/Write.json)
 [^](#reference-information)
 
 <a name="reference-engines"></a>
@@ -2869,7 +3248,7 @@ Cause of the flow run activation
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `activationTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time at which the trigger fired. |
-| `initiator` | [AccountHandle](#accounthandle-schema) |  |  | Account that initiated the run, if applicable. |
+| `initiator` | [PrincipalHandle](#principalhandle-schema) |  |  | Principal that initiated the run, if applicable. |
 | `trigger` | [FlowTrigger](#flowtrigger-schema) | V |  | Copy of the trigger configuration from the parent Flow that fired. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunActivationCause.json)
@@ -2909,6 +3288,7 @@ Defines a set of tasks to be executed in a sequence.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `target` | [ResourceHandle](#resourcehandle-schema) |  |  | Defines the default target resources on which tasks will be performed. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`. |
 | `tasks` | array([TaskSpec](#taskspec-schema)) | V |  | List of tasks to run consecutively. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunSpec.json)
@@ -2922,6 +3302,7 @@ Defines a set of tasks to be executed in a sequence.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `target` | [ResourceRef](#resourceref-schema) |  |  | Defines the default target resources on which tasks will be performed. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`. |
 | `tasks` | array([TaskSpecInput](#taskspecinput-schema)) | V |  | List of tasks to run consecutively. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunSpecInput.json)
@@ -2978,6 +3359,7 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `target` | [ResourceSelector](#resourceselector-schema) | V |  | Defines resources for which this flow will be instantiated. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow. |
 | `triggers` | array([FlowTrigger](#flowtrigger-schema)) | V |  | Conditions that cause this flow to execute. |
 | `tasks` | array([TaskSpec](#taskspec-schema)) | V |  | List of tasks to run consecutively. |
 | `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a flow should react to failures. |
@@ -2993,6 +3375,7 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `target` | [ResourceSelector](#resourceselector-schema) | V |  | Defines resources for which this flow will be instantiated. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow. |
 | `triggers` | array([FlowTriggerInput](#flowtriggerinput-schema)) | V |  | Conditions that cause this flow to execute. |
 | `tasks` | array([TaskSpecInput](#taskspecinput-schema)) | V |  | List of tasks to run consecutively. |
 | `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a flow should react to failures. |
@@ -3416,6 +3799,54 @@ Contains information on how externally-hosted data can be ingested into the root
 
 <a name="reference-resources"></a>
 #### resources
+<a name="addlabel-schema"></a>
+##### AddLabel
+Apply a specific label to the resource.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `labelType` | `string` | V |  | Schema URI of the label being added. |
+| `labelValue` | `any` | V |  | Value of the label being added. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/AddLabel.json)
+[^](#reference-information)
+
+<a name="bindpolicy-schema"></a>
+##### BindPolicy
+Create `PolicyBinding` resources that reference this resource as `object`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `subject` | [SubjectHandle](#subjecthandle-schema) | V |  | Subject of the binding being created, allowing policies to restrict granting access to e.g. `Everyone`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/BindPolicy.json)
+[^](#reference-information)
+
+<a name="create-schema"></a>
+##### Create
+Create a new resource instance of a type (object is a type URI) under an account.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `targetOwner` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Account under which the resource is being created. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/Create.json)
+[^](#reference-information)
+
+<a name="delete-schema"></a>
+##### Delete
+Delete the resource instance.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/Delete.json)
+[^](#reference-information)
+
+<a name="edit-schema"></a>
+##### Edit
+Modify the resource manifest.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/Edit.json)
+[^](#reference-information)
+
 <a name="labelfilter-schema"></a>
 ##### LabelFilter
 Filters that work on resource labels and identity headers.
@@ -3443,6 +3874,29 @@ Filters that work on resource labels and identity headers.
 | `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
 | `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
 
+
+<a name="list-schema"></a>
+##### List
+List resource instances of a type (object is a type URI) under an account.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `targetOwner` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Account under which resources are being listed. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/List.json)
+[^](#reference-information)
+
+<a name="removelabel-schema"></a>
+##### RemoveLabel
+Remove a specific label from the resource.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `labelType` | `string` | V |  | Schema URI of the label being removed. |
+| `labelValue` | `any` | V |  | Existing value of the label being removed. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/RemoveLabel.json)
+[^](#reference-information)
 
 <a name="resource-schema"></a>
 ##### Resource
@@ -3521,7 +3975,7 @@ Link to another resolved resource.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountHandle](#accounthandle-schema) | V |  | Account that owns the target resource. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Account that owns the target resource. |
 | `type` | `string` | V |  | Type URI of the target resource. |
 | `id` | `string` | V |  | ID of the resource within a node. |
 | `did` | `string` |  | `did` | DID of the resource, if applicable. |
@@ -3539,13 +3993,15 @@ Container for identity and ownership information of a resource.
 | :---: | :---: | :---: | :---: | --- |
 | `id` | `string` | V |  | Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation. |
 | `name` | `string` | V |  | Symbolic name of a resource that identifies it within a scope of an onwing account. |
-| `account` | [AccountHandle](#accounthandle-schema) | V |  | Link to the account that owns the resource. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Link to the account that owns the resource. |
 | `labels` | [ResourceLabels](#resourcelabels-schema) | V |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
 | `annotations` | [ResourceAnnotations](#resourceannotations-schema) | V |  | Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
 | `ownerReferences` | array([ResourceHandle](#resourcehandle-schema)) |  |  | References to resources that created this resource. Used for lineage tracking and cascading cleanup. |
 | `generation` | `integer` | V | `uint64` | A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`. |
+| `statusGeneration` | `integer` | V | `uint64` | A sequential number that changes every time the resource status is updated. Can be passed back as a precondition of a status update to make sure the status was not modified since it was read. Populated by the system. Starts with `1`. |
 | `createdAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was first applied and assigned an identity. |
 | `updatedAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was last updated, including header, spec, and status updates. |
+| `deletionRequestedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when deletion of the resource was requested. The resource remains visible until its controllers finish cleaning up and the deletion completes. |
 | `deletedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was deleted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceHeaders.json)
@@ -3560,7 +4016,7 @@ Container for identity and ownership information of a resource.
 | :---: | :---: | :---: | :---: | --- |
 | `id` | `string` |  |  | Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation. |
 | `name` | `string` | V |  | Symbolic name of a resource that identifies it within a scope of an onwing account. |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to the account that owns the resource. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to the account that owns the resource. |
 | `labels` | [ResourceLabels](#resourcelabels-schema) |  |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
 | `annotations` | [ResourceAnnotations](#resourceannotations-schema) |  |  | Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
 | `ownerReferences` | array([ResourceRef](#resourceref-schema)) |  |  | References to resources that created this resource. Used for lineage tracking and cascading cleanup. |
@@ -3613,7 +4069,7 @@ Map of string keys and values that can be used to organize, categorize, and quer
 
 <a name="resourcephase-schema"></a>
 ##### ResourcePhase
-Represents the reconciliation phase of a resource.
+Represents the reconciliation or deletion phase of a resource.
 
 | Enum Value |
 | :---: |
@@ -3622,6 +4078,8 @@ Represents the reconciliation phase of a resource.
 | Ready |
 | Degraded |
 | Failed |
+| Deleting |
+| Deleted |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourcePhase.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3633,7 +4091,7 @@ Reference to another resource.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resource. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the target resource. |
 | `id` | `string` |  |  | ID of the resource within a node. |
 | `did` | `string` |  | `did` | DID of the resource. |
 | `type` | `string` |  |  | Short type name or full type URI of the target resource. |
@@ -3649,7 +4107,7 @@ Matches zero or many resources using identity and label filters.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resources. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the target resources. |
 | `id` | `string` |  |  | ID of the singular resource. |
 | `did` | `string` |  | `did` | DID of the resource. |
 | `type` | `string` |  |  | Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`. |
@@ -3675,6 +4133,13 @@ Resource lifecycle and reconciliation information.
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="view-schema"></a>
+##### View
+Read the resource manifest.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/View.json)
 [^](#reference-information)
 
 <a name="reference-sinks"></a>
@@ -4361,7 +4826,7 @@ Reference to a `PersistentVolume`.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the `PersistentVolume`. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the `PersistentVolume`. |
 | `id` | `string` |  |  | ID of the resource. |
 | `name` | `string` |  |  | Name of the resource. |
 
@@ -4441,6 +4906,164 @@ Storage capacity allocation.
 
 <a name="reference-tasks"></a>
 #### tasks
+<a name="syncauth-schema"></a>
+##### SyncAuth
+Credentials used to access a remote location during a sync.
+
+| Union Type | Description |
+| :---: | --- |
+| [SyncAuth::Bearer](#syncauth-bearer-schema) | Authenticates with a bearer token, e.g. an access token of a remote ODF node. |
+| [SyncAuth::Aws](#syncauth-aws-schema) | Authenticates with AWS or an AWS-compatible object storage. |
+| [SyncAuth::Headers](#syncauth-headers-schema) | Authenticates by passing custom request headers. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuth.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauth-aws-schema"></a>
+##### SyncAuth::Aws
+Authenticates with AWS or an AWS-compatible object storage.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `endpoint` | `string` |  | `url` | S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores. |
+| `region` | `string` |  |  | AWS region where the bucket is located e.g. `us-west-2`. |
+| `accessKey` | [ValueHandle](#valuehandle-schema) |  |  | Reference to a secret containing the AWS access key ID. |
+| `secretKey` | [ValueHandle](#valuehandle-schema) |  |  | Reference to a secret containing the AWS secret access key. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuth.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauth-bearer-schema"></a>
+##### SyncAuth::Bearer
+Authenticates with a bearer token, e.g. an access token of a remote ODF node.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `token` | [ValueHandle](#valuehandle-schema) | V |  | Reference to a secret containing the token. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuth.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauth-headers-schema"></a>
+##### SyncAuth::Headers
+Authenticates by passing custom request headers.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `headers` | array([SyncAuthHeader](#syncauthheader-schema)) | V |  | Headers to pass with every request. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuth.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauthheader-schema"></a>
+##### SyncAuthHeader
+A request header whose value is taken from a `VariableSet` or a `SecretSet`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Name of the header. |
+| `value` | [ValueHandle](#valuehandle-schema) | V |  | Reference to the value of the header. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuthHeader.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauthheaderinput-schema"></a>
+##### SyncAuthHeaderInput
+A request header whose value is taken from a `VariableSet` or a `SecretSet`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Name of the header. |
+| `value` | [ValueRef](#valueref-schema) | V |  | Reference to the value of the header. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuthHeaderInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauthinput-schema"></a>
+##### SyncAuthInput
+Credentials used to access a remote location during a sync.
+
+| Union Type | Description |
+| :---: | --- |
+| [SyncAuthInput::Bearer](#syncauthinput-bearer-schema) | Authenticates with a bearer token, e.g. an access token of a remote ODF node. |
+| [SyncAuthInput::Aws](#syncauthinput-aws-schema) | Authenticates with AWS or an AWS-compatible object storage. |
+| [SyncAuthInput::Headers](#syncauthinput-headers-schema) | Authenticates by passing custom request headers. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuthInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauthinput-aws-schema"></a>
+##### SyncAuthInput::Aws
+Authenticates with AWS or an AWS-compatible object storage.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `endpoint` | `string` |  | `url` | S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores. |
+| `region` | `string` |  |  | AWS region where the bucket is located e.g. `us-west-2`. |
+| `accessKey` | [ValueRef](#valueref-schema) |  |  | Reference to a secret containing the AWS access key ID. |
+| `secretKey` | [ValueRef](#valueref-schema) |  |  | Reference to a secret containing the AWS secret access key. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuthInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauthinput-bearer-schema"></a>
+##### SyncAuthInput::Bearer
+Authenticates with a bearer token, e.g. an access token of a remote ODF node.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `token` | [ValueRef](#valueref-schema) | V |  | Reference to a secret containing the token. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuthInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncauthinput-headers-schema"></a>
+##### SyncAuthInput::Headers
+Authenticates by passing custom request headers.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `headers` | array([SyncAuthHeaderInput](#syncauthheaderinput-schema)) | V |  | Headers to pass with every request. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncAuthInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncendpoint-schema"></a>
+##### SyncEndpoint
+A remote location a dataset is synced with.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `url` | `string` | V | `url` | URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`. |
+| `auth` | [SyncAuth](#syncauth-schema) |  |  | Credentials used to access the remote location. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncEndpoint.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="syncendpointinput-schema"></a>
+##### SyncEndpointInput
+A remote location a dataset is synced with.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `url` | `string` | V | `url` | URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`. |
+| `auth` | [SyncAuthInput](#syncauthinput-schema) |  |  | Credentials used to access the remote location. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/SyncEndpointInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 <a name="task-schema"></a>
 ##### Task
 An individual work item to be executed.
@@ -4454,6 +5077,34 @@ An individual work item to be executed.
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/Task.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
+
+<a name="taskerror-schema"></a>
+##### TaskError
+Type-specific details of a task failure. The `kind` property identifies the error, e.g. `InputDatasetCompacted`, and the remaining properties depend on it.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskError.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="known-extra-attrs"></a>
+###### Known Extensions
+| Extension | Description |
+| --- | --- |
+| `opendatafabric.net/description` | Used for human readable schema field descriptions |
+| `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
+| `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
+| `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
+
+<a name="known-extra-types"></a>
+###### Known Extended Types
+| Extended Type | Core Type | Description |
+| --- | --- | --- |
+| `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
+| `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
+| `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
+
 
 <a name="taskoutcome-schema"></a>
 ##### TaskOutcome
@@ -4485,6 +5136,8 @@ Task failed.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `message` | `string` | V |  | Human-readable description of the failure. |
+| `recoverable` | `boolean` | V |  | Whether retrying the task could succeed, e.g. after a network error. An unrecoverable failure, such as an invalid query, would fail the same way again. |
+| `error` | [TaskError](#taskerror-schema) |  |  | Type-specific details of the failure. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskOutcome.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4562,7 +5215,10 @@ An individual work item to be executed as part of a flow.
 | :---: | --- |
 | [TaskSpec::Ingest](#taskspec-ingest-schema) | Fetches data from a source and appends it to a dataset. |
 | [TaskSpec::Transform](#taskspec-transform-schema) | Executes transformation of data defined in a derivative dataset. |
+| [TaskSpec::SyncFrom](#taskspec-syncfrom-schema) | Pulls new blocks from a remote dataset into a local dataset. |
+| [TaskSpec::SyncTo](#taskspec-syncto-schema) | Pushes new blocks of a local dataset to a remote dataset. |
 | [TaskSpec::Compaction](#taskspec-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
+| [TaskSpec::Reset](#taskspec-reset-schema) | Moves a block reference of a dataset to an earlier block, discarding the history that follows it. |
 | [TaskSpec::GarbageCollection](#taskspec-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
 | [TaskSpec::Verify](#taskspec-verify-schema) | Checks dataset metadata for integrity. |
 | [TaskSpec::WebhookCall](#taskspec-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookEndpoint`. |
@@ -4579,6 +5235,7 @@ Compacts data files in matching datasets to improve query performance.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to compact. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `maxSliceSize` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Target maximum size of each compacted data slice e.g. `100MiB`. |
 | `maxSliceRecords` | `integer` |  | `uint64` | Target maximum number of records per compacted data slice. |
 
@@ -4594,6 +5251,7 @@ Removes unreferenced data files from matching datasets.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4607,8 +5265,59 @@ Fetches data from a source and appends it to a dataset.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to ingest into. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `source` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the source resource that defines how to fetch data. |
 | `targetRecordsPerSlice` | `integer` |  | `uint64` | Target number of records to ingest per data slice. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-reset-schema"></a>
+##### TaskSpec::Reset
+Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to reset. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
+| `ref` | `string` |  |  | Name of the block reference to reset.<br/><br/>Default: "head" |
+| `newBlockHash` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash of the block the reference will point to. Defaults to the `Seed` block when omitted. |
+| `oldBlockHash` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-syncfrom-schema"></a>
+##### TaskSpec::SyncFrom
+Pulls new blocks from a remote dataset into a local dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the local dataset to pull into. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
+| `source` | [SyncEndpoint](#syncendpoint-schema) | V |  | Remote dataset to pull from. |
+| `force` | `boolean` |  |  | Overwrite the local dataset even if its history has diverged from the source.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-syncto-schema"></a>
+##### TaskSpec::SyncTo
+Pushes new blocks of a local dataset to a remote dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the local dataset to push. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
+| `destination` | [SyncEndpoint](#syncendpoint-schema) | V |  | Remote dataset to push to. |
+| `force` | `boolean` |  |  | Overwrite the remote dataset even if its history has diverged from the local one.<br/><br/>Default: false |
+| `createIfNotExists` | `boolean` |  |  | Create the remote dataset if it does not exist.<br/><br/>Default: true |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4622,6 +5331,7 @@ Executes transformation of data defined in a derivative dataset.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the derivative dataset that defines how to transform data. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4635,6 +5345,7 @@ Checks dataset metadata for integrity.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to verify. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `replayTransform` | `boolean` |  |  | If true, re-executes transformations on derivative datasets to verify reproducibility. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
@@ -4648,6 +5359,7 @@ Dispatches a certain payload to a specific `WebhookEndpoint`.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `serviceAccount` | [PrincipalHandle](#principalhandle-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `endpoint` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the `WebhookEndpoint`. |
 | `payload` | `string` |  |  | The payload to send. May include templating. |
 
@@ -4663,7 +5375,10 @@ An individual work item to be executed as part of a flow.
 | :---: | --- |
 | [TaskSpecInput::Ingest](#taskspecinput-ingest-schema) | Fetches data from a source and appends it to a dataset. |
 | [TaskSpecInput::Transform](#taskspecinput-transform-schema) | Executes transformation of data defined in a derivative dataset. |
+| [TaskSpecInput::SyncFrom](#taskspecinput-syncfrom-schema) | Pulls new blocks from a remote dataset into a local dataset. |
+| [TaskSpecInput::SyncTo](#taskspecinput-syncto-schema) | Pushes new blocks of a local dataset to a remote dataset. |
 | [TaskSpecInput::Compaction](#taskspecinput-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
+| [TaskSpecInput::Reset](#taskspecinput-reset-schema) | Moves a block reference of a dataset to an earlier block, discarding the history that follows it. |
 | [TaskSpecInput::GarbageCollection](#taskspecinput-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
 | [TaskSpecInput::Verify](#taskspecinput-verify-schema) | Checks dataset metadata for integrity. |
 | [TaskSpecInput::WebhookCall](#taskspecinput-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookEndpoint`. |
@@ -4680,6 +5395,7 @@ Compacts data files in matching datasets to improve query performance.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to compact. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `maxSliceSize` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Target maximum size of each compacted data slice e.g. `100MiB`. |
 | `maxSliceRecords` | `integer` |  | `uint64` | Target maximum number of records per compacted data slice. |
 
@@ -4695,6 +5411,7 @@ Removes unreferenced data files from matching datasets.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4708,8 +5425,59 @@ Fetches data from a source and appends it to a dataset.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to ingest into. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
 | `targetRecordsPerSlice` | `integer` |  | `uint64` | Target number of records to ingest per data slice. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-reset-schema"></a>
+##### TaskSpecInput::Reset
+Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to reset. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
+| `ref` | `string` |  |  | Name of the block reference to reset.<br/><br/>Default: "head" |
+| `newBlockHash` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Hash of the block the reference will point to. Defaults to the `Seed` block when omitted. |
+| `oldBlockHash` | `string` |  | [multihash](https://github.com/multiformats/multihash) | Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-syncfrom-schema"></a>
+##### TaskSpecInput::SyncFrom
+Pulls new blocks from a remote dataset into a local dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the local dataset to pull into. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
+| `source` | [SyncEndpointInput](#syncendpointinput-schema) | V |  | Remote dataset to pull from. |
+| `force` | `boolean` |  |  | Overwrite the local dataset even if its history has diverged from the source.<br/><br/>Default: false |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-syncto-schema"></a>
+##### TaskSpecInput::SyncTo
+Pushes new blocks of a local dataset to a remote dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the local dataset to push. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
+| `destination` | [SyncEndpointInput](#syncendpointinput-schema) | V |  | Remote dataset to push to. |
+| `force` | `boolean` |  |  | Overwrite the remote dataset even if its history has diverged from the local one.<br/><br/>Default: false |
+| `createIfNotExists` | `boolean` |  |  | Create the remote dataset if it does not exist.<br/><br/>Default: true |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4723,6 +5491,7 @@ Executes transformation of data defined in a derivative dataset.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the derivative dataset that defines how to transform data. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4736,6 +5505,7 @@ Checks dataset metadata for integrity.
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
 | `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to verify. Defaults to the flow-level target when omitted. |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `replayTransform` | `boolean` |  |  | If true, re-executes transformations on derivative datasets to verify reproducibility. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
@@ -4749,6 +5519,7 @@ Dispatches a certain payload to a specific `WebhookEndpoint`.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `serviceAccount` | [PrincipalRef](#principalref-schema) |  |  | Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted. |
 | `endpoint` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookEndpoint`. |
 | `payload` | `string` |  |  | The payload to send. May include templating. |
 | `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a webhook should react to failures. |
@@ -4764,10 +5535,8 @@ Execution phase of a task.
 | Enum Value |
 | :---: |
 | Pending |
-| Planning |
-| Ready |
+| Queued |
 | Running |
-| Committing |
 | Finished |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskStatus.json)

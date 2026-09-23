@@ -741,6 +741,11 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             continue;
         }
 
+        // Actions carry no data and are not exposed via GQL
+        if matches!(typ.metatype(), model::MetaType::Action) {
+            continue;
+        }
+
         if typ
             .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
             .is_some()

@@ -1,0 +1,21 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+headers:
+  account: node
+  name: dataset-reader-acme
+spec:
+  # Engine-specific policy template - only supported by nodes that use Cedar.
+  # The `?principal` and `?resource` slots are filled by `subject` and `object`
+  # of a `PolicyBinding`.
+  kind: Cedar
+  body: |
+    permit(
+      principal in ?principal,
+      action in [
+        odf::datasets::Action::"https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Read"
+      ],
+      resource == ?resource
+    ) when {
+      // Only applies to datasets of `acme` organization
+      resource.owner == odf::auth::ResourceOwner::"acme"
+    };

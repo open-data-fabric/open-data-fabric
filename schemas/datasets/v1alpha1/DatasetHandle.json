@@ -10,7 +10,7 @@
   ],
   "properties": {
     "account": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle",
       "description": "Reference to an account that owns the dataset.",
       "unevaluatedProperties": false
     },

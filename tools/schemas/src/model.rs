@@ -180,6 +180,8 @@ pub struct Struct {
     pub description: String,
     pub from_string: bool,
     pub codegen_hints: CodegenHints,
+    /// Set when the struct represents an action (`MetaType::Action`)
+    pub action_properties: Option<ActionProperties>,
     pub src: PathBuf,
 }
 
@@ -190,6 +192,24 @@ impl Struct {
         key: CodegenHint,
     ) -> Option<V> {
         get_hint(&self.codegen_hints, lang, key)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionProperties {
+    /// Types of objects (resources or entities) the action applies to
+    pub object_types: Vec<TypeId>,
+}
+
+impl From<json_schema::ActionProperties> for ActionProperties {
+    fn from(value: json_schema::ActionProperties) -> Self {
+        Self {
+            object_types: value
+                .object_types
+                .into_iter()
+                .map(|t| TypeId::new(json_schema::SchemaId::new(t)))
+                .collect(),
+        }
     }
 }
 
@@ -318,7 +338,7 @@ pub enum MetaType {
     ResourceRef,
     ResourceHandle,
     ResourceCondition,
-    Relation,
+    Action,
     EngineMessage,
     Fragment,
 }
@@ -336,7 +356,7 @@ impl MetaType {
             json_schema::SchemaId::METASCHEMA_RESOURCE_REF => Self::ResourceRef,
             json_schema::SchemaId::METASCHEMA_RESOURCE_HANDLE => Self::ResourceHandle,
             json_schema::SchemaId::METASCHEMA_RESOURCE_CONDITION => Self::ResourceCondition,
-            json_schema::SchemaId::METASCHEMA_RELATION => Self::Relation,
+            json_schema::SchemaId::METASCHEMA_ACTION => Self::Action,
             json_schema::SchemaId::METASCHEMA_ENGINE_MESSAGE => Self::EngineMessage,
             json_schema::SchemaId::METASCHEMA_JSONSCHEMA => Self::Fragment,
             _ => panic!("Unrecognized meta-schema: {id}"),
@@ -407,7 +427,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             MetaType::ResourceRef => false,
             MetaType::ResourceHandle => false,
             MetaType::ResourceCondition => false,
-            MetaType::Relation => false,
+            MetaType::Action => false,
             MetaType::EngineMessage => true,
             MetaType::Fragment => false,
         };
@@ -447,7 +467,6 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
         let src = schema.src.take().expect("Schema without source path");
 
         let _ = schema.label_properties.take();
-        let _ = schema.relation_properties.take();
 
         // Extract all $defs into top-level types
         for (dname, dsch) in schema.defs.take().unwrap_or_default() {
@@ -544,8 +563,8 @@ fn parse_type_definition(
                 codegen: obj.codegen,
                 deprecated: obj.deprecated,
                 examples: obj.examples,
-                label_properties: None,
-                relation_properties: None,
+                label_properties: schema.label_properties,
+                action_properties: schema.action_properties.into(),
                 src: obj.src,
             };
             TypeDefinition::Struct(parse_type_struct(id, schema, src, ctx, true))
@@ -613,7 +632,7 @@ fn parse_type_struct(
         deprecated: None,
         examples: _,
         label_properties: None,
-        relation_properties: None,
+        action_properties,
         src: None,
     } = schema
     else {
@@ -690,6 +709,7 @@ fn parse_type_struct(
         generics,
         from_string,
         codegen_hints: codegen.unwrap_or_default(),
+        action_properties: action_properties.map(Into::into),
         src,
     }
 }
@@ -722,7 +742,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         deprecated: None,
         examples: _,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = schema
     else {
@@ -779,7 +799,7 @@ fn parse_type_union_variant(parent: &TypeId, schema: json_schema::Schema, ctx: S
         deprecated: None,
         examples: None,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = schema
     else {
@@ -846,7 +866,7 @@ fn parse_type_enum(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: S
         deprecated: None,
         examples: None,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = schema
     else {
@@ -922,7 +942,7 @@ fn parse_type_map(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: St
         deprecated: None,
         examples: _,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = schema
     else {
@@ -991,7 +1011,7 @@ fn parse_fragment_type_scalar(
         deprecated: None,
         examples: _,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = &schema
     else {
@@ -1084,7 +1104,7 @@ fn parse_type_array(schema: json_schema::Schema, root: &TypeId, ctx: String) -> 
         deprecated: None,
         examples: _,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = schema
     else {
@@ -1124,7 +1144,7 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         deprecated: None,
         examples: _,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = &schema
     else {
@@ -1224,7 +1244,7 @@ fn parse_ref(
         deprecated: None,
         examples: None,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     } = schema
     else {

@@ -141,16 +141,22 @@ fn render_type(
     Ok(())
 }
 
-fn render_schema_links(path: &Path, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
+fn render_schema_links(
+    path: &Path,
+    flatbuffers: bool,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
     writeln!(
         w,
         "[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)]({})",
         path.display()
     )?;
-    writeln!(
-        w,
-        "[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)"
-    )?;
+    if flatbuffers {
+        writeln!(
+            w,
+            "[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)"
+        )?;
+    }
     writeln!(w, "[^](#reference-information)")?;
     Ok(())
 }
@@ -198,7 +204,11 @@ fn render_struct(
         writeln!(w)?;
     }
 
-    render_schema_links(&typ.src, w)?;
+    render_schema_links(
+        &typ.src,
+        !matches!(typ.metatype, model::MetaType::Action),
+        w,
+    )?;
     Ok(())
 }
 
@@ -240,7 +250,7 @@ fn render_union(
         w,
     )?;
     writeln!(w)?;
-    render_schema_links(&typ.src, w)?;
+    render_schema_links(&typ.src, true, w)?;
     Ok(())
 }
 
@@ -263,7 +273,7 @@ fn render_enum(
         w,
     )?;
     writeln!(w)?;
-    render_schema_links(&typ.src, w)?;
+    render_schema_links(&typ.src, true, w)?;
     Ok(())
 }
 
@@ -279,7 +289,7 @@ fn render_map(
     writeln!(w, "{}", typ.description)?;
     writeln!(w)?;
 
-    render_schema_links(&typ.src, w)?;
+    render_schema_links(&typ.src, true, w)?;
 
     writeln!(w)?;
 

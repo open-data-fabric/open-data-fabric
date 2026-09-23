@@ -66,9 +66,10 @@ status:
       activationCauses:
         - activationTime: 2026-09-11T02:00:00Z
           initiator:
+            type: User
             id: aa-123123
             did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
-            name: system
+            name: foo
           trigger:  # Copy of the trigger's configuration in the parent Flow
             kind: Manual
       lateActivationCauses: []

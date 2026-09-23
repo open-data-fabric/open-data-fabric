@@ -1,0 +1,28 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBindingSpec",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Policy binding specification.",
+  "type": "object",
+  "required": [
+    "policy",
+    "subject",
+    "object"
+  ],
+  "properties": {
+    "policy": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+      "description": "Policy template to instantiate.",
+      "unevaluatedProperties": false
+    },
+    "subject": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle",
+      "description": "Party the permissions are granted to.",
+      "unevaluatedProperties": false
+    },
+    "object": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+      "description": "Resource the permissions are granted on. Refers to both the resource and the entity materialized from it.",
+      "unevaluatedProperties": false
+    }
+  }
+}

@@ -74,8 +74,8 @@ pub struct Schema {
     /// ODF-specific metadata for label schemas (used when `$schema` is `ResourceLabel`)
     pub label_properties: Option<LabelProperties>,
 
-    /// ODF-specific metadata for relation value schemas (used when `$schema` is `Relation`)
-    pub relation_properties: Option<RelationProperties>,
+    /// ODF-specific metadata for action schemas (used when `$schema` is `Action`)
+    pub action_properties: Option<ActionProperties>,
 
     pub src: Option<PathBuf>,
 }
@@ -97,7 +97,7 @@ impl Schema {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct LabelProperties {
-    /// When true, this label is materialized into the ReBAC attribute store by the resource
+    /// When true, this label is materialized into the auth engine by the resource
     /// controller. Labels with this flag must appear under `labels`, not `annotations`.
     pub is_auth_attribute: Option<bool>,
 
@@ -115,14 +115,10 @@ pub struct LabelProperties {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
-pub struct RelationProperties {
-    /// Resource type URIs that are valid subjects of this relation. When absent any resource type
-    /// is allowed as subject.
-    pub subject_resource_types: Option<Vec<String>>,
-
-    /// Resource type URIs that are valid objects of this relation. When absent any resource type
-    /// is allowed as object.
-    pub object_resource_types: Option<Vec<String>>,
+pub struct ActionProperties {
+    /// Type URIs of objects (resources or entities) this action applies to. Since resource types
+    /// are an open set, actions must always list their object types explicitly.
+    pub object_types: Vec<String>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +198,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
         deprecated: None,
         examples: None,
         label_properties: None,
-        relation_properties: None,
+        action_properties: None,
         src: None,
     };
     schemas.insert(SchemaId::new(SchemaId::METASCHEMA_JSONSCHEMA), &jsonschema);
@@ -253,12 +249,14 @@ pub fn lint(top_level_schemas: &[Schema]) {
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_LABEL)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_ANNOTATION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_CONDITION)
-                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RELATION)
+                || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ACTION)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_ENGINE_MESSAGE)
                 || id.name() == "Manifest"
                 || id.name() == "DatasetSnapshot"
                 || id.name() == "MetadataBlock"
-                || id.name() == "OperationType")
+                || id.name() == "OperationType"
+                // TODO: Remove once used by other schemas (e.g. to specify a principal a flow runs as)
+                || id.name() == "PrincipalRef")
     }) {
         to_explore.push((id.clone(), *sch));
     }
@@ -371,10 +369,11 @@ fn decode_ref(reff: &str) -> Ref {
 pub struct SchemaId(String);
 
 // Matches: https://opendatafabric.org/schemas/{context}/{version}/{Name}
+// Also matches with an optional grouping path segment e.g. `{context}/{version}/actions/{Name}`.
 // Also matches with an optional #/$defs/{Def} fragment.
 pub static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
     regex::Regex::new(
-        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
+        r"^https://opendatafabric\.org/schemas/(?P<context>[^/]+)/(?P<version>[^/]+)/(?:[^/]+/)?(?P<name>[^/.]+)(?:#/\$defs/(?P<def>[^/]+))?$",
     )
     .unwrap()
 });
@@ -397,8 +396,8 @@ impl SchemaId {
         "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceHandle";
     pub const METASCHEMA_RESOURCE_CONDITION: &str =
         "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition";
-    pub const METASCHEMA_RELATION: &str =
-        "https://opendatafabric.org/schemas/auth/v1alpha1/meta/Relation";
+    pub const METASCHEMA_ACTION: &str =
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Action";
     pub const METASCHEMA_ENGINE_MESSAGE: &str =
         "https://opendatafabric.org/schemas/engines/v1alpha1/meta/EngineMessage";
 

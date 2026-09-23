@@ -1,0 +1,32 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/PolicyRef",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceRef",
+  "description": "Reference to a `Policy`.",
+  "format": "struct-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef",
+          "description": "Reference to an account that owns the `Policy`.",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of the resource."
+        }
+      }
+    }
+  ]
+}

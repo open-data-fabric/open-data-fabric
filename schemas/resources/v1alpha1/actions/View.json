@@ -1,0 +1,13 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/actions/View",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Action",
+  "description": "Read the resource manifest.",
+  "type": "object",
+  "required": [],
+  "properties": {},
+  "actionProperties": {
+    "objectTypes": [
+      "https://opendatafabric.org/schemas/resources/v1alpha1/Resource"
+    ]
+  }
+}

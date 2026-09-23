@@ -1,0 +1,17 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+headers:
+  # Policies can currently only be authored by node admins
+  account: node
+  name: dataset-editor
+spec:
+  # Portable policy that any Level 2+ node can evaluate
+  kind: Generic
+  actions:
+    # Control plane: dataset resource
+    - https://opendatafabric.org/schemas/resources/v1alpha1/actions/View
+    - https://opendatafabric.org/schemas/resources/v1alpha1/actions/Edit
+    # Data plane: dataset entity
+    - https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Read
+    - https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Write
+  # Subject and object are supplied by `PolicyBinding`

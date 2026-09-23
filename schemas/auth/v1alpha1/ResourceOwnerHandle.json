@@ -1,0 +1,28 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceHandle",
+  "description": "Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.",
+  "type": "object",
+  "required": [
+    "id",
+    "did",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "resource-id",
+      "description": "ID of the account resource."
+    },
+    "did": {
+      "type": "string",
+      "format": "account-id",
+      "description": "DID of the account."
+    },
+    "name": {
+      "type": "string",
+      "format": "account-name",
+      "description": "Name of the account."
+    }
+  }
+}

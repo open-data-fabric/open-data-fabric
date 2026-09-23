@@ -1,0 +1,9 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+headers:
+  account: acme
+  name: carol-sensor-raw-reader
+spec:
+  policy: Policy:node/dataset-reader-acme
+  subject: User:carol
+  object: Dataset:acme/sensor-raw

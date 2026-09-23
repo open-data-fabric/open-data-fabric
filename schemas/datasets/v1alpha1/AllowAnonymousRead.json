@@ -1,7 +1,7 @@
 {
   "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/AllowAnonymousRead",
   "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceLabel",
-  "description": "Controls whether the dataset is readable by users who did not authenticate. Materialized into the ReBAC attribute store by the controller.",
+  "description": "Controls whether the dataset is readable by users who did not authenticate. Materialized into the auth engine by the Dataset controller.",
   "type": "boolean",
   "labelProperties": {
     "isAuthAttribute": true,

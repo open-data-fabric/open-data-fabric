@@ -1,0 +1,23 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/OrganizationSpec",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Organization account specification.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "displayName": {
+      "type": "string",
+      "description": "Human-friendly display name."
+    },
+    "avatarUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the account's avatar image."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Suspends the account. Effects of suspension are implementation-specific."
+    }
+  }
+}

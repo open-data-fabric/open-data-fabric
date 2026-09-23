@@ -1,0 +1,8 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+headers:
+  name: alice
+spec:
+  displayName: Alice
+  email: alice@example.com
+  password: swordfish  # Plain password will be stored as a hash upon apply

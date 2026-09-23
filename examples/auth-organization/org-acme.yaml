@@ -1,0 +1,10 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Organization
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Organization
+headers:
+  name: acme
+spec:
+  displayName: Acme Corp
+# Upon creation the node will automatically create two reserved groups:
+# - `Group:acme/admins` - containing the principal that created the organization
+# - `Group:acme/members` - initially empty
+# See `group-acme-*.yaml` for customizing their membership.

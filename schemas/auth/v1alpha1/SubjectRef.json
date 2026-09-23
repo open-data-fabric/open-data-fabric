@@ -1,0 +1,135 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form is either a well-known subject name (e.g. `Authenticated`) or a resource reference with a type prefix, DID, or ID (e.g. `Group:acme/engineering`).",
+  "$defs": {
+    "Resource": {
+      "description": "A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "type-ref",
+          "description": "Short type name or full type URI of the subject resource."
+        },
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef",
+          "description": "Reference to an account that owns the subject resource (for service accounts and groups).",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the subject resource."
+        },
+        "did": {
+          "type": "string",
+          "format": "did",
+          "description": "DID of the subject resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of the subject resource."
+        }
+      }
+    },
+    "Authenticated": {
+      "description": "Matches any authenticated principal.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "Anonymous": {
+      "description": "Matches any unauthenticated principal.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "Everyone": {
+      "description": "Matches any principal, authenticated or not.",
+      "type": "object",
+      "required": [],
+      "properties": {}
+    }
+  },
+  "format": "union-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Resource"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Resource"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Authenticated"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Authenticated"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Anonymous"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Anonymous"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Everyone"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Everyone"
+        }
+      ]
+    }
+  ]
+}

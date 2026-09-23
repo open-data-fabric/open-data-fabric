@@ -1,0 +1,19 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpecInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpec",
+  "description": "Node account specification.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "did": {
+      "type": "string",
+      "format": "account-id",
+      "description": "DID associated with the account by ODF or an external system."
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-friendly display name."
+    }
+  }
+}

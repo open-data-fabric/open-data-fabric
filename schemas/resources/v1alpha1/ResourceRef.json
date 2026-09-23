@@ -12,7 +12,7 @@
       "required": [],
       "properties": {
         "account": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef",
           "description": "Reference to an account that owns the target resource.",
           "unevaluatedProperties": false
         },

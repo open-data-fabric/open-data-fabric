@@ -1,0 +1,75 @@
+{
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpec",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Policy specification. The `kind` selects the policy language.",
+  "$defs": {
+    "Generic": {
+      "description": "Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.",
+      "type": "object",
+      "required": [
+        "actions"
+      ],
+      "properties": {
+        "actions": {
+          "type": "array",
+          "description": "Schema URIs of actions granted by the policy.",
+          "items": {
+            "type": "string",
+            "format": "type-uri"
+          }
+        }
+      }
+    },
+    "Cedar": {
+      "description": "Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.",
+      "type": "object",
+      "required": [
+        "body"
+      ],
+      "properties": {
+        "body": {
+          "type": "string",
+          "description": "Cedar policy source."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Generic"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Generic"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Cedar"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Cedar"
+        }
+      ]
+    }
+  ]
+}

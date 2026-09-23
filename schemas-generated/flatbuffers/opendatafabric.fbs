@@ -17,192 +17,6 @@ struct Timestamp {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AccountRef
-// Reference to an account.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table AccountRef {
-  // UUID of the account resource.
-  id: [ubyte];
-  // DID of the account.
-  did: [ubyte];
-  // Name of the account.
-  name: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceLabels
-// Map of string keys and values that can be used to organize, categorize, and query resources.
-//
-// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceLabels
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceLabelsEntry {
-  key: string (key);
-  // JSON encoded
-  value: string (json);
-}
-table ResourceLabels {
-  // Key-value map
-  entries: [ResourceLabelsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceAnnotations
-// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
-//
-// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceAnnotations
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceAnnotationsEntry {
-  key: string (key);
-  // JSON encoded
-  value: string (json);
-}
-table ResourceAnnotations {
-  // Key-value map
-  entries: [ResourceAnnotationsEntry];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceRef
-// Reference to another resource.
-//
-// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceRef
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceRef {
-  // Reference to an account that owns the target resource.
-  account: AccountRef;
-  // ID of the resource within a node.
-  id: [ubyte];
-  // DID of the resource.
-  did: [ubyte];
-  // Short type name or full type URI of the target resource.
-  //
-  // Examples:
-  // - "SecretSet"
-  // - "https://opendatafabric.org/config/v1/SecretSet"
-  type: string;
-  // Name of a resource.
-  name: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ResourceHeadersInput
-// Container for identity and ownership information of a resource.
-//
-// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table ResourceHeadersInput {
-  // Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation.
-  id: [ubyte];
-  // Symbolic name of a resource that identifies it within a scope of an onwing account.
-  name: string;
-  // Reference to the account that owns the resource.
-  account: AccountRef;
-  // Map of string keys and values that can be used to organize, categorize, and query resources.
-  labels: ResourceLabels;
-  // Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
-  annotations: ResourceAnnotations;
-  // References to resources that created this resource. Used for lineage tracking and cascading cleanup.
-  owner_references: [ResourceRef];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AccountType
-// Represents the type of an account.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountType
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-enum AccountType: int32 {
-  User,
-  Organization,
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Secret
-// Individual secret in raw or encrypted form.
-//
-// Schema: https://opendatafabric.org/schemas/config/v1alpha1/Secret
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table Secret {
-  // A secret value in raw or encoded form.
-  value: string;
-  // Represents the encoding of the value. Typically will be `jwe` after a raw secret gets encrypted.
-  content_encoding: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AccountSpecInput
-// Predefined account specification.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpecInput
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table AccountSpecInput {
-  // DID associated with the account by ODF or an external system
-  did: [ubyte];
-  // Type of the account.
-  //
-  // Defaults to: "User"
-  account_type: AccountType = null;
-  // Human-friendly display name.
-  display_name: string;
-  // Email address of the account.
-  email: string;
-  // URL of the account's avatar image.
-  avatar_url: string;
-  // Password for local authentication. Absent for SSO or DID-based accounts.
-  password: Secret;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AccountHandle
-// Link to an account.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table AccountHandle {
-  // ID of the account resource.
-  id: [ubyte];
-  // DID of the account.
-  did: [ubyte];
-  // Name of the account.
-  name: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AccountSpec
-// Predefined account specification.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table AccountSpec {
-  // DID associated with the account by ODF or an external system
-  did: [ubyte];
-  // Type of the account.
-  //
-  // Defaults to: "User"
-  account_type: AccountType = null;
-  // Human-friendly display name.
-  display_name: string;
-  // Email address of the account.
-  email: string;
-  // URL of the account's avatar image.
-  avatar_url: string;
-  // Password for local authentication. Absent for SSO or DID-based accounts.
-  password: Secret;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OffsetInterval
 // Describes a range of data as a closed arithmetic interval of offsets
 //
@@ -1053,6 +867,22 @@ table AttachmentsEmbedded {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceOwnerHandle
+// Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceOwnerHandle {
+  // ID of the account resource.
+  id: [ubyte];
+  // DID of the account.
+  did: [ubyte];
+  // Name of the account.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ValueHandle
 // Reference to a value within a `VariableSet` or a `SecretSet`.
 //
@@ -1061,7 +891,7 @@ table AttachmentsEmbedded {
 
 table ValueHandle {
   // Account that owns the target resource.
-  account: AccountHandle;
+  account: ResourceOwnerHandle;
   // Type URI of the target resource.
   type: string;
   // ID of the resource within a node.
@@ -1091,6 +921,22 @@ table AwsCredentials {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceOwnerRef
+// Reference to an account that can own resources: `User`, `Organization`, or `Node`. Short form is the account name, as names of these accounts are unique within a node.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceOwnerRef {
+  // UUID of the account resource.
+  id: [ubyte];
+  // DID of the account.
+  did: [ubyte];
+  // Name of the account.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ValueRef
 // Reference to a value within a `VariableSet` or a `SecretSet`.
 //
@@ -1099,7 +945,7 @@ table AwsCredentials {
 
 table ValueRef {
   // Reference to an account that owns the `VariableSet` or the `SecretSet`.
-  account: AccountRef;
+  account: ResourceOwnerRef;
   // ID of a resource.
   id: [ubyte];
   // Short type name or full type URI of the target resource.
@@ -1134,6 +980,70 @@ table AwsCredentialsInput {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectHandle
+// Resolved reference to a party a grant is given to.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union SubjectHandle {
+  SubjectHandleResource,
+  SubjectHandleAuthenticated,
+  SubjectHandleAnonymous,
+  SubjectHandleEveryone,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectHandleResource
+// A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Resource
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectHandleResource {
+  // Type URI of the subject resource.
+  type: string;
+  // Account that owns the subject resource (for service accounts and groups).
+  account: ResourceOwnerHandle;
+  // ID of the subject resource.
+  id: [ubyte];
+  // DID of the subject resource, if applicable.
+  did: [ubyte];
+  // Name of the subject resource.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectHandleAuthenticated
+// Matches any authenticated principal.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Authenticated
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectHandleAuthenticated {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectHandleAnonymous
+// Matches any unauthenticated principal.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Anonymous
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectHandleAnonymous {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectHandleEveryone
+// Matches any principal, authenticated or not.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Everyone
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectHandleEveryone {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CompressionFormat
 // Defines a compression algorithm.
 //
@@ -1143,6 +1053,86 @@ table AwsCredentialsInput {
 enum CompressionFormat: int32 {
   Gzip,
   Zip,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceLabels
+// Map of string keys and values that can be used to organize, categorize, and query resources.
+//
+// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceLabels
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceLabelsEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table ResourceLabels {
+  // Key-value map
+  entries: [ResourceLabelsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceAnnotations
+// Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
+//
+// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceAnnotations
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceAnnotationsEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table ResourceAnnotations {
+  // Key-value map
+  entries: [ResourceAnnotationsEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceRef
+// Reference to another resource.
+//
+// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceRef
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceRef {
+  // Reference to an account that owns the target resource.
+  account: ResourceOwnerRef;
+  // ID of the resource within a node.
+  id: [ubyte];
+  // DID of the resource.
+  did: [ubyte];
+  // Short type name or full type URI of the target resource.
+  //
+  // Examples:
+  // - "SecretSet"
+  // - "https://opendatafabric.org/config/v1/SecretSet"
+  type: string;
+  // Name of a resource.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ResourceHeadersInput
+// Container for identity and ownership information of a resource.
+//
+// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ResourceHeadersInput {
+  // Unique identifier of a resource within entire ODF node. Automatically assigned upon resource creation.
+  id: [ubyte];
+  // Symbolic name of a resource that identifies it within a scope of an onwing account.
+  name: string;
+  // Reference to the account that owns the resource.
+  account: ResourceOwnerRef;
+  // Map of string keys and values that can be used to organize, categorize, and query resources.
+  labels: ResourceLabels;
+  // Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
+  annotations: ResourceAnnotations;
+  // References to resources that created this resource. Used for lineage tracking and cascading cleanup.
+  owner_references: [ResourceRef];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1686,7 +1676,7 @@ table MetadataEventWrapper {
 
 table PersistentVolumeRef {
   // Reference to an account that owns the `PersistentVolume`.
-  account: AccountRef;
+  account: ResourceOwnerRef;
   // ID of the resource.
   id: [ubyte];
   // Name of the resource.
@@ -1720,7 +1710,7 @@ table DatasetSpecInput {
 
 table DatasetHandle {
   // Reference to an account that owns the dataset.
-  account: AccountHandle;
+  account: ResourceOwnerHandle;
   // ID of the dataset resource.
   id: [ubyte];
   // DID of the dataset.
@@ -1738,26 +1728,13 @@ table DatasetHandle {
 
 table DatasetRef {
   // Reference to an account that owns the dataset.
-  account: AccountRef;
+  account: ResourceOwnerRef;
   // UUID of the dataset resource.
   id: [ubyte];
   // DID of the dataset.
   did: [ubyte];
   // Name of the dataset.
   name: string;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// DatasetRole
-// Access role granted to a subject on a dataset. Note: in future this fixed enum schema will likely be replaced by a reference to a `DatasetRole` resources that defines granular permissions on different actions available on a dataset.
-//
-// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetRole
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-enum DatasetRole: int32 {
-  Reader,
-  Editor,
-  Maintainer,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1786,7 +1763,7 @@ table LabelFilter {
 
 table DatasetSelector {
   // Reference to an account that owns the target resources.
-  account: AccountRef;
+  account: ResourceOwnerRef;
   // ID of the singular resource.
   id: [ubyte];
   // Name pattern in SQL `LIKE` format.
@@ -1828,7 +1805,7 @@ table DatasetSnapshot {
 
 table ResourceHandle {
   // Account that owns the target resource.
-  account: AccountHandle;
+  account: ResourceOwnerHandle;
   // Type URI of the target resource.
   type: string;
   // ID of the resource within a node.
@@ -1909,7 +1886,7 @@ table EventFilter {
 
 table ResourceSelector {
   // Reference to an account that owns the target resources.
-  account: AccountRef;
+  account: ResourceOwnerRef;
   // ID of the singular resource.
   id: [ubyte];
   // DID of the resource.
@@ -1925,6 +1902,26 @@ table ResourceSelector {
   name: string;
   // Filter by resource labels.
   labels: LabelFilter;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PrincipalRef
+// Reference to an identity that can act as a principal: `User`, `ServiceAccount`, or `Node`. Short form requires a type prefix, e.g. `ServiceAccount:acme/ingest-prod`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalRef
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PrincipalRef {
+  // Short type name or full type URI of the principal.
+  type: string;
+  // Reference to an account that owns the service account.
+  account: ResourceOwnerRef;
+  // ID of the principal resource.
+  id: [ubyte];
+  // DID of the principal.
+  did: [ubyte];
+  // Name of the principal resource.
+  name: string;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2046,7 +2043,7 @@ table TaskSpecInputIngest {
   // Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Reference to the source resource that defines how to fetch data.
   source: ResourceRef;
   // Target number of records to ingest per data slice.
@@ -2066,7 +2063,7 @@ table TaskSpecInputTransform {
   // Reference to the derivative dataset that defines how to transform data.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2165,7 +2162,7 @@ table TaskSpecInputSyncFrom {
   // Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Remote dataset to pull from.
   source: SyncEndpointInput;
   // Overwrite the local dataset even if its history has diverged from the source.
@@ -2187,7 +2184,7 @@ table TaskSpecInputSyncTo {
   // Reference to the local dataset to push. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Remote dataset to push to.
   destination: SyncEndpointInput;
   // Overwrite the remote dataset even if its history has diverged from the local one.
@@ -2213,7 +2210,7 @@ table TaskSpecInputCompaction {
   // Reference to the dataset to compact. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Target maximum size of each compacted data slice e.g. `100MiB`.
   max_slice_size: uint64 = null;
   // Target maximum number of records per compacted data slice.
@@ -2233,7 +2230,7 @@ table TaskSpecInputReset {
   // Reference to the dataset to reset. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Name of the block reference to reset.
   //
   // Defaults to: "head"
@@ -2257,7 +2254,7 @@ table TaskSpecInputGarbageCollection {
   // Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2273,7 +2270,7 @@ table TaskSpecInputVerify {
   // Reference to the dataset to verify. Defaults to the flow-level target when omitted.
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // If true, re-executes transformations on derivative datasets to verify reproducibility.
   replay_transform: bool = null;
 }
@@ -2317,7 +2314,7 @@ table TaskSpecInputWebhookCall {
   // An alias for the task used to refer to it in flows and access the results
   name: string;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Reference to the `WebhookEndpoint`.
   endpoint: ResourceRef;
   // The payload to send. May include templating.
@@ -2341,7 +2338,7 @@ table FlowSpecInput {
   // Defines resources for which this flow will be instantiated.
   target: ResourceSelector;
   // Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // Conditions that cause this flow to execute.
   triggers: [FlowTriggerInputWrapper];
   // List of tasks to run consecutively.
@@ -2361,9 +2358,29 @@ table FlowRunSpecInput {
   // Defines the default target resources on which tasks will be performed.
   target: ResourceRef;
   // Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
-  service_account: AccountRef;
+  service_account: PrincipalRef;
   // List of tasks to run consecutively.
   tasks: [TaskSpecInputWrapper];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PrincipalHandle
+// Link to a resolved identity that can act as a principal: `User`, `ServiceAccount`, or `Node`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PrincipalHandle {
+  // Type URI of the principal.
+  type: string;
+  // Account that owns the service account.
+  account: ResourceOwnerHandle;
+  // ID of the principal resource.
+  id: [ubyte];
+  // DID of the principal, if applicable.
+  did: [ubyte];
+  // Name of the principal resource.
+  name: string;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2459,8 +2476,8 @@ table FlowTriggerDataset {
 table FlowRunActivationCause {
   // Time at which the trigger fired.
   activation_time: Timestamp;
-  // Account that initiated the run, if applicable.
-  initiator: AccountHandle;
+  // Principal that initiated the run, if applicable.
+  initiator: PrincipalHandle;
   // Copy of the trigger configuration from the parent Flow that fired.
   trigger: FlowTrigger;
 }
@@ -2525,7 +2542,7 @@ table TaskSpecIngest {
   // Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Reference to the source resource that defines how to fetch data.
   source: ResourceHandle;
   // Target number of records to ingest per data slice.
@@ -2545,7 +2562,7 @@ table TaskSpecTransform {
   // Reference to the derivative dataset that defines how to transform data.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2644,7 +2661,7 @@ table TaskSpecSyncFrom {
   // Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Remote dataset to pull from.
   source: SyncEndpoint;
   // Overwrite the local dataset even if its history has diverged from the source.
@@ -2666,7 +2683,7 @@ table TaskSpecSyncTo {
   // Reference to the local dataset to push. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Remote dataset to push to.
   destination: SyncEndpoint;
   // Overwrite the remote dataset even if its history has diverged from the local one.
@@ -2692,7 +2709,7 @@ table TaskSpecCompaction {
   // Reference to the dataset to compact. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Target maximum size of each compacted data slice e.g. `100MiB`.
   max_slice_size: uint64 = null;
   // Target maximum number of records per compacted data slice.
@@ -2712,7 +2729,7 @@ table TaskSpecReset {
   // Reference to the dataset to reset. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Name of the block reference to reset.
   //
   // Defaults to: "head"
@@ -2736,7 +2753,7 @@ table TaskSpecGarbageCollection {
   // Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2752,7 +2769,7 @@ table TaskSpecVerify {
   // Reference to the dataset to verify. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // If true, re-executes transformations on derivative datasets to verify reproducibility.
   replay_transform: bool = null;
 }
@@ -2768,7 +2785,7 @@ table TaskSpecWebhookCall {
   // An alias for the task used to refer to it in flows and access the results
   name: string;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Reference to the `WebhookEndpoint`.
   endpoint: ResourceHandle;
   // The payload to send. May include templating.
@@ -2790,7 +2807,7 @@ table FlowRunSpec {
   // Defines the default target resources on which tasks will be performed.
   target: ResourceHandle;
   // Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // List of tasks to run consecutively.
   tasks: [TaskSpecWrapper];
 }
@@ -2955,7 +2972,7 @@ table FlowSpec {
   // Defines resources for which this flow will be instantiated.
   target: ResourceSelector;
   // Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
-  service_account: AccountHandle;
+  service_account: PrincipalHandle;
   // Conditions that cause this flow to execute.
   triggers: [FlowTriggerWrapper];
   // List of tasks to run consecutively.
@@ -3031,23 +3048,99 @@ table FlowStatus {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectRef
+// Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form is either a well-known subject name (e.g. `Authenticated`) or a resource reference with a type prefix, DID, or ID (e.g. `Group:acme/engineering`).
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union SubjectRef {
+  SubjectRefResource,
+  SubjectRefAuthenticated,
+  SubjectRefAnonymous,
+  SubjectRefEveryone,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectRefResource
+// A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Resource
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectRefResource {
+  // Short type name or full type URI of the subject resource.
+  type: string;
+  // Reference to an account that owns the subject resource (for service accounts and groups).
+  account: ResourceOwnerRef;
+  // ID of the subject resource.
+  id: [ubyte];
+  // DID of the subject resource.
+  did: [ubyte];
+  // Name of the subject resource.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectRefAuthenticated
+// Matches any authenticated principal.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Authenticated
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectRefAuthenticated {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectRefAnonymous
+// Matches any unauthenticated principal.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Anonymous
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectRefAnonymous {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SubjectRefEveryone
+// Matches any principal, authenticated or not.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Everyone
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SubjectRefEveryone {
+}
+
+table SubjectRefWrapper {
+  value: SubjectRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // GroupSpecInput
-// Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+// Group specification.
 //
 // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table GroupSpecInput {
+  // Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group.
+  members: [SubjectRefWrapper];
+}
+
+table SubjectHandleWrapper {
+  value: SubjectHandle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // GroupSpec
-// Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+// Group specification.
 //
 // Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table GroupSpec {
+  // Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group.
+  members: [SubjectHandleWrapper];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3235,6 +3328,34 @@ table MetadataBlock {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NodeSpecInput
+// Node account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table NodeSpecInput {
+  // DID associated with the account by ODF or an external system.
+  did: [ubyte];
+  // Human-friendly display name.
+  display_name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NodeSpec
+// Node account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpec
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table NodeSpec {
+  // DID associated with the account by ODF or an external system.
+  did: [ubyte];
+  // Human-friendly display name.
+  display_name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OperationType
 // Defines an operation in a changelog stream.
 //
@@ -3246,6 +3367,42 @@ enum OperationType: ubyte {
   Retract,
   CorrectFrom,
   CorrectTo,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OrganizationSpecInput
+// Organization account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/OrganizationSpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table OrganizationSpecInput {
+  // Human-friendly display name.
+  display_name: string;
+  // URL of the account's avatar image.
+  avatar_url: string;
+  // Suspends the account. Effects of suspension are implementation-specific.
+  //
+  // Defaults to: false
+  disabled: bool = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OrganizationSpec
+// Organization account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/OrganizationSpec
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table OrganizationSpec {
+  // Human-friendly display name.
+  display_name: string;
+  // URL of the account's avatar image.
+  avatar_url: string;
+  // Suspends the account. Effects of suspension are implementation-specific.
+  //
+  // Defaults to: false
+  disabled: bool = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3327,6 +3484,129 @@ table PersistentVolumeSpecS3 {
 
 table PersistentVolumeSpecRoot {
   value: PersistentVolumeSpec;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicySpecInput
+// Policy specification. The `kind` selects the policy language.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union PolicySpecInput {
+  PolicySpecInputGeneric,
+  PolicySpecInputCedar,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicySpecInputGeneric
+// Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecInput#/$defs/Generic
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicySpecInputGeneric {
+  // Schema URIs of actions granted by the policy.
+  actions: [string];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicySpecInputCedar
+// Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecInput#/$defs/Cedar
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicySpecInputCedar {
+  // Cedar policy source.
+  body: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicyRef
+// Reference to a `Policy`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyRef
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicyRef {
+  // Reference to an account that owns the `Policy`.
+  account: ResourceOwnerRef;
+  // ID of the resource.
+  id: [ubyte];
+  // Name of the resource.
+  name: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicyBindingSpecInput
+// Policy binding specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBindingSpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicyBindingSpecInput {
+  // Policy template to instantiate.
+  policy: PolicyRef;
+  // Party the permissions are granted to.
+  subject: SubjectRef;
+  // Resource the permissions are granted on. Refers to both the resource and the entity materialized from it.
+  object: ResourceRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicyBindingSpec
+// Policy binding specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBindingSpec
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicyBindingSpec {
+  // Policy template to instantiate.
+  policy: ResourceHandle;
+  // Party the permissions are granted to.
+  subject: SubjectHandle;
+  // Resource the permissions are granted on. Refers to both the resource and the entity materialized from it.
+  object: ResourceHandle;
+}
+
+union PolicySpec {
+  PolicySpecGeneric,
+  PolicySpecCedar,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicySpecGeneric
+// Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpec#/$defs/Generic
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicySpecGeneric {
+  // Schema URIs of actions granted by the policy.
+  actions: [string];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicySpecCedar
+// Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpec#/$defs/Cedar
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicySpecCedar {
+  // Cedar policy source.
+  body: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PolicySpecRoot
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecRoot
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table PolicySpecRoot {
+  value: PolicySpec;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3439,66 +3719,6 @@ table RawQueryResponseRoot {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Relation
-// A directed relationship between two resources, optionally carrying a typed value.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table Relation {
-  // The resource that holds the relation.
-  subject: ResourceHandle;
-  // Name of the relation e.g. `role`, `member`, `owner`.
-  relation: string;
-  // Optional value associated with the relation e.g. `maintainer` for a `role` relation.
-  value: string (json);
-  // The resource that is the target of the relation.
-  object: ResourceHandle;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// RelationInput
-// A directed relationship between two resources, optionally carrying a typed value.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationInput
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table RelationInput {
-  // The resource that holds the relation.
-  subject: ResourceRef;
-  // Name of the relation e.g. `role`, `member`, `owner`.
-  relation: string;
-  // Optional value associated with the relation e.g. `maintainer` for a `role` relation.
-  value: string (json);
-  // The resource that is the target of the relation.
-  object: ResourceRef;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// RelationsSpecInput
-// Specifies relations between resources on which auth policies act upon.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpecInput
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table RelationsSpecInput {
-  // Relations between resources.
-  relations: [RelationInput];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// RelationsSpec
-// Specifies relations between resources on which auth policies act upon.
-//
-// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-table RelationsSpec {
-  // Relations between resources.
-  relations: [Relation];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ResourceHeaders
 // Container for identity and ownership information of a resource.
 //
@@ -3511,7 +3731,7 @@ table ResourceHeaders {
   // Symbolic name of a resource that identifies it within a scope of an onwing account.
   name: string;
   // Link to the account that owns the resource.
-  account: AccountHandle;
+  account: ResourceOwnerHandle;
   // Map of string keys and values that can be used to organize, categorize, and query resources.
   labels: ResourceLabels;
   // Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
@@ -3623,6 +3843,20 @@ table ResourceInput {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Secret
+// Individual secret in raw or encrypted form.
+//
+// Schema: https://opendatafabric.org/schemas/config/v1alpha1/Secret
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table Secret {
+  // A secret value in raw or encoded form.
+  value: string;
+  // Represents the encoding of the value. Typically will be `jwe` after a raw secret gets encrypted.
+  content_encoding: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Secrets
 // Container for key-value secrets. Every key must be a string. Values may be strings with raw unencrypted data or objects that signify the encoding.
 //
@@ -3660,6 +3894,38 @@ table SecretSetSpecInput {
 table SecretSetSpec {
   // Key value pairs of secrets.
   secrets: Secrets;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ServiceAccountSpecInput
+// Service account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccountSpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ServiceAccountSpecInput {
+  // Human-friendly display name.
+  display_name: string;
+  // Suspends the account. Effects of suspension are implementation-specific.
+  //
+  // Defaults to: false
+  disabled: bool = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ServiceAccountSpec
+// Service account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccountSpec
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ServiceAccountSpec {
+  // Human-friendly display name.
+  display_name: string;
+  // Suspends the account. Effects of suspension are implementation-specific.
+  //
+  // Defaults to: false
+  disabled: bool = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3878,6 +4144,54 @@ table TransformResponseInternalError {
 
 table TransformResponseRoot {
   value: TransformResponse;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UserSpecInput
+// User account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/UserSpecInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table UserSpecInput {
+  // DID associated with the account by ODF or an external system.
+  did: [ubyte];
+  // Human-friendly display name.
+  display_name: string;
+  // Email address of the user.
+  email: string;
+  // URL of the account's avatar image.
+  avatar_url: string;
+  // Password for local authentication, stored as a hash upon apply. Absent for SSO or DID-based accounts.
+  password: Secret;
+  // Suspends the account. Effects of suspension are implementation-specific.
+  //
+  // Defaults to: false
+  disabled: bool = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UserSpec
+// User account specification.
+//
+// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/UserSpec
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table UserSpec {
+  // DID associated with the account by ODF or an external system.
+  did: [ubyte];
+  // Human-friendly display name.
+  display_name: string;
+  // Email address of the user.
+  email: string;
+  // URL of the account's avatar image.
+  avatar_url: string;
+  // Password for local authentication, stored as a hash upon apply. Absent for SSO or DID-based accounts.
+  password: Secret;
+  // Suspends the account. Effects of suspension are implementation-specific.
+  //
+  // Defaults to: false
+  disabled: bool = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -204,6 +204,11 @@ fn render_impl(
             continue;
         }
 
+        // Actions carry no data and are never serialized
+        if matches!(typ.metatype(), model::MetaType::Action) {
+            continue;
+        }
+
         if typ
             .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
             .is_some()

@@ -1,0 +1,36 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Action",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Metaschema for action schemas. An action is an operation a principal attempts to perform on an object. The schema URI is the canonical action identifier used in authorization requests and policies, while the schema itself describes the context values needed to authorize the action.",
+  "allOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "actionProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "ODF-specific metadata for this action schema.",
+          "properties": {
+            "objectTypes": {
+              "type": "array",
+              "description": "Type URIs of objects (resources or entities) this action applies to. Since resource types are an open set, actions must always list their object types explicitly. Generic resource actions use the `Resource` type to apply to resources of any type.",
+              "items": {
+                "type": "string",
+                "format": "type-uri"
+              }
+            }
+          },
+          "required": [
+            "objectTypes"
+          ]
+        }
+      },
+      "required": [
+        "actionProperties"
+      ]
+    }
+  ]
+}

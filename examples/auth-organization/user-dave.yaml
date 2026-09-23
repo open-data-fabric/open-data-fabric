@@ -1,0 +1,8 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+headers:
+  name: dave
+spec:
+  displayName: Dave
+  # Email is optional, e.g. for users authenticated via DID
+  did: did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK

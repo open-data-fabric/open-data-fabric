@@ -15,25 +15,51 @@ graph TD
   classDef ctx_storage fill:#e8d6f0,stroke:#999,color:#000
 
   subgraph auth["auth"]
-    Account
-    AccountHandle
-    AccountRef
-    AccountSpec
-    AccountSpecInput
-    AccountType
     Group
     GroupSpec
     GroupSpecInput
-    Member
-    Relation
-    RelationInput
-    Relations
-    RelationsSpec
-    RelationsSpecInput
+    Node
+    NodeSpec
+    NodeSpecInput
+    Organization
+    OrganizationSpec
+    OrganizationSpecInput
+    Policy
+    PolicyBinding
+    PolicyBindingSpec
+    PolicyBindingSpecInput
+    PolicyRef
+    PolicySpec
+    PolicySpec_Cedar["PolicySpec::Cedar"]
+    PolicySpec_Generic["PolicySpec::Generic"]
+    PolicySpecInput
+    PolicySpecInput_Cedar["PolicySpecInput::Cedar"]
+    PolicySpecInput_Generic["PolicySpecInput::Generic"]
+    PrincipalHandle
+    PrincipalRef
+    ResourceOwnerHandle
+    ResourceOwnerRef
+    ServiceAccount
+    ServiceAccountSpec
+    ServiceAccountSpecInput
+    SubjectHandle
+    SubjectHandle_Anonymous["SubjectHandle::Anonymous"]
+    SubjectHandle_Authenticated["SubjectHandle::Authenticated"]
+    SubjectHandle_Everyone["SubjectHandle::Everyone"]
+    SubjectHandle_Resource["SubjectHandle::Resource"]
+    SubjectRef
+    SubjectRef_Anonymous["SubjectRef::Anonymous"]
+    SubjectRef_Authenticated["SubjectRef::Authenticated"]
+    SubjectRef_Everyone["SubjectRef::Everyone"]
+    SubjectRef_Resource["SubjectRef::Resource"]
+    User
+    UserSpec
+    UserSpecInput
   end
-  class Account,AccountHandle,AccountRef,AccountSpec,AccountSpecInput,AccountType,Group,GroupSpec,GroupSpecInput,Member,Relation,RelationInput,Relations,RelationsSpec,RelationsSpecInput ctx_auth
+  class Group,GroupSpec,GroupSpecInput,Node,NodeSpec,NodeSpecInput,Organization,OrganizationSpec,OrganizationSpecInput,Policy,PolicyBinding,PolicyBindingSpec,PolicyBindingSpecInput,PolicyRef,PolicySpec,PolicySpec_Cedar,PolicySpec_Generic,PolicySpecInput,PolicySpecInput_Cedar,PolicySpecInput_Generic,PrincipalHandle,PrincipalRef,ResourceOwnerHandle,ResourceOwnerRef,ServiceAccount,ServiceAccountSpec,ServiceAccountSpecInput,SubjectHandle,SubjectHandle_Anonymous,SubjectHandle_Authenticated,SubjectHandle_Everyone,SubjectHandle_Resource,SubjectRef,SubjectRef_Anonymous,SubjectRef_Authenticated,SubjectRef_Everyone,SubjectRef_Resource,User,UserSpec,UserSpecInput ctx_auth
 
   subgraph config["config"]
+    Decrypt
     Secret
     SecretSet
     SecretSetSpec
@@ -48,7 +74,7 @@ graph TD
     VariableSetSpecInput
     Variables
   end
-  class Secret,SecretSet,SecretSetSpec,SecretSetSpecInput,Secrets,ValueHandle,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,VariableSetSpecInput,Variables ctx_config
+  class Decrypt,Secret,SecretSet,SecretSetSpec,SecretSetSpecInput,Secrets,ValueHandle,ValueRef,ValueRefs,Variable,VariableSet,VariableSetSpec,VariableSetSpecInput,Variables ctx_config
 
   subgraph data["data"]
     DataField
@@ -64,6 +90,7 @@ graph TD
     AddData
     AllowAnonymousRead
     AllowPublicRead
+    AlterHistory
     AttachmentEmbedded
     Attachments
     Attachments_Embedded["Attachments::Embedded"]
@@ -73,7 +100,6 @@ graph TD
     DatasetHandle
     DatasetKind
     DatasetRef
-    DatasetRole
     DatasetSelector
     DatasetSpec
     DatasetSpecInput
@@ -86,6 +112,7 @@ graph TD
     Projection
     ProjectionSpec
     ProjectionSpecInput
+    Read
     Seed
     SetAttachments
     SetDataSchema
@@ -99,8 +126,9 @@ graph TD
     Transform_Sql["Transform::Sql"]
     TransformInput
     Watermark
+    Write
   end
-  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,DataSlice,Dataset,DatasetHandle,DatasetKind,DatasetRef,DatasetRole,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_datasets
+  class AddData,AllowAnonymousRead,AllowPublicRead,AlterHistory,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,DataSlice,Dataset,DatasetHandle,DatasetKind,DatasetRef,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Read,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark,Write ctx_datasets
 
   subgraph engines["engines"]
     RawQueryRequest
@@ -175,7 +203,14 @@ graph TD
   class AddPushSource,DatasetSnapshot,DisablePollingSource,DisablePushSource,FetchStep,FetchStep_Container,FetchStep_EthereumLogs,FetchStep_FilesGlob,FetchStep_Mqtt,FetchStep_Url,Manifest,SetPollingSource ctx_legacy
 
   subgraph resources["resources"]
+    AddLabel
+    BindPolicy
+    Create
+    Delete
+    Edit
     LabelFilter
+    List
+    RemoveLabel
     Resource
     ResourceAnnotations
     ResourceConditions
@@ -188,8 +223,9 @@ graph TD
     ResourceRef
     ResourceSelector
     ResourceStatus
+    View
   end
-  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resources
+  class AddLabel,BindPolicy,Create,Delete,Edit,LabelFilter,List,RemoveLabel,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus,View ctx_resources
 
   subgraph sinks["sinks"]
     WebhookEndpoint
@@ -295,25 +331,25 @@ graph TD
   end
   class SyncAuth,SyncAuth_Aws,SyncAuth_Bearer,SyncAuth_Headers,SyncAuthHeader,SyncAuthHeaderInput,SyncAuthInput,SyncAuthInput_Aws,SyncAuthInput_Bearer,SyncAuthInput_Headers,SyncEndpoint,SyncEndpointInput,Task,TaskError,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Reset,TaskSpec_SyncFrom,TaskSpec_SyncTo,TaskSpec_Transform,TaskSpec_Verify,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Reset,TaskSpecInput_SyncFrom,TaskSpecInput_SyncTo,TaskSpecInput_Transform,TaskSpecInput_Verify,TaskSpecInput_WebhookCall,TaskStatus ctx_tasks
 
-  Account -->|"headers"| ResourceHeadersInput
-  Account -->|"spec"| AccountSpecInput
-  AccountSpec -->|"account_type"| AccountType
-  AccountSpec -->|"password"| Secret
-  AccountSpecInput -->|"account_type"| AccountType
-  AccountSpecInput -->|"password"| Secret
   AddData -->|"new_data"| DataSlice
   AddData -->|"new_checkpoint"| Checkpoint
   AddData -->|"new_source_state"| SourceState
   AddData -->|"extra"| ExtraAttributes
+  AddLabel -.->|"applies to"| Resource
   AddPushSource -->|"read"| ReadStep
   AddPushSource -->|"preprocess"| Transform
   AddPushSource -->|"merge"| MergeStrategy
+  AlterHistory -.->|"applies to"| Dataset
   Attachments -->|"variant"| Attachments_Embedded
   Attachments_Embedded -->|"items"| AttachmentEmbedded
   AwsCredentials -->|"access_key"| ValueHandle
   AwsCredentials -->|"secret_key"| ValueHandle
   AwsCredentialsInput -->|"access_key"| ValueRef
   AwsCredentialsInput -->|"secret_key"| ValueRef
+  BindPolicy -->|"subject"| SubjectHandle
+  BindPolicy -.->|"applies to"| Resource
+  Create -->|"target_owner"| ResourceOwnerHandle
+  Create -.->|"applies to"| Resource
   DataField -->|"type"| DataType
   DataField -->|"extra"| ExtraAttributes
   DataSchema -->|"fields"| DataField
@@ -321,9 +357,9 @@ graph TD
   DataSlice -->|"offset_interval"| OffsetInterval
   Dataset -->|"headers"| ResourceHeadersInput
   Dataset -->|"spec"| DatasetSpecInput
-  DatasetHandle -->|"account"| AccountHandle
-  DatasetRef -->|"account"| AccountRef
-  DatasetSelector -->|"account"| AccountRef
+  DatasetHandle -->|"account"| ResourceOwnerHandle
+  DatasetRef -->|"account"| ResourceOwnerRef
+  DatasetSelector -->|"account"| ResourceOwnerRef
   DatasetSelector -->|"labels"| LabelFilter
   DatasetSelector -->|"kind"| DatasetKind
   DatasetSnapshot -->|"kind"| DatasetKind
@@ -334,6 +370,9 @@ graph TD
   DatasetSpecInput -->|"kind"| DatasetKind
   DatasetSpecInput -->|"metadata"| MetadataEvent
   DatasetSpecInput -->|"volume"| PersistentVolumeRef
+  Decrypt -.->|"applies to"| SecretSet
+  Delete -.->|"applies to"| Resource
+  Edit -.->|"applies to"| Resource
   EventTimeSource -->|"variant"| EventTimeSource_FromMetadata
   EventTimeSource -->|"variant"| EventTimeSource_FromPath
   EventTimeSource -->|"variant"| EventTimeSource_FromSystemTime
@@ -357,16 +396,16 @@ graph TD
   Flow -->|"spec"| FlowSpecInput
   FlowRun -->|"headers"| ResourceHeadersInput
   FlowRun -->|"spec"| FlowRunSpecInput
-  FlowRunActivationCause -->|"initiator"| AccountHandle
+  FlowRunActivationCause -->|"initiator"| PrincipalHandle
   FlowRunActivationCause -->|"trigger"| FlowTrigger
   FlowRunActivationCauses -->|"activation_causes"| FlowRunActivationCause
   FlowRunActivationCauses -->|"late_activation_causes"| FlowRunActivationCause
   FlowRunRetry -->|"retry_of"| ResourceHandle
   FlowRunSpec -->|"target"| ResourceHandle
-  FlowRunSpec -->|"service_account"| AccountHandle
+  FlowRunSpec -->|"service_account"| PrincipalHandle
   FlowRunSpec -->|"tasks"| TaskSpec
   FlowRunSpecInput -->|"target"| ResourceRef
-  FlowRunSpecInput -->|"service_account"| AccountRef
+  FlowRunSpecInput -->|"service_account"| PrincipalRef
   FlowRunSpecInput -->|"tasks"| TaskSpecInput
   FlowRunStatus -->|"status"| FlowRunStatus_Value
   FlowRunStatus -->|"tasks"| FlowRunStatus_TaskEntry
@@ -374,12 +413,12 @@ graph TD
   FlowRunStatus_TaskEntry -->|"status"| TaskStatus
   FlowRunStatus_TaskEntry -->|"outcome"| TaskOutcome
   FlowSpec -->|"target"| ResourceSelector
-  FlowSpec -->|"service_account"| AccountHandle
+  FlowSpec -->|"service_account"| PrincipalHandle
   FlowSpec -->|"triggers"| FlowTrigger
   FlowSpec -->|"tasks"| TaskSpec
   FlowSpec -->|"retry_policy"| RetryPolicy
   FlowSpecInput -->|"target"| ResourceSelector
-  FlowSpecInput -->|"service_account"| AccountRef
+  FlowSpecInput -->|"service_account"| PrincipalRef
   FlowSpecInput -->|"triggers"| FlowTriggerInput
   FlowSpecInput -->|"tasks"| TaskSpecInput
   FlowSpecInput -->|"retry_policy"| RetryPolicy
@@ -407,6 +446,8 @@ graph TD
   FlowTriggerInput_Source -->|"source"| ResourceRef
   Group -->|"headers"| ResourceHeadersInput
   Group -->|"spec"| GroupSpecInput
+  GroupSpec -->|"members"| SubjectHandle
+  GroupSpecInput -->|"members"| SubjectRef
   Ingress -->|"variant"| Ingress_Url
   Ingress -->|"variant"| Ingress_FilesGlob
   Ingress -->|"variant"| Ingress_Container
@@ -423,6 +464,8 @@ graph TD
   Ingress_Url -->|"cache"| SourceCaching
   Ingress_Url -->|"headers"| RequestHeader
   IngressBuffer -->|"variant"| IngressBuffer_Memory
+  List -->|"target_owner"| ResourceOwnerHandle
+  List -.->|"applies to"| Resource
   MergeStrategy -->|"variant"| MergeStrategy_Append
   MergeStrategy -->|"variant"| MergeStrategy_Ledger
   MergeStrategy -->|"variant"| MergeStrategy_Snapshot
@@ -443,18 +486,39 @@ graph TD
   MetadataEvent -->|"variant"| DisablePushSource
   MetadataEvent -->|"variant"| DisablePollingSource
   MqttTopicSubscription -->|"qos"| MqttQos
+  Node -->|"headers"| ResourceHeadersInput
+  Node -->|"spec"| NodeSpecInput
+  Organization -->|"headers"| ResourceHeadersInput
+  Organization -->|"spec"| OrganizationSpecInput
   PersistentVolume -->|"headers"| ResourceHeadersInput
   PersistentVolume -->|"spec"| PersistentVolumeSpecInput
-  PersistentVolumeRef -->|"account"| AccountRef
+  PersistentVolumeRef -->|"account"| ResourceOwnerRef
   PersistentVolumeSpec -->|"variant"| PersistentVolumeSpec_S3
   PersistentVolumeSpec_S3 -->|"capacity"| VolumeCapacity
   PersistentVolumeSpec_S3 -->|"credentials"| AwsCredentials
   PersistentVolumeSpecInput -->|"variant"| PersistentVolumeSpecInput_S3
   PersistentVolumeSpecInput_S3 -->|"capacity"| VolumeCapacity
   PersistentVolumeSpecInput_S3 -->|"credentials"| AwsCredentialsInput
+  Policy -->|"headers"| ResourceHeadersInput
+  Policy -->|"spec"| PolicySpecInput
+  PolicyBinding -->|"headers"| ResourceHeadersInput
+  PolicyBinding -->|"spec"| PolicyBindingSpecInput
+  PolicyBindingSpec -->|"policy"| ResourceHandle
+  PolicyBindingSpec -->|"subject"| SubjectHandle
+  PolicyBindingSpec -->|"object"| ResourceHandle
+  PolicyBindingSpecInput -->|"policy"| PolicyRef
+  PolicyBindingSpecInput -->|"subject"| SubjectRef
+  PolicyBindingSpecInput -->|"object"| ResourceRef
+  PolicyRef -->|"account"| ResourceOwnerRef
+  PolicySpec -->|"variant"| PolicySpec_Generic
+  PolicySpec -->|"variant"| PolicySpec_Cedar
+  PolicySpecInput -->|"variant"| PolicySpecInput_Generic
+  PolicySpecInput -->|"variant"| PolicySpecInput_Cedar
   PrepStep -->|"variant"| PrepStep_Decompress
   PrepStep -->|"variant"| PrepStep_Pipe
   PrepStep_Decompress -->|"format"| CompressionFormat
+  PrincipalHandle -->|"account"| ResourceOwnerHandle
+  PrincipalRef -->|"account"| ResourceOwnerRef
   Projection -->|"headers"| ResourceHeadersInput
   Projection -->|"spec"| ProjectionSpecInput
   ProjectionSpec -->|"inputs"| TransformInput
@@ -466,28 +530,22 @@ graph TD
   RawQueryResponse -->|"variant"| RawQueryResponse_Success
   RawQueryResponse -->|"variant"| RawQueryResponse_InvalidQuery
   RawQueryResponse -->|"variant"| RawQueryResponse_InternalError
-  Relation -->|"subject"| ResourceHandle
-  Relation -->|"object"| ResourceHandle
-  RelationInput -->|"subject"| ResourceRef
-  RelationInput -->|"object"| ResourceRef
-  Relations -->|"headers"| ResourceHeadersInput
-  Relations -->|"spec"| RelationsSpecInput
-  RelationsSpec -->|"relations"| Relation
-  RelationsSpecInput -->|"relations"| RelationInput
+  Read -.->|"applies to"| Dataset
+  RemoveLabel -.->|"applies to"| Resource
   Resource -->|"headers"| ResourceHeaders
   Resource -->|"status"| ResourceStatus
-  ResourceHandle -->|"account"| AccountHandle
-  ResourceHeaders -->|"account"| AccountHandle
+  ResourceHandle -->|"account"| ResourceOwnerHandle
+  ResourceHeaders -->|"account"| ResourceOwnerHandle
   ResourceHeaders -->|"labels"| ResourceLabels
   ResourceHeaders -->|"annotations"| ResourceAnnotations
   ResourceHeaders -->|"owner_references"| ResourceHandle
-  ResourceHeadersInput -->|"account"| AccountRef
+  ResourceHeadersInput -->|"account"| ResourceOwnerRef
   ResourceHeadersInput -->|"labels"| ResourceLabels
   ResourceHeadersInput -->|"annotations"| ResourceAnnotations
   ResourceHeadersInput -->|"owner_references"| ResourceRef
   ResourceInput -->|"headers"| ResourceHeadersInput
-  ResourceRef -->|"account"| AccountRef
-  ResourceSelector -->|"account"| AccountRef
+  ResourceRef -->|"account"| ResourceOwnerRef
+  ResourceSelector -->|"account"| ResourceOwnerRef
   ResourceSelector -->|"labels"| LabelFilter
   ResourceStatus -->|"phase"| ResourcePhase
   ResourceStatus -->|"conditions"| ResourceConditions
@@ -498,6 +556,8 @@ graph TD
   SecretSetSpecInput -->|"secrets"| Secrets
   Secrets -->|"values"| Secret
   Seed -->|"dataset_kind"| DatasetKind
+  ServiceAccount -->|"headers"| ResourceHeadersInput
+  ServiceAccount -->|"spec"| ServiceAccountSpecInput
   SetAttachments -->|"attachments"| Attachments
   SetDataSchema -->|"schema"| DataSchema
   SetPollingSource -->|"fetch"| FetchStep
@@ -524,6 +584,16 @@ graph TD
   SourceSpecInput -->|"preprocess"| Transform
   SourceSpecInput -->|"merge"| MergeStrategy
   SourceSpecInput -->|"vocab"| DatasetVocabulary
+  SubjectHandle -->|"variant"| SubjectHandle_Resource
+  SubjectHandle -->|"variant"| SubjectHandle_Authenticated
+  SubjectHandle -->|"variant"| SubjectHandle_Anonymous
+  SubjectHandle -->|"variant"| SubjectHandle_Everyone
+  SubjectHandle_Resource -->|"account"| ResourceOwnerHandle
+  SubjectRef -->|"variant"| SubjectRef_Resource
+  SubjectRef -->|"variant"| SubjectRef_Authenticated
+  SubjectRef -->|"variant"| SubjectRef_Anonymous
+  SubjectRef -->|"variant"| SubjectRef_Everyone
+  SubjectRef_Resource -->|"account"| ResourceOwnerRef
   SyncAuth -->|"variant"| SyncAuth_Bearer
   SyncAuth -->|"variant"| SyncAuth_Aws
   SyncAuth -->|"variant"| SyncAuth_Headers
@@ -559,25 +629,25 @@ graph TD
   TaskSpec -->|"variant"| TaskSpec_Verify
   TaskSpec -->|"variant"| TaskSpec_WebhookCall
   TaskSpec_Compaction -->|"target"| DatasetHandle
-  TaskSpec_Compaction -->|"service_account"| AccountHandle
+  TaskSpec_Compaction -->|"service_account"| PrincipalHandle
   TaskSpec_GarbageCollection -->|"target"| DatasetHandle
-  TaskSpec_GarbageCollection -->|"service_account"| AccountHandle
+  TaskSpec_GarbageCollection -->|"service_account"| PrincipalHandle
   TaskSpec_Ingest -->|"target"| DatasetHandle
-  TaskSpec_Ingest -->|"service_account"| AccountHandle
+  TaskSpec_Ingest -->|"service_account"| PrincipalHandle
   TaskSpec_Ingest -->|"source"| ResourceHandle
   TaskSpec_Reset -->|"target"| DatasetHandle
-  TaskSpec_Reset -->|"service_account"| AccountHandle
+  TaskSpec_Reset -->|"service_account"| PrincipalHandle
   TaskSpec_SyncFrom -->|"target"| DatasetHandle
-  TaskSpec_SyncFrom -->|"service_account"| AccountHandle
+  TaskSpec_SyncFrom -->|"service_account"| PrincipalHandle
   TaskSpec_SyncFrom -->|"source"| SyncEndpoint
   TaskSpec_SyncTo -->|"target"| DatasetHandle
-  TaskSpec_SyncTo -->|"service_account"| AccountHandle
+  TaskSpec_SyncTo -->|"service_account"| PrincipalHandle
   TaskSpec_SyncTo -->|"destination"| SyncEndpoint
   TaskSpec_Transform -->|"target"| DatasetHandle
-  TaskSpec_Transform -->|"service_account"| AccountHandle
+  TaskSpec_Transform -->|"service_account"| PrincipalHandle
   TaskSpec_Verify -->|"target"| DatasetHandle
-  TaskSpec_Verify -->|"service_account"| AccountHandle
-  TaskSpec_WebhookCall -->|"service_account"| AccountHandle
+  TaskSpec_Verify -->|"service_account"| PrincipalHandle
+  TaskSpec_WebhookCall -->|"service_account"| PrincipalHandle
   TaskSpec_WebhookCall -->|"endpoint"| ResourceHandle
   TaskSpecInput -->|"variant"| TaskSpecInput_Ingest
   TaskSpecInput -->|"variant"| TaskSpecInput_Transform
@@ -589,25 +659,25 @@ graph TD
   TaskSpecInput -->|"variant"| TaskSpecInput_Verify
   TaskSpecInput -->|"variant"| TaskSpecInput_WebhookCall
   TaskSpecInput_Compaction -->|"target"| DatasetRef
-  TaskSpecInput_Compaction -->|"service_account"| AccountRef
+  TaskSpecInput_Compaction -->|"service_account"| PrincipalRef
   TaskSpecInput_GarbageCollection -->|"target"| DatasetRef
-  TaskSpecInput_GarbageCollection -->|"service_account"| AccountRef
+  TaskSpecInput_GarbageCollection -->|"service_account"| PrincipalRef
   TaskSpecInput_Ingest -->|"target"| DatasetRef
-  TaskSpecInput_Ingest -->|"service_account"| AccountRef
+  TaskSpecInput_Ingest -->|"service_account"| PrincipalRef
   TaskSpecInput_Ingest -->|"source"| ResourceRef
   TaskSpecInput_Reset -->|"target"| DatasetRef
-  TaskSpecInput_Reset -->|"service_account"| AccountRef
+  TaskSpecInput_Reset -->|"service_account"| PrincipalRef
   TaskSpecInput_SyncFrom -->|"target"| DatasetRef
-  TaskSpecInput_SyncFrom -->|"service_account"| AccountRef
+  TaskSpecInput_SyncFrom -->|"service_account"| PrincipalRef
   TaskSpecInput_SyncFrom -->|"source"| SyncEndpointInput
   TaskSpecInput_SyncTo -->|"target"| DatasetRef
-  TaskSpecInput_SyncTo -->|"service_account"| AccountRef
+  TaskSpecInput_SyncTo -->|"service_account"| PrincipalRef
   TaskSpecInput_SyncTo -->|"destination"| SyncEndpointInput
   TaskSpecInput_Transform -->|"target"| DatasetRef
-  TaskSpecInput_Transform -->|"service_account"| AccountRef
+  TaskSpecInput_Transform -->|"service_account"| PrincipalRef
   TaskSpecInput_Verify -->|"target"| DatasetRef
-  TaskSpecInput_Verify -->|"service_account"| AccountRef
-  TaskSpecInput_WebhookCall -->|"service_account"| AccountRef
+  TaskSpecInput_Verify -->|"service_account"| PrincipalRef
+  TaskSpecInput_WebhookCall -->|"service_account"| PrincipalRef
   TaskSpecInput_WebhookCall -->|"endpoint"| ResourceRef
   TaskSpecInput_WebhookCall -->|"retry_policy"| RetryPolicy
   Transform -->|"variant"| Transform_Sql
@@ -624,15 +694,21 @@ graph TD
   TransformResponse -->|"variant"| TransformResponse_InvalidQuery
   TransformResponse -->|"variant"| TransformResponse_InternalError
   TransformResponse_Success -->|"new_offset_interval"| OffsetInterval
-  ValueHandle -->|"account"| AccountHandle
-  ValueRef -->|"account"| AccountRef
+  User -->|"headers"| ResourceHeadersInput
+  User -->|"spec"| UserSpecInput
+  UserSpec -->|"password"| Secret
+  UserSpecInput -->|"password"| Secret
+  ValueHandle -->|"account"| ResourceOwnerHandle
+  ValueRef -->|"account"| ResourceOwnerRef
   ValueRefs -->|"values"| ValueRef
   VariableSet -->|"headers"| ResourceHeadersInput
   VariableSet -->|"spec"| VariableSetSpecInput
   VariableSetSpec -->|"variables"| Variables
   VariableSetSpecInput -->|"variables"| Variables
   Variables -->|"values"| Variable
+  View -.->|"applies to"| Resource
   WebhookEndpoint -->|"headers"| ResourceHeadersInput
   WebhookEndpoint -->|"spec"| WebhookEndpointSpecInput
   WebhookEndpointSpec -->|"secret"| Secret
   WebhookEndpointSpecInput -->|"secret"| Secret
+  Write -.->|"applies to"| Dataset

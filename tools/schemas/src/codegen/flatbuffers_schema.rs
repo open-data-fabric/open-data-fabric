@@ -52,6 +52,11 @@ fn render_impl(
             continue;
         }
 
+        if matches!(typ.metatype(), model::MetaType::Action) {
+            // Actions carry no data and are never serialized
+            continue;
+        }
+
         if matches!(typ, model::TypeDefinition::Scalar(_)) {
             // TODO: Not supporting top-level scalar types yet
             continue;
@@ -138,6 +143,7 @@ fn wrap_union_arrays(model: model::Model) -> (model::Model, Vec<model::TypeId>) 
                     from_string: false,
                     codegen_hints: Default::default(),
                     src: PathBuf::new(),
+                    action_properties: None,
                 });
 
                 new_model
@@ -230,6 +236,7 @@ fn wrap_root_unions_with_tables(mut model: model::Model) -> (model::Model, HashS
             from_string: false,
             codegen_hints: Default::default(),
             src: PathBuf::new(),
+            action_properties: None,
         });
 
         model.types.insert(wrapper_type.id().clone(), wrapper_type);

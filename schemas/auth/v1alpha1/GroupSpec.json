@@ -1,8 +1,17 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.",
+  "description": "Group specification.",
   "type": "object",
   "required": [],
-  "properties": {}
+  "properties": {
+    "members": {
+      "type": "array",
+      "description": "Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group.",
+      "items": {
+        "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle",
+        "unevaluatedProperties": false
+      }
+    }
+  }
 }

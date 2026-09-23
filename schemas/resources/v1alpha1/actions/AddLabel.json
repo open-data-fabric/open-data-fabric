@@ -1,0 +1,25 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/actions/AddLabel",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Action",
+  "description": "Apply a specific label to the resource.",
+  "type": "object",
+  "required": [
+    "labelType",
+    "labelValue"
+  ],
+  "properties": {
+    "labelType": {
+      "type": "string",
+      "format": "type-uri",
+      "description": "Schema URI of the label being added."
+    },
+    "labelValue": {
+      "description": "Value of the label being added."
+    }
+  },
+  "actionProperties": {
+    "objectTypes": [
+      "https://opendatafabric.org/schemas/resources/v1alpha1/Resource"
+    ]
+  }
+}

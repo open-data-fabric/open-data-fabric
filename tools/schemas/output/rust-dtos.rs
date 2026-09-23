@@ -27,161 +27,7 @@ pub mod auth {
     #[allow(unused_imports)]
     use super::*;
 
-    /// Registers an account in an predefined account provider.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Account
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct Account {
-        /// Container for identity and ownership information of a resource.
-        pub headers: resources::ResourceHeadersInput,
-        /// Specifies the desired state of the resource.
-        pub spec: auth::AccountSpecInput,
-    }
-
-    impl Account {
-        pub fn schema() -> &'static TypeUri {
-            &ACCOUNT_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            ACCOUNT_SCHEMA_STR
-        }
-    }
-
-    static ACCOUNT_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Account";
-
-    static ACCOUNT_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(ACCOUNT_SCHEMA_STR));
-
-    /// Link to an account.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct AccountHandle {
-        /// ID of the account resource.
-        pub id: ResourceID,
-        /// DID of the account.
-        pub did: AccountID,
-        /// Name of the account.
-        pub name: AccountName,
-    }
-    impl IntoResourceRef for AccountHandle {}
-
-    /// Reference to an account.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
-    pub struct AccountRef {
-        /// UUID of the account resource.
-        pub id: Option<ResourceID>,
-        /// DID of the account.
-        pub did: Option<AccountID>,
-        /// Name of the account.
-        pub name: Option<AccountName>,
-    }
-    impl IntoResourceRef for AccountRef {}
-
-    /// Predefined account specification.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpec
-    #[derive(Clone, Debug, Eq)]
-    pub struct AccountSpec {
-        /// DID associated with the account by ODF or an external system
-        pub did: Option<AccountID>,
-        /// Type of the account.
-        ///
-        /// Defaults to: "User"
-        pub account_type: Option<auth::AccountType>,
-        /// Human-friendly display name.
-        pub display_name: Option<String>,
-        /// Email address of the account.
-        pub email: String,
-        /// URL of the account's avatar image.
-        pub avatar_url: Option<String>,
-        /// Password for local authentication. Absent for SSO or DID-based accounts.
-        pub password: Option<config::Secret>,
-    }
-
-    impl AccountSpec {
-        pub fn default_account_type() -> auth::AccountType {
-            auth::AccountType::User
-        }
-        pub fn account_type(&self) -> auth::AccountType {
-            self.account_type.unwrap_or(Self::default_account_type())
-        }
-    }
-
-    impl PartialEq for AccountSpec {
-        fn eq(&self, other: &Self) -> bool {
-            self.did == other.did
-                && self
-                    .account_type
-                    .or_else(|| Some(Self::default_account_type()))
-                    == other
-                        .account_type
-                        .or_else(|| Some(Self::default_account_type()))
-                && self.display_name == other.display_name
-                && self.email == other.email
-                && self.avatar_url == other.avatar_url
-                && self.password == other.password
-        }
-    }
-
-    /// Predefined account specification.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountSpecInput
-    #[derive(Clone, Debug, Eq)]
-    pub struct AccountSpecInput {
-        /// DID associated with the account by ODF or an external system
-        pub did: Option<AccountID>,
-        /// Type of the account.
-        ///
-        /// Defaults to: "User"
-        pub account_type: Option<auth::AccountType>,
-        /// Human-friendly display name.
-        pub display_name: Option<String>,
-        /// Email address of the account.
-        pub email: String,
-        /// URL of the account's avatar image.
-        pub avatar_url: Option<String>,
-        /// Password for local authentication. Absent for SSO or DID-based accounts.
-        pub password: Option<config::Secret>,
-    }
-
-    impl AccountSpecInput {
-        pub fn default_account_type() -> auth::AccountType {
-            auth::AccountType::User
-        }
-        pub fn account_type(&self) -> auth::AccountType {
-            self.account_type.unwrap_or(Self::default_account_type())
-        }
-    }
-
-    impl PartialEq for AccountSpecInput {
-        fn eq(&self, other: &Self) -> bool {
-            self.did == other.did
-                && self
-                    .account_type
-                    .or_else(|| Some(Self::default_account_type()))
-                    == other
-                        .account_type
-                        .or_else(|| Some(Self::default_account_type()))
-                && self.display_name == other.display_name
-                && self.email == other.email
-                && self.avatar_url == other.avatar_url
-                && self.password == other.password
-        }
-    }
-
-    /// Represents the type of an account.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/AccountType
-    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-    pub enum AccountType {
-        User,
-        Organization,
-    }
-
-    /// A named group of accounts. Members are assigned via the `Member` relation. Groups can be granted roles on resources, allowing permissions to be managed at the group level rather than per-account.
+    /// A named, possibly nested set of principals. Policies can be bound to groups so that permissions are granted to all members at once. Some group names are reserved, e.g. `{org}/admins` and `{org}/members` are created together with an organization.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
     #[derive(Clone, Debug, Eq, PartialEq)]
@@ -206,90 +52,679 @@ pub mod auth {
     static GROUP_SCHEMA: std::sync::LazyLock<TypeUri> =
         std::sync::LazyLock::new(|| TypeUri::new_unchecked(GROUP_SCHEMA_STR));
 
-    /// Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+    /// Group specification.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpec
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
-    pub struct GroupSpec {}
+    pub struct GroupSpec {
+        /// Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group.
+        pub members: Option<Vec<auth::SubjectHandle>>,
+    }
 
-    /// Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+    /// Group specification.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/GroupSpecInput
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
-    pub struct GroupSpecInput {}
-
-    /// A directed relationship between two resources, optionally carrying a typed value.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relation
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct Relation {
-        /// The resource that holds the relation.
-        pub subject: resources::ResourceHandle,
-        /// Name of the relation e.g. `role`, `member`, `owner`.
-        pub relation: String,
-        /// Optional value associated with the relation e.g. `maintainer` for a `role` relation.
-        pub value: Option<serde_json::Value>,
-        /// The resource that is the target of the relation.
-        pub object: resources::ResourceHandle,
+    pub struct GroupSpecInput {
+        /// Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group.
+        pub members: Option<Vec<auth::SubjectRef>>,
     }
 
-    /// A directed relationship between two resources, optionally carrying a typed value.
+    /// An entire ODF deployment acting under a single identity. The node acts as a principal in system tasks and node-to-node communications and owns node-wide resources like the reserved `{node}/admins` group.
     ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationInput
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Node
     #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct RelationInput {
-        /// The resource that holds the relation.
-        pub subject: resources::ResourceRef,
-        /// Name of the relation e.g. `role`, `member`, `owner`.
-        pub relation: String,
-        /// Optional value associated with the relation e.g. `maintainer` for a `role` relation.
-        pub value: Option<serde_json::Value>,
-        /// The resource that is the target of the relation.
-        pub object: resources::ResourceRef,
-    }
-
-    /// Specified relations between resources on which auth policies act upon.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Relations
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct Relations {
+    pub struct Node {
         /// Container for identity and ownership information of a resource.
         pub headers: resources::ResourceHeadersInput,
         /// Specifies the desired state of the resource.
-        pub spec: auth::RelationsSpecInput,
+        pub spec: auth::NodeSpecInput,
     }
 
-    impl Relations {
+    impl Node {
         pub fn schema() -> &'static TypeUri {
-            &RELATIONS_SCHEMA
+            &NODE_SCHEMA
         }
         pub const fn schema_str() -> &'static str {
-            RELATIONS_SCHEMA_STR
+            NODE_SCHEMA_STR
         }
     }
 
-    static RELATIONS_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/auth/v1alpha1/Relations";
+    static NODE_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Node";
 
-    static RELATIONS_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(RELATIONS_SCHEMA_STR));
+    static NODE_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(NODE_SCHEMA_STR));
 
-    /// Specifies relations between resources on which auth policies act upon.
+    /// Node account specification.
     ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpec
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct RelationsSpec {
-        /// Relations between resources.
-        pub relations: Vec<auth::Relation>,
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpec
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct NodeSpec {
+        /// DID associated with the account by ODF or an external system.
+        pub did: Option<AccountID>,
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
     }
 
-    /// Specifies relations between resources on which auth policies act upon.
+    /// Node account specification.
     ///
-    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/RelationsSpecInput
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpecInput
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
-    pub struct RelationsSpecInput {
-        /// Relations between resources.
-        pub relations: Option<Vec<auth::RelationInput>>,
+    pub struct NodeSpecInput {
+        /// DID associated with the account by ODF or an external system.
+        pub did: Option<AccountID>,
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+    }
+
+    /// An account that owns resources on behalf of a group of users but cannot authenticate or act itself. Upon creation the node creates reserved groups `{org}/admins`, whose members have owner rights over all resources of the organization, and `{org}/members`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Organization
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct Organization {
+        /// Container for identity and ownership information of a resource.
+        pub headers: resources::ResourceHeadersInput,
+        /// Specifies the desired state of the resource.
+        pub spec: auth::OrganizationSpecInput,
+    }
+
+    impl Organization {
+        pub fn schema() -> &'static TypeUri {
+            &ORGANIZATION_SCHEMA
+        }
+        pub const fn schema_str() -> &'static str {
+            ORGANIZATION_SCHEMA_STR
+        }
+    }
+
+    static ORGANIZATION_SCHEMA_STR: &str =
+        "https://opendatafabric.org/schemas/auth/v1alpha1/Organization";
+
+    static ORGANIZATION_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(ORGANIZATION_SCHEMA_STR));
+
+    /// Organization account specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/OrganizationSpec
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct OrganizationSpec {
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+        /// URL of the account's avatar image.
+        pub avatar_url: Option<String>,
+        /// Suspends the account. Effects of suspension are implementation-specific.
+        ///
+        /// Defaults to: false
+        pub disabled: Option<bool>,
+    }
+
+    impl OrganizationSpec {
+        pub fn default_disabled() -> bool {
+            false
+        }
+        pub fn disabled(&self) -> bool {
+            self.disabled.unwrap_or(Self::default_disabled())
+        }
+    }
+
+    impl PartialEq for OrganizationSpec {
+        fn eq(&self, other: &Self) -> bool {
+            self.display_name == other.display_name
+                && self.avatar_url == other.avatar_url
+                && self.disabled.or_else(|| Some(Self::default_disabled()))
+                    == other.disabled.or_else(|| Some(Self::default_disabled()))
+        }
+    }
+
+    /// Organization account specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/OrganizationSpecInput
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct OrganizationSpecInput {
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+        /// URL of the account's avatar image.
+        pub avatar_url: Option<String>,
+        /// Suspends the account. Effects of suspension are implementation-specific.
+        ///
+        /// Defaults to: false
+        pub disabled: Option<bool>,
+    }
+
+    impl OrganizationSpecInput {
+        pub fn default_disabled() -> bool {
+            false
+        }
+        pub fn disabled(&self) -> bool {
+            self.disabled.unwrap_or(Self::default_disabled())
+        }
+    }
+
+    impl PartialEq for OrganizationSpecInput {
+        fn eq(&self, other: &Self) -> bool {
+            self.display_name == other.display_name
+                && self.avatar_url == other.avatar_url
+                && self.disabled.or_else(|| Some(Self::default_disabled()))
+                    == other.disabled.or_else(|| Some(Self::default_disabled()))
+        }
+    }
+
+    /// A reusable grant of permissions. Policies with subject and object slots are templates instantiated via `PolicyBinding`, while policies without slots take effect on their own.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct Policy {
+        /// Container for identity and ownership information of a resource.
+        pub headers: resources::ResourceHeadersInput,
+        /// Specifies the desired state of the resource.
+        pub spec: auth::PolicySpecInput,
+    }
+
+    impl Policy {
+        pub fn schema() -> &'static TypeUri {
+            &POLICY_SCHEMA
+        }
+        pub const fn schema_str() -> &'static str {
+            POLICY_SCHEMA_STR
+        }
+    }
+
+    static POLICY_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Policy";
+
+    static POLICY_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(POLICY_SCHEMA_STR));
+
+    /// Instantiates a `Policy` template for a concrete subject and object.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicyBinding {
+        /// Container for identity and ownership information of a resource.
+        pub headers: resources::ResourceHeadersInput,
+        /// Specifies the desired state of the resource.
+        pub spec: auth::PolicyBindingSpecInput,
+    }
+
+    impl PolicyBinding {
+        pub fn schema() -> &'static TypeUri {
+            &POLICY_BINDING_SCHEMA
+        }
+        pub const fn schema_str() -> &'static str {
+            POLICY_BINDING_SCHEMA_STR
+        }
+    }
+
+    static POLICY_BINDING_SCHEMA_STR: &str =
+        "https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding";
+
+    static POLICY_BINDING_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(POLICY_BINDING_SCHEMA_STR));
+
+    /// Policy binding specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBindingSpec
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicyBindingSpec {
+        /// Policy template to instantiate.
+        pub policy: resources::ResourceHandle,
+        /// Party the permissions are granted to.
+        pub subject: auth::SubjectHandle,
+        /// Resource the permissions are granted on. Refers to both the resource and the entity materialized from it.
+        pub object: resources::ResourceHandle,
+    }
+
+    /// Policy binding specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBindingSpecInput
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicyBindingSpecInput {
+        /// Policy template to instantiate.
+        pub policy: auth::PolicyRef,
+        /// Party the permissions are granted to.
+        pub subject: auth::SubjectRef,
+        /// Resource the permissions are granted on. Refers to both the resource and the entity materialized from it.
+        pub object: resources::ResourceRef,
+    }
+
+    /// Reference to a `Policy`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyRef
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct PolicyRef {
+        /// Reference to an account that owns the `Policy`.
+        pub account: Option<auth::ResourceOwnerRef>,
+        /// ID of the resource.
+        pub id: Option<ResourceID>,
+        /// Name of the resource.
+        pub name: Option<ResourceName>,
+    }
+    impl IntoResourceRef for PolicyRef {}
+
+    /// Policy specification. The `kind` selects the policy language.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpec
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub enum PolicySpec {
+        Generic(auth::PolicySpecGeneric),
+        Cedar(auth::PolicySpecCedar),
+    }
+
+    impl_enum_with_variants!(PolicySpec);
+    impl_enum_variant!(PolicySpec::Generic(auth::PolicySpecGeneric));
+    impl_enum_variant!(PolicySpec::Cedar(auth::PolicySpecCedar));
+
+    /// Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpec#/$defs/Cedar
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicySpecCedar {
+        /// Cedar policy source.
+        pub body: String,
+    }
+
+    /// Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpec#/$defs/Generic
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicySpecGeneric {
+        /// Schema URIs of actions granted by the policy.
+        pub actions: Vec<TypeUri>,
+    }
+
+    /// Policy specification. The `kind` selects the policy language.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecInput
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub enum PolicySpecInput {
+        Generic(auth::PolicySpecInputGeneric),
+        Cedar(auth::PolicySpecInputCedar),
+    }
+
+    impl_enum_with_variants!(PolicySpecInput);
+    impl_enum_variant!(PolicySpecInput::Generic(auth::PolicySpecInputGeneric));
+    impl_enum_variant!(PolicySpecInput::Cedar(auth::PolicySpecInputCedar));
+
+    /// Policy expressed in the Cedar policy language. Policies that declare `?principal` and `?resource` slots are templates instantiated via `PolicyBinding`, otherwise they take effect on their own. Only supported by nodes that use Cedar.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecInput#/$defs/Cedar
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicySpecInputCedar {
+        /// Cedar policy source.
+        pub body: String,
+    }
+
+    /// Engine-agnostic policy that grants a set of actions. Subject and object are always supplied by a `PolicyBinding`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicySpecInput#/$defs/Generic
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PolicySpecInputGeneric {
+        /// Schema URIs of actions granted by the policy.
+        pub actions: Vec<TypeUri>,
+    }
+
+    /// Link to a resolved identity that can act as a principal: `User`, `ServiceAccount`, or `Node`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PrincipalHandle {
+        /// Type URI of the principal.
+        pub r#type: TypeUri,
+        /// Account that owns the service account.
+        pub account: Option<auth::ResourceOwnerHandle>,
+        /// ID of the principal resource.
+        pub id: ResourceID,
+        /// DID of the principal, if applicable.
+        pub did: Option<Did>,
+        /// Name of the principal resource.
+        pub name: ResourceName,
+    }
+    impl IntoResourceRef for PrincipalHandle {}
+
+    /// Reference to an identity that can act as a principal: `User`, `ServiceAccount`, or `Node`. Short form requires a type prefix, e.g. `ServiceAccount:acme/ingest-prod`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalRef
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct PrincipalRef {
+        /// Short type name or full type URI of the principal.
+        pub r#type: Option<TypeRef>,
+        /// Reference to an account that owns the service account.
+        pub account: Option<auth::ResourceOwnerRef>,
+        /// ID of the principal resource.
+        pub id: Option<ResourceID>,
+        /// DID of the principal.
+        pub did: Option<Did>,
+        /// Name of the principal resource.
+        pub name: Option<ResourceName>,
+    }
+    impl IntoResourceRef for PrincipalRef {}
+
+    /// Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct ResourceOwnerHandle {
+        /// ID of the account resource.
+        pub id: ResourceID,
+        /// DID of the account.
+        pub did: AccountID,
+        /// Name of the account.
+        pub name: AccountName,
+    }
+    impl IntoResourceRef for ResourceOwnerHandle {}
+
+    /// Reference to an account that can own resources: `User`, `Organization`, or `Node`. Short form is the account name, as names of these accounts are unique within a node.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct ResourceOwnerRef {
+        /// UUID of the account resource.
+        pub id: Option<ResourceID>,
+        /// DID of the account.
+        pub did: Option<AccountID>,
+        /// Name of the account.
+        pub name: Option<AccountName>,
+    }
+    impl IntoResourceRef for ResourceOwnerRef {}
+
+    /// A non-human identity used by automation (scheduled flows, CI, installed applications). Service accounts are scoped under an owning account and can act as principals, but cannot own resources.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccount
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct ServiceAccount {
+        /// Container for identity and ownership information of a resource.
+        pub headers: resources::ResourceHeadersInput,
+        /// Specifies the desired state of the resource.
+        pub spec: auth::ServiceAccountSpecInput,
+    }
+
+    impl ServiceAccount {
+        pub fn schema() -> &'static TypeUri {
+            &SERVICE_ACCOUNT_SCHEMA
+        }
+        pub const fn schema_str() -> &'static str {
+            SERVICE_ACCOUNT_SCHEMA_STR
+        }
+    }
+
+    static SERVICE_ACCOUNT_SCHEMA_STR: &str =
+        "https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccount";
+
+    static SERVICE_ACCOUNT_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(SERVICE_ACCOUNT_SCHEMA_STR));
+
+    /// Service account specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccountSpec
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct ServiceAccountSpec {
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+        /// Suspends the account. Effects of suspension are implementation-specific.
+        ///
+        /// Defaults to: false
+        pub disabled: Option<bool>,
+    }
+
+    impl ServiceAccountSpec {
+        pub fn default_disabled() -> bool {
+            false
+        }
+        pub fn disabled(&self) -> bool {
+            self.disabled.unwrap_or(Self::default_disabled())
+        }
+    }
+
+    impl PartialEq for ServiceAccountSpec {
+        fn eq(&self, other: &Self) -> bool {
+            self.display_name == other.display_name
+                && self.disabled.or_else(|| Some(Self::default_disabled()))
+                    == other.disabled.or_else(|| Some(Self::default_disabled()))
+        }
+    }
+
+    /// Service account specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccountSpecInput
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct ServiceAccountSpecInput {
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+        /// Suspends the account. Effects of suspension are implementation-specific.
+        ///
+        /// Defaults to: false
+        pub disabled: Option<bool>,
+    }
+
+    impl ServiceAccountSpecInput {
+        pub fn default_disabled() -> bool {
+            false
+        }
+        pub fn disabled(&self) -> bool {
+            self.disabled.unwrap_or(Self::default_disabled())
+        }
+    }
+
+    impl PartialEq for ServiceAccountSpecInput {
+        fn eq(&self, other: &Self) -> bool {
+            self.display_name == other.display_name
+                && self.disabled.or_else(|| Some(Self::default_disabled()))
+                    == other.disabled.or_else(|| Some(Self::default_disabled()))
+        }
+    }
+
+    /// Resolved reference to a party a grant is given to.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub enum SubjectHandle {
+        Resource(auth::SubjectHandleResource),
+        Authenticated(auth::SubjectHandleAuthenticated),
+        Anonymous(auth::SubjectHandleAnonymous),
+        Everyone(auth::SubjectHandleEveryone),
+    }
+
+    impl_enum_with_variants!(SubjectHandle);
+    impl_enum_variant!(SubjectHandle::Resource(auth::SubjectHandleResource));
+    impl_enum_variant!(SubjectHandle::Authenticated(
+        auth::SubjectHandleAuthenticated
+    ));
+    impl_enum_variant!(SubjectHandle::Anonymous(auth::SubjectHandleAnonymous));
+    impl_enum_variant!(SubjectHandle::Everyone(auth::SubjectHandleEveryone));
+
+    /// Matches any unauthenticated principal.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Anonymous
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectHandleAnonymous {}
+
+    /// Matches any authenticated principal.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Authenticated
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectHandleAuthenticated {}
+
+    /// Matches any principal, authenticated or not.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Everyone
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectHandleEveryone {}
+
+    /// A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle#/$defs/Resource
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SubjectHandleResource {
+        /// Type URI of the subject resource.
+        pub r#type: TypeUri,
+        /// Account that owns the subject resource (for service accounts and groups).
+        pub account: Option<auth::ResourceOwnerHandle>,
+        /// ID of the subject resource.
+        pub id: ResourceID,
+        /// DID of the subject resource, if applicable.
+        pub did: Option<Did>,
+        /// Name of the subject resource.
+        pub name: ResourceName,
+    }
+
+    /// Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form is either a well-known subject name (e.g. `Authenticated`) or a resource reference with a type prefix, DID, or ID (e.g. `Group:acme/engineering`).
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub enum SubjectRef {
+        Resource(auth::SubjectRefResource),
+        Authenticated(auth::SubjectRefAuthenticated),
+        Anonymous(auth::SubjectRefAnonymous),
+        Everyone(auth::SubjectRefEveryone),
+    }
+
+    impl_enum_with_variants!(SubjectRef);
+    impl_enum_variant!(SubjectRef::Resource(auth::SubjectRefResource));
+    impl_enum_variant!(SubjectRef::Authenticated(auth::SubjectRefAuthenticated));
+    impl_enum_variant!(SubjectRef::Anonymous(auth::SubjectRefAnonymous));
+    impl_enum_variant!(SubjectRef::Everyone(auth::SubjectRefEveryone));
+
+    /// Matches any unauthenticated principal.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Anonymous
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectRefAnonymous {}
+
+    /// Matches any authenticated principal.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Authenticated
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectRefAuthenticated {}
+
+    /// Matches any principal, authenticated or not.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Everyone
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectRefEveryone {}
+
+    /// A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef#/$defs/Resource
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SubjectRefResource {
+        /// Short type name or full type URI of the subject resource.
+        pub r#type: Option<TypeRef>,
+        /// Reference to an account that owns the subject resource (for service accounts and groups).
+        pub account: Option<auth::ResourceOwnerRef>,
+        /// ID of the subject resource.
+        pub id: Option<ResourceID>,
+        /// DID of the subject resource.
+        pub did: Option<Did>,
+        /// Name of the subject resource.
+        pub name: Option<ResourceName>,
+    }
+
+    /// An individual person who can authenticate and act as a principal.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct User {
+        /// Container for identity and ownership information of a resource.
+        pub headers: resources::ResourceHeadersInput,
+        /// Specifies the desired state of the resource.
+        pub spec: auth::UserSpecInput,
+    }
+
+    impl User {
+        pub fn schema() -> &'static TypeUri {
+            &USER_SCHEMA
+        }
+        pub const fn schema_str() -> &'static str {
+            USER_SCHEMA_STR
+        }
+    }
+
+    static USER_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/User";
+
+    static USER_SCHEMA: std::sync::LazyLock<TypeUri> =
+        std::sync::LazyLock::new(|| TypeUri::new_unchecked(USER_SCHEMA_STR));
+
+    /// User account specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/UserSpec
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct UserSpec {
+        /// DID associated with the account by ODF or an external system.
+        pub did: Option<AccountID>,
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+        /// Email address of the user.
+        pub email: Option<String>,
+        /// URL of the account's avatar image.
+        pub avatar_url: Option<String>,
+        /// Password for local authentication, stored as a hash upon apply. Absent for SSO or DID-based accounts.
+        pub password: Option<config::Secret>,
+        /// Suspends the account. Effects of suspension are implementation-specific.
+        ///
+        /// Defaults to: false
+        pub disabled: Option<bool>,
+    }
+
+    impl UserSpec {
+        pub fn default_disabled() -> bool {
+            false
+        }
+        pub fn disabled(&self) -> bool {
+            self.disabled.unwrap_or(Self::default_disabled())
+        }
+    }
+
+    impl PartialEq for UserSpec {
+        fn eq(&self, other: &Self) -> bool {
+            self.did == other.did
+                && self.display_name == other.display_name
+                && self.email == other.email
+                && self.avatar_url == other.avatar_url
+                && self.password == other.password
+                && self.disabled.or_else(|| Some(Self::default_disabled()))
+                    == other.disabled.or_else(|| Some(Self::default_disabled()))
+        }
+    }
+
+    /// User account specification.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/UserSpecInput
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct UserSpecInput {
+        /// DID associated with the account by ODF or an external system.
+        pub did: Option<AccountID>,
+        /// Human-friendly display name.
+        pub display_name: Option<String>,
+        /// Email address of the user.
+        pub email: Option<String>,
+        /// URL of the account's avatar image.
+        pub avatar_url: Option<String>,
+        /// Password for local authentication, stored as a hash upon apply. Absent for SSO or DID-based accounts.
+        pub password: Option<config::Secret>,
+        /// Suspends the account. Effects of suspension are implementation-specific.
+        ///
+        /// Defaults to: false
+        pub disabled: Option<bool>,
+    }
+
+    impl UserSpecInput {
+        pub fn default_disabled() -> bool {
+            false
+        }
+        pub fn disabled(&self) -> bool {
+            self.disabled.unwrap_or(Self::default_disabled())
+        }
+    }
+
+    impl PartialEq for UserSpecInput {
+        fn eq(&self, other: &Self) -> bool {
+            self.did == other.did
+                && self.display_name == other.display_name
+                && self.email == other.email
+                && self.avatar_url == other.avatar_url
+                && self.password == other.password
+                && self.disabled.or_else(|| Some(Self::default_disabled()))
+                    == other.disabled.or_else(|| Some(Self::default_disabled()))
+        }
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,6 +734,12 @@ pub mod auth {
 pub mod config {
     #[allow(unused_imports)]
     use super::*;
+
+    /// Decrypt a secret from a `SecretSet`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/config/v1alpha1/actions/Decrypt
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct Decrypt {}
 
     /// Individual secret in raw or encrypted form.
     ///
@@ -369,7 +810,7 @@ pub mod config {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct ValueHandle {
         /// Account that owns the target resource.
-        pub account: auth::AccountHandle,
+        pub account: auth::ResourceOwnerHandle,
         /// Type URI of the target resource.
         pub r#type: TypeUri,
         /// ID of the resource within a node.
@@ -391,7 +832,7 @@ pub mod config {
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct ValueRef {
         /// Reference to an account that owns the `VariableSet` or the `SecretSet`.
-        pub account: Option<auth::AccountRef>,
+        pub account: Option<auth::ResourceOwnerRef>,
         /// ID of a resource.
         pub id: Option<ResourceID>,
         /// Short type name or full type URI of the target resource.
@@ -879,6 +1320,12 @@ pub mod datasets {
         pub extra: Option<data::ExtraAttributes>,
     }
 
+    /// Rewrite or truncate dataset history.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/actions/AlterHistory
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct AlterHistory {}
+
     /// Embedded attachment item.
     ///
     /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/AttachmentEmbedded
@@ -968,7 +1415,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct DatasetHandle {
         /// Reference to an account that owns the dataset.
-        pub account: Option<auth::AccountHandle>,
+        pub account: Option<auth::ResourceOwnerHandle>,
         /// ID of the dataset resource.
         pub id: ResourceID,
         /// DID of the dataset.
@@ -993,7 +1440,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct DatasetRef {
         /// Reference to an account that owns the dataset.
-        pub account: Option<auth::AccountRef>,
+        pub account: Option<auth::ResourceOwnerRef>,
         /// UUID of the dataset resource.
         pub id: Option<ResourceID>,
         /// DID of the dataset.
@@ -1002,16 +1449,6 @@ pub mod datasets {
         pub name: Option<ResourceName>,
     }
     impl IntoResourceRef for DatasetRef {}
-
-    /// Access role granted to a subject on a dataset. Note: in future this fixed enum schema will likely be replaced by a reference to a `DatasetRole` resources that defines granular permissions on different actions available on a dataset.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetRole
-    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-    pub enum DatasetRole {
-        Reader,
-        Editor,
-        Maintainer,
-    }
 
     pub use crate::datasets::DatasetSelector;
 
@@ -1325,6 +1762,12 @@ pub mod datasets {
         pub project: datasets::Transform,
     }
 
+    /// Read dataset data (query, download).
+    ///
+    /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Read
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct Read {}
+
     /// Establishes the identity of the dataset. Always the first metadata event in the chain.
     ///
     /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Seed
@@ -1479,6 +1922,12 @@ pub mod datasets {
         /// Moment in event time which watermark has reached.
         pub event_time: DateTime<Utc>,
     }
+
+    /// Append new data to the dataset.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Write
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct Write {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // engines
@@ -1752,8 +2201,8 @@ pub mod flows {
     pub struct FlowRunActivationCause {
         /// Time at which the trigger fired.
         pub activation_time: DateTime<Utc>,
-        /// Account that initiated the run, if applicable.
-        pub initiator: Option<auth::AccountHandle>,
+        /// Principal that initiated the run, if applicable.
+        pub initiator: Option<auth::PrincipalHandle>,
         /// Copy of the trigger configuration from the parent Flow that fired.
         pub trigger: flows::FlowTrigger,
     }
@@ -1788,7 +2237,7 @@ pub mod flows {
         /// Defines the default target resources on which tasks will be performed.
         pub target: Option<resources::ResourceHandle>,
         /// Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// List of tasks to run consecutively.
         pub tasks: Vec<tasks::TaskSpec>,
     }
@@ -1801,7 +2250,7 @@ pub mod flows {
         /// Defines the default target resources on which tasks will be performed.
         pub target: Option<resources::ResourceRef>,
         /// Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// List of tasks to run consecutively.
         pub tasks: Vec<tasks::TaskSpecInput>,
     }
@@ -1852,7 +2301,7 @@ pub mod flows {
         /// Defines resources for which this flow will be instantiated.
         pub target: resources::ResourceSelector,
         /// Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Conditions that cause this flow to execute.
         pub triggers: Vec<flows::FlowTrigger>,
         /// List of tasks to run consecutively.
@@ -1869,7 +2318,7 @@ pub mod flows {
         /// Defines resources for which this flow will be instantiated.
         pub target: resources::ResourceSelector,
         /// Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Conditions that cause this flow to execute.
         pub triggers: Vec<flows::FlowTriggerInput>,
         /// List of tasks to run consecutively.
@@ -2287,12 +2736,73 @@ pub mod resources {
     #[allow(unused_imports)]
     use super::*;
 
+    /// Apply a specific label to the resource.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/AddLabel
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct AddLabel {
+        /// Schema URI of the label being added.
+        pub label_type: TypeUri,
+        /// Value of the label being added.
+        pub label_value: serde_json::Value,
+    }
+
+    /// Create `PolicyBinding` resources that reference this resource as `object`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/BindPolicy
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct BindPolicy {
+        /// Subject of the binding being created, allowing policies to restrict granting access to e.g. `Everyone`.
+        pub subject: auth::SubjectHandle,
+    }
+
+    /// Create a new resource instance of a type (object is a type URI) under an account.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/Create
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct Create {
+        /// Account under which the resource is being created.
+        pub target_owner: auth::ResourceOwnerHandle,
+    }
+
+    /// Delete the resource instance.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/Delete
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct Delete {}
+
+    /// Modify the resource manifest.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/Edit
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct Edit {}
+
     /// Filters that work on resource labels and identity headers.
     ///
     /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/LabelFilter
     #[derive(Clone, PartialEq, Eq, Debug)]
     pub struct LabelFilter {
         pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+    }
+
+    /// List resource instances of a type (object is a type URI) under an account.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/List
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct List {
+        /// Account under which resources are being listed.
+        pub target_owner: auth::ResourceOwnerHandle,
+    }
+
+    /// Remove a specific label from the resource.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/RemoveLabel
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct RemoveLabel {
+        /// Schema URI of the label being removed.
+        pub label_type: TypeUri,
+        /// Existing value of the label being removed.
+        pub label_value: serde_json::Value,
     }
 
     /// Top-level container for canonical representation of a resource that specifies the type and version of the resource, carries identity, ownership, and status information.
@@ -2332,7 +2842,7 @@ pub mod resources {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct ResourceHandle {
         /// Account that owns the target resource.
-        pub account: auth::AccountHandle,
+        pub account: auth::ResourceOwnerHandle,
         /// Type URI of the target resource.
         pub r#type: TypeUri,
         /// ID of the resource within a node.
@@ -2354,7 +2864,7 @@ pub mod resources {
         /// Symbolic name of a resource that identifies it within a scope of an onwing account.
         pub name: ResourceName,
         /// Link to the account that owns the resource.
-        pub account: auth::AccountHandle,
+        pub account: auth::ResourceOwnerHandle,
         /// Map of string keys and values that can be used to organize, categorize, and query resources.
         pub labels: resources::ResourceLabels,
         /// Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
@@ -2385,7 +2895,7 @@ pub mod resources {
         /// Symbolic name of a resource that identifies it within a scope of an onwing account.
         pub name: ResourceName,
         /// Reference to the account that owns the resource.
-        pub account: Option<auth::AccountRef>,
+        pub account: Option<auth::ResourceOwnerRef>,
         /// Map of string keys and values that can be used to organize, categorize, and query resources.
         pub labels: Option<resources::ResourceLabels>,
         /// Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
@@ -2435,7 +2945,7 @@ pub mod resources {
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct ResourceRef {
         /// Reference to an account that owns the target resource.
-        pub account: Option<auth::AccountRef>,
+        pub account: Option<auth::ResourceOwnerRef>,
         /// ID of the resource within a node.
         pub id: Option<ResourceID>,
         /// DID of the resource.
@@ -2471,6 +2981,12 @@ pub mod resources {
         /// Detailed conditions describing the state of the resource that are added by controllers.
         pub conditions: resources::ResourceConditions,
     }
+
+    /// Read the resource manifest.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/View
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct View {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // sinks
@@ -3486,7 +4002,7 @@ pub mod storage {
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct PersistentVolumeRef {
         /// Reference to an account that owns the `PersistentVolume`.
-        pub account: Option<auth::AccountRef>,
+        pub account: Option<auth::ResourceOwnerRef>,
         /// ID of the resource.
         pub id: Option<ResourceID>,
         /// Name of the resource.
@@ -3843,7 +4359,7 @@ pub mod tasks {
         /// Reference to the dataset to compact. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Target maximum size of each compacted data slice e.g. `100MiB`.
         pub max_slice_size: Option<ByteSize>,
         /// Target maximum number of records per compacted data slice.
@@ -3860,7 +4376,7 @@ pub mod tasks {
         /// Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
     }
 
     /// Fetches data from a source and appends it to a dataset.
@@ -3873,7 +4389,7 @@ pub mod tasks {
         /// Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Reference to the source resource that defines how to fetch data.
         pub source: resources::ResourceHandle,
         /// Target number of records to ingest per data slice.
@@ -3919,7 +4435,7 @@ pub mod tasks {
         /// Reference to the dataset to compact. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Target maximum size of each compacted data slice e.g. `100MiB`.
         pub max_slice_size: Option<ByteSize>,
         /// Target maximum number of records per compacted data slice.
@@ -3936,7 +4452,7 @@ pub mod tasks {
         /// Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
     }
 
     /// Fetches data from a source and appends it to a dataset.
@@ -3949,7 +4465,7 @@ pub mod tasks {
         /// Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Reference to the source resource that defines how to fetch data.
         pub source: resources::ResourceRef,
         /// Target number of records to ingest per data slice.
@@ -3966,7 +4482,7 @@ pub mod tasks {
         /// Reference to the dataset to reset. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Name of the block reference to reset.
         ///
         /// Defaults to: "head"
@@ -4008,7 +4524,7 @@ pub mod tasks {
         /// Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Remote dataset to pull from.
         pub source: tasks::SyncEndpointInput,
         /// Overwrite the local dataset even if its history has diverged from the source.
@@ -4047,7 +4563,7 @@ pub mod tasks {
         /// Reference to the local dataset to push. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Remote dataset to push to.
         pub destination: tasks::SyncEndpointInput,
         /// Overwrite the remote dataset even if its history has diverged from the local one.
@@ -4103,7 +4619,7 @@ pub mod tasks {
         /// Reference to the derivative dataset that defines how to transform data.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
     }
 
     /// Checks dataset metadata for integrity.
@@ -4116,7 +4632,7 @@ pub mod tasks {
         /// Reference to the dataset to verify. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// If true, re-executes transformations on derivative datasets to verify reproducibility.
         pub replay_transform: Option<bool>,
     }
@@ -4129,7 +4645,7 @@ pub mod tasks {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountRef>,
+        pub service_account: Option<auth::PrincipalRef>,
         /// Reference to the `WebhookEndpoint`.
         pub endpoint: resources::ResourceRef,
         /// The payload to send. May include templating.
@@ -4148,7 +4664,7 @@ pub mod tasks {
         /// Reference to the dataset to reset. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Name of the block reference to reset.
         ///
         /// Defaults to: "head"
@@ -4190,7 +4706,7 @@ pub mod tasks {
         /// Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Remote dataset to pull from.
         pub source: tasks::SyncEndpoint,
         /// Overwrite the local dataset even if its history has diverged from the source.
@@ -4229,7 +4745,7 @@ pub mod tasks {
         /// Reference to the local dataset to push. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Remote dataset to push to.
         pub destination: tasks::SyncEndpoint,
         /// Overwrite the remote dataset even if its history has diverged from the local one.
@@ -4285,7 +4801,7 @@ pub mod tasks {
         /// Reference to the derivative dataset that defines how to transform data.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
     }
 
     /// Checks dataset metadata for integrity.
@@ -4298,7 +4814,7 @@ pub mod tasks {
         /// Reference to the dataset to verify. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// If true, re-executes transformations on derivative datasets to verify reproducibility.
         pub replay_transform: Option<bool>,
     }
@@ -4311,7 +4827,7 @@ pub mod tasks {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
-        pub service_account: Option<auth::AccountHandle>,
+        pub service_account: Option<auth::PrincipalHandle>,
         /// Reference to the `WebhookEndpoint`.
         pub endpoint: resources::ResourceHandle,
         /// The payload to send. May include templating.

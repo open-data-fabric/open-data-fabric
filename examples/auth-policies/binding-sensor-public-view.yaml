@@ -1,0 +1,12 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+headers:
+  account: acme
+  name: sensor-public-view
+spec:
+  policy: Policy:node/resource-viewer
+  # Any authenticated principal can view the dataset manifest, while reading
+  # its data still requires the `AllowPublicRead` label or other grants.
+  # Short form, equivalent to { kind: Authenticated }
+  subject: Authenticated
+  object: Dataset:acme/sensor

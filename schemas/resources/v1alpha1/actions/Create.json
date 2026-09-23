@@ -1,0 +1,21 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/actions/Create",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Action",
+  "description": "Create a new resource instance of a type (object is a type URI) under an account.",
+  "type": "object",
+  "required": [
+    "targetOwner"
+  ],
+  "properties": {
+    "targetOwner": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle",
+      "description": "Account under which the resource is being created.",
+      "unevaluatedProperties": false
+    }
+  },
+  "actionProperties": {
+    "objectTypes": [
+      "https://opendatafabric.org/schemas/resources/v1alpha1/Resource"
+    ]
+  }
+}

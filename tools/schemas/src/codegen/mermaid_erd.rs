@@ -86,6 +86,12 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
                 for (fname, field) in &s.fields {
                     emit_type_edges(&from, fname, &field.typ, w)?;
                 }
+                // Actions point to the types of objects they apply to
+                if let Some(action_properties) = &s.action_properties {
+                    for object_type in &action_properties.object_types {
+                        writeln!(w, "  {from} -.->|\"applies to\"| {}", object_type.join("_"))?;
+                    }
+                }
             }
             TypeDefinition::Union(u) => {
                 if !COLLAPSED_UNIONS.contains(&u.id.name()) {

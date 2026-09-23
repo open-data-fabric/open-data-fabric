@@ -20,7 +20,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
@@ -51,7 +51,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         }
@@ -74,7 +74,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
@@ -107,7 +107,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
@@ -143,7 +143,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
@@ -174,7 +174,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
@@ -210,7 +210,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         }
@@ -231,7 +231,7 @@
           "unevaluatedProperties": false
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
@@ -253,7 +253,7 @@
           "description": "An alias for the task used to refer to it in flows and access the results"
         },
         "serviceAccount": {
-          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },

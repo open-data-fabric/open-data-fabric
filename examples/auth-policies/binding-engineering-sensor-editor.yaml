@@ -1,0 +1,13 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
+headers:
+  # Binding lives under the account that owns the object.
+  # Creating it requires the `BindPolicy` action on the object.
+  account: acme
+  name: engineering-sensor-editor
+spec:
+  policy: Policy:node/dataset-editor
+  # All members of the team (see `auth-organization` example)
+  subject: Group:acme/engineering
+  # Refers to both the dataset resource and the dataset entity
+  object: Dataset:acme/sensor

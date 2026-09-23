@@ -11,7 +11,7 @@
   ],
   "properties": {
     "account": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle",
       "description": "Account that owns the target resource.",
       "unevaluatedProperties": false
     },

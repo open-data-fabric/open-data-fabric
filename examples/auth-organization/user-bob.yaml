@@ -1,0 +1,7 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/User
+headers:
+  name: bob
+spec:
+  displayName: Bob
+  email: bob@example.com

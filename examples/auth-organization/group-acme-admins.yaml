@@ -1,0 +1,11 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
+headers:
+  # Reserved group created together with the organization - applying this
+  # manifest updates its membership instead of creating a new group
+  account: acme
+  name: admins
+spec:
+  members:
+    - User:alice
+    - User:dave

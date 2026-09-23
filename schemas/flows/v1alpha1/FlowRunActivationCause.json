@@ -14,8 +14,8 @@
       "description": "Time at which the trigger fired."
     },
     "initiator": {
-      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
-      "description": "Account that initiated the run, if applicable.",
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
+      "description": "Principal that initiated the run, if applicable.",
       "unevaluatedProperties": false
     },
     "trigger": {

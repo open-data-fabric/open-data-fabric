@@ -1,0 +1,25 @@
+# $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+$schema: https://opendatafabric.org/schemas/auth/v1alpha1/Policy
+headers:
+  # Note: this is a custom policy for resources under `acme` org
+  account: acme
+  name: public-datasets
+spec:
+  # Engine-specific policy without slots is not a template - it takes effect
+  # on its own and doesn't need a `PolicyBinding`.
+  kind: Cedar
+  body: |
+    // Only `acme` admins can make datasets of `acme` publicly readable
+    forbid(
+      principal,
+      action in [
+        odf::resources::Action::"https://opendatafabric.org/schemas/resources/v1alpha1/actions/AddLabel",
+        odf::resources::Action::"https://opendatafabric.org/schemas/resources/v1alpha1/actions/RemoveLabel",
+      ],
+      resource is odf::resources::Resource
+    ) when {
+      context.labelType == odf::resources::TypeUri::"https://opendatafabric.org/schemas/datasets/v1alpha1/AllowPublicRead" &&
+      resource.owner == odf::auth::ResourceOwner::"acme"
+    } unless {
+      principal in odf::auth::Group::"acme/admins"
+    };

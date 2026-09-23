@@ -86,6 +86,8 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
         .types
         .values()
         .filter(|t| !matches!(t.metatype(), model::MetaType::Resource))
+        // Actions carry no data and are never serialized
+        .filter(|t| !matches!(t.metatype(), model::MetaType::Action))
         // TODO: Not supporting top-level scalar types yet
         .filter(|t| !matches!(t, model::TypeDefinition::Scalar(_)))
         .fold(BTreeMap::new(), |mut map, t| {
