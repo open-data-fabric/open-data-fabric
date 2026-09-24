@@ -225,9 +225,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
     // Check names are unique, as some codegens don't support context-level modularity yet
     let mut seen_names = HashMap::new();
     for id in schemas.keys() {
-        if id.as_str() == SchemaId::METASCHEMA_JSONSCHEMA
-            || id.as_str().starts_with(SchemaId::METASCHEMA_BASE_URL)
-        {
+        if id.is_metaschema() {
             continue;
         }
 
@@ -249,7 +247,7 @@ pub fn lint(top_level_schemas: &[Schema]) {
     // Seed `to_explore` with known roots
     for (id, sch) in schemas.iter().filter(|(id, sch)| {
         id.as_str() != SchemaId::METASCHEMA_JSONSCHEMA
-            && (id.as_str().starts_with(SchemaId::METASCHEMA_BASE_URL)
+            && (id.is_metaschema()
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_MANIFEST)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_INPUT)
                 || sch.schema.as_deref() == Some(SchemaId::METASCHEMA_RESOURCE_LABEL)
@@ -382,31 +380,34 @@ pub static SCHEMA_URL_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLoc
 });
 
 impl SchemaId {
-    pub const METASCHEMA_BASE_URL: &str = "https://opendatafabric.org/schemas/metaschemas/";
     pub const METASCHEMA_JSONSCHEMA: &str = "https://json-schema.org/draft/2020-12/schema";
     pub const METASCHEMA_MANIFEST: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Manifest";
+        "https://opendatafabric.org/schemas/meta/v1alpha1/Manifest";
     pub const METASCHEMA_RESOURCE: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Resource";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Resource";
     pub const METASCHEMA_RESOURCE_LABEL: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceLabel";
     pub const METASCHEMA_RESOURCE_ANNOTATION: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceAnnotation";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceAnnotation";
     pub const METASCHEMA_RESOURCE_INPUT: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceInput";
     pub const METASCHEMA_RESOURCE_REF: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceRef";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceRef";
     pub const METASCHEMA_RESOURCE_HANDLE: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceHandle";
     pub const METASCHEMA_RESOURCE_CONDITION: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceCondition";
+        "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition";
     pub const METASCHEMA_RELATION: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation";
+        "https://opendatafabric.org/schemas/auth/v1alpha1/meta/Relation";
     pub const METASCHEMA_ENGINE_MESSAGE: &str =
-        "https://opendatafabric.org/schemas/metaschemas/v1alpha1/EngineMessage";
+        "https://opendatafabric.org/schemas/engines/v1alpha1/meta/EngineMessage";
 
     pub fn new(name: impl Into<String>) -> Self {
         Self(name.into())
+    }
+
+    pub fn is_metaschema(&self) -> bool {
+        self.as_str() == Self::METASCHEMA_JSONSCHEMA || self.contains("/meta/")
     }
 
     pub fn root<'a>(&'a self) -> Cow<'a, SchemaId> {

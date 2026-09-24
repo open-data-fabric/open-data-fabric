@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget
-$schema: https://opendatafabric.org/schemas/sink/v1alpha1/WebhookTarget
+# $schema: https://opendatafabric.org/schemas/sinks/v1alpha1/WebhookTarget
+$schema: https://opendatafabric.org/schemas/sinks/v1alpha1/WebhookTarget
 headers:
   name: com.example.hook
 spec:

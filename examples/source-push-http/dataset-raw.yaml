@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+# $schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset
+$schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset
 headers:
   name: sensor.temp
 spec:

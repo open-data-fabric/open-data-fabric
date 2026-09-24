@@ -4,8 +4,6 @@ use crate::model::{self, Type, TypeDefinition, TypeId};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const EXCLUDED_CONTEXTS: &[&str] = &["metaschemas"];
-
 // Unions whose variants are not expanded into separate nodes
 const COLLAPSED_UNIONS: &[&str] = &["DataType", "ReadStep"];
 
@@ -31,7 +29,6 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
     let types: Vec<&TypeDefinition> = model
         .types
         .values()
-        .filter(|t| !EXCLUDED_CONTEXTS.contains(&t.id().context()))
         .filter(|t| {
             // Exclude variant subtypes of collapsed unions
             t.id()
@@ -93,17 +90,13 @@ pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std
             TypeDefinition::Union(u) => {
                 if !COLLAPSED_UNIONS.contains(&u.id.name()) {
                     for variant_id in &u.variants {
-                        if !EXCLUDED_CONTEXTS.contains(&variant_id.context()) {
-                            writeln!(w, "  {from} -->|\"variant\"| {}", variant_id.join("_"))?;
-                        }
+                        writeln!(w, "  {from} -->|\"variant\"| {}", variant_id.join("_"))?;
                     }
                 }
             }
             TypeDefinition::Map(m) => {
                 if let Type::Custom(ref_id) = &m.value_type {
-                    if !EXCLUDED_CONTEXTS.contains(&ref_id.context()) {
-                        writeln!(w, "  {from} -->|\"values\"| {}", ref_id.join("_"))?;
-                    }
+                    writeln!(w, "  {from} -->|\"values\"| {}", ref_id.join("_"))?;
                 }
             }
             TypeDefinition::Enum(_) => {}
@@ -124,9 +117,9 @@ fn emit_type_edges(
 ) -> Result<(), std::io::Error> {
     match typ {
         Type::Custom(ref_id) => {
-            if !EXCLUDED_CONTEXTS.contains(&ref_id.context()) {
-                writeln!(w, "  {from} -->|\"{field_name}\"| {}", ref_id.join("_"))?;
-            }
+            //if !EXCLUDED_CONTEXTS.contains(&ref_id.context()) {
+            writeln!(w, "  {from} -->|\"{field_name}\"| {}", ref_id.join("_"))?;
+            //}
         }
         Type::Array(arr) => {
             emit_type_edges(from, field_name, &arr.item_type, w)?;

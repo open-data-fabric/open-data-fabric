@@ -1,0 +1,30 @@
+{
+  "$id": "https://opendatafabric.org/schemas/sources/v1alpha1/Source",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceInput",
+  "description": "Defines an external source of data for ingestion.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "type-uri",
+      "const": "https://opendatafabric.org/schemas/sources/v1alpha1/Source",
+      "description": "Identifies this resource type."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "$ref": "https://opendatafabric.org/schemas/sources/v1alpha1/SourceSpecInput",
+      "description": "Specifies the desired state of the resource.",
+      "unevaluatedProperties": false
+    }
+  }
+}

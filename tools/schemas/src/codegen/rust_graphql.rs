@@ -716,8 +716,8 @@ fn collect_types_rec_2(
 
 pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let roots = [
-        "https://opendatafabric.org/schemas/resource/v1alpha1/Resource",
-        "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataBlock",
+        "https://opendatafabric.org/schemas/resources/v1alpha1/Resource",
+        "https://opendatafabric.org/schemas/datasets/v1alpha1/MetadataBlock",
     ];
     let types = collect_types(&model, &roots);
     let custom_types = std::collections::BTreeMap::from(CUSTOM_TYPES);

@@ -15,14 +15,14 @@
       "description": "Alias of the dataset."
     },
     "kind": {
-      "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind",
+      "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetKind",
       "description": "Type of the dataset.",
       "unevaluatedProperties": false
     },
     "metadata": {
       "type": "array",
       "items": {
-        "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent",
+        "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/MetadataEvent",
         "unevaluatedProperties": false
       },
       "description": "An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc."

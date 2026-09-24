@@ -1,0 +1,187 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "An individual work item to be executed as part of a flow.",
+  "$defs": {
+    "Ingest": {
+      "description": "Fetches data from a source and appends it to a dataset.",
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "source": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+          "description": "Reference to the source resource that defines how to fetch data.",
+          "unevaluatedProperties": false
+        },
+        "params": {
+          "$ref": "https://opendatafabric.org/schemas/sources/v1alpha1/IngestParams",
+          "description": "Optional parameters to control ingestion behavior.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "Transform": {
+      "description": "Executes transformation of data defined in a derivative dataset.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the derivative dataset that defines how to transform data.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "Compaction": {
+      "description": "Compacts data files in matching datasets to improve query performance.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "params": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/CompactionParams",
+          "description": "Optional parameters to control ingestion behavior.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "GarbageCollection": {
+      "description": "Removes unreferenced data files from matching datasets.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        }
+      }
+    },
+    "WebhookCall": {
+      "description": "Dispatches a certain payload to a specific `WebhookTarget`.",
+      "type": "object",
+      "required": [
+        "target"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+          "description": "Reference to the `WebhookTarget`.",
+          "unevaluatedProperties": false
+        },
+        "payload": {
+          "type": "string",
+          "description": "The payload to send. May include templating."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Ingest"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Ingest"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Transform"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Transform"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Compaction"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Compaction"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "GarbageCollection"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/GarbageCollection"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "WebhookCall"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/WebhookCall"
+        }
+      ]
+    }
+  ]
+}

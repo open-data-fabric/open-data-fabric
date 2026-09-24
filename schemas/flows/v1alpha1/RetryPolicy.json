@@ -1,0 +1,24 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flows/v1alpha1/RetryPolicy",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines how a flow should react to failures.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "maxAttempts": {
+      "type": "integer",
+      "format": "uint32",
+      "description": "Number of attempts before flow auto-scheduling will be disabled."
+    },
+    "minDelay": {
+      "type": "string",
+      "format": "duration",
+      "description": "How long to wait until the first retry."
+    },
+    "backoff": {
+      "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/RetryBackoff",
+      "unevaluatedProperties": false,
+      "description": "Type of the backoff scaling."
+    }
+  }
+}

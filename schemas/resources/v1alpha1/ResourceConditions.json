@@ -1,0 +1,14 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceConditions",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Container of generic contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of a schema URL describing this condition, e.g. `https://opendatafabric.org/schemas/tasks/v1/TaskStatus`.",
+  "type": "object",
+  "codegen": {
+    "rust": {
+      "mapKeyFormat": "type-ref"
+    }
+  },
+  "patternProperties": {
+    ".*": {}
+  }
+}

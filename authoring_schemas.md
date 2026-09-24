@@ -295,7 +295,7 @@ To extend strict validation into **nested object properties**, add `unevaluatedP
 {
   "properties": {
     "headers": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeaders",
       "unevaluatedProperties": false
     }
   }
@@ -309,7 +309,7 @@ The same pattern applies to `items` in arrays:
 ```json
 {
   "items": {
-    "$ref": "https://opendatafabric.org/schemas/dataset/v1alpha1/MetadataEvent",
+    "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/MetadataEvent",
     "unevaluatedProperties": false
   }
 }
@@ -322,7 +322,7 @@ Some schemas like `Resource` may need to embed fragments of any type.
 This is represented as:
 ```json
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/Resource",
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/Resource",
   "properties": {
     "spec": {
       "type": "object",
@@ -354,8 +354,8 @@ Note that input type references its canonical type like so:
 
 ```json
 {
-  "$id": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
-  "canonicalType": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeaders",
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput",
+  "canonicalType": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeaders",
 }
 ```
 

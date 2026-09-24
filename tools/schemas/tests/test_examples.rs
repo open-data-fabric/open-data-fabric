@@ -5,6 +5,10 @@ use serde_json::Value;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn is_odf_metaschema(s: &str) -> bool {
+    s.starts_with("https://opendatafabric.org/schemas/") && s.contains("/meta/")
+}
+
 struct Schemas {
     by_id: HashMap<String, Value>,
 }
@@ -23,12 +27,7 @@ impl Schemas {
         Self { by_id }
     }
 
-    fn validate_conditions(
-        &self,
-        value: &Value,
-        path: &std::path::Path,
-        failed: &mut bool,
-    ) {
+    fn validate_conditions(&self, value: &Value, path: &std::path::Path, failed: &mut bool) {
         let Some(conditions) = value
             .get("status")
             .and_then(|s| s.get("conditions"))
@@ -58,7 +57,9 @@ impl Schemas {
             let validator = jsonschema::options()
                 .with_resources(resources)
                 .build(&schema)
-                .unwrap_or_else(|e| panic!("Failed to compile condition schema {condition_id}: {e}"));
+                .unwrap_or_else(|e| {
+                    panic!("Failed to compile condition schema {condition_id}: {e}")
+                });
 
             let errors: Vec<_> = validator.iter_errors(condition_value).collect();
             if !errors.is_empty() {
@@ -100,9 +101,9 @@ impl Schemas {
 
     fn normalize_meta_schema(mut schema: Value) -> Value {
         const STANDARD_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
-        const ODF_METASCHEMA_PREFIX: &str = "https://opendatafabric.org/schemas/metaschemas/";
+
         if let Some(s) = schema.get("$schema").and_then(Value::as_str) {
-            if s.starts_with(ODF_METASCHEMA_PREFIX) {
+            if is_odf_metaschema(s) {
                 schema["$schema"] = Value::String(STANDARD_DRAFT.to_string());
             }
         }

@@ -65,7 +65,7 @@ Note that the **separation of planning, execution, and commit phase** allows to 
 
 Example of a task as created by a `FlowRun` controller (spec describes only the intent, no plan yet):
 ```yaml
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Task
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Task
 headers:
   ownerReferences:
     - FlowRun:c27331ce-ce88-4ff9-8c5a-4ce8107cc03f  # ResourceRef of the FlowRun that spawned this task
@@ -78,7 +78,7 @@ status:
 
 Example of the same task after planning and execution:
 ```yaml
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Task
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Task
 headers:
   ownerReferences:
     - FlowRun:c27331ce-ce88-4ff9-8c5a-4ce8107cc03f  # ResourceRef of the FlowRun that spawned this task
@@ -89,8 +89,8 @@ status:
   phase: Ready  # NOTE: Task resource is retained for a TTL period, then deleted
   observedGeneration: 1
   conditions:
-    https://opendatafabric.org/schemas/task/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
-    https://opendatafabric.org/schemas/task/v1alpha1/TaskPlan:
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskPlan:
       kind: TransformPlan
       datasetId: did:odf:fed0..17bf
       systemTime: 2026-09-11T02:22:52Z
@@ -106,7 +106,7 @@ status:
         query: SELECT ... FROM ...
       newDataPath: s3://repo/f162..8a9f/data/...
       newCheckpointPath: s3://repo/f162..8a9f/checkpoint/...
-    https://opendatafabric.org/schemas/task/v1alpha1/TaskOutcome:
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskOutcome:
       kind: Success  # Success / Failed / NoOp / Cancelled
       result:
         kind: TransformResult
@@ -125,7 +125,7 @@ Note that a task may finish with a `NoOp` outcome and no `TaskPlan` if planner r
 
 Example:
 ```yaml
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowRun
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowRun
 headers:
   ownerReferences:
     - Flow:f47ac10b-58cc-4372-a567-0e02b2c3d479  # ResourceRef of the Flow that spawned this run
@@ -138,7 +138,7 @@ status:
   phase: Ready  # NOTE: FlowRun resource is retained for a TTL period, then deleted
   conditions:
     # Tracks the overall status and the tasks that were spawned during the execution
-    https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunStatus:
+    https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunStatus:
       status: Running  # Waiting / Running / Retrying / Finished
       tasks:
         - name: task-0-transform  # Corresponds to spec.tasks[0]
@@ -155,7 +155,7 @@ status:
           lastUpdatedAt: 2026-09-11T02:02:00Z
     # Explains what led to execution of this flow
     # In case of a retry - the causes of the original run are preserved
-    https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunActivationCauses:
+    https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunActivationCauses:
       activationCauses:
         - activationTime: 2026-09-11T02:00:00Z
           initiator: system  # AccountHandle
@@ -163,7 +163,7 @@ status:
             kind: Manual
       lateActivationCauses: []
     # Links to the previous FlowRun, if this is a retry
-    https://opendatafabric.org/schemas/flow/v1alpha1/FlowRunRetry:
+    https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunRetry:
       retryOf: FlowRun:9b2e4f1a-3c7d-4e8b-a1f2-6d5e7c8b9a0d  # ResourceHandle
 ```
 
@@ -177,7 +177,7 @@ The `spec.target` on the `FlowRun` level is used as the default `target` for tas
 
 Example:
 ```yaml
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Flow
 headers:
   name: compact-and-gc-roots
 spec:
@@ -213,7 +213,7 @@ spec:
 status:
   phase: Ready
   conditions:
-    https://opendatafabric.org/schemas/flow/v1alpha1/FlowStatus:
+    https://opendatafabric.org/schemas/flows/v1alpha1/FlowStatus:
       status: Active  # Active / Paused
       recentBindings:
         - target: Dataset:sergiimk/foo

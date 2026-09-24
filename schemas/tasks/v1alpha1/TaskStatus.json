@@ -1,0 +1,14 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition",
+  "description": "Execution phase of a task.",
+  "type": "string",
+  "enum": [
+    "Pending",
+    "Planning",
+    "Ready",
+    "Running",
+    "Committing",
+    "Finished"
+  ]
+}

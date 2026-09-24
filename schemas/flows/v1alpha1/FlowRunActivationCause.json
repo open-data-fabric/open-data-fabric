@@ -1,0 +1,27 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunActivationCause",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Cause of the flow run activation",
+  "required": [
+    "activationTime",
+    "trigger"
+  ],
+  "properties": {
+    "activationTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time at which the trigger fired."
+    },
+    "initiator": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "description": "Account that initiated the run, if applicable.",
+      "unevaluatedProperties": false
+    },
+    "trigger": {
+      "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger",
+      "description": "Copy of the trigger configuration from the parent Flow that fired.",
+      "unevaluatedProperties": false
+    }
+  }
+}

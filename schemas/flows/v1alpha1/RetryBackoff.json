@@ -1,0 +1,10 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flows/v1alpha1/RetryBackoff",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Type of the backoff scaling.",
+  "type": "string",
+  "enum": [
+    "Linear",
+    "Exponential"
+  ]
+}

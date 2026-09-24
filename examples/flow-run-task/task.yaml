@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/task/v1alpha1/Task
-$schema: https://opendatafabric.org/schemas/task/v1alpha1/Task
+# $schema: https://opendatafabric.org/schemas/tasks/v1alpha1/Task
+$schema: https://opendatafabric.org/schemas/tasks/v1alpha1/Task
 headers:
   name: task-123456
   ownerReferences:

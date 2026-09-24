@@ -1,0 +1,46 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceRef",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceRef",
+  "description": "Reference to another resource.",
+  "format": "struct-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
+          "description": "Reference to an account that owns the target resource.",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the resource within a node."
+        },
+        "did": {
+          "type": "string",
+          "format": "did",
+          "description": "DID of the resource."
+        },
+        "type": {
+          "type": "string",
+          "format": "type-ref",
+          "examples": [
+            "SecretSet",
+            "https://opendatafabric.org/config/v1/SecretSet"
+          ],
+          "description": "Short type name or full type URI of the target resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of a resource."
+        }
+      }
+    }
+  ]
+}

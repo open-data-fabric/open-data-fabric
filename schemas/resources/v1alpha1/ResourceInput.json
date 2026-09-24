@@ -1,0 +1,30 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceInput",
+  "$schema": "https://opendatafabric.org/schemas/meta/v1alpha1/Manifest",
+  "canonicalType": "https://opendatafabric.org/schemas/resources/v1alpha1/Resource",
+  "description": "Top-level container for user-authored representation of a resource that specifies the type and version of the resource and its desired state.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers",
+    "spec"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "type-uri",
+      "description": "Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset`."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "type": "object",
+      "format": "fragment",
+      "description": "Specifies the desired state of a resource."
+    }
+  }
+}

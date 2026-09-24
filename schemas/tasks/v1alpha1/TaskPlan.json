@@ -1,0 +1,9 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskPlan",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition",
+  "description": "A self-contained logical execution plan of a task.",
+  "type": "object",
+  "patternProperties": {
+    ".*": {}
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/SetLicense",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Defines a license that applies to this dataset.",
+  "type": "object",
+  "required": [
+    "shortName",
+    "name",
+    "websiteUrl"
+  ],
+  "properties": {
+    "shortName": {
+      "type": "string",
+      "description": "Abbreviated name of the license."
+    },
+    "name": {
+      "type": "string",
+      "description": "Full name of the license."
+    },
+    "spdxId": {
+      "type": "string",
+      "description": "License identifier from the SPDX License List."
+    },
+    "websiteUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL where licensing terms can be found."
+    }
+  }
+}

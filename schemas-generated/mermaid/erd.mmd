@@ -60,7 +60,7 @@ graph TD
   end
   class DataField,DataSchema,DataType,ExtraAttributes,OperationType,TimeUnit ctx_data
 
-  subgraph dataset["dataset"]
+  subgraph datasets["datasets"]
     AddData
     AllowAnonymousRead
     AllowPublicRead
@@ -101,9 +101,9 @@ graph TD
     TransformInput
     Watermark
   end
-  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetHandle,DatasetKind,DatasetRef,DatasetRole,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_dataset
+  class AddData,AllowAnonymousRead,AllowPublicRead,AttachmentEmbedded,Attachments,Attachments_Embedded,Checkpoint,CompactionParams,DataSlice,Dataset,DatasetHandle,DatasetKind,DatasetRef,DatasetRole,DatasetSelector,DatasetSpec,DatasetSpecInput,DatasetVocabulary,ExecuteTransform,ExecuteTransformInput,MetadataBlock,MetadataEvent,OffsetInterval,Projection,ProjectionSpec,ProjectionSpecInput,Seed,SetAttachments,SetDataSchema,SetInfo,SetLicense,SetTransform,SetVocab,SqlQueryStep,TemporalTable,Transform,Transform_Sql,TransformInput,Watermark ctx_datasets
 
-  subgraph engine["engine"]
+  subgraph engines["engines"]
     RawQueryRequest
     RawQueryResponse
     RawQueryResponse_InternalError["RawQueryResponse::InternalError"]
@@ -118,14 +118,14 @@ graph TD
     TransformResponse_Progress["TransformResponse::Progress"]
     TransformResponse_Success["TransformResponse::Success"]
   end
-  class RawQueryRequest,RawQueryResponse,RawQueryResponse_InternalError,RawQueryResponse_InvalidQuery,RawQueryResponse_Progress,RawQueryResponse_Success,TransformRequest,TransformRequestInput,TransformResponse,TransformResponse_InternalError,TransformResponse_InvalidQuery,TransformResponse_Progress,TransformResponse_Success ctx_engine
+  class RawQueryRequest,RawQueryResponse,RawQueryResponse_InternalError,RawQueryResponse_InvalidQuery,RawQueryResponse_Progress,RawQueryResponse_Success,TransformRequest,TransformRequestInput,TransformResponse,TransformResponse_InternalError,TransformResponse_InvalidQuery,TransformResponse_Progress,TransformResponse_Success ctx_engines
 
-  subgraph event["event"]
+  subgraph events["events"]
     EventFilter
   end
-  class EventFilter ctx_event
+  class EventFilter ctx_events
 
-  subgraph flow["flow"]
+  subgraph flows["flows"]
     Flow
     FlowRun
     FlowRunActivationCause
@@ -153,7 +153,7 @@ graph TD
     RetryBackoff
     RetryPolicy
   end
-  class Flow,FlowRun,FlowRunActivationCause,FlowRunActivationCauses,FlowRunRetry,FlowRunSpec,FlowRunSpecInput,FlowRunStatus,FlowRunStatus_TaskEntry,FlowRunStatus_Value,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Manual,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Dataset,FlowTriggerInput_Event,FlowTriggerInput_Manual,FlowTriggerInput_Schedule,FlowTriggerInput_Source,RetryBackoff,RetryPolicy ctx_flow
+  class Flow,FlowRun,FlowRunActivationCause,FlowRunActivationCauses,FlowRunRetry,FlowRunSpec,FlowRunSpecInput,FlowRunStatus,FlowRunStatus_TaskEntry,FlowRunStatus_Value,FlowSpec,FlowSpecInput,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Manual,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Dataset,FlowTriggerInput_Event,FlowTriggerInput_Manual,FlowTriggerInput_Schedule,FlowTriggerInput_Source,RetryBackoff,RetryPolicy ctx_flows
 
   subgraph legacy["legacy"]
     AddPushSource
@@ -171,7 +171,7 @@ graph TD
   end
   class AddPushSource,DatasetSnapshot,DisablePollingSource,DisablePushSource,FetchStep,FetchStep_Container,FetchStep_EthereumLogs,FetchStep_FilesGlob,FetchStep_Mqtt,FetchStep_Url,Manifest,SetPollingSource ctx_legacy
 
-  subgraph resource["resource"]
+  subgraph resources["resources"]
     LabelFilter
     Resource
     ResourceAnnotations
@@ -186,16 +186,16 @@ graph TD
     ResourceSelector
     ResourceStatus
   end
-  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resource
+  class LabelFilter,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus ctx_resources
 
-  subgraph sink["sink"]
+  subgraph sinks["sinks"]
     WebhookTarget
     WebhookTargetSpec
     WebhookTargetSpecInput
   end
-  class WebhookTarget,WebhookTargetSpec,WebhookTargetSpecInput ctx_sink
+  class WebhookTarget,WebhookTargetSpec,WebhookTargetSpecInput ctx_sinks
 
-  subgraph source["source"]
+  subgraph sources["sources"]
     CompressionFormat
     EnvVar
     EventTimeSource
@@ -233,7 +233,7 @@ graph TD
     SourceSpecInput
     SourceState
   end
-  class CompressionFormat,EnvVar,EventTimeSource,EventTimeSource_FromMetadata,EventTimeSource_FromPath,EventTimeSource_FromSystemTime,IngestParams,Ingress,Ingress_Container,Ingress_EvmLogs,Ingress_FilesGlob,Ingress_Mqtt,Ingress_RestEndpoint,Ingress_Url,IngressBuffer,IngressBuffer_Memory,MergeStrategy,MergeStrategy_Append,MergeStrategy_ChangelogStream,MergeStrategy_Ledger,MergeStrategy_Snapshot,MergeStrategy_UpsertStream,MqttQos,MqttTopicSubscription,PrepStep,PrepStep_Decompress,PrepStep_Pipe,ReadStep,RequestHeader,Source,SourceCaching,SourceCaching_Forever,SourceOrdering,SourceSpec,SourceSpecInput,SourceState ctx_source
+  class CompressionFormat,EnvVar,EventTimeSource,EventTimeSource_FromMetadata,EventTimeSource_FromPath,EventTimeSource_FromSystemTime,IngestParams,Ingress,Ingress_Container,Ingress_EvmLogs,Ingress_FilesGlob,Ingress_Mqtt,Ingress_RestEndpoint,Ingress_Url,IngressBuffer,IngressBuffer_Memory,MergeStrategy,MergeStrategy_Append,MergeStrategy_ChangelogStream,MergeStrategy_Ledger,MergeStrategy_Snapshot,MergeStrategy_UpsertStream,MqttQos,MqttTopicSubscription,PrepStep,PrepStep_Decompress,PrepStep_Pipe,ReadStep,RequestHeader,Source,SourceCaching,SourceCaching_Forever,SourceOrdering,SourceSpec,SourceSpecInput,SourceState ctx_sources
 
   subgraph storage["storage"]
     AwsCredentials
@@ -248,7 +248,7 @@ graph TD
   end
   class AwsCredentials,AwsCredentialsInput,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
 
-  subgraph task["task"]
+  subgraph tasks["tasks"]
     Task
     TaskOutcome
     TaskOutcome_Cancelled["TaskOutcome::Cancelled"]
@@ -270,7 +270,7 @@ graph TD
     TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
     TaskStatus
   end
-  class Task,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Transform,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Transform,TaskSpecInput_WebhookCall,TaskStatus ctx_task
+  class Task,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Transform,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Transform,TaskSpecInput_WebhookCall,TaskStatus ctx_tasks
 
   Account -->|"headers"| ResourceHeadersInput
   Account -->|"spec"| AccountSpecInput

@@ -1,0 +1,6 @@
+{
+  "$id": "https://opendatafabric.org/schemas/engines/v1alpha1/meta/EngineMessage",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A marker schema for all engine RPC requests and responses",
+  "$ref": "https://json-schema.org/draft/2020-12/schema"
+}

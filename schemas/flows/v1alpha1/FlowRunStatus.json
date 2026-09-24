@@ -1,0 +1,71 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunStatus",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition",
+  "description": "Condition tracking the overall execution status of a FlowRun and its spawned tasks.",
+  "$defs": {
+    "Value": {
+      "type": "string",
+      "description": "Overall execution status of the FlowRun.",
+      "enum": [
+        "Waiting",
+        "Running",
+        "Finished"
+      ]
+    },
+    "TaskEntry": {
+      "type": "object",
+      "description": "Describes a task spawned by this FlowRun.",
+      "required": [
+        "name",
+        "task",
+        "status",
+        "lastUpdatedAt"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Corresponds to the task name in spec.tasks."
+        },
+        "task": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+          "unevaluatedProperties": false,
+          "description": "Reference to the spawned Task resource."
+        },
+        "status": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus",
+          "unevaluatedProperties": false,
+          "description": "Current execution phase of this task."
+        },
+        "outcome": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskOutcome",
+          "unevaluatedProperties": false,
+          "description": "Outcome kind once the task has finished."
+        },
+        "lastUpdatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time at which this task's status has been updated."
+        }
+      }
+    }
+  },
+  "type": "object",
+  "required": [
+    "status"
+  ],
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/Value",
+      "unevaluatedProperties": false,
+      "description": "Overall execution status of the FlowRun."
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TaskEntry",
+        "unevaluatedProperties": false
+      },
+      "description": "Tasks spawned by this FlowRun, in execution order."
+    }
+  }
+}

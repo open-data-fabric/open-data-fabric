@@ -8,6 +8,6 @@ headers:
 spec:
   relations:
     - subject: Account:alice  # Short form, equivalent to { type: Account, name: alice }
-      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetRole
       value: Maintainer
       object: Dataset:bob/bobs-dataset  # Short form, equivalent to { type: Dataset, account: { name: bob }, name: bobs-dataset }

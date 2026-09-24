@@ -26,9 +26,9 @@ const PREAMBLE: &str = indoc::indoc!(
     use setty::types::{ByteSize, DurationString};
 
     use crate::auth::*;
-    use crate::dataset::*;
+    use crate::datasets::*;
     use crate::formats::*;
-    use crate::resource::*;
+    use crate::resources::*;
     "#
 );
 
@@ -403,8 +403,8 @@ fn format_type(typ: &model::Type) -> String {
 
         model::Type::AccountId => format!("AccountID"),
         model::Type::AccountName => format!("AccountName"),
-        model::Type::DatasetAlias => format!("crate::dataset::legacy::DatasetAlias"),
-        model::Type::DatasetRef => format!("crate::dataset::legacy::DatasetRef"),
+        model::Type::DatasetAlias => format!("crate::datasets::legacy::DatasetAlias"),
+        model::Type::DatasetRef => format!("crate::datasets::legacy::DatasetRef"),
         model::Type::DatasetId => format!("DatasetID"),
         model::Type::ResourceId => format!("ResourceID"),
         model::Type::ResourceName => format!("ResourceName"),

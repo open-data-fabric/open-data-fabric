@@ -1,0 +1,51 @@
+{
+  "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetSelector",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Selects one or more datasets by name pattern and optional filters.",
+  "format": "struct-or-string",
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "codegen": {
+        "rust": {
+          "dtoType": "DatasetSelector"
+        }
+      },
+      "required": [],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountRef",
+          "description": "Reference to an account that owns the target resources.",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the singular resource."
+        },
+        "name": {
+          "type": "string",
+          "examples": [
+            "%",
+            "my-dataset-%",
+            "org.opendata.%"
+          ],
+          "description": "Name pattern in SQL `LIKE` format."
+        },
+        "labels": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/LabelFilter",
+          "description": "Filter by resource labels.",
+          "unevaluatedProperties": false
+        },
+        "kind": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetKind",
+          "description": "Restricts the selector to datasets of a specific kind.",
+          "unevaluatedProperties": false
+        }
+      }
+    }
+  ]
+}

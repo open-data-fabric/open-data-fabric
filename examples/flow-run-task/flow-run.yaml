@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowRun
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/FlowRun
+# $schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowRun
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowRun
 headers:
   name: flow-run-123456
   ownerReferences:

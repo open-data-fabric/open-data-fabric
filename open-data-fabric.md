@@ -1192,8 +1192,10 @@ See also:
   - [AccountSpec](#accountspec-schema)
   - [AccountSpecInput](#accountspecinput-schema)
   - [AccountType](#accounttype-schema)
-  - [Attribute](#attribute-schema)
-  - [AttributeInput](#attributeinput-schema)
+  - [Group](#group-schema)
+  - [GroupSpec](#groupspec-schema)
+  - [GroupSpecInput](#groupspecinput-schema)
+  - [Member](#member-schema)
   - [Relation](#relation-schema)
   - [RelationInput](#relationinput-schema)
   - [Relations](#relations-schema)
@@ -1220,15 +1222,20 @@ See also:
   - [ExtraAttributes](#extraattributes-schema)
   - [OperationType](#operationtype-schema)
   - [TimeUnit](#timeunit-schema)
-- [dataset](#reference-dataset)
+- [datasets](#reference-datasets)
   - [AddData](#adddata-schema)
+  - [AllowAnonymousRead](#allowanonymousread-schema)
+  - [AllowPublicRead](#allowpublicread-schema)
   - [AttachmentEmbedded](#attachmentembedded-schema)
   - [Attachments](#attachments-schema)
   - [Checkpoint](#checkpoint-schema)
   - [CompactionParams](#compactionparams-schema)
   - [DataSlice](#dataslice-schema)
   - [Dataset](#dataset-schema)
+  - [DatasetHandle](#datasethandle-schema)
   - [DatasetKind](#datasetkind-schema)
+  - [DatasetRef](#datasetref-schema)
+  - [DatasetRole](#datasetrole-schema)
   - [DatasetSelector](#datasetselector-schema)
   - [DatasetSpec](#datasetspec-schema)
   - [DatasetSpecInput](#datasetspecinput-schema)
@@ -1253,23 +1260,29 @@ See also:
   - [Transform](#transform-schema)
   - [TransformInput](#transforminput-schema)
   - [Watermark](#watermark-schema)
-- [engine](#reference-engine)
+- [engines](#reference-engines)
   - [RawQueryRequest](#rawqueryrequest-schema)
   - [RawQueryResponse](#rawqueryresponse-schema)
   - [TransformRequest](#transformrequest-schema)
   - [TransformRequestInput](#transformrequestinput-schema)
   - [TransformResponse](#transformresponse-schema)
-- [event](#reference-event)
+- [events](#reference-events)
   - [EventFilter](#eventfilter-schema)
-- [flow](#reference-flow)
+- [flows](#reference-flows)
   - [Flow](#flow-schema)
+  - [FlowRun](#flowrun-schema)
+  - [FlowRunActivationCause](#flowrunactivationcause-schema)
+  - [FlowRunActivationCauses](#flowrunactivationcauses-schema)
+  - [FlowRunRetry](#flowrunretry-schema)
+  - [FlowRunSpec](#flowrunspec-schema)
+  - [FlowRunSpecInput](#flowrunspecinput-schema)
+  - [FlowRunStatus](#flowrunstatus-schema)
   - [FlowSpec](#flowspec-schema)
   - [FlowSpecInput](#flowspecinput-schema)
   - [FlowTrigger](#flowtrigger-schema)
   - [FlowTriggerInput](#flowtriggerinput-schema)
-  - [Task](#task-schema)
-  - [TaskSpec](#taskspec-schema)
-  - [TaskSpecInput](#taskspecinput-schema)
+  - [RetryBackoff](#retrybackoff-schema)
+  - [RetryPolicy](#retrypolicy-schema)
 - [legacy](#reference-legacy)
   - [AddPushSource](#addpushsource-schema)
   - [DatasetSnapshot](#datasetsnapshot-schema)
@@ -1278,7 +1291,7 @@ See also:
   - [FetchStep](#fetchstep-schema)
   - [Manifest](#manifest-schema)
   - [SetPollingSource](#setpollingsource-schema)
-- [resource](#reference-resource)
+- [resources](#reference-resources)
   - [LabelFilter](#labelfilter-schema)
   - [Resource](#resource-schema)
   - [ResourceAnnotations](#resourceannotations-schema)
@@ -1292,12 +1305,11 @@ See also:
   - [ResourceRef](#resourceref-schema)
   - [ResourceSelector](#resourceselector-schema)
   - [ResourceStatus](#resourcestatus-schema)
-- [sink](#reference-sink)
+- [sinks](#reference-sinks)
   - [WebhookTarget](#webhooktarget-schema)
   - [WebhookTargetSpec](#webhooktargetspec-schema)
   - [WebhookTargetSpecInput](#webhooktargetspecinput-schema)
-  - [WebhookTargetStatus](#webhooktargetstatus-schema)
-- [source](#reference-source)
+- [sources](#reference-sources)
   - [CompressionFormat](#compressionformat-schema)
   - [EnvVar](#envvar-schema)
   - [EventTimeSource](#eventtimesource-schema)
@@ -1324,6 +1336,13 @@ See also:
   - [PersistentVolumeSpec](#persistentvolumespec-schema)
   - [PersistentVolumeSpecInput](#persistentvolumespecinput-schema)
   - [VolumeCapacity](#volumecapacity-schema)
+- [tasks](#reference-tasks)
+  - [Task](#task-schema)
+  - [TaskOutcome](#taskoutcome-schema)
+  - [TaskPlan](#taskplan-schema)
+  - [TaskSpec](#taskspec-schema)
+  - [TaskSpecInput](#taskspecinput-schema)
+  - [TaskStatus](#taskstatus-schema)
 
 <a name="reference-auth"></a>
 #### auth
@@ -1416,33 +1435,36 @@ Represents the type of an account.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="attribute-schema"></a>
-##### Attribute
-A named attribute attached to a resource, used by auth policies for access control decisions.
+<a name="group-schema"></a>
+##### Group
+A named group of accounts. Members are assigned via the `Member` relation. Groups can be granted roles on resources, allowing permissions to be managed at the group level rather than per-account.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `object` | [ResourceHandle](#resourcehandle-schema) | V |  | The resource this attribute is attached to. |
-| `name` | `string` | V |  | Name of the attribute. |
-| `value` | `any` | V |  | Value of the attribute. |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [GroupSpecInput](#groupspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Attribute.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/Group.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="attributeinput-schema"></a>
-##### AttributeInput
-A named attribute attached to a resource, used by auth policies for access control decisions.
+<a name="groupspec-schema"></a>
+##### GroupSpec
+Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
 
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `object` | [ResourceRef](#resourceref-schema) | V |  | The resource this attribute is attached to. |
-| `name` | `string` | V |  | Name of the attribute e.g. `allowPublicRead`. |
-| `value` | `any` | V |  | Value of the attribute. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/AttributeInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/GroupSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
+
+<a name="groupspecinput-schema"></a>
+##### GroupSpecInput
+Group specification. Groups have no intrinsic properties — membership and permissions are expressed entirely through relations.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/GroupSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
 
 <a name="relation-schema"></a>
 ##### Relation
@@ -1490,12 +1512,11 @@ Specified relations between resources on which auth policies act upon.
 
 <a name="relationsspec-schema"></a>
 ##### RelationsSpec
-Specifies resource attributes and relations between resources on which auth policies act upon.
+Specifies relations between resources on which auth policies act upon.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `relations` | array([Relation](#relation-schema)) | V |  | Relations between resources. |
-| `attributes` | array([Attribute](#attribute-schema)) | V |  | Resource attributes. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1503,12 +1524,11 @@ Specifies resource attributes and relations between resources on which auth poli
 
 <a name="relationsspecinput-schema"></a>
 ##### RelationsSpecInput
-Specifies resource attributes and relations between resources on which auth policies act upon.
+Specifies relations between resources on which auth policies act upon.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `relations` | array([RelationInput](#relationinput-schema)) |  |  | Relations between resources. |
-| `attributes` | array([AttributeInput](#attributeinput-schema)) |  |  | Resource attributes. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/RelationsSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -1618,8 +1638,8 @@ Reference to a value within a `VariableSet` or a `SecretSet`.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the `VariableSet` or the `SecretSet`. |
-| `type` | `string` | V |  | Short type name or full type URI of the target resource. |
 | `id` | `string` |  |  | ID of a resource. |
+| `type` | `string` |  |  | Short type name or full type URI of the target resource. |
 | `name` | `string` |  |  | Name of a resource. |
 | `path` | `string` |  |  | JSON path to a value within a `VariableSet` or a `SecretSet`. |
 
@@ -2088,8 +2108,8 @@ Defines the unit of measurement of time
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="reference-dataset"></a>
-#### dataset
+<a name="reference-datasets"></a>
+#### datasets
 <a name="adddata-schema"></a>
 ##### AddData
 Indicates that data has been ingested into a root dataset.
@@ -2104,9 +2124,11 @@ Indicates that data has been ingested into a root dataset.
 | `newSourceState` | [SourceState](#sourcestate-schema) |  |  | The state of the source the data was added from to allow fast resuming. If the state did not change but is still relevant for subsequent runs it should be carried, i.e. only the last state per source is considered when resuming. |
 | `extra` | [ExtraAttributes](#extraattributes-schema) |  |  | ODF extensions. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/AddData.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/AddData.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
+
+
 
 <a name="attachmentembedded-schema"></a>
 ##### AttachmentEmbedded
@@ -2117,7 +2139,7 @@ Embedded attachment item.
 | `path` | `string` | V |  | Path to an attachment if it was materialized into a file. |
 | `content` | `string` | V |  | Content of the attachment. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/AttachmentEmbedded.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/AttachmentEmbedded.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2129,7 +2151,7 @@ Defines the source of attachment files.
 | :---: | --- |
 | [Attachments::Embedded](#attachments-embedded-schema) | For attachments that are specified inline and are embedded in the metadata. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Attachments.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Attachments.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2141,7 +2163,7 @@ For attachments that are specified inline and are embedded in the metadata.
 | :---: | :---: | :---: | :---: | --- |
 | `items` | array([AttachmentEmbedded](#attachmentembedded-schema)) | V |  | List of embedded items. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Attachments.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Attachments.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2154,7 +2176,7 @@ Describes a checkpoint produced by an engine
 | `physicalHash` | `string` | V | [multihash](https://github.com/multiformats/multihash) | Hash sum of the checkpoint file. |
 | `size` | `integer` | V | `uint64` | Size of checkpoint file in bytes. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Checkpoint.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Checkpoint.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2167,7 +2189,7 @@ Optional parameters to control ingestion behavior.
 | `maxSliceSize` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Target maximum size of each compacted data slice e.g. `100MiB`. |
 | `maxSliceRecords` | `integer` |  | `uint64` | Target maximum number of records per compacted data slice. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/CompactionParams.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/CompactionParams.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2182,7 +2204,7 @@ Describes a slice of data added to a dataset or produced via transformation
 | `offsetInterval` | [OffsetInterval](#offsetinterval-schema) | V |  | Data slice produced by the transaction. |
 | `size` | `integer` | V | `uint64` | Size of data file in bytes. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DataSlice.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DataSlice.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2196,7 +2218,22 @@ Represents a desired state of a dataset.
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | [DatasetSpecInput](#datasetspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Dataset.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Dataset.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datasethandle-schema"></a>
+##### DatasetHandle
+Link to a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `account` | [AccountHandle](#accounthandle-schema) |  |  | Reference to an account that owns the dataset. |
+| `id` | `string` | V |  | ID of the dataset resource. |
+| `did` | `string` | V | [dataset-id](#dataset-identity) | DID of the dataset. |
+| `name` | `string` | V |  | Name of the dataset. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetHandle.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2209,7 +2246,36 @@ Represents type of the dataset.
 | Root |
 | Derivative |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetKind.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetKind.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datasetref-schema"></a>
+##### DatasetRef
+Reference to a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the dataset. |
+| `id` | `string` |  |  | UUID of the dataset resource. |
+| `did` | `string` |  | [dataset-id](#dataset-identity) | DID of the dataset. |
+| `name` | `string` |  |  | Name of the dataset. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="datasetrole-schema"></a>
+##### DatasetRole
+Access role granted to a subject on a dataset. Note: in future this fixed enum schema will likely be replaced by a reference to a `DatasetRole` resources that defines granular permissions on different actions available on a dataset.
+
+| Enum Value |
+| :---: |
+| Reader |
+| Editor |
+| Maintainer |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetRole.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2225,7 +2291,7 @@ Selects one or more datasets by name pattern and optional filters.
 | `labels` | [LabelFilter](#labelfilter-schema) |  |  | Filter by resource labels. |
 | `kind` | [DatasetKind](#datasetkind-schema) |  |  | Restricts the selector to datasets of a specific kind. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSelector.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetSelector.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2240,7 +2306,7 @@ Represents a desired state of the dataset metadata.
 | `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
 | `volume` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2255,7 +2321,7 @@ Represents a desired state of the dataset metadata.
 | `metadata` | array([MetadataEvent](#metadataevent-schema)) | V |  | An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc. |
 | `volume` | [PersistentVolumeRef](#persistentvolumeref-schema) |  |  | Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2270,7 +2336,7 @@ Specifies the mapping of system columns onto dataset schema.
 | `systemTimeColumn` | `string` |  |  | Name of the system time column.<br/><br/>Default: "system_time" |
 | `eventTimeColumn` | `string` |  |  | Name of the event time column.<br/><br/>Default: "event_time" |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/DatasetVocabulary.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/DatasetVocabulary.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2287,7 +2353,7 @@ Indicates that derivative transformation has been performed.
 | `newCheckpoint` | [Checkpoint](#checkpoint-schema) |  |  | Describes checkpoint written during this transaction, if any. If an engine operation resulted in no updates to the checkpoint, but checkpoint is still relevant for subsequent runs - a hash of the previous checkpoint should be specified. |
 | `newWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last watermark of the output data stream, if any. Initial blocks may not have watermarks, but once watermark is set - all subsequent blocks should either carry the same watermark or specify a new (greater) one. Thus, watermarks are monotonically non-decreasing. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ExecuteTransform.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/ExecuteTransform.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2303,7 +2369,7 @@ Describes a slice of the input dataset used during a transformation
 | `prevOffset` | `integer` |  | `uint64` | Last data record offset in the input dataset that was previously incorporated into the derivative transformation, if any. Must be equal to the last non-empty `newOffset`. Together with `newOffset` defines a half-open `(prevOffset, newOffset]` interval of data records that will be considered in this transaction. |
 | `newOffset` | `integer` |  | `uint64` | Offset of the last data record that will be incorporated into the derivative transformation, if any. When present, defines a half-open `(prevOffset, newOffset]` interval of data records that will be considered in this transaction. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ExecuteTransformInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/ExecuteTransformInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2318,7 +2384,7 @@ An individual block in the metadata chain that captures the history of modificat
 | `sequenceNumber` | `integer` | V | `uint64` | Block sequence number, starting from zero at the seed block. |
 | `event` | [MetadataEvent](#metadataevent-schema) | V |  | Event data. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/MetadataBlock.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/MetadataBlock.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2342,7 +2408,7 @@ Represents a transaction that occurred on a dataset.
 | [DisablePushSource](#disablepushsource-schema) | Disables the previously defined source. |
 | [DisablePollingSource](#disablepollingsource-schema) | Disables the previously defined polling source. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/MetadataEvent.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/MetadataEvent.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2355,7 +2421,7 @@ Describes a range of data as a closed arithmetic interval of offsets
 | `start` | `integer` | V | `uint64` | Start of the closed interval [start; end]. |
 | `end` | `integer` | V | `uint64` | End of the closed interval [start; end]. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/OffsetInterval.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/OffsetInterval.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2369,7 +2435,7 @@ Represents a projection of a dataaset history into a state for fast lookups.
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | [ProjectionSpecInput](#projectionspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Projection.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Projection.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2382,7 +2448,7 @@ Represents a projection of a dataaset history into a state for fast lookups.
 | `inputs` | array([TransformInput](#transforminput-schema)) | V |  | Datasets that will be used as sources. |
 | `project` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ProjectionSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/ProjectionSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2395,7 +2461,7 @@ Represents a projection of a dataaset history into a state for fast lookups.
 | `inputs` | array([TransformInput](#transforminput-schema)) | V |  | Datasets that will be used as sources. |
 | `project` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/ProjectionSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/ProjectionSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2408,7 +2474,7 @@ Establishes the identity of the dataset. Always the first metadata event in the 
 | `datasetId` | `string` | V | [dataset-id](#dataset-identity) | Unique identity of the dataset. |
 | `datasetKind` | [DatasetKind](#datasetkind-schema) | V |  | Type of the dataset. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Seed.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Seed.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2420,7 +2486,7 @@ Associates a set of files with this dataset.
 | :---: | :---: | :---: | :---: | --- |
 | `attachments` | [Attachments](#attachments-schema) | V |  | One of the supported attachment sources. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SetAttachments.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SetAttachments.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2433,7 +2499,7 @@ Specifies the complete schema of Data Slices added to the Dataset following this
 | `rawArrowSchema` | `string` |  | `flatbuffers` | DEPRECATED: Apache Arrow schema encoded in its native flatbuffers representation. |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Defines the logical schema of the data files that follow this event. Will become a required field after migration. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SetDataSchema.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SetDataSchema.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2446,7 +2512,7 @@ Provides basic human-readable information about a dataset.
 | `description` | `string` |  |  | Brief single-sentence summary of a dataset. |
 | `keywords` | array(`string`) |  |  | Keywords, search terms, or tags used to describe the dataset. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SetInfo.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SetInfo.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2461,7 +2527,7 @@ Defines a license that applies to this dataset.
 | `spdxId` | `string` |  |  | License identifier from the SPDX License List. |
 | `websiteUrl` | `string` | V | `url` | URL where licensing terms can be found. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SetLicense.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SetLicense.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2474,7 +2540,7 @@ Defines a transformation that produces data in a derivative dataset.
 | `inputs` | array([TransformInput](#transforminput-schema)) | V |  | Datasets that will be used as sources. |
 | `transform` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SetTransform.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SetTransform.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2489,7 +2555,7 @@ Lets you manipulate names of the system columns to avoid conflicts.
 | `systemTimeColumn` | `string` |  |  | Name of the system time column. |
 | `eventTimeColumn` | `string` |  |  | Name of the event time column. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SetVocab.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SetVocab.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2502,7 +2568,7 @@ Defines a query in a multi-step SQL transformation.
 | `alias` | `string` |  |  | Name of the temporary view that will be created from result of the query. Step without this alias will be treated as an output of the transformation. |
 | `query` | `string` | V |  | SQL query the result of which will be exposed under the alias. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/SqlQueryStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/SqlQueryStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2515,7 +2581,7 @@ Temporary Flink-specific extension for creating temporal tables from streams.
 | `name` | `string` | V |  | Name of the dataset to be converted into a temporal table. |
 | `primaryKey` | array(`string`) | V |  | Column names used as the primary key for creating a table. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/TemporalTable.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/TemporalTable.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2527,7 +2593,7 @@ Engine-specific processing queries that shape the resulting data.
 | :---: | --- |
 | [Transform::Sql](#transform-sql-schema) | Transform using one of the SQL dialects. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Transform.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Transform.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2543,7 +2609,7 @@ Transform using one of the SQL dialects.
 | `queries` | array([SqlQueryStep](#sqlquerystep-schema)) |  |  | Specifies multi-step SQL transformations. Each step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)`. Last query in the array should have no alias and will be treated as an output. |
 | `temporalTables` | array([TemporalTable](#temporaltable-schema)) |  |  | Temporary Flink-specific extension for creating temporal tables from streams. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Transform.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Transform.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2556,7 +2622,7 @@ Describes a derivative transformation input
 | `datasetRef` | `string` | V | [dataset-ref](#dataset-identity) | A local or remote dataset reference. When block is accepted this MUST be in the form of a DatasetId to guarantee reproducibility, as aliases can change over time. |
 | `alias` | `string` |  |  | An alias under which this input will be available in queries. Will be populated from `datasetRef` if not provided before resolving it to DatasetId. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/TransformInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/TransformInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2569,12 +2635,12 @@ Represents a watermark in the event stream.
 | `systemTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Moment in processing time when watermark was emitted. |
 | `eventTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Moment in event time which watermark has reached. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/dataset/v1alpha1/Watermark.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/Watermark.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="reference-engine"></a>
-#### engine
+<a name="reference-engines"></a>
+#### engines
 <a name="rawqueryrequest-schema"></a>
 ##### RawQueryRequest
 Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step
@@ -2585,7 +2651,7 @@ Sent by the coordinator to an engine to perform query on raw input data, usually
 | `transform` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 | `outputDataPath` | `string` | V | `path` | Path where query result will be written. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/RawQueryRequest.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/RawQueryRequest.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2600,7 +2666,7 @@ Sent by an engine to coordinator when performing the raw query operation
 | [RawQueryResponse::InvalidQuery](#rawqueryresponse-invalidquery-schema) | Query did not pass validation |
 | [RawQueryResponse::InternalError](#rawqueryresponse-internalerror-schema) | Internal error during query execution |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/RawQueryResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/RawQueryResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2613,7 +2679,7 @@ Internal error during query execution
 | `message` | `string` | V |  | Brief description of an error |
 | `backtrace` | `string` |  |  | Details of an error (e.g. a backtrace) |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/RawQueryResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/RawQueryResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2625,7 +2691,7 @@ Query did not pass validation
 | :---: | :---: | :---: | :---: | --- |
 | `message` | `string` | V |  | Explanation of an error |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/RawQueryResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/RawQueryResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2633,7 +2699,7 @@ Query did not pass validation
 ##### RawQueryResponse::Progress
 Reports query progress
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/RawQueryResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/RawQueryResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2645,7 +2711,7 @@ Query executed successfully
 | :---: | :---: | :---: | :---: | --- |
 | `numRecords` | `integer` | V | `uint64` | Number of records produced by the query |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/RawQueryResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/RawQueryResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2666,7 +2732,7 @@ Sent by the coordinator to an engine to perform the next step of data transforma
 | `newCheckpointPath` | `string` | V | `path` | TODO: This will be removed when coordinator will be speaking to engines purely through Arrow. |
 | `newDataPath` | `string` | V | `path` | TODO: This will be removed when coordinator will be speaking to engines purely through Arrow. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformRequest.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformRequest.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2685,7 +2751,7 @@ Sent as part of the engine transform request operation to describe the input
 | `schemaFile` | `string` | V | `path` | TODO: replace with actual DDL or Parquet schema. |
 | `explicitWatermarks` | array([Watermark](#watermark-schema)) | V |  | Watermarks that should be injected into the stream to separate micro batches for reproducibility. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformRequestInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformRequestInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2700,7 +2766,7 @@ Sent by an engine to coordinator when performing the data transformation
 | [TransformResponse::InvalidQuery](#transformresponse-invalidquery-schema) | Query did not pass validation |
 | [TransformResponse::InternalError](#transformresponse-internalerror-schema) | Internal error during query execution |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2713,7 +2779,7 @@ Internal error during query execution
 | `message` | `string` | V |  | Brief description of an error |
 | `backtrace` | `string` |  |  | Details of an error (e.g. a backtrace) |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2725,7 +2791,7 @@ Query did not pass validation
 | :---: | :---: | :---: | :---: | --- |
 | `message` | `string` | V |  | Explanation of an error |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2733,7 +2799,7 @@ Query did not pass validation
 ##### TransformResponse::Progress
 Reports query progress
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2746,17 +2812,17 @@ Query executed successfully
 | `newOffsetInterval` | [OffsetInterval](#offsetinterval-schema) |  |  | Data slice produced by the transaction, if any. |
 | `newWatermark` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Watermark advanced by the transaction, if any. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engine/v1alpha1/TransformResponse.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/engines/v1alpha1/TransformResponse.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="reference-event"></a>
-#### event
+<a name="reference-events"></a>
+#### events
 <a name="eventfilter-schema"></a>
 ##### EventFilter
 Filters that work on domain event types and fields.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/event/v1alpha1/EventFilter.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/events/v1alpha1/EventFilter.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2780,8 +2846,8 @@ Filters that work on domain event types and fields.
 | `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
 
 
-<a name="reference-flow"></a>
-#### flow
+<a name="reference-flows"></a>
+#### flows
 <a name="flow-schema"></a>
 ##### Flow
 Defines a sequence of tasks to be executed upon certain trigger conditions.
@@ -2792,7 +2858,129 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | [FlowSpecInput](#flowspecinput-schema) | V |  | Specifies the desired state of the flow. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/Flow.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/Flow.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrun-schema"></a>
+##### FlowRun
+Defines a set of tasks to be executed in a sequence.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [FlowRunSpecInput](#flowrunspecinput-schema) | V |  | Specifies the desired state of the flow run. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRun.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunactivationcause-schema"></a>
+##### FlowRunActivationCause
+Cause of the flow run activation
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `activationTime` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time at which the trigger fired. |
+| `initiator` | [AccountHandle](#accounthandle-schema) |  |  | Account that initiated the run, if applicable. |
+| `trigger` | [FlowTrigger](#flowtrigger-schema) | V |  | Copy of the trigger configuration from the parent Flow that fired. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunActivationCause.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunactivationcauses-schema"></a>
+##### FlowRunActivationCauses
+Condition capturing what caused this FlowRun to be scheduled. Set by the controller at creation time; never written by users. In case of a retry, the causes of the original run are preserved.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `activationCauses` | array([FlowRunActivationCause](#flowrunactivationcause-schema)) | V |  | Triggers that caused this run to be scheduled. |
+| `lateActivationCauses` | array([FlowRunActivationCause](#flowrunactivationcause-schema)) |  |  | Additional triggers that fired while this run was already queued or executing. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunActivationCauses.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunretry-schema"></a>
+##### FlowRunRetry
+Condition linking this FlowRun to the previous FlowRun it is retrying. Set by the controller; never written by users.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `retryOf` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the FlowRun this run is retrying. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunRetry.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunspec-schema"></a>
+##### FlowRunSpec
+Defines a set of tasks to be executed in a sequence.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `target` | [ResourceHandle](#resourcehandle-schema) |  |  | Defines the default target resources on which tasks will be performed. |
+| `tasks` | array([TaskSpec](#taskspec-schema)) | V |  | List of tasks to run consecutively. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunspecinput-schema"></a>
+##### FlowRunSpecInput
+Defines a set of tasks to be executed in a sequence.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `target` | [ResourceRef](#resourceref-schema) |  |  | Defines the default target resources on which tasks will be performed. |
+| `tasks` | array([TaskSpecInput](#taskspecinput-schema)) | V |  | List of tasks to run consecutively. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunstatus-schema"></a>
+##### FlowRunStatus
+Condition tracking the overall execution status of a FlowRun and its spawned tasks.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `status` | [FlowRunStatus::Value](#flowrunstatus-value-schema) | V |  | Overall execution status of the FlowRun. |
+| `tasks` | array([FlowRunStatus::TaskEntry](#flowrunstatus-taskentry-schema)) |  |  | Tasks spawned by this FlowRun, in execution order. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunStatus.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunstatus-taskentry-schema"></a>
+##### FlowRunStatus::TaskEntry
+Describes a task spawned by this FlowRun.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` | V |  | Corresponds to the task name in spec.tasks. |
+| `task` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the spawned Task resource. |
+| `status` | [TaskStatus](#taskstatus-schema) | V |  | Current execution phase of this task. |
+| `outcome` | [TaskOutcome](#taskoutcome-schema) |  |  | Outcome kind once the task has finished. |
+| `lastUpdatedAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Last time at which this task's status has been updated. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunStatus.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowrunstatus-value-schema"></a>
+##### FlowRunStatus::Value
+Overall execution status of the FlowRun.
+
+| Enum Value |
+| :---: |
+| Waiting |
+| Running |
+| Finished |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2805,8 +2993,9 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | `target` | [ResourceSelector](#resourceselector-schema) | V |  | Defines resources for which this flow will be instantiated. |
 | `triggers` | array([FlowTrigger](#flowtrigger-schema)) | V |  | Conditions that cause this flow to execute. |
 | `tasks` | array([TaskSpec](#taskspec-schema)) | V |  | List of tasks to run consecutively. |
+| `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a flow should react to failures. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2819,8 +3008,9 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | `target` | [ResourceSelector](#resourceselector-schema) | V |  | Defines resources for which this flow will be instantiated. |
 | `triggers` | array([FlowTriggerInput](#flowtriggerinput-schema)) | V |  | Conditions that cause this flow to execute. |
 | `tasks` | array([TaskSpecInput](#taskspecinput-schema)) | V |  | List of tasks to run consecutively. |
+| `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a flow should react to failures. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2830,12 +3020,13 @@ Condition that causes a flow to be executed.
 
 | Union Type | Description |
 | :---: | --- |
+| [FlowTrigger::Manual](#flowtrigger-manual-schema) | Triggers the flow via an API call or UI action. |
 | [FlowTrigger::Schedule](#flowtrigger-schedule-schema) | Triggers the flow on a cron schedule. |
 | [FlowTrigger::Event](#flowtrigger-event-schema) | Triggers the flow when an event bus event matching one of the filters is observed. |
 | [FlowTrigger::Source](#flowtrigger-source-schema) | Triggers the flow when a source receives new data, with optional batching controls. |
 | [FlowTrigger::Dataset](#flowtrigger-dataset-schema) | Triggers the flow when matching datasets are updated. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTrigger.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2848,7 +3039,7 @@ Triggers the flow when matching datasets are updated.
 | `dataset` | [DatasetSelector](#datasetselector-schema) | V |  | Selector that identifies which datasets can trigger this flow. |
 | `events` | array(`string`) |  |  | Set of event bus event IDs that this trigger will react to |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTrigger.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2862,7 +3053,15 @@ Triggers the flow when an event bus event matching one of the filters is observe
 | `cooldown` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run. |
 | `cooldownMaxBatch` | `integer` |  | `uint64` | If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTrigger.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtrigger-manual-schema"></a>
+##### FlowTrigger::Manual
+Triggers the flow via an API call or UI action.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTrigger.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2874,7 +3073,7 @@ Triggers the flow on a cron schedule.
 | :---: | :---: | :---: | :---: | --- |
 | `cron` | `string` | V |  | Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTrigger.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2888,7 +3087,7 @@ Triggers the flow when a source receives new data, with optional batching contro
 | `minRecordsToAwait` | `integer` |  | `uint64` | Minimum number of new records to accumulate before triggering. |
 | `maxAwaitInterval` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTrigger.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTrigger.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2898,12 +3097,13 @@ Condition that causes a flow to be executed.
 
 | Union Type | Description |
 | :---: | --- |
+| [FlowTriggerInput::Manual](#flowtriggerinput-manual-schema) | Triggers the flow via an API call or UI action. |
 | [FlowTriggerInput::Schedule](#flowtriggerinput-schedule-schema) | Triggers the flow on a cron schedule. |
 | [FlowTriggerInput::Event](#flowtriggerinput-event-schema) | Triggers the flow when an event bus event matching one of the filters is observed. |
 | [FlowTriggerInput::Source](#flowtriggerinput-source-schema) | Triggers the flow when a source receives new data, with optional batching controls. |
 | [FlowTriggerInput::Dataset](#flowtriggerinput-dataset-schema) | Triggers the flow when matching datasets are updated. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTriggerInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2916,7 +3116,7 @@ Triggers the flow when matching datasets are updated.
 | `dataset` | [DatasetSelector](#datasetselector-schema) | V |  | Selector that identifies which datasets can trigger this flow. |
 | `events` | array(`string`) |  |  | Set of event bus event IDs that this trigger will react to |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTriggerInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2930,7 +3130,15 @@ Triggers the flow when an event bus event matching one of the filters is observe
 | `cooldown` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run. |
 | `cooldownMaxBatch` | `integer` |  | `uint64` | If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTriggerInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowtriggerinput-manual-schema"></a>
+##### FlowTriggerInput::Manual
+Triggers the flow via an API call or UI action.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTriggerInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2942,7 +3150,7 @@ Triggers the flow on a cron schedule.
 | :---: | :---: | :---: | :---: | --- |
 | `cron` | `string` | V |  | Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTriggerInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -2956,143 +3164,34 @@ Triggers the flow when a source receives new data, with optional batching contro
 | `minRecordsToAwait` | `integer` |  | `uint64` | Minimum number of new records to accumulate before triggering. |
 | `maxAwaitInterval` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/FlowTriggerInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowTriggerInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="task-schema"></a>
-##### Task
-An individual work item to be executed.
+<a name="retrybackoff-schema"></a>
+##### RetryBackoff
+Type of the backoff scaling.
+
+| Enum Value |
+| :---: |
+| Linear |
+| Exponential |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/RetryBackoff.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="retrypolicy-schema"></a>
+##### RetryPolicy
+Defines how a flow should react to failures.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `$schema` | `string` | V |  | Identifies this resource type. |
-| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [TaskSpecInput](#taskspecinput-schema) |  |  | Specifies the desired state of the task. |
+| `maxAttempts` | `integer` |  | `uint32` | Number of attempts before flow auto-scheduling will be disabled. |
+| `minDelay` | `string` |  | [duration](https://docs.rs/duration-string/latest/duration_string/) | How long to wait until the first retry. |
+| `backoff` | [RetryBackoff](#retrybackoff-schema) |  |  | Type of the backoff scaling. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/Task.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspec-schema"></a>
-##### TaskSpec
-An individual work item to be executed as part of a flow.
-
-| Union Type | Description |
-| :---: | --- |
-| [TaskSpec::Ingest](#taskspec-ingest-schema) | Fetches data from a source and appends it to a dataset. |
-| [TaskSpec::Compaction](#taskspec-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
-| [TaskSpec::GarbageCollection](#taskspec-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
-| [TaskSpec::WebhookCall](#taskspec-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspec-compaction-schema"></a>
-##### TaskSpec::Compaction
-Compacts data files in matching datasets to improve query performance.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspec-garbagecollection-schema"></a>
-##### TaskSpec::GarbageCollection
-Removes unreferenced data files from matching datasets.
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspec-ingest-schema"></a>
-##### TaskSpec::Ingest
-Fetches data from a source and appends it to a dataset.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `source` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the source resource that defines how to fetch data. |
-| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspec-webhookcall-schema"></a>
-##### TaskSpec::WebhookCall
-Dispatches a certain payload to a specific `WebhookTarget`.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `target` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the `WebhookTarget`. |
-| `payload` | `string` |  |  | The payload to send. May include templating. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpec.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspecinput-schema"></a>
-##### TaskSpecInput
-An individual work item to be executed as part of a flow.
-
-| Union Type | Description |
-| :---: | --- |
-| [TaskSpecInput::Ingest](#taskspecinput-ingest-schema) | Fetches data from a source and appends it to a dataset. |
-| [TaskSpecInput::Compaction](#taskspecinput-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
-| [TaskSpecInput::GarbageCollection](#taskspecinput-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
-| [TaskSpecInput::WebhookCall](#taskspecinput-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspecinput-compaction-schema"></a>
-##### TaskSpecInput::Compaction
-Compacts data files in matching datasets to improve query performance.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspecinput-garbagecollection-schema"></a>
-##### TaskSpecInput::GarbageCollection
-Removes unreferenced data files from matching datasets.
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspecinput-ingest-schema"></a>
-##### TaskSpecInput::Ingest
-Fetches data from a source and appends it to a dataset.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
-| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="taskspecinput-webhookcall-schema"></a>
-##### TaskSpecInput::WebhookCall
-Dispatches a certain payload to a specific `WebhookTarget`.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `target` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookTarget`. |
-| `payload` | `string` |  |  | The payload to send. May include templating. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flow/v1alpha1/TaskSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/RetryPolicy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3270,13 +3369,13 @@ Contains information on how externally-hosted data can be ingested into the root
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="reference-resource"></a>
-#### resource
+<a name="reference-resources"></a>
+#### resources
 <a name="labelfilter-schema"></a>
 ##### LabelFilter
 Filters that work on resource labels and identity headers.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/LabelFilter.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/LabelFilter.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3306,12 +3405,12 @@ Top-level container for canonical representation of a resource that specifies th
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`. |
+| `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset.json`. |
 | `headers` | [ResourceHeaders](#resourceheaders-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | `object` | V | `generic` | Specifies the desired state of a resource. |
 | `status` | [ResourceStatus](#resourcestatus-schema) | V |  | Resource lifecycle and reconciliation information. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/Resource.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/Resource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3319,7 +3418,7 @@ Top-level container for canonical representation of a resource that specifies th
 ##### ResourceAnnotations
 Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceAnnotations.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceAnnotations.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3345,9 +3444,9 @@ Annotations is an unstructured key value map stored with a resource that may be 
 
 <a name="resourceconditions-schema"></a>
 ##### ResourceConditions
-Container of feneric contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of URL to a schema describing this condition, e.g. `https://opendatafabric.org/schemas/resource/ConditionReady.json`.
+Container of generic contditions that can be added by contollers to provide additional information about the state of a resource. Keys uniquely identify the condition and should be in the form of a schema URL describing this condition, e.g. `https://opendatafabric.org/schemas/tasks/v1/TaskStatus`.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceConditions.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceConditions.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3373,7 +3472,7 @@ Container of feneric contditions that can be added by contollers to provide addi
 
 <a name="resourcehandle-schema"></a>
 ##### ResourceHandle
-Lint to another resolved resource.
+Link to another resolved resource.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
@@ -3383,7 +3482,7 @@ Lint to another resolved resource.
 | `did` | `string` |  | `did` | DID of the resource, if applicable. |
 | `name` | `string` | V |  | Name of a resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceHandle.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceHandle.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3398,12 +3497,13 @@ Container for identity and ownership information of a resource.
 | `account` | [AccountHandle](#accounthandle-schema) | V |  | Link to the account that owns the resource. |
 | `labels` | [ResourceLabels](#resourcelabels-schema) | V |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
 | `annotations` | [ResourceAnnotations](#resourceannotations-schema) | V |  | Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
+| `ownerReferences` | array([ResourceHandle](#resourcehandle-schema)) |  |  | References to resources that created this resource. Used for lineage tracking and cascading cleanup. |
 | `generation` | `integer` | V | `uint64` | A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`. |
 | `createdAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was first applied and assigned an identity. |
 | `updatedAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was last updated, including header, spec, and status updates. |
 | `deletedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the resource was deleted. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceHeaders.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceHeaders.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3418,8 +3518,9 @@ Container for identity and ownership information of a resource.
 | `account` | [AccountRef](#accountref-schema) |  |  | Reference to the account that owns the resource. |
 | `labels` | [ResourceLabels](#resourcelabels-schema) |  |  | Map of string keys and values that can be used to organize, categorize, and query resources. |
 | `annotations` | [ResourceAnnotations](#resourceannotations-schema) |  |  | Annotations is a key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. Unlike labels, annotations are not indexed and cannot be queried by. |
+| `ownerReferences` | array([ResourceRef](#resourceref-schema)) |  |  | References to resources that created this resource. Used for lineage tracking and cascading cleanup. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceHeadersInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceHeadersInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3429,11 +3530,11 @@ Top-level container for user-authored representation of a resource that specifie
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/dataset/v1/Dataset.json`. |
+| `$schema` | `string` | V |  | Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset`. |
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | `object` | V | `generic` | Specifies the desired state of a resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3441,7 +3542,7 @@ Top-level container for user-authored representation of a resource that specifie
 ##### ResourceLabels
 Map of string keys and values that can be used to organize, categorize, and query resources.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceLabels.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceLabels.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3467,16 +3568,17 @@ Map of string keys and values that can be used to organize, categorize, and quer
 
 <a name="resourcephase-schema"></a>
 ##### ResourcePhase
-Represents the lifecycle stage of a resource.
+Represents the reconciliation phase of a resource.
 
 | Enum Value |
 | :---: |
 | Pending |
 | Reconciling |
 | Ready |
+| Degraded |
 | Failed |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourcePhase.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourcePhase.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3487,12 +3589,12 @@ Reference to another resource.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resource. |
-| `type` | `string` | V |  | Short type name or full type URI of the target resource. |
 | `id` | `string` |  |  | ID of the resource within a node. |
 | `did` | `string` |  | `did` | DID of the resource. |
+| `type` | `string` |  |  | Short type name or full type URI of the target resource. |
 | `name` | `string` |  |  | Name of a resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceRef.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceRef.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3503,12 +3605,13 @@ Matches zero or many resources using identity and label filters.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `account` | [AccountRef](#accountref-schema) |  |  | Reference to an account that owns the target resources. |
-| `type` | `string` | V |  | Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`. |
 | `id` | `string` |  |  | ID of the singular resource. |
+| `did` | `string` |  | `did` | DID of the resource. |
+| `type` | `string` |  |  | Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`. |
 | `name` | `string` |  |  | Name pattern in SQL `LIKE` format. |
 | `labels` | [LabelFilter](#labelfilter-schema) |  |  | Filter by resource labels. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceSelector.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceSelector.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3518,17 +3621,19 @@ Resource lifecycle and reconciliation information.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `phase` | [ResourcePhase](#resourcephase-schema) | V |  | Represents the lifecycle stage of a resource. |
-| `observedGeneration` | `integer` |  | `uint64` | Resource generation that was last processed by the main resource controller. |
-| `reconciledAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the controller last reconciled the desired resource state as defined in `observedGeneration`. |
+| `phase` | [ResourcePhase](#resourcephase-schema) | V |  | Represents the reconciliation phase of a resource as seen by the main resource controller. |
+| `observedGeneration` | `integer` |  | `uint64` | Resource generation that was last seen by the main resource controller. |
+| `observedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the controller seen the resource state as defined in `observedGeneration`. |
+| `reconciledGeneration` | `integer` |  | `uint64` | Resource generation that was last successfully reconciled by the main resource controller. |
+| `reconciledAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time when the controller last reconciled the desired resource state as defined in `reconciledGeneration`. |
 | `conditions` | [ResourceConditions](#resourceconditions-schema) | V |  | Detailed conditions describing the state of the resource that are added by controllers. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resource/v1alpha1/ResourceStatus.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/ResourceStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="reference-sink"></a>
-#### sink
+<a name="reference-sinks"></a>
+#### sinks
 <a name="webhooktarget-schema"></a>
 ##### WebhookTarget
 Defines a webhook target endpoint that can receive event notifications and data.
@@ -3539,7 +3644,7 @@ Defines a webhook target endpoint that can receive event notifications and data.
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | [WebhookTargetSpecInput](#webhooktargetspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTarget.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookTarget.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3552,7 +3657,7 @@ Defines a webhook target endpoint that can receive event notifications and data.
 | `url` | `string` | V | `url` | Target url of the webhook. |
 | `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookTargetSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3565,37 +3670,12 @@ Defines a webhook target endpoint that can receive event notifications and data.
 | `url` | `string` | V | `url` | Target url of the webhook. |
 | `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookTargetSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="webhooktargetstatus-schema"></a>
-##### WebhookTargetStatus
-Represents the status of the webhook target endpoint.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `value` | [WebhookTargetStatus::Value](#webhooktargetstatus-value-schema) | V |  | Status value. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetStatus.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="webhooktargetstatus-value-schema"></a>
-##### WebhookTargetStatus::Value
-Status of the target endpoint
-
-| Enum Value |
-| :---: |
-| Ready |
-| Failed |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sink/v1alpha1/WebhookTargetStatus.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="reference-source"></a>
-#### source
+<a name="reference-sources"></a>
+#### sources
 <a name="compressionformat-schema"></a>
 ##### CompressionFormat
 Defines a compression algorithm.
@@ -3605,7 +3685,7 @@ Defines a compression algorithm.
 | Gzip |
 | Zip |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/CompressionFormat.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/CompressionFormat.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3618,7 +3698,7 @@ Defines an environment variable passed into some job.
 | `name` | `string` | V |  | Name of the variable. |
 | `value` | `string` |  |  | Value of the variable. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/EnvVar.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/EnvVar.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3632,7 +3712,7 @@ Defines the external source of data.
 | [EventTimeSource::FromPath](#eventtimesource-frompath-schema) | Extracts event time from the path component of the source. |
 | [EventTimeSource::FromSystemTime](#eventtimesource-fromsystemtime-schema) | Assigns event time from the system time source. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/EventTimeSource.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3640,7 +3720,7 @@ Defines the external source of data.
 ##### EventTimeSource::FromMetadata
 Extracts event time from the source's metadata.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/EventTimeSource.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3653,7 +3733,7 @@ Extracts event time from the path component of the source.
 | `pattern` | `string` | V | `regex` | Regular expression where first group contains the timestamp string. |
 | `timestampFormat` | `string` |  |  | Format of the expected timestamp in java.text.SimpleDateFormat form. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/EventTimeSource.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3661,7 +3741,7 @@ Extracts event time from the path component of the source.
 ##### EventTimeSource::FromSystemTime
 Assigns event time from the system time source.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/EventTimeSource.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/EventTimeSource.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3673,7 +3753,7 @@ Optional parameters to control ingestion behavior.
 | :---: | :---: | :---: | :---: | --- |
 | `targetSliceRecords` | `integer` |  | `uint64` | Target number of records to ingest per data slice. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/IngestParams.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/IngestParams.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3690,7 +3770,7 @@ Defines the point where data enters the system.
 | [Ingress::EvmLogs](#ingress-evmlogs-schema) | Connects to an EVM (Ethereum) node to stream transaction logs. |
 | [Ingress::RestEndpoint](#ingress-restendpoint-schema) | Exposes a REST HTTP endpoint that accepts pushed data records. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3705,7 +3785,7 @@ Runs the specified OCI container to fetch data from an arbitrary source.
 | `args` | array(`string`) |  |  | Arguments to the entrypoint. The OCI image's CMD is used if this is not provided. |
 | `env` | array([EnvVar](#envvar-schema)) |  |  | Environment variables to propagate into or set in the container. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3720,7 +3800,7 @@ Connects to an EVM (Ethereum) node to stream transaction logs.
 | `filter` | `string` |  |  | An SQL WHERE clause that can be used to pre-filter the logs before fetching them from the ETH node. |
 | `signature` | `string` |  |  | Solidity log event signature to use for decoding. Using this field adds `event` to the output containing decoded log as JSON. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3735,7 +3815,7 @@ Uses glob operator to match files on the local file system.
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
 | `order` | [SourceOrdering](#sourceordering-schema) |  |  | Specifies how input files should be ordered before ingestion.<br/>Order is important as every file will be processed individually<br/>and will advance the dataset's watermark. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3751,7 +3831,7 @@ Connects to an MQTT broker to fetch events from the specified topic.
 | `password` | `string` |  |  | Password to use for auth with the broker (can be templated). |
 | `topics` | array([MqttTopicSubscription](#mqtttopicsubscription-schema)) | V |  | List of topic subscription parameters. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3763,7 +3843,7 @@ Exposes a REST HTTP endpoint that accepts pushed data records.
 | :---: | :---: | :---: | :---: | --- |
 | `buffer` | [IngressBuffer](#ingressbuffer-schema) |  |  | Buffer configuration for holding records until they are ingested. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3778,7 +3858,7 @@ Pulls data from one of the supported sources by its URL.
 | `cache` | [SourceCaching](#sourcecaching-schema) |  |  | Describes the caching settings used for this source. |
 | `headers` | array([RequestHeader](#requestheader-schema)) |  |  | Headers to pass during the request (e.g. HTTP Authorization) |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Ingress.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Ingress.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3790,7 +3870,7 @@ Buffer configuration for holding pushed records until they are ingested.
 | :---: | --- |
 | [IngressBuffer::Memory](#ingressbuffer-memory-schema) | An in-memory buffer. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/IngressBuffer.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/IngressBuffer.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3803,7 +3883,7 @@ An in-memory buffer.
 | `bufferSize` | `integer` |  | `uint64` | Maximum number of records to hold in the buffer. |
 | `overflowPolicy` | `string` |  |  | Policy applied when the buffer is full. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/IngressBuffer.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/IngressBuffer.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3819,7 +3899,7 @@ Merge strategy determines how newly ingested data should be combined with the da
 | [MergeStrategy::ChangelogStream](#mergestrategy-changelogstream-schema) | Changelog stream merge strategy.<br/><br/>This is the native stream format for ODF that accurately describes the evolution of all event records including appends, retractions, and corrections as per RFC-015. No pre-processing except for format validation is done. |
 | [MergeStrategy::UpsertStream](#mergestrategy-upsertstream-schema) | Upsert stream merge strategy.<br/><br/>This strategy should be used for data sources containing ledgers of insert-or-update and delete events. Unlike ChangelogStream the insert-or-update events only carry the new values, so this strategy will use primary key to re-classify the events into an append or a correction from/to pair, looking up the previous values. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MergeStrategy.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3829,7 +3909,7 @@ Append merge strategy.
 
 Under this strategy new data will be appended to the dataset in its entirety, without any deduplication.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MergeStrategy.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3843,7 +3923,7 @@ This is the native stream format for ODF that accurately describes the evolution
 | :---: | :---: | :---: | :---: | --- |
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MergeStrategy.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3857,7 +3937,7 @@ This strategy should be used for data sources containing ledgers of events. Curr
 | :---: | :---: | :---: | :---: | --- |
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MergeStrategy.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3881,7 +3961,7 @@ To identify whether a row has changed this strategy will compare all other colum
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime. |
 | `compareColumns` | array(`string`) |  |  | Names of the columns to compared to determine if a row has changed between two snapshots. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MergeStrategy.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3895,7 +3975,7 @@ This strategy should be used for data sources containing ledgers of insert-or-up
 | :---: | :---: | :---: | :---: | --- |
 | `primaryKey` | array(`string`) | V |  | Names of the columns that uniquely identify the record throughout its lifetime |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MergeStrategy.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MergeStrategy.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3909,7 +3989,7 @@ MQTT quality of service class.
 | AtLeastOnce |
 | ExactlyOnce |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MqttQos.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MqttQos.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3922,7 +4002,7 @@ MQTT topic subscription parameters.
 | `path` | `string` | V |  | Name of the topic (may include patterns). |
 | `qos` | [MqttQos](#mqttqos-schema) |  |  | Quality of service class.<br/><br/>Default: "AtMostOnce" |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/MqttTopicSubscription.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/MqttTopicSubscription.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3935,7 +4015,7 @@ Defines the steps to prepare raw data for ingestion.
 | [PrepStep::Decompress](#prepstep-decompress-schema) | Pulls data from one of the supported sources by its URL. |
 | [PrepStep::Pipe](#prepstep-pipe-schema) | Executes external command to process the data using piped input/output. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/PrepStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/PrepStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3948,7 +4028,7 @@ Pulls data from one of the supported sources by its URL.
 | `format` | [CompressionFormat](#compressionformat-schema) | V |  | Name of a compression algorithm used on data. |
 | `subPath` | `string` |  |  | Path to a data file within a multi-file archive. Can contain glob patterns. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/PrepStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/PrepStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3960,7 +4040,7 @@ Executes external command to process the data using piped input/output.
 | :---: | :---: | :---: | :---: | --- |
 | `command` | array(`string`) | V |  | Command to execute and its arguments. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/PrepStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/PrepStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3978,7 +4058,7 @@ Defines how raw data should be read into the structured form.
 | [ReadStep::NdJson](#readstep-ndjson-schema) | Reader for files containing multiple newline-delimited JSON objects with the same schema. |
 | [ReadStep::NdGeoJson](#readstep-ndgeojson-schema) | Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format but instead of `FeatureCollection` object in the root it expects every individual feature object to appear on its own line. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4000,7 +4080,7 @@ Reader for comma-separated files.
 | `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4014,7 +4094,7 @@ Reader for ESRI Shapefile format.
 | `subPath` | `string` |  |  | If the ZIP archive contains multiple shapefiles use this field to specify a sub-path to the desired `.shp` file. Can contain glob patterns to act as a filter. |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4027,7 +4107,7 @@ Reader for GeoJSON files. It expects one `FeatureCollection` object in the root 
 | `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4044,7 +4124,7 @@ Reader for JSON files that contain an array of objects within them.
 | `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4057,7 +4137,7 @@ Reader for Newline-delimited GeoJSON files. It is similar to `GeoJson` format bu
 | `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4073,7 +4153,7 @@ Reader for files containing multiple newline-delimited JSON objects with the sam
 | `timestampFormat` | `string` |  |  | Sets the string that indicates a timestamp format. The `rfc3339` is the only required format, the other format strings are implementation-specific.<br/><br/>Default: "rfc3339" |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4086,7 +4166,7 @@ Reader for Apache Parquet format.
 | `ddlSchema` | array(`string`) |  |  | DEPRECATED: A DDL-formatted schema. Schema can be used to coerce values into more appropriate data types. |
 | `schema` | [DataSchema](#dataschema-schema) |  |  | Schema used to coerce values into more appropriate data types. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/ReadStep.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/ReadStep.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4099,7 +4179,7 @@ Defines a header (e.g. HTTP) to be passed into some request.
 | `name` | `string` | V |  | Name of the header. |
 | `value` | `string` | V |  | Value of the header. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/RequestHeader.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/RequestHeader.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4113,7 +4193,7 @@ Defines an external source of data for ingestion.
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
 | `spec` | [SourceSpecInput](#sourcespecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/Source.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/Source.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4125,7 +4205,7 @@ Defines how external data should be cached.
 | :---: | --- |
 | [SourceCaching::Forever](#sourcecaching-forever-schema) | After source was processed once it will never be ingested again. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceCaching.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/SourceCaching.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4133,7 +4213,7 @@ Defines how external data should be cached.
 ##### SourceCaching::Forever
 After source was processed once it will never be ingested again.
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceCaching.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/SourceCaching.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4146,7 +4226,7 @@ Specifies how input files should be ordered before ingestion.
 | ByEventTime |
 | ByName |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceOrdering.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/SourceOrdering.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4164,7 +4244,7 @@ Specifies an external source of data for ingestion.
 | `merge` | [MergeStrategy](#mergestrategy-schema) |  |  | Determines how newly-ingested data should be merged with existing history. |
 | `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Defines the mapping of system fields to dataset column names. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/SourceSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4182,7 +4262,7 @@ Specifies an external source of data for ingestion.
 | `merge` | [MergeStrategy](#mergestrategy-schema) |  |  | Determines how newly-ingested data should be merged with existing history. |
 | `vocab` | [DatasetVocabulary](#datasetvocabulary-schema) |  |  | Defines the mapping of system fields to dataset column names. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/SourceSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4196,7 +4276,7 @@ The state of the source the data was added from to allow fast resuming.
 | `kind` | `string` | V |  | Identifies the type of the state. Standard types include: `odf/etag`, `odf/last-modified`. |
 | `value` | `string` | V |  | Opaque value representing the state. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/source/v1alpha1/SourceState.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/SourceState.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4323,6 +4403,303 @@ Storage capacity allocation.
 | `storage` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Maximum storage size e.g. `10Gi`. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/storage/v1alpha1/VolumeCapacity.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="reference-tasks"></a>
+#### tasks
+<a name="task-schema"></a>
+##### Task
+An individual work item to be executed.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `$schema` | `string` | V |  | Identifies this resource type. |
+| `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
+| `spec` | [TaskSpecInput](#taskspecinput-schema) |  |  | Specifies the desired state of the task. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/Task.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskoutcome-schema"></a>
+##### TaskOutcome
+Result of the execution of a task.
+
+| Union Type | Description |
+| :---: | --- |
+| [TaskOutcome::Success](#taskoutcome-success-schema) | Task completed successfully. |
+| [TaskOutcome::Failed](#taskoutcome-failed-schema) | Task failed. |
+| [TaskOutcome::NoOp](#taskoutcome-noop-schema) | Task completed with no work done (e.g. no new data to process). |
+| [TaskOutcome::Cancelled](#taskoutcome-cancelled-schema) | Task was cancelled before completion. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskOutcome.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskoutcome-cancelled-schema"></a>
+##### TaskOutcome::Cancelled
+Task was cancelled before completion.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskOutcome.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskoutcome-failed-schema"></a>
+##### TaskOutcome::Failed
+Task failed.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `message` | `string` | V |  | Human-readable description of the failure. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskOutcome.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskoutcome-noop-schema"></a>
+##### TaskOutcome::NoOp
+Task completed with no work done (e.g. no new data to process).
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskOutcome.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskoutcome-success-schema"></a>
+##### TaskOutcome::Success
+Task completed successfully.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskOutcome.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="known-extra-attrs"></a>
+###### Known Extensions
+| Extension | Description |
+| --- | --- |
+| `opendatafabric.net/description` | Used for human readable schema field descriptions |
+| `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
+| `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
+| `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
+
+<a name="known-extra-types"></a>
+###### Known Extended Types
+| Extended Type | Core Type | Description |
+| --- | --- | --- |
+| `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
+| `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
+| `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
+
+
+<a name="taskplan-schema"></a>
+##### TaskPlan
+A self-contained logical execution plan of a task.
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskPlan.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="known-extra-attrs"></a>
+###### Known Extensions
+| Extension | Description |
+| --- | --- |
+| `opendatafabric.net/description` | Used for human readable schema field descriptions |
+| `opendatafabric.net/type` | An extended set of logical types that ODF recommends but does not require every implementation to support |
+| `opendatafabric.org/linkedObjects` | When attached to `AddData` event contains a summary of how many external objects were associated with a certain transaction as well as their size |
+| `arrow.apache.org/bufferEncoding` | Used to accurately represent buffer encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/dateEncoding` | Used to accurately represent date encoding type when converting Arrow schema to ODF schema |
+| `arrow.apache.org/decimalEncoding` | Used to accurately represent decimal encoding type when converting Arrow schema to ODF schema |
+
+<a name="known-extra-types"></a>
+###### Known Extended Types
+| Extended Type | Core Type | Description |
+| --- | --- | --- |
+| `Did` | `String` | Decentralized identifier `did:<method>:<id>` |
+| `Multihash` | `String` | Hash in self-describing [multihash](https://github.com/multiformats/multihash) format |
+| `ObjectLink` | `String` | Signifies that the value references an external object. The mandatory `linkType` property defines the type of the link (e.g. `Multihash`). |
+
+
+<a name="taskspec-schema"></a>
+##### TaskSpec
+An individual work item to be executed as part of a flow.
+
+| Union Type | Description |
+| :---: | --- |
+| [TaskSpec::Ingest](#taskspec-ingest-schema) | Fetches data from a source and appends it to a dataset. |
+| [TaskSpec::Transform](#taskspec-transform-schema) | Executes transformation of data defined in a derivative dataset. |
+| [TaskSpec::Compaction](#taskspec-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
+| [TaskSpec::GarbageCollection](#taskspec-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
+| [TaskSpec::WebhookCall](#taskspec-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-compaction-schema"></a>
+##### TaskSpec::Compaction
+Compacts data files in matching datasets to improve query performance.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-garbagecollection-schema"></a>
+##### TaskSpec::GarbageCollection
+Removes unreferenced data files from matching datasets.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-ingest-schema"></a>
+##### TaskSpec::Ingest
+Fetches data from a source and appends it to a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `source` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the source resource that defines how to fetch data. |
+| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-transform-schema"></a>
+##### TaskSpec::Transform
+Executes transformation of data defined in a derivative dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the derivative dataset that defines how to transform data. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-webhookcall-schema"></a>
+##### TaskSpec::WebhookCall
+Dispatches a certain payload to a specific `WebhookTarget`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the `WebhookTarget`. |
+| `payload` | `string` |  |  | The payload to send. May include templating. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-schema"></a>
+##### TaskSpecInput
+An individual work item to be executed as part of a flow.
+
+| Union Type | Description |
+| :---: | --- |
+| [TaskSpecInput::Ingest](#taskspecinput-ingest-schema) | Fetches data from a source and appends it to a dataset. |
+| [TaskSpecInput::Transform](#taskspecinput-transform-schema) | Executes transformation of data defined in a derivative dataset. |
+| [TaskSpecInput::Compaction](#taskspecinput-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
+| [TaskSpecInput::GarbageCollection](#taskspecinput-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
+| [TaskSpecInput::WebhookCall](#taskspecinput-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-compaction-schema"></a>
+##### TaskSpecInput::Compaction
+Compacts data files in matching datasets to improve query performance.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-garbagecollection-schema"></a>
+##### TaskSpecInput::GarbageCollection
+Removes unreferenced data files from matching datasets.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-ingest-schema"></a>
+##### TaskSpecInput::Ingest
+Fetches data from a source and appends it to a dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
+| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-transform-schema"></a>
+##### TaskSpecInput::Transform
+Executes transformation of data defined in a derivative dataset.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the derivative dataset that defines how to transform data. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-webhookcall-schema"></a>
+##### TaskSpecInput::WebhookCall
+Dispatches a certain payload to a specific `WebhookTarget`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookTarget`. |
+| `payload` | `string` |  |  | The payload to send. May include templating. |
+| `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a webhook should react to failures. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskstatus-schema"></a>
+##### TaskStatus
+Execution phase of a task.
+
+| Enum Value |
+| :---: |
+| Pending |
+| Planning |
+| Ready |
+| Running |
+| Committing |
+| Finished |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 

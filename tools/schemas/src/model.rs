@@ -390,10 +390,10 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
     let mut types = BTreeMap::new();
 
     for mut schema in schemas {
-        // Skip metaschemas
         let id = schema.id.as_ref().expect("Named type missing an $id");
 
-        if id.starts_with(json_schema::SchemaId::METASCHEMA_BASE_URL) {
+        // Skip metaschemas
+        if id.is_metaschema() {
             continue;
         }
 

@@ -6,7 +6,10 @@ use serde_json::Value;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const STANDARD_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
-const ODF_METASCHEMA_PREFIX: &str = "https://opendatafabric.org/schemas/metaschemas/";
+
+fn is_odf_metaschema(s: &str) -> bool {
+    s.starts_with("https://opendatafabric.org/schemas/") && s.contains("/meta/")
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +46,7 @@ impl Schemas {
             // (needed for $ref resolution during metaschema compilation).
             let mut value = value.clone();
             if let Some(schema) = value.get("$schema").and_then(Value::as_str) {
-                if schema.starts_with(ODF_METASCHEMA_PREFIX) {
+                if is_odf_metaschema(schema) {
                     value.as_object_mut()?.remove("$schema");
                 }
             }
@@ -79,7 +82,7 @@ fn test_schemas() {
             .get("$schema")
             .and_then(Value::as_str)
             .unwrap_or(STANDARD_DRAFT);
-        if meta.starts_with(ODF_METASCHEMA_PREFIX) && !validators.contains_key(meta) {
+        if is_odf_metaschema(meta) && !validators.contains_key(meta) {
             validators.insert(meta.to_string(), schemas.validator_for_metaschema(meta));
         }
     }
@@ -94,7 +97,7 @@ fn test_schemas() {
 
         // Only validate schemas that declare an ODF metaschema — standard
         // draft conformance is already guaranteed by the jsonschema crate.
-        if !meta.starts_with(ODF_METASCHEMA_PREFIX) {
+        if !is_odf_metaschema(meta) {
             continue;
         }
 

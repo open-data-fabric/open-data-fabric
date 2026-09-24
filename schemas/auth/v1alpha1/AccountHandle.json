@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceHandle",
   "description": "Link to an account.",
   "type": "object",
   "required": [

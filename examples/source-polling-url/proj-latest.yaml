@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Projection
+# $schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Projection
+$schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Projection
 headers:
   name: ca.bankofcanada.latest
 spec:

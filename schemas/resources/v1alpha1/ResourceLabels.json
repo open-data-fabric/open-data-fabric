@@ -1,0 +1,14 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceLabels",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Map of string keys and values that can be used to organize, categorize, and query resources.",
+  "type": "object",
+  "codegen": {
+    "rust": {
+      "mapKeyFormat": "type-ref"
+    }
+  },
+  "patternProperties": {
+    ".*": {}
+  }
+}

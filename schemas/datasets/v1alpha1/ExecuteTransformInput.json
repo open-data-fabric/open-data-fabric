@@ -1,0 +1,36 @@
+{
+  "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/ExecuteTransformInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Describes a slice of the input dataset used during a transformation",
+  "type": "object",
+  "required": [
+    "datasetId"
+  ],
+  "properties": {
+    "datasetId": {
+      "type": "string",
+      "format": "dataset-id",
+      "description": "Input dataset identifier."
+    },
+    "prevBlockHash": {
+      "type": "string",
+      "format": "multihash",
+      "description": "Last block of the input dataset that was previously incorporated into the derivative transformation, if any. Must be equal to the last non-empty `newBlockHash`. Together with `newBlockHash` defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction."
+    },
+    "newBlockHash": {
+      "type": "string",
+      "format": "multihash",
+      "description": "Hash of the last block that will be incorporated into the derivative transformation. When present, defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction."
+    },
+    "prevOffset": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Last data record offset in the input dataset that was previously incorporated into the derivative transformation, if any. Must be equal to the last non-empty `newOffset`. Together with `newOffset` defines a half-open `(prevOffset, newOffset]` interval of data records that will be considered in this transaction."
+    },
+    "newOffset": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Offset of the last data record that will be incorporated into the derivative transformation, if any. When present, defines a half-open `(prevOffset, newOffset]` interval of data records that will be considered in this transaction."
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceInput",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceInput",
   "description": "Defines a set of variables stored and managed by the ODF node.",
   "type": "object",
   "unevaluatedProperties": false,
@@ -17,7 +17,7 @@
       "description": "Identifies this resource type."
     },
     "headers": {
-      "$ref": "https://opendatafabric.org/schemas/resource/v1alpha1/ResourceHeadersInput",
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput",
       "description": "Container for identity and ownership information of a resource.",
       "unevaluatedProperties": false
     },

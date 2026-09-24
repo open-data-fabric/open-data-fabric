@@ -5,6 +5,10 @@ use serde_json::{Value, json};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn is_odf_metaschema(s: &str) -> bool {
+    s.starts_with("https://opendatafabric.org/schemas/") && s.contains("/meta/")
+}
+
 struct Schemas {
     by_id: HashMap<String, Value>,
 }
@@ -48,9 +52,9 @@ impl Schemas {
 
     fn normalize_meta_schema(mut schema: Value) -> Value {
         const STANDARD_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
-        const ODF_METASCHEMA_PREFIX: &str = "https://opendatafabric.org/schemas/metaschemas/";
+
         if let Some(s) = schema.get("$schema").and_then(Value::as_str) {
-            if s.starts_with(ODF_METASCHEMA_PREFIX) {
+            if is_odf_metaschema(s) {
                 schema["$schema"] = Value::String(STANDARD_DRAFT.to_string());
             }
         }
@@ -93,7 +97,7 @@ fn schemas() -> Schemas {
 }
 
 const VARIABLE_SET: &str = "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet";
-const DATASET: &str = "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset";
+const DATASET: &str = "https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset";
 
 fn valid_variable_set() -> Value {
     json!({
@@ -111,7 +115,7 @@ fn valid_variable_set() -> Value {
 
 fn valid_dataset() -> Value {
     json!({
-        "$schema": "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset",
+        "$schema": "https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset",
         "headers": { "name": "my-dataset" },
         "spec": {
             "kind": "Root",

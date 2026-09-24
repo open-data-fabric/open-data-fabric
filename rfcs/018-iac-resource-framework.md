@@ -251,7 +251,7 @@ $schema: https://opendatafabric.org/schemas/config/v1alpha1/Dataset
 headers:
   name: my-dataset
   labels:
-    # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetKind
+    # Resolves to https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetKind
     # Anything but Root or Derivative will fail validation
     datasetKind: Root
     did: did:odf:aa..bb
@@ -280,7 +280,7 @@ Resources can be referenced by:
 Example of referencing a `PersistentVolume` by name and owning account:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+$schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset
 headers:
   name: my-dataset
 spec:
@@ -355,7 +355,7 @@ Resources can be referenced in bulk by shared properties like:
 - Label filters
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/flow/v1alpha1/Flow
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Flow
 headers:
   name: periodic-compaction
 spec:
@@ -385,7 +385,7 @@ Note however that, unlike references, selectors are not resolved to specific IDs
 When an object is created by another higher-level object it can write the association into the header as `ownerReference`. This creation provenance trail can be used for automatic cascading deletion and garbage collection.
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/source/v1alpha1/Buffer
+$schema: https://opendatafabric.org/schemas/sources/v1alpha1/Buffer
 headers:
   name: buffer-aabbcc
   ownerReferences:
@@ -436,7 +436,7 @@ status:
   reconciledGeneration: 1
   reconciledAt: 2026-01-01T00:00:00Z
   conditions:
-    https://opendatafabric.org/schemas/resource/v1/ReconciliationError:
+    https://opendatafabric.org/schemas/resources/v1/ReconciliationError:
       code: unresolved-reference
       message: "Secret `new-api-key` not found"
 ```
@@ -472,14 +472,14 @@ ReBAC attributes reuse the existing [labels](#labels--annotations) mechanism. A 
 Example ReBAC attribute label:
 ```json
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceLabel",
+  "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/AllowPublicRead",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceLabel",
   "description": "Controls whether the dataset is readable by any authenticated user.",
   "type": "boolean",
   "labelProperties": {
     "isAuthAttribute": true,
     "resourceTypes": [
-      "https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"
+      "https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset"
     ]
   }
 }
@@ -487,14 +487,14 @@ Example ReBAC attribute label:
 
 It now can be defined like any other resource label:
 ```yaml
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+$schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset
 headers:
   name: my-dataset
   labels:
-    # Short form - resolved to https://opendatafabric.org/schemas/dataset/v1alpha1/AllowPublicRead
+    # Short form - resolved to https://opendatafabric.org/schemas/datasets/v1alpha1/AllowPublicRead
     AllowPublicRead: true
     # Full URI form
-    https://opendatafabric.org/schemas/dataset/v1alpha1/AllowAnonymousRead: false
+    https://opendatafabric.org/schemas/datasets/v1alpha1/AllowAnonymousRead: false
 spec:
   kind: Root
   metadata: []
@@ -514,14 +514,14 @@ ReBAC relations between resources are declared using the `Relations` manifest. E
 
 ```json
 {
-  "$id": "https://opendatafabric.org/schemas/dataset/v1alpha1/Role",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/Relation",
+  "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/Role",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Relation",
   "description": "Access role granted to a subject on a dataset.",
   "type": "string",
   "enum": ["Reader", "Editor", "Maintainer"],
   "relationProperties": {
     "subjectResourceTypes": ["https://opendatafabric.org/schemas/auth/v1alpha1/Account"],
-    "objectResourceTypes": ["https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset"]
+    "objectResourceTypes": ["https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset"]
   }
 }
 ```
@@ -535,7 +535,7 @@ headers:
 spec:
   relations:
     - subject: Account:alice
-      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/dataset/v1alpha1/DatasetRole
+      relation: DatasetRole  # Resolves to https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetRole
       value: Maintainer
       object: Dataset:bob/bobs-dataset
 ```
@@ -616,12 +616,12 @@ Proposed protocol endpoint scheme:
   * `?account=opendatafabric.org` - specifies account by name
   * `?account=did:key:...` - specifies account by DID
 * Listing: `/<context>/<version>/<type>`  
-  * `/dataset/v1/dataset`  
+  * `/datasets/v1/dataset`  
   * `/auth/v1/relation`  
 * By object ref: `/<context>/<version>/<type>/<id-did-name>`  
   * `/config/v1/secret/c27331ce-ce88-4ff9-8c5a-4ce8107cc03f`  
-  * `/dataset/v1/dataset/did:odf:123..321`
-  * `/dataset/v1/dataset/my-dataset` (searches current account only)  
+  * `/datasets/v1/dataset/did:odf:123..321`
+  * `/datasets/v1/dataset/my-dataset` (searches current account only)  
 * Other HTTP-based protocols: `/<protocol>/...`  
   * `/graphql`
 
@@ -636,7 +636,7 @@ In the future we will consider the benefits of representing ODF resource manifes
 For example a manifest like this one:
 
 ```yaml
-$schema: https://opendatafabric.org/schemas/dataset/v1alpha1/Dataset
+$schema: https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset
 headers:
   did: did:odf:123..321
   name: foo

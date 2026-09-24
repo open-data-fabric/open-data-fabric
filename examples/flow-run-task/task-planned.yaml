@@ -1,5 +1,5 @@
-# $schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
-$schema: https://opendatafabric.org/schemas/resource/v1alpha1/Resource
+# $schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
+$schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
 headers:
   id: task-6767a4ee
   account:
@@ -27,8 +27,8 @@ status:
   phase: Ready  # NOTE: Task resource is retained for a TTL period, then deleted
   observedGeneration: 1
   conditions:
-    https://opendatafabric.org/schemas/task/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
-    https://opendatafabric.org/schemas/task/v1alpha1/TaskPlan:
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskPlan:
       kind: TransformPlan
       datasetId: did:odf:fed0..17bf
       systemTime: 2026-09-11T02:22:52Z
@@ -44,7 +44,7 @@ status:
         query: SELECT ... FROM ...
       newDataPath: s3://repo/f162..8a9f/data/...
       newCheckpointPath: s3://repo/f162..8a9f/checkpoint/...
-    https://opendatafabric.org/schemas/task/v1alpha1/TaskOutcome:
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskOutcome:
       kind: Success  # Success / Failed / NoOp / Cancelled
       result:
         kind: TransformResult

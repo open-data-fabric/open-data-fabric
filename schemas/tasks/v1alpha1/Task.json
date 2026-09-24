@@ -1,0 +1,29 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/Task",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceInput",
+  "description": "An individual work item to be executed.",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": [
+    "$schema",
+    "headers"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "type-uri",
+      "const": "https://opendatafabric.org/schemas/tasks/v1alpha1/Task",
+      "description": "Identifies this resource type."
+    },
+    "headers": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeadersInput",
+      "description": "Container for identity and ownership information of a resource.",
+      "unevaluatedProperties": false
+    },
+    "spec": {
+      "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput",
+      "description": "Specifies the desired state of the task.",
+      "unevaluatedProperties": false
+    }
+  }
+}

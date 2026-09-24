@@ -1,0 +1,32 @@
+{
+  "$id": "https://opendatafabric.org/schemas/engines/v1alpha1/RawQueryRequest",
+  "$schema": "https://opendatafabric.org/schemas/engines/v1alpha1/meta/EngineMessage",
+  "description": "Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step",
+  "unevaluatedProperties": false,
+  "type": "object",
+  "required": [
+    "inputDataPaths",
+    "transform",
+    "outputDataPath"
+  ],
+  "properties": {
+    "inputDataPaths": {
+      "type": "array",
+      "description": "Paths to input data files to perform query over. Must all have identical schema.",
+      "items": {
+        "type": "string",
+        "format": "path"
+      }
+    },
+    "transform": {
+      "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/Transform",
+      "description": "Transformation that will be applied to produce new data.",
+      "unevaluatedProperties": false
+    },
+    "outputDataPath": {
+      "type": "string",
+      "format": "path",
+      "description": "Path where query result will be written."
+    }
+  }
+}

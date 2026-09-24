@@ -1,0 +1,42 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceStatus",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Resource lifecycle and reconciliation information.",
+  "type": "object",
+  "required": [
+    "phase",
+    "conditions"
+  ],
+  "properties": {
+    "phase": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourcePhase",
+      "description": "Represents the reconciliation phase of a resource as seen by the main resource controller.",
+      "unevaluatedProperties": false
+    },
+    "observedGeneration": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Resource generation that was last seen by the main resource controller."
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the controller seen the resource state as defined in `observedGeneration`."
+    },
+    "reconciledGeneration": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Resource generation that was last successfully reconciled by the main resource controller."
+    },
+    "reconciledAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the controller last reconciled the desired resource state as defined in `reconciledGeneration`."
+    },
+    "conditions": {
+      "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceConditions",
+      "description": "Detailed conditions describing the state of the resource that are added by controllers.",
+      "unevaluatedProperties": false
+    }
+  }
+}

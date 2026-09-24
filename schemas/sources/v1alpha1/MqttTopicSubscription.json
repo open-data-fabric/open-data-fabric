@@ -1,0 +1,21 @@
+{
+  "$id": "https://opendatafabric.org/schemas/sources/v1alpha1/MqttTopicSubscription",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "MQTT topic subscription parameters.",
+  "type": "object",
+  "required": [
+    "path"
+  ],
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Name of the topic (may include patterns)."
+    },
+    "qos": {
+      "$ref": "https://opendatafabric.org/schemas/sources/v1alpha1/MqttQos",
+      "description": "Quality of service class.",
+      "default": "AtMostOnce",
+      "unevaluatedProperties": false
+    }
+  }
+}

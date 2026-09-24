@@ -1,6 +1,6 @@
 {
   "$id": "https://opendatafabric.org/schemas/config/v1alpha1/ValueHandle",
-  "$schema": "https://opendatafabric.org/schemas/metaschemas/v1alpha1/ResourceHandle",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceHandle",
   "description": "Reference to a value within a `VariableSet` or a `SecretSet`.",
   "type": "object",
   "required": [

@@ -588,15 +588,15 @@ fn render_type_de(
         model::Type::Did => writeln!(w, "odf::Did::from_bytes({name}.bytes()).unwrap()")?,
         model::Type::DatasetAlias => writeln!(
             w,
-            "odf::dataset::legacy::DatasetAlias::try_from({name}).unwrap()"
+            "odf::datasets::legacy::DatasetAlias::try_from({name}).unwrap()"
         )?,
         model::Type::DatasetId => writeln!(
             w,
-            "odf::dataset::DatasetID::from_bytes({name}.bytes()).unwrap()"
+            "odf::datasets::DatasetID::from_bytes({name}.bytes()).unwrap()"
         )?,
         model::Type::DatasetRef => writeln!(
             w,
-            "odf::dataset::legacy::DatasetRef::try_from({name}).unwrap()"
+            "odf::datasets::legacy::DatasetRef::try_from({name}).unwrap()"
         )?,
         model::Type::DateTime => writeln!(w, "fb_to_datetime({name})")?,
         model::Type::Duration => writeln!(w, "fb_to_duration({name})")?,
@@ -651,14 +651,14 @@ fn render_type_de(
         }
         model::Type::ResourceId => writeln!(
             w,
-            "odf::resource::ResourceID::from_bytes({name}.bytes()).unwrap()"
+            "odf::resources::ResourceID::from_bytes({name}.bytes()).unwrap()"
         )?,
         model::Type::ResourceName => {
-            writeln!(w, "odf::resource::ResourceName::try_from({name}).unwrap()")?
+            writeln!(w, "odf::resources::ResourceName::try_from({name}).unwrap()")?
         }
-        model::Type::TypeUri => writeln!(w, "odf::resource::TypeUri::try_from({name}).unwrap()")?,
-        model::Type::TypeName => writeln!(w, "odf::resource::TypeName::try_from({name}).unwrap()")?,
-        model::Type::TypeRef => writeln!(w, "odf::resource::TypeRef::try_from({name}).unwrap()")?,
+        model::Type::TypeUri => writeln!(w, "odf::resources::TypeUri::try_from({name}).unwrap()")?,
+        model::Type::TypeName => writeln!(w, "odf::resources::TypeName::try_from({name}).unwrap()")?,
+        model::Type::TypeRef => writeln!(w, "odf::resources::TypeRef::try_from({name}).unwrap()")?,
     }
     Ok(())
 }

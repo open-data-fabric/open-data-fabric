@@ -1,0 +1,20 @@
+{
+  "$id": "https://opendatafabric.org/schemas/datasets/v1alpha1/SetInfo",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Provides basic human-readable information about a dataset.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "description": {
+      "type": "string",
+      "description": "Brief single-sentence summary of a dataset."
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Keywords, search terms, or tags used to describe the dataset.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
