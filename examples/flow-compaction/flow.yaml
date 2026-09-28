@@ -15,6 +15,5 @@ spec:
       cooldown: 10min
   tasks:
     - kind: Compaction
-      params:
-        maxSliceSize: 100MiB
-        maxSliceRecords: 10000
+      maxSliceSize: 100MiB
+      maxSliceRecords: 10000

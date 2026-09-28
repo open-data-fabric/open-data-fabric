@@ -14,15 +14,20 @@
           "type": "string",
           "description": "An alias for the task used to refer to it in flows and access the results"
         },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.",
+          "unevaluatedProperties": false
+        },
         "source": {
           "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
           "description": "Reference to the source resource that defines how to fetch data.",
           "unevaluatedProperties": false
         },
-        "params": {
-          "$ref": "https://opendatafabric.org/schemas/sources/v1alpha1/IngestParams",
-          "description": "Optional parameters to control ingestion behavior.",
-          "unevaluatedProperties": false
+        "targetRecordsPerSlice": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Target number of records to ingest per data slice."
         }
       }
     },
@@ -51,10 +56,20 @@
           "type": "string",
           "description": "An alias for the task used to refer to it in flows and access the results"
         },
-        "params": {
-          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/CompactionParams",
-          "description": "Optional parameters to control ingestion behavior.",
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the dataset to compact. Defaults to the flow-level target when omitted.",
           "unevaluatedProperties": false
+        },
+        "maxSliceSize": {
+          "type": "string",
+          "format": "byte-size",
+          "description": "Target maximum size of each compacted data slice e.g. `100MiB`."
+        },
+        "maxSliceRecords": {
+          "type": "integer",
+          "format": "uint64",
+          "description": "Target maximum number of records per compacted data slice."
         }
       }
     },
@@ -66,23 +81,48 @@
         "name": {
           "type": "string",
           "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.",
+          "unevaluatedProperties": false
         }
       }
     },
-    "WebhookCall": {
-      "description": "Dispatches a certain payload to a specific `WebhookTarget`.",
+    "Verify": {
+      "description": "Checks dataset metadata for integrity.",
       "type": "object",
-      "required": [
-        "target"
-      ],
+      "required": [],
       "properties": {
         "name": {
           "type": "string",
           "description": "An alias for the task used to refer to it in flows and access the results"
         },
         "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the dataset to verify. Defaults to the flow-level target when omitted.",
+          "unevaluatedProperties": false
+        },
+        "replayTransform": {
+          "type": "boolean",
+          "description": "If true, re-executes transformations on derivative datasets to verify reproducibility."
+        }
+      }
+    },
+    "WebhookCall": {
+      "description": "Dispatches a certain payload to a specific `WebhookEndpoint`.",
+      "type": "object",
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "endpoint": {
           "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
-          "description": "Reference to the `WebhookTarget`.",
+          "description": "Reference to the `WebhookEndpoint`.",
           "unevaluatedProperties": false
         },
         "payload": {
@@ -162,6 +202,24 @@
         },
         {
           "$ref": "#/$defs/GarbageCollection"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Verify"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Verify"
         }
       ]
     },

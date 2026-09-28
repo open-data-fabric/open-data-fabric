@@ -10,7 +10,7 @@ spec:
         type: dataset.ref.updated
   tasks:
     - kind: WebhookCall
-      target: com.example.hook
+      endpoint: com.example.hook
       payload: '${{ trigger.event }}'
       retryPolicy:  # Task-level retries
         maxAttempts: 3

@@ -1,0 +1,75 @@
+# $schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
+$schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
+headers:
+  id: bb-6767a4ee
+  account:
+    id: 6767a4ee-d74d-436e-84f9-709407869a26
+    did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+    name: foo
+  name: update-all-deriv
+  labels: {}
+  annotations: {}
+  generation: 1
+  createdAt: 2020-01-01T00:00:00Z
+  updatedAt: 2020-01-01T00:00:00Z
+spec:
+  target:
+    type: Dataset
+    name: '%'
+    labels:
+      kind: Derivative
+  triggers:
+    - kind: Schedule
+      cron: "@daily"
+  tasks:
+    - kind: Transform
+    - kind: GarbageCollection
+      name: gc
+status:
+  phase: Ready
+  conditions:
+    https://opendatafabric.org/schemas/flows/v1alpha1/FlowStatus:
+      status: Active
+      recentBindings:
+        - target:
+            type: Dataset
+            id: a1b2c3d4-aaaa-bbbb-cccc-dddddddddddd
+            name: foo
+            account:
+              id: 6767a4ee-d74d-436e-84f9-709407869a26
+              did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+              name: foo
+          boundAt: 2026-01-01T00:00:00Z
+      bindingsTotal: 1
+      recentRuns:
+        - flowRun:
+            type: FlowRun
+            id: f47ac10b-1111-2222-3333-444444444444
+            name: flow-run-f47ac10b
+            account:
+              id: 6767a4ee-d74d-436e-84f9-709407869a26
+              did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+              name: foo
+          status: Finished
+          outcome: Success
+          finishedAt: 2026-09-11T02:00:00Z
+          retryOf:
+            type: FlowRun
+            id: 9b2e4f1a-5555-6666-7777-888888888888
+            name: flow-run-9b2e4f1a
+            account:
+              id: 6767a4ee-d74d-436e-84f9-709407869a26
+              did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+              name: foo
+          retryNumber: 1
+        - flowRun:
+            type: FlowRun
+            id: 9b2e4f1a-5555-6666-7777-888888888888
+            name: flow-run-9b2e4f1a-2
+            account:
+              id: 6767a4ee-d74d-436e-84f9-709407869a26
+              did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
+              name: foo
+          status: Finished
+          outcome: Failed
+          finishedAt: 2026-09-10T02:00:00Z

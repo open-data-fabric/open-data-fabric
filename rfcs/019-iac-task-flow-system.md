@@ -24,6 +24,7 @@ This RFC proposes a new set of resources to define and control workload scheduli
 - [Current Prototype Implementation in Kamu](#current-prototype-implementation-in-kamu)
 - [Proposed IaC-based System](#proposed-iac-based-system)
   - [Task](#task)
+    - [Task Types](#task-types)
   - [`FlowRun`](#flowrun)
   - [`Flow`](#flow)
     - [Target Selector](#target-selector)
@@ -120,6 +121,69 @@ status:
 Note that a task may finish with a `NoOp` outcome and no `TaskPlan` if planner realizes there is nothing to do (e.g. no new data to process).
 
 
+#### Task Types
+The following task types will be initially supported.
+
+`Ingest` - fetches data from a source and appends it to a dataset.
+
+```yaml
+kind: Ingest
+target: Dataset:sergiimk/sensor-temp  # optional: defaults to the flow-level target
+source: Source:sergiimk/sensor-temp-http  # ResourceRef to the Source resource
+targetRecordsPerSlice: 10000  # optional: target number of records to ingest per slice
+```
+
+`Transform` - executes transformation of data defined in a derivative dataset.
+
+```yaml
+kind: Transform
+target: Dataset:sergiimk/sensor-temp-daily  # ResourceRef to the derivative dataset
+```
+
+`Compaction` - compacts data files in matching datasets to improve query performance.
+
+```yaml
+kind: Compaction
+target: Dataset:sergiimk/sensor-temp  # ResourceRef to the dataset to compact
+maxSliceSize: 100MiB     # optional: target maximum size of each compacted data slice
+maxSliceRecords: 10000   # optional: target maximum number of records per slice
+```
+
+`GarbageCollection` - removes unreferenced data files from matching datasets.
+
+```yaml
+kind: GarbageCollection
+target: Dataset:sergiimk/sensor-temp  # ResourceRef to the dataset to collect garbage from
+```
+
+`Verify` - checks dataset metadata for integrity, optionally replaying transformations.
+
+```yaml
+kind: Verify
+target: Dataset:sergiimk/sensor-temp  # optional: defaults to the flow-level target
+replayTransform: true  # optional: re-executes transformations to verify reproducibility
+```
+
+`WebhookCall` - dispatches a payload to a `WebhookEndpoint` resource.
+
+```yaml
+kind: WebhookCall
+endpoint: WebhookEndpoint:sergiimk/notify-slack  # ResourceRef to the WebhookEndpoint
+payload: '{"event": "ingest-complete", "dataset": "{{task.source}}"}'  # optional, supports templating
+retryPolicy:                     # optional: overrides the flow-level retry policy for this task
+  maxAttempts: 5
+  minDelay: 30s
+  backoff: Exponential
+```
+
+Custom task types can also be specified using a full schema URI as the kind:
+
+```yaml
+kind: https://acme.com/schemas/tasks/v1/SomeTask
+someCustomParam: value
+```
+
+
 ### `FlowRun`
 `FlowRun` resources are a set of tasks to be executed in a sequence.
 
@@ -165,6 +229,7 @@ status:
     # Links to the previous FlowRun, if this is a retry
     https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunRetry:
       retryOf: FlowRun:9b2e4f1a-3c7d-4e8b-a1f2-6d5e7c8b9a0d  # ResourceHandle
+      retryNumber: 2  # Second time retrying (i.e. third run total)
 ```
 
 The `spec.target` on the `FlowRun` level is used as the default `target` for tasks in `spec.tasks` list to avoid duplication.
@@ -194,10 +259,8 @@ spec:
       cooldown: 10min
   tasks:
     - kind: Compaction
-      params:
-        minUncompactedRows: 100  # TODO: Take a look at compaction RFC
-        maxSliceSize: 100MiB
-        maxSliceRecords: 10000
+      maxSliceSize: 100MiB
+      maxSliceRecords: 10000
       onNoOp: Break         # Break / Continue: Break finishes the flow run early without error
       onFailure: Fail       # Fail / Continue
     - kind: GarbageCollection
@@ -220,11 +283,13 @@ status:
           boundAt: 2026-01-01T00:00:00Z
       bindingsTotal: 1
       recentRuns:
-        - flowRun: FlowRun:f47ac10b-1111-2222-3333-444444444444  # ResourceRef
+        - flowRun: FlowRun:f47ac10b-1111-2222-3333-444444444444  # ResourceHandle
           status: Finished
           outcome: Success
           finishedAt: 2026-09-11T02:00:00Z
-        - flowRun: FlowRun:9b2e4f1a-5555-6666-7777-888888888888  # ResourceRef
+          retryOf: FlowRun:9b2e4f1a-5555-6666-7777-888888888888  # ResourceHandle
+          retryNumber: 1  # First time retrying (i.e. second run total)
+        - flowRun: FlowRun:9b2e4f1a-5555-6666-7777-888888888888  # ResourceHandle
           status: Finished
           outcome: Failed
           finishedAt: 2026-09-10T02:00:00Z
@@ -244,41 +309,62 @@ The association between a `Flow` and its matched resources is purely a derived s
 ### `FlowTrigger`
 Flows specify a set of triggers that decide when to instantiate a `FlowRun`.
 
-Examples:
-```yaml
-# Reacts to an API call or a UI button press
-kind: Manual
+`FlowRun` stores the trigger configuration that lead to its creation in `activationCauses`.
 
-# Fires on specified Cron schedule
-# Guaranteed to fire if node was down when the next tick was supposed to happen
-# Fires only once for all missed ticks
+**Core trigger types**:
+
+`Manual` trigger - reacts to an API call or a UI button press.
+
+```yaml
+kind: Manual
+```
+
+`Schedule` trigger - fires on specified Cron schedule. Guaranteed to fire if node was down when the next tick was supposed to happen. Fires only once for all missed ticks.
+
+```yaml
 kind: Schedule
 cron: "@daily"
+```
 
-# Fires at regular intervals
-# Guaranteed to fire if node was down when the next tick was supposed to happen
-# Fires only once for all missed ticks
+`Interval` trigger - fires at regular intervals. Guaranteed to fire if node was down when the next tick was supposed to happen. Fires only once for all missed ticks.
+
+```yaml
 kind: Interval
 interval: 15m
+```
 
-# Reacts to events on the event bus
-# This is a very low-level trigger that should be used sparingly
+`Event` trigger - reacts to events on the event bus. This is a very low-level trigger that should be used sparingly.
+
+```yaml
 kind: Event
 target: Dataset:sergiimk/foo
 events:
   type: dataset.ref.updated  # Domain event filter (TODO: Spec for event types)
+```
 
-# Fires when inputs of a derivative dataset have updates
+`InputsUpdated` trigger - fires when inputs of a derivative dataset have updates.
+
+```yaml
 kind: InputsUpdated
 target: Dataset:sergiimk/bar
 minRecordsToAwait: 100  # optional batching
 maxAwaitInterval: 1h  # run at least once an hour if minNewRecords have not been reached
+```
 
-# Fires when specified source is updated
+`SourceUpdated` trigger - fires when specified source is updated.
+
+```yaml
 kind: SourceUpdated
 source: Source:sensor.temp.http
 minRecordsToAwait: 100  # optional batching
 maxAwaitInterval: 1h  # run at least once an hour if minNewRecords have not been reached
+```
+
+Besides triggers defined in ODF spec custom triggers can also be specified.
+
+```yaml
+kind: https://acme.com/schemas/tasks/v1/SpecialTrigger
+someCustomParam: value
 ```
 
 The following properties are common across all trigger types:

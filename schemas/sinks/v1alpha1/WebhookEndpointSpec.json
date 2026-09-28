@@ -1,7 +1,7 @@
 {
-  "$id": "https://opendatafabric.org/schemas/sinks/v1alpha1/WebhookTargetSpec",
+  "$id": "https://opendatafabric.org/schemas/sinks/v1alpha1/WebhookEndpointSpec",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Defines a webhook target endpoint that can receive event notifications and data.",
+  "description": "Defines a webhook endpoint that can receive event notifications and data.",
   "type": "object",
   "required": [
     "url"
@@ -10,7 +10,7 @@
     "url": {
       "type": "string",
       "format": "uri",
-      "description": "Target url of the webhook."
+      "description": "URL of the webhook endpoint."
     },
     "secret": {
       "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/Secret",

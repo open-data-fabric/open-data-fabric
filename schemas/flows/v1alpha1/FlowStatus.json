@@ -1,0 +1,107 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flows/v1alpha1/FlowStatus",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition",
+  "description": "Condition tracking the overall status of a Flow and a summary of recent runs.",
+  "$defs": {
+    "Value": {
+      "type": "string",
+      "description": "Overall operational status of the Flow.",
+      "enum": [
+        "Active",
+        "Paused"
+      ]
+    },
+    "BindingEntry": {
+      "type": "object",
+      "description": "A resource currently matched by the flow's target selector.",
+      "required": [
+        "target",
+        "boundAt"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+          "description": "The matched resource.",
+          "unevaluatedProperties": false
+        },
+        "boundAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Time at which this binding was established."
+        }
+      }
+    },
+    "RunEntry": {
+      "type": "object",
+      "description": "Summary of a recent FlowRun.",
+      "required": [
+        "flowRun",
+        "status"
+      ],
+      "properties": {
+        "flowRun": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+          "description": "Reference to the FlowRun resource.",
+          "unevaluatedProperties": false
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Waiting", "Running", "Finished"],
+          "description": "Execution status of this run."
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["Success", "Failed", "NoOp", "Cancelled"],
+          "description": "Outcome of this run, if finished."
+        },
+        "finishedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Time at which this run finished."
+        },
+        "retryOf": {
+          "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
+          "description": "Reference to the FlowRun this run is retrying, if applicable.",
+          "unevaluatedProperties": false
+        },
+        "retryNumber": {
+          "type": "integer",
+          "format": "uint32",
+          "description": "Retry attempt number (1 = first retry, i.e. second run total)."
+        }
+      }
+    }
+  },
+  "type": "object",
+  "required": [
+    "status"
+  ],
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/Value",
+      "unevaluatedProperties": false,
+      "description": "Overall operational status of the Flow."
+    },
+    "recentBindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/BindingEntry",
+        "unevaluatedProperties": false
+      },
+      "description": "Last N resources matched by the flow's target selector. Bounded by spec.recentBindingsRetention."
+    },
+    "bindingsTotal": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "Total number of resources currently matched by the flow's target selector."
+    },
+    "recentRuns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RunEntry",
+        "unevaluatedProperties": false
+      },
+      "description": "Summaries of recent FlowRuns. Bounded by spec.recentRunsRetention."
+    }
+  }
+}

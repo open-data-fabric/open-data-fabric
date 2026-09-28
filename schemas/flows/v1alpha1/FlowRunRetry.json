@@ -4,13 +4,19 @@
   "description": "Condition linking this FlowRun to the previous FlowRun it is retrying. Set by the controller; never written by users.",
   "type": "object",
   "required": [
-    "retryOf"
+    "retryOf",
+    "retryNumber"
   ],
   "properties": {
     "retryOf": {
       "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
       "description": "Reference to the FlowRun this run is retrying.",
       "unevaluatedProperties": false
+    },
+    "retryNumber": {
+      "type": "integer",
+      "format": "uint32",
+      "description": "Retry attempt number (1 = first retry, i.e. second run total)."
     }
   }
 }

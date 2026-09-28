@@ -47,8 +47,10 @@ impl Schemas {
                 continue;
             };
 
-            // Condition schemas use ResourceCondition metaschema — normalize before compiling
-            let schema = Self::normalize_meta_schema(schema.clone());
+            // Condition schemas use ResourceCondition metaschema — normalize before compiling.
+            // Also inject unevaluatedProperties: false so unknown fields are caught.
+            let mut schema = Self::normalize_meta_schema(schema.clone());
+            schema["unevaluatedProperties"] = serde_json::Value::Bool(false);
             let resources = self.by_id.iter().filter_map(|(id, value)| {
                 let resource =
                     Resource::from_contents(Self::normalize_meta_schema(value.clone())).ok()?;

@@ -10,5 +10,4 @@ spec:
   tasks:
     - kind: Ingest
       source: ca.bankofcanada
-      params:
-        targetSliceRecords: 10000
+      targetRecordsPerSlice: 10000

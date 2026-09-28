@@ -81,3 +81,4 @@ status:
           id: aa-123123
           did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
           name: system
+      retryNumber: 2  # Second time retrying (i.e. third run total)

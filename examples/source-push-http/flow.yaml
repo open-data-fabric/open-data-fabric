@@ -12,5 +12,4 @@ spec:
   tasks:
     - kind: Ingest
       source: sensor.temp.http
-      params:
-        targetSliceRecords: 10000
+      targetRecordsPerSlice: 10000
