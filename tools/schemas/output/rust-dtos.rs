@@ -1787,6 +1787,8 @@ pub mod flows {
     pub struct FlowRunSpec {
         /// Defines the default target resources on which tasks will be performed.
         pub target: Option<resources::ResourceHandle>,
+        /// Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
+        pub service_account: Option<auth::AccountHandle>,
         /// List of tasks to run consecutively.
         pub tasks: Vec<tasks::TaskSpec>,
     }
@@ -1798,6 +1800,8 @@ pub mod flows {
     pub struct FlowRunSpecInput {
         /// Defines the default target resources on which tasks will be performed.
         pub target: Option<resources::ResourceRef>,
+        /// Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
+        pub service_account: Option<auth::AccountRef>,
         /// List of tasks to run consecutively.
         pub tasks: Vec<tasks::TaskSpecInput>,
     }
@@ -1847,6 +1851,8 @@ pub mod flows {
     pub struct FlowSpec {
         /// Defines resources for which this flow will be instantiated.
         pub target: resources::ResourceSelector,
+        /// Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
+        pub service_account: Option<auth::AccountHandle>,
         /// Conditions that cause this flow to execute.
         pub triggers: Vec<flows::FlowTrigger>,
         /// List of tasks to run consecutively.
@@ -1862,6 +1868,8 @@ pub mod flows {
     pub struct FlowSpecInput {
         /// Defines resources for which this flow will be instantiated.
         pub target: resources::ResourceSelector,
+        /// Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
+        pub service_account: Option<auth::AccountRef>,
         /// Conditions that cause this flow to execute.
         pub triggers: Vec<flows::FlowTriggerInput>,
         /// List of tasks to run consecutively.
@@ -2355,10 +2363,14 @@ pub mod resources {
         pub owner_references: Option<Vec<resources::ResourceHandle>>,
         /// A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
         pub generation: u64,
+        /// A sequential number that changes every time the resource status is updated. Can be passed back as a precondition of a status update to make sure the status was not modified since it was read. Populated by the system. Starts with `1`.
+        pub status_generation: u64,
         /// Time when the resource was first applied and assigned an identity.
         pub created_at: DateTime<Utc>,
         /// Time when the resource was last updated, including header, spec, and status updates.
         pub updated_at: DateTime<Utc>,
+        /// Time when deletion of the resource was requested. The resource remains visible until its controllers finish cleaning up and the deletion completes.
+        pub deletion_requested_at: Option<DateTime<Utc>>,
         /// Time when the resource was deleted.
         pub deleted_at: Option<DateTime<Utc>>,
     }
@@ -2403,7 +2415,7 @@ pub mod resources {
         pub entries: std::collections::BTreeMap<TypeRef, serde_json::Value>,
     }
 
-    /// Represents the reconciliation phase of a resource.
+    /// Represents the reconciliation or deletion phase of a resource.
     ///
     /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourcePhase
     #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -2413,6 +2425,8 @@ pub mod resources {
         Ready,
         Degraded,
         Failed,
+        Deleting,
+        Deleted,
     }
 
     /// Reference to another resource.
@@ -3559,6 +3573,146 @@ pub mod tasks {
     #[allow(unused_imports)]
     use super::*;
 
+    /// Credentials used to access a remote location during a sync.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub enum SyncAuth {
+        Bearer(tasks::SyncAuthBearer),
+        Aws(tasks::SyncAuthAws),
+        Headers(tasks::SyncAuthHeaders),
+    }
+
+    impl_enum_with_variants!(SyncAuth);
+    impl_enum_variant!(SyncAuth::Bearer(tasks::SyncAuthBearer));
+    impl_enum_variant!(SyncAuth::Aws(tasks::SyncAuthAws));
+    impl_enum_variant!(SyncAuth::Headers(tasks::SyncAuthHeaders));
+
+    /// Authenticates with AWS or an AWS-compatible object storage.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Aws
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SyncAuthAws {
+        /// S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores.
+        pub endpoint: Option<String>,
+        /// AWS region where the bucket is located e.g. `us-west-2`.
+        pub region: Option<String>,
+        /// Reference to a secret containing the AWS access key ID.
+        pub access_key: Option<config::ValueHandle>,
+        /// Reference to a secret containing the AWS secret access key.
+        pub secret_key: Option<config::ValueHandle>,
+    }
+
+    /// Authenticates with a bearer token, e.g. an access token of a remote ODF node.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Bearer
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncAuthBearer {
+        /// Reference to a secret containing the token.
+        pub token: config::ValueHandle,
+    }
+
+    /// A request header whose value is taken from a `VariableSet` or a `SecretSet`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeader
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncAuthHeader {
+        /// Name of the header.
+        pub name: String,
+        /// Reference to the value of the header.
+        pub value: config::ValueHandle,
+    }
+
+    /// A request header whose value is taken from a `VariableSet` or a `SecretSet`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeaderInput
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncAuthHeaderInput {
+        /// Name of the header.
+        pub name: String,
+        /// Reference to the value of the header.
+        pub value: config::ValueRef,
+    }
+
+    /// Authenticates by passing custom request headers.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Headers
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncAuthHeaders {
+        /// Headers to pass with every request.
+        pub headers: Vec<tasks::SyncAuthHeader>,
+    }
+
+    /// Credentials used to access a remote location during a sync.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub enum SyncAuthInput {
+        Bearer(tasks::SyncAuthInputBearer),
+        Aws(tasks::SyncAuthInputAws),
+        Headers(tasks::SyncAuthInputHeaders),
+    }
+
+    impl_enum_with_variants!(SyncAuthInput);
+    impl_enum_variant!(SyncAuthInput::Bearer(tasks::SyncAuthInputBearer));
+    impl_enum_variant!(SyncAuthInput::Aws(tasks::SyncAuthInputAws));
+    impl_enum_variant!(SyncAuthInput::Headers(tasks::SyncAuthInputHeaders));
+
+    /// Authenticates with AWS or an AWS-compatible object storage.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Aws
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct SyncAuthInputAws {
+        /// S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores.
+        pub endpoint: Option<String>,
+        /// AWS region where the bucket is located e.g. `us-west-2`.
+        pub region: Option<String>,
+        /// Reference to a secret containing the AWS access key ID.
+        pub access_key: Option<config::ValueRef>,
+        /// Reference to a secret containing the AWS secret access key.
+        pub secret_key: Option<config::ValueRef>,
+    }
+
+    /// Authenticates with a bearer token, e.g. an access token of a remote ODF node.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Bearer
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncAuthInputBearer {
+        /// Reference to a secret containing the token.
+        pub token: config::ValueRef,
+    }
+
+    /// Authenticates by passing custom request headers.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Headers
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncAuthInputHeaders {
+        /// Headers to pass with every request.
+        pub headers: Vec<tasks::SyncAuthHeaderInput>,
+    }
+
+    /// A remote location a dataset is synced with.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncEndpoint {
+        /// URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`.
+        pub url: String,
+        /// Credentials used to access the remote location.
+        pub auth: Option<tasks::SyncAuth>,
+    }
+
+    /// A remote location a dataset is synced with.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpointInput
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct SyncEndpointInput {
+        /// URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`.
+        pub url: String,
+        /// Credentials used to access the remote location.
+        pub auth: Option<tasks::SyncAuthInput>,
+    }
+
     /// An individual work item to be executed.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/Task
@@ -3583,6 +3737,14 @@ pub mod tasks {
 
     static TASK_SCHEMA: std::sync::LazyLock<TypeUri> =
         std::sync::LazyLock::new(|| TypeUri::new_unchecked(TASK_SCHEMA_STR));
+
+    /// Type-specific details of a task failure. The `kind` property identifies the error, e.g. `InputDatasetCompacted`, and the remaining properties depend on it.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskError
+    #[derive(Clone, PartialEq, Eq, Debug)]
+    pub struct TaskError {
+        pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+    }
 
     /// Result of the execution of a task.
     ///
@@ -3614,6 +3776,10 @@ pub mod tasks {
     pub struct TaskOutcomeFailed {
         /// Human-readable description of the failure.
         pub message: String,
+        /// Whether retrying the task could succeed, e.g. after a network error. An unrecoverable failure, such as an invalid query, would fail the same way again.
+        pub recoverable: bool,
+        /// Type-specific details of the failure.
+        pub error: Option<tasks::TaskError>,
     }
 
     /// Task completed with no work done (e.g. no new data to process).
@@ -3645,7 +3811,10 @@ pub mod tasks {
     pub enum TaskSpec {
         Ingest(tasks::TaskSpecIngest),
         Transform(tasks::TaskSpecTransform),
+        SyncFrom(tasks::TaskSpecSyncFrom),
+        SyncTo(tasks::TaskSpecSyncTo),
         Compaction(tasks::TaskSpecCompaction),
+        Reset(tasks::TaskSpecReset),
         GarbageCollection(tasks::TaskSpecGarbageCollection),
         Verify(tasks::TaskSpecVerify),
         WebhookCall(tasks::TaskSpecWebhookCall),
@@ -3654,7 +3823,10 @@ pub mod tasks {
     impl_enum_with_variants!(TaskSpec);
     impl_enum_variant!(TaskSpec::Ingest(tasks::TaskSpecIngest));
     impl_enum_variant!(TaskSpec::Transform(tasks::TaskSpecTransform));
+    impl_enum_variant!(TaskSpec::SyncFrom(tasks::TaskSpecSyncFrom));
+    impl_enum_variant!(TaskSpec::SyncTo(tasks::TaskSpecSyncTo));
     impl_enum_variant!(TaskSpec::Compaction(tasks::TaskSpecCompaction));
+    impl_enum_variant!(TaskSpec::Reset(tasks::TaskSpecReset));
     impl_enum_variant!(TaskSpec::GarbageCollection(
         tasks::TaskSpecGarbageCollection
     ));
@@ -3670,6 +3842,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to compact. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
         /// Target maximum size of each compacted data slice e.g. `100MiB`.
         pub max_slice_size: Option<ByteSize>,
         /// Target maximum number of records per compacted data slice.
@@ -3685,6 +3859,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
     }
 
     /// Fetches data from a source and appends it to a dataset.
@@ -3696,6 +3872,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
         /// Reference to the source resource that defines how to fetch data.
         pub source: resources::ResourceHandle,
         /// Target number of records to ingest per data slice.
@@ -3709,7 +3887,10 @@ pub mod tasks {
     pub enum TaskSpecInput {
         Ingest(tasks::TaskSpecInputIngest),
         Transform(tasks::TaskSpecInputTransform),
+        SyncFrom(tasks::TaskSpecInputSyncFrom),
+        SyncTo(tasks::TaskSpecInputSyncTo),
         Compaction(tasks::TaskSpecInputCompaction),
+        Reset(tasks::TaskSpecInputReset),
         GarbageCollection(tasks::TaskSpecInputGarbageCollection),
         Verify(tasks::TaskSpecInputVerify),
         WebhookCall(tasks::TaskSpecInputWebhookCall),
@@ -3718,7 +3899,10 @@ pub mod tasks {
     impl_enum_with_variants!(TaskSpecInput);
     impl_enum_variant!(TaskSpecInput::Ingest(tasks::TaskSpecInputIngest));
     impl_enum_variant!(TaskSpecInput::Transform(tasks::TaskSpecInputTransform));
+    impl_enum_variant!(TaskSpecInput::SyncFrom(tasks::TaskSpecInputSyncFrom));
+    impl_enum_variant!(TaskSpecInput::SyncTo(tasks::TaskSpecInputSyncTo));
     impl_enum_variant!(TaskSpecInput::Compaction(tasks::TaskSpecInputCompaction));
+    impl_enum_variant!(TaskSpecInput::Reset(tasks::TaskSpecInputReset));
     impl_enum_variant!(TaskSpecInput::GarbageCollection(
         tasks::TaskSpecInputGarbageCollection
     ));
@@ -3734,6 +3918,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to compact. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
         /// Target maximum size of each compacted data slice e.g. `100MiB`.
         pub max_slice_size: Option<ByteSize>,
         /// Target maximum number of records per compacted data slice.
@@ -3749,6 +3935,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
     }
 
     /// Fetches data from a source and appends it to a dataset.
@@ -3760,10 +3948,149 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
         /// Reference to the source resource that defines how to fetch data.
         pub source: resources::ResourceRef,
         /// Target number of records to ingest per data slice.
         pub target_records_per_slice: Option<u64>,
+    }
+
+    /// Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Reset
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct TaskSpecInputReset {
+        /// An alias for the task used to refer to it in flows and access the results
+        pub name: Option<String>,
+        /// Reference to the dataset to reset. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
+        /// Name of the block reference to reset.
+        ///
+        /// Defaults to: "head"
+        pub r#ref: Option<String>,
+        /// Hash of the block the reference will point to. Defaults to the `Seed` block when omitted.
+        pub new_block_hash: Option<Multihash>,
+        /// Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates.
+        pub old_block_hash: Option<Multihash>,
+    }
+
+    impl TaskSpecInputReset {
+        pub fn default_ref() -> &'static str {
+            "head"
+        }
+        pub fn r#ref(&self) -> &str {
+            self.r#ref.as_deref().unwrap_or(Self::default_ref())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputReset {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
+                    == other.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
+                && self.new_block_hash == other.new_block_hash
+                && self.old_block_hash == other.old_block_hash
+        }
+    }
+
+    /// Pulls new blocks from a remote dataset into a local dataset.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncFrom
+    #[derive(Clone, Debug, Eq)]
+    pub struct TaskSpecInputSyncFrom {
+        /// An alias for the task used to refer to it in flows and access the results
+        pub name: Option<String>,
+        /// Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
+        /// Remote dataset to pull from.
+        pub source: tasks::SyncEndpointInput,
+        /// Overwrite the local dataset even if its history has diverged from the source.
+        ///
+        /// Defaults to: false
+        pub force: Option<bool>,
+    }
+
+    impl TaskSpecInputSyncFrom {
+        pub fn default_force() -> bool {
+            false
+        }
+        pub fn force(&self) -> bool {
+            self.force.unwrap_or(Self::default_force())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputSyncFrom {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.source == other.source
+                && self.force.or_else(|| Some(Self::default_force()))
+                    == other.force.or_else(|| Some(Self::default_force()))
+        }
+    }
+
+    /// Pushes new blocks of a local dataset to a remote dataset.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncTo
+    #[derive(Clone, Debug, Eq)]
+    pub struct TaskSpecInputSyncTo {
+        /// An alias for the task used to refer to it in flows and access the results
+        pub name: Option<String>,
+        /// Reference to the local dataset to push. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
+        /// Remote dataset to push to.
+        pub destination: tasks::SyncEndpointInput,
+        /// Overwrite the remote dataset even if its history has diverged from the local one.
+        ///
+        /// Defaults to: false
+        pub force: Option<bool>,
+        /// Create the remote dataset if it does not exist.
+        ///
+        /// Defaults to: true
+        pub create_if_not_exists: Option<bool>,
+    }
+
+    impl TaskSpecInputSyncTo {
+        pub fn default_force() -> bool {
+            false
+        }
+        pub fn force(&self) -> bool {
+            self.force.unwrap_or(Self::default_force())
+        }
+        pub fn default_create_if_not_exists() -> bool {
+            true
+        }
+        pub fn create_if_not_exists(&self) -> bool {
+            self.create_if_not_exists
+                .unwrap_or(Self::default_create_if_not_exists())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputSyncTo {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.destination == other.destination
+                && self.force.or_else(|| Some(Self::default_force()))
+                    == other.force.or_else(|| Some(Self::default_force()))
+                && self
+                    .create_if_not_exists
+                    .or_else(|| Some(Self::default_create_if_not_exists()))
+                    == other
+                        .create_if_not_exists
+                        .or_else(|| Some(Self::default_create_if_not_exists()))
+        }
     }
 
     /// Executes transformation of data defined in a derivative dataset.
@@ -3775,6 +4102,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the derivative dataset that defines how to transform data.
         pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
     }
 
     /// Checks dataset metadata for integrity.
@@ -3786,6 +4115,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to verify. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetRef>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
         /// If true, re-executes transformations on derivative datasets to verify reproducibility.
         pub replay_transform: Option<bool>,
     }
@@ -3797,12 +4128,151 @@ pub mod tasks {
     pub struct TaskSpecInputWebhookCall {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountRef>,
         /// Reference to the `WebhookEndpoint`.
         pub endpoint: resources::ResourceRef,
         /// The payload to send. May include templating.
         pub payload: Option<String>,
         /// Defines how a webhook should react to failures.
         pub retry_policy: Option<flows::RetryPolicy>,
+    }
+
+    /// Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Reset
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct TaskSpecReset {
+        /// An alias for the task used to refer to it in flows and access the results
+        pub name: Option<String>,
+        /// Reference to the dataset to reset. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
+        /// Name of the block reference to reset.
+        ///
+        /// Defaults to: "head"
+        pub r#ref: Option<String>,
+        /// Hash of the block the reference will point to. Defaults to the `Seed` block when omitted.
+        pub new_block_hash: Option<Multihash>,
+        /// Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates.
+        pub old_block_hash: Option<Multihash>,
+    }
+
+    impl TaskSpecReset {
+        pub fn default_ref() -> &'static str {
+            "head"
+        }
+        pub fn r#ref(&self) -> &str {
+            self.r#ref.as_deref().unwrap_or(Self::default_ref())
+        }
+    }
+
+    impl PartialEq for TaskSpecReset {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
+                    == other.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
+                && self.new_block_hash == other.new_block_hash
+                && self.old_block_hash == other.old_block_hash
+        }
+    }
+
+    /// Pulls new blocks from a remote dataset into a local dataset.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncFrom
+    #[derive(Clone, Debug, Eq)]
+    pub struct TaskSpecSyncFrom {
+        /// An alias for the task used to refer to it in flows and access the results
+        pub name: Option<String>,
+        /// Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
+        /// Remote dataset to pull from.
+        pub source: tasks::SyncEndpoint,
+        /// Overwrite the local dataset even if its history has diverged from the source.
+        ///
+        /// Defaults to: false
+        pub force: Option<bool>,
+    }
+
+    impl TaskSpecSyncFrom {
+        pub fn default_force() -> bool {
+            false
+        }
+        pub fn force(&self) -> bool {
+            self.force.unwrap_or(Self::default_force())
+        }
+    }
+
+    impl PartialEq for TaskSpecSyncFrom {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.source == other.source
+                && self.force.or_else(|| Some(Self::default_force()))
+                    == other.force.or_else(|| Some(Self::default_force()))
+        }
+    }
+
+    /// Pushes new blocks of a local dataset to a remote dataset.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncTo
+    #[derive(Clone, Debug, Eq)]
+    pub struct TaskSpecSyncTo {
+        /// An alias for the task used to refer to it in flows and access the results
+        pub name: Option<String>,
+        /// Reference to the local dataset to push. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
+        /// Remote dataset to push to.
+        pub destination: tasks::SyncEndpoint,
+        /// Overwrite the remote dataset even if its history has diverged from the local one.
+        ///
+        /// Defaults to: false
+        pub force: Option<bool>,
+        /// Create the remote dataset if it does not exist.
+        ///
+        /// Defaults to: true
+        pub create_if_not_exists: Option<bool>,
+    }
+
+    impl TaskSpecSyncTo {
+        pub fn default_force() -> bool {
+            false
+        }
+        pub fn force(&self) -> bool {
+            self.force.unwrap_or(Self::default_force())
+        }
+        pub fn default_create_if_not_exists() -> bool {
+            true
+        }
+        pub fn create_if_not_exists(&self) -> bool {
+            self.create_if_not_exists
+                .unwrap_or(Self::default_create_if_not_exists())
+        }
+    }
+
+    impl PartialEq for TaskSpecSyncTo {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.destination == other.destination
+                && self.force.or_else(|| Some(Self::default_force()))
+                    == other.force.or_else(|| Some(Self::default_force()))
+                && self
+                    .create_if_not_exists
+                    .or_else(|| Some(Self::default_create_if_not_exists()))
+                    == other
+                        .create_if_not_exists
+                        .or_else(|| Some(Self::default_create_if_not_exists()))
+        }
     }
 
     /// Executes transformation of data defined in a derivative dataset.
@@ -3814,6 +4284,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the derivative dataset that defines how to transform data.
         pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
     }
 
     /// Checks dataset metadata for integrity.
@@ -3825,6 +4297,8 @@ pub mod tasks {
         pub name: Option<String>,
         /// Reference to the dataset to verify. Defaults to the flow-level target when omitted.
         pub target: Option<datasets::DatasetHandle>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
         /// If true, re-executes transformations on derivative datasets to verify reproducibility.
         pub replay_transform: Option<bool>,
     }
@@ -3836,6 +4310,8 @@ pub mod tasks {
     pub struct TaskSpecWebhookCall {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
+        /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+        pub service_account: Option<auth::AccountHandle>,
         /// Reference to the `WebhookEndpoint`.
         pub endpoint: resources::ResourceHandle,
         /// The payload to send. May include templating.
@@ -3848,10 +4324,8 @@ pub mod tasks {
     #[derive(Clone, Copy, PartialEq, Eq, Debug)]
     pub enum TaskStatus {
         Pending,
-        Planning,
-        Ready,
+        Queued,
         Running,
-        Committing,
         Finished,
     }
 }

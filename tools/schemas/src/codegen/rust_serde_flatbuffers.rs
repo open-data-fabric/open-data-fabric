@@ -881,6 +881,7 @@ fn render_map_json_encoded_string(
 fn format_accessor<'a>(ident: &'a str) -> Cow<'a, str> {
     match ident {
         "type" => "type_".into(),
+        "ref" => "ref_".into(),
         _ => Cow::Borrowed(ident.trim_start_matches("$")),
     }
 }

@@ -46,23 +46,19 @@ We propose to define a new Tasks & Flows system on the core ODF level that build
 
 
 ### Task
-Building in a bottom-up order, we define the `Task` resource. `Task` represents a single unit of work, from intent through planning and execution to commit.
+Building in a bottom-up order, we define the `Task` resource. `Task` represents a single unit of work, from intent through execution to its outcome.
 
 `Task` resource `spec` captures the **intent**: the target resource and the operation kind with high-level parameters. This is what a human operator or a `FlowRun` controller writes when creating a task. Spec is stable, human-readable, and never rewritten.
 
-The **execution plan** - with fully resolved paths, offsets, schemas, and all other inputs needed by the worker - is computed by the node's planner and written into `TaskPlan` status condition.
+Tasks are executed by **workers**. Every worker specializes in one task type and pulls the next task of that type from the node's **queue**, which schedules and prioritizes tasks. The worker then advances the task through the steps its type requires - e.g. fetching data for an ingest, or elaborating the execution plan of a transform, requesting an engine and dispatching the plan to it - and commits the result. As it progresses, the worker records the state of the task in type-specific status conditions. For example, the **execution plan** - with fully resolved paths, offsets, schemas, and all other inputs - is written into the `TaskPlan` condition.
 
 The `TaskStatus` lifecycle proceeds through the following phases:
-- **Pending** — task created, waiting for the planner
-- **Planning** — node planner is resolving the full execution plan into `TaskPlan`
-- **Ready** — `TaskPlan` is populated; task is queued for a worker
-- **Running** — worker is executing the plan
-- **Committing** — worker reported its result; node is validating output and writing the metadata block
-- **Finished** — terminal; `TaskOutcome` condition is either `Success`, `Failed`, `NoOp` or `Cancelled`; the resource enters a TTL period before deletion.
+- **Pending** — task created; node is validating its inputs and resolving what is needed to schedule it (e.g. the engine a transform uses)
+- **Queued** — task is waiting in the queue for a worker
+- **Running** — a worker has claimed the task and is executing it, including the commit
+- **Finished** — terminal; `TaskOutcome` condition is either `Success`, `Failed`, `NoOp` or `Cancelled`, and the task resource is deleted (see below).
 
-Task resources are **retained for a configurable TTL period after completion** (e.g. 10 days) before being deleted. This allows the UI and operators to inspect recent runs directly from the resource store without querying the event store. After TTL expires, the resource is deleted, but the full history of any task remains recoverable from the event sourcing store by resource ID.
-
-Note that the **separation of planning, execution, and commit phase** allows to run certain parts of the task on the node (with access to metadata and storage state), and heavy computational tasks on a separate worker.
+The resource `phase` reflects the work of the **task controller**, whose job is to admit the task: validate its inputs, resolve what is needed to schedule it, and put it into the queue. `phase: Ready` means the task was admitted, while `phase: Failed` means it was rejected - in which case the controller also sets an unrecoverable `Failed` outcome. Execution is reported separately by workers in the `TaskStatus` condition, so an admitted task stays in `phase: Ready` whatever its `TaskStatus` is, until it is deleted.
 
 Example of a task as created by a `FlowRun` controller (spec describes only the intent, no plan yet):
 ```yaml
@@ -77,20 +73,23 @@ status:
   phase: Pending
 ```
 
+Task resources are **deleted as soon as they finish**, so the existing tasks are exactly the work that is pending, queued, or running. Deleted tasks **stay readable** for a configurable retention period (e.g. 10 days) before being purged. This allows the UI and operators to inspect recent runs.
+
 Example of the same task after planning and execution:
 ```yaml
 $schema: https://opendatafabric.org/schemas/flows/v1alpha1/Task
 headers:
   ownerReferences:
     - FlowRun:c27331ce-ce88-4ff9-8c5a-4ce8107cc03f  # ResourceRef of the FlowRun that spawned this task
+  deletedAt: 2026-09-11T02:23:41Z  # Deleted upon completion, readable until the retention period ends
 spec:
   kind: Transform
   target: Dataset:sergiimk/foo  # ResourceRef
 status:
-  phase: Ready  # NOTE: Task resource is retained for a TTL period, then deleted
+  phase: Deleted  # Deleted upon completion; execution is reported in `TaskStatus`
   observedGeneration: 1
   conditions:
-    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus: Finished  # Pending / Queued / Running / Finished
     https://opendatafabric.org/schemas/tasks/v1alpha1/TaskPlan:
       kind: TransformPlan
       datasetId: did:odf:fed0..17bf
@@ -118,7 +117,21 @@ status:
         newWatermark: 2023-04-15T00:00:00Z
 ```
 
-Note that a task may finish with a `NoOp` outcome and no `TaskPlan` if planner realizes there is nothing to do (e.g. no new data to process).
+Note that a task may finish with a `NoOp` outcome and no `TaskPlan` if the worker realizes there is nothing to do (e.g. no new data to process).
+
+A `Failed` outcome describes the error and tells whether it is **recoverable**, i.e. whether retrying the task could succeed. Recoverable failures (e.g. a network error) can be retried by the flow according to its `retryPolicy`, while unrecoverable ones (e.g. an invalid query) would fail the same way again. Type-specific details of the error are carried in `error`:
+```yaml
+https://opendatafabric.org/schemas/tasks/v1alpha1/TaskOutcome:
+  kind: Failed
+  message: Input dataset was compacted since the last transformation
+  recoverable: false
+  error:
+    kind: InputDatasetCompacted
+    inputDataset: Dataset:sergiimk/sensor-temp
+```
+
+Deleting a task that has not finished yet **cancels** it when possible. Until its outcome is recorded, a task being deleted remains visible in `phase: Deleting`.
+
 
 
 #### Task Types
@@ -140,6 +153,42 @@ kind: Transform
 target: Dataset:sergiimk/sensor-temp-daily  # ResourceRef to the derivative dataset
 ```
 
+`SyncFrom` - pulls new blocks from a remote dataset into a local dataset.
+
+```yaml
+kind: SyncFrom
+target: Dataset:sergiimk/sensor-temp  # optional: defaults to the flow-level target
+source:
+  url: odf+https://node.example.com/acme/sensor-temp  # scheme selects the transfer protocol
+  auth:  # optional
+    kind: Bearer
+    token: SecretSet:acme-node#accessToken  # ValueRef
+force: false  # optional: overwrite the local dataset even if histories have diverged
+```
+
+`SyncTo` - pushes new blocks of a local dataset to a remote dataset.
+
+```yaml
+kind: SyncTo
+target: Dataset:sergiimk/sensor-temp  # optional: defaults to the flow-level target
+destination:
+  url: s3://my-bucket/datasets/sensor-temp/
+  auth:
+    kind: Aws
+    region: us-west-2
+    accessKey: SecretSet:my-aws-secrets#accessKey  # ValueRef
+    secretKey: SecretSet:my-aws-secrets#secretKey  # ValueRef
+force: false  # optional: overwrite the remote dataset even if histories have diverged
+createIfNotExists: true  # optional: create the remote dataset if it does not exist
+```
+
+Sync endpoints support the following `auth` kinds:
+- `Bearer` - passes a token, e.g. an access token of a remote ODF node
+- `Aws` - credentials for AWS or an AWS-compatible object storage
+- `Headers` - custom request headers with values referencing `VariableSet`s and `SecretSet`s
+
+Note that the execution plan of a sync task carries references to secrets and never their values - these are resolved only during execution.
+
 `Compaction` - compacts data files in matching datasets to improve query performance.
 
 ```yaml
@@ -147,6 +196,16 @@ kind: Compaction
 target: Dataset:sergiimk/sensor-temp  # ResourceRef to the dataset to compact
 maxSliceSize: 100MiB     # optional: target maximum size of each compacted data slice
 maxSliceRecords: 10000   # optional: target maximum number of records per slice
+```
+
+`Reset` - moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+
+```yaml
+kind: Reset
+target: Dataset:sergiimk/sensor-temp  # ResourceRef to the dataset to reset
+ref: head  # optional: block reference to reset, defaults to `head`
+newBlockHash: f162..8a9f  # optional: block the reference will point to, defaults to the `Seed` block
+oldBlockHash: f162..f008  # optional: expected current block, task fails if the reference has moved
 ```
 
 `GarbageCollection` - removes unreferenced data files from matching datasets.
@@ -199,7 +258,7 @@ spec:
     - kind: Transform   # Implicit name: task-0-transform
     - kind: GarbageCollection  # Implicit name: task-1-garbage-collect
 status:
-  phase: Ready  # NOTE: FlowRun resource is retained for a TTL period, then deleted
+  phase: Ready  # NOTE: FlowRun resource is deleted when the run finishes, like a Task
   conditions:
     # Tracks the overall status and the tasks that were spawned during the execution
     https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunStatus:
@@ -233,6 +292,10 @@ status:
 ```
 
 The `spec.target` on the `FlowRun` level is used as the default `target` for tasks in `spec.tasks` list to avoid duplication.
+
+Like tasks, `FlowRun` resources are **deleted as soon as the run finishes** and stay readable for the retention period. Deleting a run that has not finished yet cancels it, together with its unfinished tasks, which reference the run in `ownerReferences`.
+
+A run created by the flow controller copies the `serviceAccount` of its `Flow` into its own spec, so changes to the flow affect only future runs, never runs in progress.
 
 > Note: Although `retryOf` and `activationCauses` are immutable and known at `FlowRun` creation, they are part of `status` rather than `spec` because they carry information that can only be reliably set by the controller, not by a user.
 
@@ -373,6 +436,28 @@ The following properties are common across all trigger types:
 enabled: true  # Allows to pause an individual trigger
 cooldown: 10m  # Don't fire more often than every 10 minutes (batches multiple activations into one)
 ```
+
+
+### Authorization
+A task executes with the permissions of a user **principal** who created it.
+
+When a task, flow run, or a flow is defined for an organization they must specify `serviceAccount` property which defines a non-human principal that gets permissions only through explicit policy bindings.
+
+A task created from a `FlowRun` inherits the `serviceAccount` of the run, and `FlowRun` inherits one from `Flow`.
+
+Example:
+```yaml
+$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Flow
+headers:
+  account: acme
+  name: ingest-sensors
+spec:
+  serviceAccount: acme/ingest-bot  # AccountRef to an account of service account type
+  target: Dataset:acme/sensor-temp
+  # ...
+```
+
+Details of the authorization mechanism are outside of the scope of this RFC.
 
 
 ## Appendix A: Flow System Prototype in Kamu
