@@ -416,6 +416,22 @@ In the `status` section `observedGeneration` can be used to see what generation 
 
 Note that `generation` does not increment on status changes as it is intended to signify changes to the desired state.
 
+Changes to the status are counted separately by `statusGeneration`, which increments every time the status is updated:
+
+```yaml
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
+headers:
+  name: my-secrets
+  generation: 4
+  statusGeneration: 9
+spec: {}
+status: {}
+```
+
+Together the two headers tell whether anything changed in a resource since it was last read, without comparing its contents.
+
+Status may be updated by several controllers concurrently. A controller can pass the `statusGeneration` it read as a **precondition** of a status update, which is then rejected as a conflict if the status was modified in the meantime. This allows **compare-and-swap** updates, e.g. for a controller that must verify some condition of the status before updating it, without the check and the update racing with other controllers.
+
 
 ### Status
 The `status` section of the resource manifest never appears in user-defined manifests. It is maintained by the ODF nodes and writeable only by resource controllers. It is used to provide detailed information about the reconciliation status of the resource.
@@ -451,6 +467,10 @@ The `phase` field is populated as follows:
 | 3 | 3 | 3 | `Ready` | Fully reconciled, running current spec |
 | 3 | 3 | 2 | `Degraded` | Reconcile of gen 3 failed, but gen 2 is still running |
 | 3 | 3 | — | `Failed` | Controller saw gen 3, but never successfully reconciled anything |
+| ? | ? | ? | `Deleting` | When `deletionRequestedAt` header is set and controller is expected to clean up |
+| ? | ? | ? | `Deleted` | Controller cleaned up the resource and set the `deletedAt` header |
+
+Note that deletion takes precedence over the other phases. Deleting a resource is a two-step process, so that controllers can clean up the objects they created or finish work in progress before the resource disappears.
 
 The `conditions` field provides extended information about the state of a specific resource type. Conditions can be contributed by multiple controllers. They are keyed by schema IDs to disambiguate, avoid name collisions, and provide schema checking.
 

@@ -14,6 +14,11 @@
       "unevaluatedProperties": false,
       "description": "Defines resources for which this flow will be instantiated."
     },
+    "serviceAccount": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "unevaluatedProperties": false,
+      "description": "Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow."
+    },
     "triggers": {
       "type": "array",
       "items": {

@@ -18,16 +18,18 @@ headers:
   labels: {}
   annotations: {}
   generation: 1
+  statusGeneration: 3
   createdAt: 2020-01-01T00:00:00Z
   updatedAt: 2020-01-01T00:00:00Z
+  deletedAt: 2020-01-01T00:00:00Z  # Deleted upon completion, readable until the retention period ends
 spec:
   kind: Transform
   target: Dataset:sergiimk/foo  # ResourceRef
 status:
-  phase: Ready  # NOTE: Task resource is retained for a TTL period, then deleted
+  phase: Deleted  # Deleted upon completion; execution is reported in `TaskStatus`
   observedGeneration: 1
   conditions:
-    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus: Finished  # Pending / Planning / Ready / Running / Committing / Finished
+    https://opendatafabric.org/schemas/tasks/v1alpha1/TaskStatus: Finished  # Pending / Queued / Running / Finished
     https://opendatafabric.org/schemas/tasks/v1alpha1/TaskPlan:
       kind: TransformPlan
       datasetId: did:odf:fed0..17bf

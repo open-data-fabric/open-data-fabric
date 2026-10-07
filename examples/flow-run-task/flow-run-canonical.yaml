@@ -18,6 +18,7 @@ headers:
   labels: {}
   annotations: {}
   generation: 1
+  statusGeneration: 3
   createdAt: 2020-01-01T00:00:00Z
   updatedAt: 2020-01-01T00:00:00Z
 spec:
@@ -27,7 +28,7 @@ spec:
     - kind: GarbageCollection
       name: gc
 status:
-  phase: Ready  # NOTE: FlowRun resource is retained for a TTL period, then deleted
+  phase: Ready  # NOTE: FlowRun resource is deleted when the run finishes, like a Task
   conditions:
     # Tracks the overall status and the tasks that were spawned during the execution
     https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunStatus:

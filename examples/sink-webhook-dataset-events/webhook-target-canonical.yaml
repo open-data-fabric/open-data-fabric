@@ -12,6 +12,7 @@ headers:
   annotations:
     description: Canonical view of the webhook resource
   generation: 1
+  statusGeneration: 3
   createdAt: 2020-01-01T00:00:00Z
   updatedAt: 2020-01-01T00:00:00Z
 spec:

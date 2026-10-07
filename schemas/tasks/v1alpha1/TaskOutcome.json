@@ -14,12 +14,22 @@
       "description": "Task failed.",
       "type": "object",
       "required": [
-        "message"
+        "message",
+        "recoverable"
       ],
       "properties": {
         "message": {
           "type": "string",
           "description": "Human-readable description of the failure."
+        },
+        "recoverable": {
+          "type": "boolean",
+          "description": "Whether retrying the task could succeed, e.g. after a network error. An unrecoverable failure, such as an invalid query, would fail the same way again."
+        },
+        "error": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskError",
+          "description": "Type-specific details of the failure.",
+          "unevaluatedProperties": false
         }
       }
     },

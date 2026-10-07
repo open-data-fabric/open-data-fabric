@@ -10,6 +10,7 @@
     "labels",
     "annotations",
     "generation",
+    "statusGeneration",
     "createdAt",
     "updatedAt"
   ],
@@ -52,6 +53,11 @@
       "format": "uint64",
       "description": "A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`."
     },
+    "statusGeneration": {
+      "type": "integer",
+      "format": "uint64",
+      "description": "A sequential number that changes every time the resource status is updated. Can be passed back as a precondition of a status update to make sure the status was not modified since it was read. Populated by the system. Starts with `1`."
+    },
     "createdAt": {
       "type": "string",
       "format": "date-time",
@@ -61,6 +67,11 @@
       "type": "string",
       "format": "date-time",
       "description": "Time when the resource was last updated, including header, spec, and status updates."
+    },
+    "deletionRequestedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when deletion of the resource was requested. The resource remains visible until its controllers finish cleaning up and the deletion completes."
     },
     "deletedAt": {
       "type": "string",

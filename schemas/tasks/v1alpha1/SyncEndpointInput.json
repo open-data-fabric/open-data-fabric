@@ -1,0 +1,22 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpointInput",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "canonicalType": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint",
+  "description": "A remote location a dataset is synced with.",
+  "type": "object",
+  "required": [
+    "url"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`."
+    },
+    "auth": {
+      "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput",
+      "description": "Credentials used to access the remote location.",
+      "unevaluatedProperties": false
+    }
+  }
+}

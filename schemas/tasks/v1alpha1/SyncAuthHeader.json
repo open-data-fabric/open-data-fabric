@@ -1,0 +1,21 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeader",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A request header whose value is taken from a `VariableSet` or a `SecretSet`.",
+  "type": "object",
+  "required": [
+    "name",
+    "value"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the header."
+    },
+    "value": {
+      "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/ValueHandle",
+      "description": "Reference to the value of the header.",
+      "unevaluatedProperties": false
+    }
+  }
+}

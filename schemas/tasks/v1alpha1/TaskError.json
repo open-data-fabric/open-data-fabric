@@ -1,0 +1,9 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/TaskError",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Type-specific details of a task failure. The `kind` property identifies the error, e.g. `InputDatasetCompacted`, and the remaining properties depend on it.",
+  "type": "object",
+  "patternProperties": {
+    ".*": {}
+  }
+}
