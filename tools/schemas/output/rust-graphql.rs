@@ -1633,10 +1633,14 @@ pub struct ResourceHeaders {
     pub owner_references: Option<Vec<ResourceHandle>>,
     /// A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
     pub generation: UInt64,
+    /// A sequential number that changes every time the resource status is updated. Can be passed back as a precondition of a status update to make sure the status was not modified since it was read. Populated by the system. Starts with `1`.
+    pub status_generation: UInt64,
     /// Time when the resource was first applied and assigned an identity.
     pub created_at: DateTime<Utc>,
     /// Time when the resource was last updated, including header, spec, and status updates.
     pub updated_at: DateTime<Utc>,
+    /// Time when deletion of the resource was requested. The resource remains visible until its controllers finish cleaning up and the deletion completes.
+    pub deletion_requested_at: Option<DateTime<Utc>>,
     /// Time when the resource was deleted.
     pub deleted_at: Option<DateTime<Utc>>,
 }
@@ -1653,8 +1657,10 @@ impl From<odf::metadata::resources::ResourceHeaders> for ResourceHeaders {
                 .owner_references
                 .map(|v| v.into_iter().map(Into::into).collect()),
             generation: v.generation.into(),
+            status_generation: v.status_generation.into(),
             created_at: v.created_at.into(),
             updated_at: v.updated_at.into(),
+            deletion_requested_at: v.deletion_requested_at.map(Into::into),
             deleted_at: v.deleted_at.map(Into::into),
         }
     }
@@ -1691,7 +1697,7 @@ impl async_graphql::ScalarType for ResourceLabels {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Represents the reconciliation phase of a resource.
+/// Represents the reconciliation or deletion phase of a resource.
 ///
 /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourcePhase
 #[derive(Enum, Debug, Clone, Copy, PartialEq, Eq)]
@@ -1702,6 +1708,8 @@ pub enum ResourcePhase {
     Ready,
     Degraded,
     Failed,
+    Deleting,
+    Deleted,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,120 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Credentials used to access a remote location during a sync.",
+  "$defs": {
+    "Bearer": {
+      "description": "Authenticates with a bearer token, e.g. an access token of a remote ODF node.",
+      "type": "object",
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/ValueHandle",
+          "description": "Reference to a secret containing the token.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "Aws": {
+      "description": "Authenticates with AWS or an AWS-compatible object storage.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores."
+        },
+        "region": {
+          "type": "string",
+          "description": "AWS region where the bucket is located e.g. `us-west-2`."
+        },
+        "accessKey": {
+          "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/ValueHandle",
+          "description": "Reference to a secret containing the AWS access key ID.",
+          "unevaluatedProperties": false
+        },
+        "secretKey": {
+          "$ref": "https://opendatafabric.org/schemas/config/v1alpha1/ValueHandle",
+          "description": "Reference to a secret containing the AWS secret access key.",
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "Headers": {
+      "description": "Authenticates by passing custom request headers.",
+      "type": "object",
+      "required": [
+        "headers"
+      ],
+      "properties": {
+        "headers": {
+          "type": "array",
+          "description": "Headers to pass with every request.",
+          "items": {
+            "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeader",
+            "unevaluatedProperties": false
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Bearer"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Bearer"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Aws"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Aws"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Headers"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Headers"
+        }
+      ]
+    }
+  ]
+}

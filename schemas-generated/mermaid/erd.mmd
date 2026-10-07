@@ -251,7 +251,20 @@ graph TD
   class AwsCredentials,AwsCredentialsInput,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
 
   subgraph tasks["tasks"]
+    SyncAuth
+    SyncAuth_Aws["SyncAuth::Aws"]
+    SyncAuth_Bearer["SyncAuth::Bearer"]
+    SyncAuth_Headers["SyncAuth::Headers"]
+    SyncAuthHeader
+    SyncAuthHeaderInput
+    SyncAuthInput
+    SyncAuthInput_Aws["SyncAuthInput::Aws"]
+    SyncAuthInput_Bearer["SyncAuthInput::Bearer"]
+    SyncAuthInput_Headers["SyncAuthInput::Headers"]
+    SyncEndpoint
+    SyncEndpointInput
     Task
+    TaskError
     TaskOutcome
     TaskOutcome_Cancelled["TaskOutcome::Cancelled"]
     TaskOutcome_Failed["TaskOutcome::Failed"]
@@ -262,6 +275,9 @@ graph TD
     TaskSpec_Compaction["TaskSpec::Compaction"]
     TaskSpec_GarbageCollection["TaskSpec::GarbageCollection"]
     TaskSpec_Ingest["TaskSpec::Ingest"]
+    TaskSpec_Reset["TaskSpec::Reset"]
+    TaskSpec_SyncFrom["TaskSpec::SyncFrom"]
+    TaskSpec_SyncTo["TaskSpec::SyncTo"]
     TaskSpec_Transform["TaskSpec::Transform"]
     TaskSpec_Verify["TaskSpec::Verify"]
     TaskSpec_WebhookCall["TaskSpec::WebhookCall"]
@@ -269,12 +285,15 @@ graph TD
     TaskSpecInput_Compaction["TaskSpecInput::Compaction"]
     TaskSpecInput_GarbageCollection["TaskSpecInput::GarbageCollection"]
     TaskSpecInput_Ingest["TaskSpecInput::Ingest"]
+    TaskSpecInput_Reset["TaskSpecInput::Reset"]
+    TaskSpecInput_SyncFrom["TaskSpecInput::SyncFrom"]
+    TaskSpecInput_SyncTo["TaskSpecInput::SyncTo"]
     TaskSpecInput_Transform["TaskSpecInput::Transform"]
     TaskSpecInput_Verify["TaskSpecInput::Verify"]
     TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
     TaskStatus
   end
-  class Task,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Transform,TaskSpec_Verify,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Transform,TaskSpecInput_Verify,TaskSpecInput_WebhookCall,TaskStatus ctx_tasks
+  class SyncAuth,SyncAuth_Aws,SyncAuth_Bearer,SyncAuth_Headers,SyncAuthHeader,SyncAuthHeaderInput,SyncAuthInput,SyncAuthInput_Aws,SyncAuthInput_Bearer,SyncAuthInput_Headers,SyncEndpoint,SyncEndpointInput,Task,TaskError,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Reset,TaskSpec_SyncFrom,TaskSpec_SyncTo,TaskSpec_Transform,TaskSpec_Verify,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Reset,TaskSpecInput_SyncFrom,TaskSpecInput_SyncTo,TaskSpecInput_Transform,TaskSpecInput_Verify,TaskSpecInput_WebhookCall,TaskStatus ctx_tasks
 
   Account -->|"headers"| ResourceHeadersInput
   Account -->|"spec"| AccountSpecInput
@@ -344,8 +363,10 @@ graph TD
   FlowRunActivationCauses -->|"late_activation_causes"| FlowRunActivationCause
   FlowRunRetry -->|"retry_of"| ResourceHandle
   FlowRunSpec -->|"target"| ResourceHandle
+  FlowRunSpec -->|"service_account"| AccountHandle
   FlowRunSpec -->|"tasks"| TaskSpec
   FlowRunSpecInput -->|"target"| ResourceRef
+  FlowRunSpecInput -->|"service_account"| AccountRef
   FlowRunSpecInput -->|"tasks"| TaskSpecInput
   FlowRunStatus -->|"status"| FlowRunStatus_Value
   FlowRunStatus -->|"tasks"| FlowRunStatus_TaskEntry
@@ -353,10 +374,12 @@ graph TD
   FlowRunStatus_TaskEntry -->|"status"| TaskStatus
   FlowRunStatus_TaskEntry -->|"outcome"| TaskOutcome
   FlowSpec -->|"target"| ResourceSelector
+  FlowSpec -->|"service_account"| AccountHandle
   FlowSpec -->|"triggers"| FlowTrigger
   FlowSpec -->|"tasks"| TaskSpec
   FlowSpec -->|"retry_policy"| RetryPolicy
   FlowSpecInput -->|"target"| ResourceSelector
+  FlowSpecInput -->|"service_account"| AccountRef
   FlowSpecInput -->|"triggers"| FlowTriggerInput
   FlowSpecInput -->|"tasks"| TaskSpecInput
   FlowSpecInput -->|"retry_policy"| RetryPolicy
@@ -501,37 +524,90 @@ graph TD
   SourceSpecInput -->|"preprocess"| Transform
   SourceSpecInput -->|"merge"| MergeStrategy
   SourceSpecInput -->|"vocab"| DatasetVocabulary
+  SyncAuth -->|"variant"| SyncAuth_Bearer
+  SyncAuth -->|"variant"| SyncAuth_Aws
+  SyncAuth -->|"variant"| SyncAuth_Headers
+  SyncAuth_Aws -->|"access_key"| ValueHandle
+  SyncAuth_Aws -->|"secret_key"| ValueHandle
+  SyncAuth_Bearer -->|"token"| ValueHandle
+  SyncAuth_Headers -->|"headers"| SyncAuthHeader
+  SyncAuthHeader -->|"value"| ValueHandle
+  SyncAuthHeaderInput -->|"value"| ValueRef
+  SyncAuthInput -->|"variant"| SyncAuthInput_Bearer
+  SyncAuthInput -->|"variant"| SyncAuthInput_Aws
+  SyncAuthInput -->|"variant"| SyncAuthInput_Headers
+  SyncAuthInput_Aws -->|"access_key"| ValueRef
+  SyncAuthInput_Aws -->|"secret_key"| ValueRef
+  SyncAuthInput_Bearer -->|"token"| ValueRef
+  SyncAuthInput_Headers -->|"headers"| SyncAuthHeaderInput
+  SyncEndpoint -->|"auth"| SyncAuth
+  SyncEndpointInput -->|"auth"| SyncAuthInput
   Task -->|"headers"| ResourceHeadersInput
   Task -->|"spec"| TaskSpecInput
   TaskOutcome -->|"variant"| TaskOutcome_Success
   TaskOutcome -->|"variant"| TaskOutcome_Failed
   TaskOutcome -->|"variant"| TaskOutcome_NoOp
   TaskOutcome -->|"variant"| TaskOutcome_Cancelled
+  TaskOutcome_Failed -->|"error"| TaskError
   TaskSpec -->|"variant"| TaskSpec_Ingest
   TaskSpec -->|"variant"| TaskSpec_Transform
+  TaskSpec -->|"variant"| TaskSpec_SyncFrom
+  TaskSpec -->|"variant"| TaskSpec_SyncTo
   TaskSpec -->|"variant"| TaskSpec_Compaction
+  TaskSpec -->|"variant"| TaskSpec_Reset
   TaskSpec -->|"variant"| TaskSpec_GarbageCollection
   TaskSpec -->|"variant"| TaskSpec_Verify
   TaskSpec -->|"variant"| TaskSpec_WebhookCall
   TaskSpec_Compaction -->|"target"| DatasetHandle
+  TaskSpec_Compaction -->|"service_account"| AccountHandle
   TaskSpec_GarbageCollection -->|"target"| DatasetHandle
+  TaskSpec_GarbageCollection -->|"service_account"| AccountHandle
   TaskSpec_Ingest -->|"target"| DatasetHandle
+  TaskSpec_Ingest -->|"service_account"| AccountHandle
   TaskSpec_Ingest -->|"source"| ResourceHandle
+  TaskSpec_Reset -->|"target"| DatasetHandle
+  TaskSpec_Reset -->|"service_account"| AccountHandle
+  TaskSpec_SyncFrom -->|"target"| DatasetHandle
+  TaskSpec_SyncFrom -->|"service_account"| AccountHandle
+  TaskSpec_SyncFrom -->|"source"| SyncEndpoint
+  TaskSpec_SyncTo -->|"target"| DatasetHandle
+  TaskSpec_SyncTo -->|"service_account"| AccountHandle
+  TaskSpec_SyncTo -->|"destination"| SyncEndpoint
   TaskSpec_Transform -->|"target"| DatasetHandle
+  TaskSpec_Transform -->|"service_account"| AccountHandle
   TaskSpec_Verify -->|"target"| DatasetHandle
+  TaskSpec_Verify -->|"service_account"| AccountHandle
+  TaskSpec_WebhookCall -->|"service_account"| AccountHandle
   TaskSpec_WebhookCall -->|"endpoint"| ResourceHandle
   TaskSpecInput -->|"variant"| TaskSpecInput_Ingest
   TaskSpecInput -->|"variant"| TaskSpecInput_Transform
+  TaskSpecInput -->|"variant"| TaskSpecInput_SyncFrom
+  TaskSpecInput -->|"variant"| TaskSpecInput_SyncTo
   TaskSpecInput -->|"variant"| TaskSpecInput_Compaction
+  TaskSpecInput -->|"variant"| TaskSpecInput_Reset
   TaskSpecInput -->|"variant"| TaskSpecInput_GarbageCollection
   TaskSpecInput -->|"variant"| TaskSpecInput_Verify
   TaskSpecInput -->|"variant"| TaskSpecInput_WebhookCall
   TaskSpecInput_Compaction -->|"target"| DatasetRef
+  TaskSpecInput_Compaction -->|"service_account"| AccountRef
   TaskSpecInput_GarbageCollection -->|"target"| DatasetRef
+  TaskSpecInput_GarbageCollection -->|"service_account"| AccountRef
   TaskSpecInput_Ingest -->|"target"| DatasetRef
+  TaskSpecInput_Ingest -->|"service_account"| AccountRef
   TaskSpecInput_Ingest -->|"source"| ResourceRef
+  TaskSpecInput_Reset -->|"target"| DatasetRef
+  TaskSpecInput_Reset -->|"service_account"| AccountRef
+  TaskSpecInput_SyncFrom -->|"target"| DatasetRef
+  TaskSpecInput_SyncFrom -->|"service_account"| AccountRef
+  TaskSpecInput_SyncFrom -->|"source"| SyncEndpointInput
+  TaskSpecInput_SyncTo -->|"target"| DatasetRef
+  TaskSpecInput_SyncTo -->|"service_account"| AccountRef
+  TaskSpecInput_SyncTo -->|"destination"| SyncEndpointInput
   TaskSpecInput_Transform -->|"target"| DatasetRef
+  TaskSpecInput_Transform -->|"service_account"| AccountRef
   TaskSpecInput_Verify -->|"target"| DatasetRef
+  TaskSpecInput_Verify -->|"service_account"| AccountRef
+  TaskSpecInput_WebhookCall -->|"service_account"| AccountRef
   TaskSpecInput_WebhookCall -->|"endpoint"| ResourceRef
   TaskSpecInput_WebhookCall -->|"retry_policy"| RetryPolicy
   Transform -->|"variant"| Transform_Sql

@@ -214,6 +214,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
             };
 
             let name = format_ident(&field.name);
+            let bare = name.trim_start_matches("r#");
             let mut default_typ = format_type(&field.typ);
             let mut accessor_typ = default_typ.clone();
 
@@ -232,7 +233,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
                 }
             };
 
-            writeln!(w, "pub fn default_{name}() -> {default_typ} {{")?;
+            writeln!(w, "pub fn default_{bare}() -> {default_typ} {{")?;
             writeln!(w, "{value}")?;
             writeln!(w, "}}")?;
 
@@ -240,11 +241,11 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
             match &field.typ {
                 model::Type::Boolean | model::Type::Custom(_) => {
-                    writeln!(w, "self.{name}.unwrap_or(Self::default_{name}())")?
+                    writeln!(w, "self.{name}.unwrap_or(Self::default_{bare}())")?
                 }
                 model::Type::String => writeln!(
                     w,
-                    "self.{name}.as_deref().unwrap_or(Self::default_{name}())"
+                    "self.{name}.as_deref().unwrap_or(Self::default_{bare}())"
                 )?,
                 typ => {
                     unimplemented!("Default value formatting for {typ:?} types is not implemented")
@@ -269,6 +270,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
         for (i, field) in typ.fields.values().enumerate() {
             let fname = format_ident(&field.name);
+            let bare = fname.trim_start_matches("r#");
             if i != 0 {
                 writeln!(w, "&&")?;
             }
@@ -278,11 +280,11 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
                 match &field.typ {
                     model::Type::String => writeln!(
                         w,
-                        "self.{fname}.as_deref().or_else(|| Some(Self::default_{fname}())) == other.{fname}.as_deref().or_else(|| Some(Self::default_{fname}()))"
+                        "self.{fname}.as_deref().or_else(|| Some(Self::default_{bare}())) == other.{fname}.as_deref().or_else(|| Some(Self::default_{bare}()))"
                     )?,
                     _ => writeln!(
                         w,
-                        "self.{fname}.or_else(|| Some(Self::default_{fname}())) == other.{fname}.or_else(|| Some(Self::default_{fname}()))"
+                        "self.{fname}.or_else(|| Some(Self::default_{bare}())) == other.{fname}.or_else(|| Some(Self::default_{bare}()))"
                     )?,
                 };
             }

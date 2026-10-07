@@ -2532,6 +2532,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowRunSpec {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let tasks_offset = {
             let offsets: Vec<_> = self
                 .tasks
@@ -2548,6 +2549,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowRunSpec {
         };
         let mut builder = fb::FlowRunSpecBuilder::new(fb);
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_tasks(tasks_offset);
         builder.finish()
     }
@@ -2559,6 +2561,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowRunSpec<'fb>> for odf::flows::FlowRu
             target: proxy
                 .target()
                 .map(|v| odf::resources::ResourceHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
             tasks: proxy
                 .tasks()
                 .map(|v| {
@@ -2583,6 +2588,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowRunSpecInput {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let tasks_offset = {
             let offsets: Vec<_> = self
                 .tasks
@@ -2599,6 +2605,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowRunSpecInput {
         };
         let mut builder = fb::FlowRunSpecInputBuilder::new(fb);
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_tasks(tasks_offset);
         builder.finish()
     }
@@ -2610,6 +2617,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowRunSpecInput<'fb>> for odf::flows::F
             target: proxy
                 .target()
                 .map(|v| odf::resources::ResourceRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
             tasks: proxy
                 .tasks()
                 .map(|v| {
@@ -2740,6 +2750,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowSpec {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let target_offset = { self.target.serialize(fb) };
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let triggers_offset = {
             let offsets: Vec<_> = self
                 .triggers
@@ -2771,6 +2782,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowSpec {
         let retry_policy_offset = self.retry_policy.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::FlowSpecBuilder::new(fb);
         builder.add_target(target_offset);
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_triggers(triggers_offset);
         builder.add_tasks(tasks_offset);
         retry_policy_offset.map(|off| builder.add_retry_policy(off));
@@ -2785,6 +2797,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowSpec<'fb>> for odf::flows::FlowSpec 
                 .target()
                 .map(|v| odf::resources::ResourceSelector::deserialize(v))
                 .unwrap(),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
             triggers: proxy
                 .triggers()
                 .map(|v| {
@@ -2822,6 +2837,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowSpecInput {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let target_offset = { self.target.serialize(fb) };
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let triggers_offset = {
             let offsets: Vec<_> = self
                 .triggers
@@ -2853,6 +2869,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowSpecInput {
         let retry_policy_offset = self.retry_policy.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::FlowSpecInputBuilder::new(fb);
         builder.add_target(target_offset);
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_triggers(triggers_offset);
         builder.add_tasks(tasks_offset);
         retry_policy_offset.map(|off| builder.add_retry_policy(off));
@@ -2867,6 +2884,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowSpecInput<'fb>> for odf::flows::Flow
                 .target()
                 .map(|v| odf::resources::ResourceSelector::deserialize(v))
                 .unwrap(),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
             triggers: proxy
                 .triggers()
                 .map(|v| {
@@ -5789,8 +5809,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::resources::ResourceHeaders {
         builder.add_annotations(annotations_offset);
         owner_references_offset.map(|off| builder.add_owner_references(off));
         builder.add_generation(self.generation);
+        builder.add_status_generation(self.status_generation);
         builder.add_created_at(&datetime_to_fb(&self.created_at));
         builder.add_updated_at(&datetime_to_fb(&self.updated_at));
+        self.deletion_requested_at
+            .map(|v| builder.add_deletion_requested_at(&datetime_to_fb(&v)));
         self.deleted_at
             .map(|v| builder.add_deleted_at(&datetime_to_fb(&v)));
         builder.finish()
@@ -5826,8 +5849,10 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceHeaders<'fb>> for odf::resources
                     .collect()
             }),
             generation: proxy.generation(),
+            status_generation: proxy.status_generation(),
             created_at: proxy.created_at().map(|v| fb_to_datetime(v)).unwrap(),
             updated_at: proxy.updated_at().map(|v| fb_to_datetime(v)).unwrap(),
+            deletion_requested_at: proxy.deletion_requested_at().map(|v| fb_to_datetime(v)),
             deleted_at: proxy.deleted_at().map(|v| fb_to_datetime(v)),
         }
     }
@@ -5950,6 +5975,8 @@ impl From<odf::resources::ResourcePhase> for fb::ResourcePhase {
             odf::resources::ResourcePhase::Ready => fb::ResourcePhase::Ready,
             odf::resources::ResourcePhase::Degraded => fb::ResourcePhase::Degraded,
             odf::resources::ResourcePhase::Failed => fb::ResourcePhase::Failed,
+            odf::resources::ResourcePhase::Deleting => fb::ResourcePhase::Deleting,
+            odf::resources::ResourcePhase::Deleted => fb::ResourcePhase::Deleted,
         }
     }
 }
@@ -5962,6 +5989,8 @@ impl Into<odf::resources::ResourcePhase> for fb::ResourcePhase {
             fb::ResourcePhase::Ready => odf::resources::ResourcePhase::Ready,
             fb::ResourcePhase::Degraded => odf::resources::ResourcePhase::Degraded,
             fb::ResourcePhase::Failed => odf::resources::ResourcePhase::Failed,
+            fb::ResourcePhase::Deleting => odf::resources::ResourcePhase::Deleting,
+            fb::ResourcePhase::Deleted => odf::resources::ResourcePhase::Deleted,
             _ => panic!("Invalid enum value: {}", self.0),
         }
     }
@@ -6847,6 +6876,476 @@ impl<'fb> FlatbuffersDeserializable<fb::SqlQueryStep<'fb>> for odf::datasets::Sq
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuth
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersEnumSerializable<'fb, fb::SyncAuth> for odf::tasks::SyncAuth {
+    fn serialize(
+        &self,
+        fb: &mut FlatBufferBuilder<'fb>,
+    ) -> (fb::SyncAuth, WIPOffset<UnionWIPOffset>) {
+        match self {
+            odf::tasks::SyncAuth::Bearer(v) => (
+                fb::SyncAuth::SyncAuthBearer,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::SyncAuth::Aws(v) => {
+                (fb::SyncAuth::SyncAuthAws, v.serialize(fb).as_union_value())
+            }
+            odf::tasks::SyncAuth::Headers(v) => (
+                fb::SyncAuth::SyncAuthHeaders,
+                v.serialize(fb).as_union_value(),
+            ),
+        }
+    }
+}
+
+impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::SyncAuth> for odf::tasks::SyncAuth {
+    fn deserialize(table: flatbuffers::Table<'fb>, t: fb::SyncAuth) -> Self {
+        match t {
+            fb::SyncAuth::SyncAuthBearer => {
+                odf::tasks::SyncAuth::Bearer(odf::tasks::SyncAuthBearer::deserialize(unsafe {
+                    fb::SyncAuthBearer::init_from_table(table)
+                }))
+            }
+            fb::SyncAuth::SyncAuthAws => {
+                odf::tasks::SyncAuth::Aws(odf::tasks::SyncAuthAws::deserialize(unsafe {
+                    fb::SyncAuthAws::init_from_table(table)
+                }))
+            }
+            fb::SyncAuth::SyncAuthHeaders => {
+                odf::tasks::SyncAuth::Headers(odf::tasks::SyncAuthHeaders::deserialize(unsafe {
+                    fb::SyncAuthHeaders::init_from_table(table)
+                }))
+            }
+            _ => panic!("Invalid enum value: {}", t.0),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthAws
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Aws
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthAws {
+    type OffsetT = WIPOffset<fb::SyncAuthAws<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let endpoint_offset = self.endpoint.as_ref().map(|v| fb.create_string(&v));
+        let region_offset = self.region.as_ref().map(|v| fb.create_string(&v));
+        let access_key_offset = self.access_key.as_ref().map(|v| v.serialize(fb));
+        let secret_key_offset = self.secret_key.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::SyncAuthAwsBuilder::new(fb);
+        endpoint_offset.map(|off| builder.add_endpoint(off));
+        region_offset.map(|off| builder.add_region(off));
+        access_key_offset.map(|off| builder.add_access_key(off));
+        secret_key_offset.map(|off| builder.add_secret_key(off));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthAws<'fb>> for odf::tasks::SyncAuthAws {
+    fn deserialize(proxy: fb::SyncAuthAws<'fb>) -> Self {
+        odf::tasks::SyncAuthAws {
+            endpoint: proxy.endpoint().map(|v| v.to_owned()),
+            region: proxy.region().map(|v| v.to_owned()),
+            access_key: proxy
+                .access_key()
+                .map(|v| odf::config::ValueHandle::deserialize(v)),
+            secret_key: proxy
+                .secret_key()
+                .map(|v| odf::config::ValueHandle::deserialize(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthBearer
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Bearer
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthBearer {
+    type OffsetT = WIPOffset<fb::SyncAuthBearer<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let token_offset = { self.token.serialize(fb) };
+        let mut builder = fb::SyncAuthBearerBuilder::new(fb);
+        builder.add_token(token_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthBearer<'fb>> for odf::tasks::SyncAuthBearer {
+    fn deserialize(proxy: fb::SyncAuthBearer<'fb>) -> Self {
+        odf::tasks::SyncAuthBearer {
+            token: proxy
+                .token()
+                .map(|v| odf::config::ValueHandle::deserialize(v))
+                .unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthHeaders
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Headers
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthHeaders {
+    type OffsetT = WIPOffset<fb::SyncAuthHeaders<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let headers_offset = {
+            let offsets: Vec<_> = self.headers.iter().map(|i| i.serialize(fb)).collect();
+            fb.create_vector(&offsets)
+        };
+        let mut builder = fb::SyncAuthHeadersBuilder::new(fb);
+        builder.add_headers(headers_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthHeaders<'fb>> for odf::tasks::SyncAuthHeaders {
+    fn deserialize(proxy: fb::SyncAuthHeaders<'fb>) -> Self {
+        odf::tasks::SyncAuthHeaders {
+            headers: proxy
+                .headers()
+                .map(|v| {
+                    v.iter()
+                        .map(|i| odf::tasks::SyncAuthHeader::deserialize(i))
+                        .collect()
+                })
+                .unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthHeader
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeader
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthHeader {
+    type OffsetT = WIPOffset<fb::SyncAuthHeader<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = { fb.create_string(&self.name) };
+        let value_offset = { self.value.serialize(fb) };
+        let mut builder = fb::SyncAuthHeaderBuilder::new(fb);
+        builder.add_name(name_offset);
+        builder.add_value(value_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthHeader<'fb>> for odf::tasks::SyncAuthHeader {
+    fn deserialize(proxy: fb::SyncAuthHeader<'fb>) -> Self {
+        odf::tasks::SyncAuthHeader {
+            name: proxy.name().map(|v| v.to_owned()).unwrap(),
+            value: proxy
+                .value()
+                .map(|v| odf::config::ValueHandle::deserialize(v))
+                .unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthHeaderInput
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeaderInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthHeaderInput {
+    type OffsetT = WIPOffset<fb::SyncAuthHeaderInput<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = { fb.create_string(&self.name) };
+        let value_offset = { self.value.serialize(fb) };
+        let mut builder = fb::SyncAuthHeaderInputBuilder::new(fb);
+        builder.add_name(name_offset);
+        builder.add_value(value_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthHeaderInput<'fb>>
+    for odf::tasks::SyncAuthHeaderInput
+{
+    fn deserialize(proxy: fb::SyncAuthHeaderInput<'fb>) -> Self {
+        odf::tasks::SyncAuthHeaderInput {
+            name: proxy.name().map(|v| v.to_owned()).unwrap(),
+            value: proxy
+                .value()
+                .map(|v| odf::config::ValueRef::deserialize(v))
+                .unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInput
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersEnumSerializable<'fb, fb::SyncAuthInput> for odf::tasks::SyncAuthInput {
+    fn serialize(
+        &self,
+        fb: &mut FlatBufferBuilder<'fb>,
+    ) -> (fb::SyncAuthInput, WIPOffset<UnionWIPOffset>) {
+        match self {
+            odf::tasks::SyncAuthInput::Bearer(v) => (
+                fb::SyncAuthInput::SyncAuthInputBearer,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::SyncAuthInput::Aws(v) => (
+                fb::SyncAuthInput::SyncAuthInputAws,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::SyncAuthInput::Headers(v) => (
+                fb::SyncAuthInput::SyncAuthInputHeaders,
+                v.serialize(fb).as_union_value(),
+            ),
+        }
+    }
+}
+
+impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::SyncAuthInput> for odf::tasks::SyncAuthInput {
+    fn deserialize(table: flatbuffers::Table<'fb>, t: fb::SyncAuthInput) -> Self {
+        match t {
+            fb::SyncAuthInput::SyncAuthInputBearer => {
+                odf::tasks::SyncAuthInput::Bearer(odf::tasks::SyncAuthInputBearer::deserialize(
+                    unsafe { fb::SyncAuthInputBearer::init_from_table(table) },
+                ))
+            }
+            fb::SyncAuthInput::SyncAuthInputAws => {
+                odf::tasks::SyncAuthInput::Aws(odf::tasks::SyncAuthInputAws::deserialize(unsafe {
+                    fb::SyncAuthInputAws::init_from_table(table)
+                }))
+            }
+            fb::SyncAuthInput::SyncAuthInputHeaders => {
+                odf::tasks::SyncAuthInput::Headers(odf::tasks::SyncAuthInputHeaders::deserialize(
+                    unsafe { fb::SyncAuthInputHeaders::init_from_table(table) },
+                ))
+            }
+            _ => panic!("Invalid enum value: {}", t.0),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInputAws
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Aws
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthInputAws {
+    type OffsetT = WIPOffset<fb::SyncAuthInputAws<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let endpoint_offset = self.endpoint.as_ref().map(|v| fb.create_string(&v));
+        let region_offset = self.region.as_ref().map(|v| fb.create_string(&v));
+        let access_key_offset = self.access_key.as_ref().map(|v| v.serialize(fb));
+        let secret_key_offset = self.secret_key.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::SyncAuthInputAwsBuilder::new(fb);
+        endpoint_offset.map(|off| builder.add_endpoint(off));
+        region_offset.map(|off| builder.add_region(off));
+        access_key_offset.map(|off| builder.add_access_key(off));
+        secret_key_offset.map(|off| builder.add_secret_key(off));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthInputAws<'fb>> for odf::tasks::SyncAuthInputAws {
+    fn deserialize(proxy: fb::SyncAuthInputAws<'fb>) -> Self {
+        odf::tasks::SyncAuthInputAws {
+            endpoint: proxy.endpoint().map(|v| v.to_owned()),
+            region: proxy.region().map(|v| v.to_owned()),
+            access_key: proxy
+                .access_key()
+                .map(|v| odf::config::ValueRef::deserialize(v)),
+            secret_key: proxy
+                .secret_key()
+                .map(|v| odf::config::ValueRef::deserialize(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInputBearer
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Bearer
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthInputBearer {
+    type OffsetT = WIPOffset<fb::SyncAuthInputBearer<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let token_offset = { self.token.serialize(fb) };
+        let mut builder = fb::SyncAuthInputBearerBuilder::new(fb);
+        builder.add_token(token_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthInputBearer<'fb>>
+    for odf::tasks::SyncAuthInputBearer
+{
+    fn deserialize(proxy: fb::SyncAuthInputBearer<'fb>) -> Self {
+        odf::tasks::SyncAuthInputBearer {
+            token: proxy
+                .token()
+                .map(|v| odf::config::ValueRef::deserialize(v))
+                .unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInputHeaders
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Headers
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncAuthInputHeaders {
+    type OffsetT = WIPOffset<fb::SyncAuthInputHeaders<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let headers_offset = {
+            let offsets: Vec<_> = self.headers.iter().map(|i| i.serialize(fb)).collect();
+            fb.create_vector(&offsets)
+        };
+        let mut builder = fb::SyncAuthInputHeadersBuilder::new(fb);
+        builder.add_headers(headers_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncAuthInputHeaders<'fb>>
+    for odf::tasks::SyncAuthInputHeaders
+{
+    fn deserialize(proxy: fb::SyncAuthInputHeaders<'fb>) -> Self {
+        odf::tasks::SyncAuthInputHeaders {
+            headers: proxy
+                .headers()
+                .map(|v| {
+                    v.iter()
+                        .map(|i| odf::tasks::SyncAuthHeaderInput::deserialize(i))
+                        .collect()
+                })
+                .unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncEndpoint
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncEndpoint {
+    type OffsetT = WIPOffset<fb::SyncEndpoint<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let url_offset = { fb.create_string(&self.url) };
+        let auth_offset = self.auth.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::SyncEndpointBuilder::new(fb);
+        builder.add_url(url_offset);
+        auth_offset.map(|(e, off)| {
+            builder.add_auth_type(e);
+            builder.add_auth(off)
+        });
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncEndpoint<'fb>> for odf::tasks::SyncEndpoint {
+    fn deserialize(proxy: fb::SyncEndpoint<'fb>) -> Self {
+        odf::tasks::SyncEndpoint {
+            url: proxy.url().map(|v| v.to_owned()).unwrap(),
+            auth: proxy
+                .auth()
+                .map(|v| odf::tasks::SyncAuth::deserialize(v, proxy.auth_type())),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncEndpointInput
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpointInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::SyncEndpointInput {
+    type OffsetT = WIPOffset<fb::SyncEndpointInput<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let url_offset = { fb.create_string(&self.url) };
+        let auth_offset = self.auth.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::SyncEndpointInputBuilder::new(fb);
+        builder.add_url(url_offset);
+        auth_offset.map(|(e, off)| {
+            builder.add_auth_type(e);
+            builder.add_auth(off)
+        });
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::SyncEndpointInput<'fb>> for odf::tasks::SyncEndpointInput {
+    fn deserialize(proxy: fb::SyncEndpointInput<'fb>) -> Self {
+        odf::tasks::SyncEndpointInput {
+            url: proxy.url().map(|v| v.to_owned()).unwrap(),
+            auth: proxy
+                .auth()
+                .map(|v| odf::tasks::SyncAuthInput::deserialize(v, proxy.auth_type())),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskError
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskError
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskError {
+    type OffsetT = WIPOffset<fb::TaskError<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let entries: Vec<_> = self
+            .entries
+            .iter()
+            .map(|(key, value)| {
+                let key_offset = fb.create_string(key.as_str());
+                let value_offset = fb.create_string(&serde_json::to_string(value).unwrap());
+                let mut entry_builder = fb::TaskErrorEntryBuilder::new(fb);
+                entry_builder.add_key(key_offset);
+                entry_builder.add_value(value_offset);
+                entry_builder.finish()
+            })
+            .collect();
+        let entries_offset = fb.create_vector(&entries);
+        let mut builder = fb::TaskErrorBuilder::new(fb);
+        builder.add_entries(entries_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskError<'fb>> for odf::tasks::TaskError {
+    fn deserialize(proxy: fb::TaskError<'fb>) -> Self {
+        Self {
+            entries: proxy
+                .entries()
+                .unwrap_or_default()
+                .iter()
+                .map(|entry| {
+                    let key = entry.key().parse().unwrap();
+                    let value = serde_json::from_str(entry.value().unwrap()).unwrap();
+                    (key, value)
+                })
+                .collect(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TaskOutcome
 // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskOutcome
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -6937,8 +7436,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskOutcomeFailed {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let message_offset = { fb.create_string(&self.message) };
+        let error_offset = self.error.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskOutcomeFailedBuilder::new(fb);
         builder.add_message(message_offset);
+        builder.add_recoverable(self.recoverable);
+        error_offset.map(|off| builder.add_error(off));
         builder.finish()
     }
 }
@@ -6947,6 +7449,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskOutcomeFailed<'fb>> for odf::tasks::
     fn deserialize(proxy: fb::TaskOutcomeFailed<'fb>) -> Self {
         odf::tasks::TaskOutcomeFailed {
             message: proxy.message().map(|v| v.to_owned()).unwrap(),
+            recoverable: proxy.recoverable(),
+            error: proxy.error().map(|v| odf::tasks::TaskError::deserialize(v)),
         }
     }
 }
@@ -7082,8 +7586,20 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::TaskSpec> for odf::tasks::TaskSpe
                 fb::TaskSpec::TaskSpecTransform,
                 v.serialize(fb).as_union_value(),
             ),
+            odf::tasks::TaskSpec::SyncFrom(v) => (
+                fb::TaskSpec::TaskSpecSyncFrom,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::TaskSpec::SyncTo(v) => (
+                fb::TaskSpec::TaskSpecSyncTo,
+                v.serialize(fb).as_union_value(),
+            ),
             odf::tasks::TaskSpec::Compaction(v) => (
                 fb::TaskSpec::TaskSpecCompaction,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::TaskSpec::Reset(v) => (
+                fb::TaskSpec::TaskSpecReset,
                 v.serialize(fb).as_union_value(),
             ),
             odf::tasks::TaskSpec::GarbageCollection(v) => (
@@ -7115,10 +7631,25 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::TaskSpec> for odf::tasks::TaskS
                     unsafe { fb::TaskSpecTransform::init_from_table(table) },
                 ))
             }
+            fb::TaskSpec::TaskSpecSyncFrom => {
+                odf::tasks::TaskSpec::SyncFrom(odf::tasks::TaskSpecSyncFrom::deserialize(unsafe {
+                    fb::TaskSpecSyncFrom::init_from_table(table)
+                }))
+            }
+            fb::TaskSpec::TaskSpecSyncTo => {
+                odf::tasks::TaskSpec::SyncTo(odf::tasks::TaskSpecSyncTo::deserialize(unsafe {
+                    fb::TaskSpecSyncTo::init_from_table(table)
+                }))
+            }
             fb::TaskSpec::TaskSpecCompaction => {
                 odf::tasks::TaskSpec::Compaction(odf::tasks::TaskSpecCompaction::deserialize(
                     unsafe { fb::TaskSpecCompaction::init_from_table(table) },
                 ))
+            }
+            fb::TaskSpec::TaskSpecReset => {
+                odf::tasks::TaskSpec::Reset(odf::tasks::TaskSpecReset::deserialize(unsafe {
+                    fb::TaskSpecReset::init_from_table(table)
+                }))
             }
             fb::TaskSpec::TaskSpecGarbageCollection => odf::tasks::TaskSpec::GarbageCollection(
                 odf::tasks::TaskSpecGarbageCollection::deserialize(unsafe {
@@ -7151,9 +7682,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecCompaction {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecCompactionBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         self.max_slice_size
             .map(|v| builder.add_max_slice_size(v.as_u64()));
         self.max_slice_records
@@ -7171,6 +7704,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecCompaction<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
             max_slice_size: proxy.max_slice_size().map(|v| ByteSize::from(v)),
             max_slice_records: proxy.max_slice_records().map(|v| v),
         }
@@ -7188,9 +7724,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecGarbageCollection
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecGarbageCollectionBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.finish()
     }
 }
@@ -7204,6 +7742,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecGarbageCollection<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
         }
     }
 }
@@ -7219,10 +7760,12 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecIngest {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let source_offset = { self.source.serialize(fb) };
         let mut builder = fb::TaskSpecIngestBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_source(source_offset);
         self.target_records_per_slice
             .map(|v| builder.add_target_records_per_slice(v));
@@ -7237,11 +7780,154 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecIngest<'fb>> for odf::tasks::Tas
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
             source: proxy
                 .source()
                 .map(|v| odf::resources::ResourceHandle::deserialize(v))
                 .unwrap(),
             target_records_per_slice: proxy.target_records_per_slice().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecReset
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Reset
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecReset {
+    type OffsetT = WIPOffset<fb::TaskSpecReset<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
+        let r#ref_offset = self.r#ref.as_ref().map(|v| fb.create_string(&v));
+        let new_block_hash_offset = self
+            .new_block_hash
+            .as_ref()
+            .map(|v| fb.create_vector(&v.as_bytes().as_slice()));
+        let old_block_hash_offset = self
+            .old_block_hash
+            .as_ref()
+            .map(|v| fb.create_vector(&v.as_bytes().as_slice()));
+        let mut builder = fb::TaskSpecResetBuilder::new(fb);
+        name_offset.map(|off| builder.add_name(off));
+        target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
+        ref_offset.map(|off| builder.add_ref_(off));
+        new_block_hash_offset.map(|off| builder.add_new_block_hash(off));
+        old_block_hash_offset.map(|off| builder.add_old_block_hash(off));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecReset<'fb>> for odf::tasks::TaskSpecReset {
+    fn deserialize(proxy: fb::TaskSpecReset<'fb>) -> Self {
+        odf::tasks::TaskSpecReset {
+            name: proxy.name().map(|v| v.to_owned()),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
+            r#ref: proxy.ref_().map(|v| v.to_owned()),
+            new_block_hash: proxy
+                .new_block_hash()
+                .map(|v| odf::Multihash::from_bytes(v.bytes()).unwrap()),
+            old_block_hash: proxy
+                .old_block_hash()
+                .map(|v| odf::Multihash::from_bytes(v.bytes()).unwrap()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecSyncFrom
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncFrom
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecSyncFrom {
+    type OffsetT = WIPOffset<fb::TaskSpecSyncFrom<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
+        let source_offset = { self.source.serialize(fb) };
+        let mut builder = fb::TaskSpecSyncFromBuilder::new(fb);
+        name_offset.map(|off| builder.add_name(off));
+        target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
+        builder.add_source(source_offset);
+        self.force.map(|v| builder.add_force(v));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecSyncFrom<'fb>> for odf::tasks::TaskSpecSyncFrom {
+    fn deserialize(proxy: fb::TaskSpecSyncFrom<'fb>) -> Self {
+        odf::tasks::TaskSpecSyncFrom {
+            name: proxy.name().map(|v| v.to_owned()),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
+            source: proxy
+                .source()
+                .map(|v| odf::tasks::SyncEndpoint::deserialize(v))
+                .unwrap(),
+            force: proxy.force().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecSyncTo
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncTo
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecSyncTo {
+    type OffsetT = WIPOffset<fb::TaskSpecSyncTo<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
+        let destination_offset = { self.destination.serialize(fb) };
+        let mut builder = fb::TaskSpecSyncToBuilder::new(fb);
+        name_offset.map(|off| builder.add_name(off));
+        target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
+        builder.add_destination(destination_offset);
+        self.force.map(|v| builder.add_force(v));
+        self.create_if_not_exists
+            .map(|v| builder.add_create_if_not_exists(v));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecSyncTo<'fb>> for odf::tasks::TaskSpecSyncTo {
+    fn deserialize(proxy: fb::TaskSpecSyncTo<'fb>) -> Self {
+        odf::tasks::TaskSpecSyncTo {
+            name: proxy.name().map(|v| v.to_owned()),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
+            destination: proxy
+                .destination()
+                .map(|v| odf::tasks::SyncEndpoint::deserialize(v))
+                .unwrap(),
+            force: proxy.force().map(|v| v),
+            create_if_not_exists: proxy.create_if_not_exists().map(|v| v),
         }
     }
 }
@@ -7257,9 +7943,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecTransform {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecTransformBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.finish()
     }
 }
@@ -7271,6 +7959,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecTransform<'fb>> for odf::tasks::
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
         }
     }
 }
@@ -7286,9 +7977,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecVerify {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecVerifyBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         self.replay_transform
             .map(|v| builder.add_replay_transform(v));
         builder.finish()
@@ -7302,6 +7995,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecVerify<'fb>> for odf::tasks::Tas
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetHandle::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
             replay_transform: proxy.replay_transform().map(|v| v),
         }
     }
@@ -7317,10 +8013,12 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecWebhookCall {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let endpoint_offset = { self.endpoint.serialize(fb) };
         let payload_offset = self.payload.as_ref().map(|v| fb.create_string(&v));
         let mut builder = fb::TaskSpecWebhookCallBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_endpoint(endpoint_offset);
         payload_offset.map(|off| builder.add_payload(off));
         builder.finish()
@@ -7333,6 +8031,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecWebhookCall<'fb>>
     fn deserialize(proxy: fb::TaskSpecWebhookCall<'fb>) -> Self {
         odf::tasks::TaskSpecWebhookCall {
             name: proxy.name().map(|v| v.to_owned()),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountHandle::deserialize(v)),
             endpoint: proxy
                 .endpoint()
                 .map(|v| odf::resources::ResourceHandle::deserialize(v))
@@ -7361,8 +8062,20 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::TaskSpecInput> for odf::tasks::Ta
                 fb::TaskSpecInput::TaskSpecInputTransform,
                 v.serialize(fb).as_union_value(),
             ),
+            odf::tasks::TaskSpecInput::SyncFrom(v) => (
+                fb::TaskSpecInput::TaskSpecInputSyncFrom,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::TaskSpecInput::SyncTo(v) => (
+                fb::TaskSpecInput::TaskSpecInputSyncTo,
+                v.serialize(fb).as_union_value(),
+            ),
             odf::tasks::TaskSpecInput::Compaction(v) => (
                 fb::TaskSpecInput::TaskSpecInputCompaction,
+                v.serialize(fb).as_union_value(),
+            ),
+            odf::tasks::TaskSpecInput::Reset(v) => (
+                fb::TaskSpecInput::TaskSpecInputReset,
                 v.serialize(fb).as_union_value(),
             ),
             odf::tasks::TaskSpecInput::GarbageCollection(v) => (
@@ -7394,11 +8107,26 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::TaskSpecInput> for odf::tasks::
                     fb::TaskSpecInputTransform::init_from_table(table)
                 }),
             ),
+            fb::TaskSpecInput::TaskSpecInputSyncFrom => {
+                odf::tasks::TaskSpecInput::SyncFrom(odf::tasks::TaskSpecInputSyncFrom::deserialize(
+                    unsafe { fb::TaskSpecInputSyncFrom::init_from_table(table) },
+                ))
+            }
+            fb::TaskSpecInput::TaskSpecInputSyncTo => {
+                odf::tasks::TaskSpecInput::SyncTo(odf::tasks::TaskSpecInputSyncTo::deserialize(
+                    unsafe { fb::TaskSpecInputSyncTo::init_from_table(table) },
+                ))
+            }
             fb::TaskSpecInput::TaskSpecInputCompaction => odf::tasks::TaskSpecInput::Compaction(
                 odf::tasks::TaskSpecInputCompaction::deserialize(unsafe {
                     fb::TaskSpecInputCompaction::init_from_table(table)
                 }),
             ),
+            fb::TaskSpecInput::TaskSpecInputReset => {
+                odf::tasks::TaskSpecInput::Reset(odf::tasks::TaskSpecInputReset::deserialize(
+                    unsafe { fb::TaskSpecInputReset::init_from_table(table) },
+                ))
+            }
             fb::TaskSpecInput::TaskSpecInputGarbageCollection => {
                 odf::tasks::TaskSpecInput::GarbageCollection(
                     odf::tasks::TaskSpecInputGarbageCollection::deserialize(unsafe {
@@ -7432,9 +8160,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputCompaction {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecInputCompactionBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         self.max_slice_size
             .map(|v| builder.add_max_slice_size(v.as_u64()));
         self.max_slice_records
@@ -7452,6 +8182,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputCompaction<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
             max_slice_size: proxy.max_slice_size().map(|v| ByteSize::from(v)),
             max_slice_records: proxy.max_slice_records().map(|v| v),
         }
@@ -7469,9 +8202,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputGarbageColle
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecInputGarbageCollectionBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.finish()
     }
 }
@@ -7485,6 +8220,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputGarbageCollection<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
         }
     }
 }
@@ -7500,10 +8238,12 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputIngest {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let source_offset = { self.source.serialize(fb) };
         let mut builder = fb::TaskSpecInputIngestBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_source(source_offset);
         self.target_records_per_slice
             .map(|v| builder.add_target_records_per_slice(v));
@@ -7520,11 +8260,160 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputIngest<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
             source: proxy
                 .source()
                 .map(|v| odf::resources::ResourceRef::deserialize(v))
                 .unwrap(),
             target_records_per_slice: proxy.target_records_per_slice().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecInputReset
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Reset
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputReset {
+    type OffsetT = WIPOffset<fb::TaskSpecInputReset<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
+        let r#ref_offset = self.r#ref.as_ref().map(|v| fb.create_string(&v));
+        let new_block_hash_offset = self
+            .new_block_hash
+            .as_ref()
+            .map(|v| fb.create_vector(&v.as_bytes().as_slice()));
+        let old_block_hash_offset = self
+            .old_block_hash
+            .as_ref()
+            .map(|v| fb.create_vector(&v.as_bytes().as_slice()));
+        let mut builder = fb::TaskSpecInputResetBuilder::new(fb);
+        name_offset.map(|off| builder.add_name(off));
+        target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
+        ref_offset.map(|off| builder.add_ref_(off));
+        new_block_hash_offset.map(|off| builder.add_new_block_hash(off));
+        old_block_hash_offset.map(|off| builder.add_old_block_hash(off));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputReset<'fb>>
+    for odf::tasks::TaskSpecInputReset
+{
+    fn deserialize(proxy: fb::TaskSpecInputReset<'fb>) -> Self {
+        odf::tasks::TaskSpecInputReset {
+            name: proxy.name().map(|v| v.to_owned()),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
+            r#ref: proxy.ref_().map(|v| v.to_owned()),
+            new_block_hash: proxy
+                .new_block_hash()
+                .map(|v| odf::Multihash::from_bytes(v.bytes()).unwrap()),
+            old_block_hash: proxy
+                .old_block_hash()
+                .map(|v| odf::Multihash::from_bytes(v.bytes()).unwrap()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecInputSyncFrom
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncFrom
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputSyncFrom {
+    type OffsetT = WIPOffset<fb::TaskSpecInputSyncFrom<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
+        let source_offset = { self.source.serialize(fb) };
+        let mut builder = fb::TaskSpecInputSyncFromBuilder::new(fb);
+        name_offset.map(|off| builder.add_name(off));
+        target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
+        builder.add_source(source_offset);
+        self.force.map(|v| builder.add_force(v));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputSyncFrom<'fb>>
+    for odf::tasks::TaskSpecInputSyncFrom
+{
+    fn deserialize(proxy: fb::TaskSpecInputSyncFrom<'fb>) -> Self {
+        odf::tasks::TaskSpecInputSyncFrom {
+            name: proxy.name().map(|v| v.to_owned()),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
+            source: proxy
+                .source()
+                .map(|v| odf::tasks::SyncEndpointInput::deserialize(v))
+                .unwrap(),
+            force: proxy.force().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecInputSyncTo
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncTo
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputSyncTo {
+    type OffsetT = WIPOffset<fb::TaskSpecInputSyncTo<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
+        let destination_offset = { self.destination.serialize(fb) };
+        let mut builder = fb::TaskSpecInputSyncToBuilder::new(fb);
+        name_offset.map(|off| builder.add_name(off));
+        target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
+        builder.add_destination(destination_offset);
+        self.force.map(|v| builder.add_force(v));
+        self.create_if_not_exists
+            .map(|v| builder.add_create_if_not_exists(v));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputSyncTo<'fb>>
+    for odf::tasks::TaskSpecInputSyncTo
+{
+    fn deserialize(proxy: fb::TaskSpecInputSyncTo<'fb>) -> Self {
+        odf::tasks::TaskSpecInputSyncTo {
+            name: proxy.name().map(|v| v.to_owned()),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
+            destination: proxy
+                .destination()
+                .map(|v| odf::tasks::SyncEndpointInput::deserialize(v))
+                .unwrap(),
+            force: proxy.force().map(|v| v),
+            create_if_not_exists: proxy.create_if_not_exists().map(|v| v),
         }
     }
 }
@@ -7540,9 +8429,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputTransform {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecInputTransformBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.finish()
     }
 }
@@ -7556,6 +8447,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputTransform<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
         }
     }
 }
@@ -7571,9 +8465,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputVerify {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
         let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecInputVerifyBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         self.replay_transform
             .map(|v| builder.add_replay_transform(v));
         builder.finish()
@@ -7589,6 +8485,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputVerify<'fb>>
             target: proxy
                 .target()
                 .map(|v| odf::datasets::DatasetRef::deserialize(v)),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
             replay_transform: proxy.replay_transform().map(|v| v),
         }
     }
@@ -7604,11 +8503,13 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputWebhookCall 
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let name_offset = self.name.as_ref().map(|v| fb.create_string(&v));
+        let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let endpoint_offset = { self.endpoint.serialize(fb) };
         let payload_offset = self.payload.as_ref().map(|v| fb.create_string(&v));
         let retry_policy_offset = self.retry_policy.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecInputWebhookCallBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
+        service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_endpoint(endpoint_offset);
         payload_offset.map(|off| builder.add_payload(off));
         retry_policy_offset.map(|off| builder.add_retry_policy(off));
@@ -7622,6 +8523,9 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputWebhookCall<'fb>>
     fn deserialize(proxy: fb::TaskSpecInputWebhookCall<'fb>) -> Self {
         odf::tasks::TaskSpecInputWebhookCall {
             name: proxy.name().map(|v| v.to_owned()),
+            service_account: proxy
+                .service_account()
+                .map(|v| odf::auth::AccountRef::deserialize(v)),
             endpoint: proxy
                 .endpoint()
                 .map(|v| odf::resources::ResourceRef::deserialize(v))
@@ -7643,10 +8547,8 @@ impl From<odf::tasks::TaskStatus> for fb::TaskStatus {
     fn from(v: odf::tasks::TaskStatus) -> Self {
         match v {
             odf::tasks::TaskStatus::Pending => fb::TaskStatus::Pending,
-            odf::tasks::TaskStatus::Planning => fb::TaskStatus::Planning,
-            odf::tasks::TaskStatus::Ready => fb::TaskStatus::Ready,
+            odf::tasks::TaskStatus::Queued => fb::TaskStatus::Queued,
             odf::tasks::TaskStatus::Running => fb::TaskStatus::Running,
-            odf::tasks::TaskStatus::Committing => fb::TaskStatus::Committing,
             odf::tasks::TaskStatus::Finished => fb::TaskStatus::Finished,
         }
     }
@@ -7656,10 +8558,8 @@ impl Into<odf::tasks::TaskStatus> for fb::TaskStatus {
     fn into(self) -> odf::tasks::TaskStatus {
         match self {
             fb::TaskStatus::Pending => odf::tasks::TaskStatus::Pending,
-            fb::TaskStatus::Planning => odf::tasks::TaskStatus::Planning,
-            fb::TaskStatus::Ready => odf::tasks::TaskStatus::Ready,
+            fb::TaskStatus::Queued => odf::tasks::TaskStatus::Queued,
             fb::TaskStatus::Running => odf::tasks::TaskStatus::Running,
-            fb::TaskStatus::Committing => odf::tasks::TaskStatus::Committing,
             fb::TaskStatus::Finished => odf::tasks::TaskStatus::Finished,
             _ => panic!("Invalid enum value: {}", self.0),
         }

@@ -5,10 +5,8 @@
   "type": "string",
   "enum": [
     "Pending",
-    "Planning",
-    "Ready",
+    "Queued",
     "Running",
-    "Committing",
     "Finished"
   ]
 }

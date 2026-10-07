@@ -4587,6 +4587,9 @@ pub mod flows {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<resources::ResourceHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
         pub tasks: Vec<tasks::TaskSpec>,
     }
 
@@ -4601,6 +4604,7 @@ pub mod flows {
         fn from(v: dtos::flows::FlowRunSpec) -> Self {
             Self {
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 tasks: v.tasks.into_iter().map(Into::into).collect(),
             }
         }
@@ -4613,6 +4617,10 @@ pub mod flows {
                 target: v
                     .target
                     .map(|v| dtos::resources::ResourceHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
                     .transpose()?,
                 tasks: v
                     .tasks
@@ -4633,6 +4641,9 @@ pub mod flows {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<StructOrString<resources::ResourceRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
         pub tasks: Vec<tasks::TaskSpecInput>,
     }
 
@@ -4647,6 +4658,7 @@ pub mod flows {
         fn from(v: dtos::flows::FlowRunSpecInput) -> Self {
             Self {
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 tasks: v.tasks.into_iter().map(Into::into).collect(),
             }
         }
@@ -4659,6 +4671,10 @@ pub mod flows {
                 target: v
                     .target
                     .map(|v| dtos::resources::ResourceRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
                     .transpose()?,
                 tasks: v
                     .tasks
@@ -4817,6 +4833,9 @@ pub mod flows {
     #[serde(rename_all = "camelCase")]
     pub struct FlowSpec {
         pub target: StructOrString<resources::ResourceSelector>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
         pub triggers: Vec<flows::FlowTrigger>,
         pub tasks: Vec<tasks::TaskSpec>,
         #[serde(default)]
@@ -4835,6 +4854,7 @@ pub mod flows {
         fn from(v: dtos::flows::FlowSpec) -> Self {
             Self {
                 target: v.target.into(),
+                service_account: v.service_account.map(|v| v.into()),
                 triggers: v.triggers.into_iter().map(Into::into).collect(),
                 tasks: v.tasks.into_iter().map(Into::into).collect(),
                 retry_policy: v.retry_policy.map(|v| v.into()),
@@ -4847,6 +4867,10 @@ pub mod flows {
         fn try_from(v: FlowSpec) -> Result<Self, ValidationError> {
             Ok(Self {
                 target: dtos::resources::ResourceSelector::try_from(v.target)?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
+                    .transpose()?,
                 triggers: v
                     .triggers
                     .into_iter()
@@ -4873,6 +4897,9 @@ pub mod flows {
     #[serde(rename_all = "camelCase")]
     pub struct FlowSpecInput {
         pub target: StructOrString<resources::ResourceSelector>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
         pub triggers: Vec<flows::FlowTriggerInput>,
         pub tasks: Vec<tasks::TaskSpecInput>,
         #[serde(default)]
@@ -4891,6 +4918,7 @@ pub mod flows {
         fn from(v: dtos::flows::FlowSpecInput) -> Self {
             Self {
                 target: v.target.into(),
+                service_account: v.service_account.map(|v| v.into()),
                 triggers: v.triggers.into_iter().map(Into::into).collect(),
                 tasks: v.tasks.into_iter().map(Into::into).collect(),
                 retry_policy: v.retry_policy.map(|v| v.into()),
@@ -4903,6 +4931,10 @@ pub mod flows {
         fn try_from(v: FlowSpecInput) -> Result<Self, ValidationError> {
             Ok(Self {
                 target: dtos::resources::ResourceSelector::try_from(v.target)?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
                 triggers: v
                     .triggers
                     .into_iter()
@@ -6513,10 +6545,15 @@ pub mod resources {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub owner_references: Option<Vec<resources::ResourceHandle>>,
         pub generation: u64,
+        pub status_generation: u64,
         #[serde(with = "datetime_rfc3339")]
         pub created_at: DateTime<Utc>,
         #[serde(with = "datetime_rfc3339")]
         pub updated_at: DateTime<Utc>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        #[serde(with = "datetime_rfc3339_opt")]
+        pub deletion_requested_at: Option<DateTime<Utc>>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         #[serde(with = "datetime_rfc3339_opt")]
@@ -6542,8 +6579,10 @@ pub mod resources {
                     .owner_references
                     .map(|v| v.into_iter().map(Into::into).collect()),
                 generation: v.generation,
+                status_generation: v.status_generation,
                 created_at: v.created_at,
                 updated_at: v.updated_at,
+                deletion_requested_at: v.deletion_requested_at,
                 deleted_at: v.deleted_at,
             }
         }
@@ -6567,8 +6606,10 @@ pub mod resources {
                     })
                     .transpose()?,
                 generation: v.generation,
+                status_generation: v.status_generation,
                 created_at: v.created_at,
                 updated_at: v.updated_at,
+                deletion_requested_at: v.deletion_requested_at,
                 deleted_at: v.deleted_at,
             })
         }
@@ -6749,6 +6790,10 @@ pub mod resources {
         Degraded,
         #[serde(alias = "failed")]
         Failed,
+        #[serde(alias = "deleting")]
+        Deleting,
+        #[serde(alias = "deleted")]
+        Deleted,
     }
 
     impl IntoDto for ResourcePhase {
@@ -6766,6 +6811,8 @@ pub mod resources {
                 dtos::resources::ResourcePhase::Ready => Self::Ready,
                 dtos::resources::ResourcePhase::Degraded => Self::Degraded,
                 dtos::resources::ResourcePhase::Failed => Self::Failed,
+                dtos::resources::ResourcePhase::Deleting => Self::Deleting,
+                dtos::resources::ResourcePhase::Deleted => Self::Deleted,
             }
         }
     }
@@ -6779,6 +6826,8 @@ pub mod resources {
                 ResourcePhase::Ready => Ok(Self::Ready),
                 ResourcePhase::Degraded => Ok(Self::Degraded),
                 ResourcePhase::Failed => Ok(Self::Failed),
+                ResourcePhase::Deleting => Ok(Self::Deleting),
+                ResourcePhase::Deleted => Ok(Self::Deleted),
             }
         }
     }
@@ -9426,6 +9475,538 @@ pub mod tasks {
     #[allow(unused_imports)]
     use super::*;
 
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(tag = "kind")]
+    pub enum SyncAuth {
+        #[serde(alias = "bearer")]
+        Bearer(tasks::SyncAuthBearer),
+        #[serde(alias = "aws")]
+        Aws(tasks::SyncAuthAws),
+        #[serde(alias = "headers")]
+        Headers(tasks::SyncAuthHeaders),
+    }
+
+    impl IntoDto for SyncAuth {
+        type Dto = dtos::tasks::SyncAuth;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuth> for SyncAuth {
+        fn from(v: dtos::tasks::SyncAuth) -> Self {
+            match v {
+                dtos::tasks::SyncAuth::Bearer(v) => Self::Bearer(v.into()),
+                dtos::tasks::SyncAuth::Aws(v) => Self::Aws(v.into()),
+                dtos::tasks::SyncAuth::Headers(v) => Self::Headers(v.into()),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuth> for dtos::tasks::SyncAuth {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuth) -> Result<Self, Self::Error> {
+            match v {
+                SyncAuth::Bearer(v) => Ok(Self::Bearer(v.try_into()?)),
+                SyncAuth::Aws(v) => Ok(Self::Aws(v.try_into()?)),
+                SyncAuth::Headers(v) => Ok(Self::Headers(v.try_into()?)),
+            }
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuth, SyncAuth);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Aws
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthAws {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub endpoint: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub region: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub access_key: Option<config::ValueHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub secret_key: Option<config::ValueHandle>,
+    }
+
+    impl IntoDto for SyncAuthAws {
+        type Dto = dtos::tasks::SyncAuthAws;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthAws> for SyncAuthAws {
+        fn from(v: dtos::tasks::SyncAuthAws) -> Self {
+            Self {
+                endpoint: v.endpoint,
+                region: v.region,
+                access_key: v.access_key.map(|v| v.into()),
+                secret_key: v.secret_key.map(|v| v.into()),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthAws> for dtos::tasks::SyncAuthAws {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthAws) -> Result<Self, ValidationError> {
+            Ok(Self {
+                endpoint: v.endpoint,
+                region: v.region,
+                access_key: v
+                    .access_key
+                    .map(|v| dtos::config::ValueHandle::try_from(v))
+                    .transpose()?,
+                secret_key: v
+                    .secret_key
+                    .map(|v| dtos::config::ValueHandle::try_from(v))
+                    .transpose()?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthAws, SyncAuthAws);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Bearer
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthBearer {
+        pub token: config::ValueHandle,
+    }
+
+    impl IntoDto for SyncAuthBearer {
+        type Dto = dtos::tasks::SyncAuthBearer;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthBearer> for SyncAuthBearer {
+        fn from(v: dtos::tasks::SyncAuthBearer) -> Self {
+            Self {
+                token: v.token.into(),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthBearer> for dtos::tasks::SyncAuthBearer {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthBearer) -> Result<Self, ValidationError> {
+            Ok(Self {
+                token: dtos::config::ValueHandle::try_from(v.token)?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthBearer, SyncAuthBearer);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeader
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthHeader {
+        pub name: String,
+        pub value: config::ValueHandle,
+    }
+
+    impl IntoDto for SyncAuthHeader {
+        type Dto = dtos::tasks::SyncAuthHeader;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthHeader> for SyncAuthHeader {
+        fn from(v: dtos::tasks::SyncAuthHeader) -> Self {
+            Self {
+                name: v.name,
+                value: v.value.into(),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthHeader> for dtos::tasks::SyncAuthHeader {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthHeader) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                value: dtos::config::ValueHandle::try_from(v.value)?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthHeader, SyncAuthHeader);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeaderInput
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthHeaderInput {
+        pub name: String,
+        pub value: StructOrString<config::ValueRef>,
+    }
+
+    impl IntoDto for SyncAuthHeaderInput {
+        type Dto = dtos::tasks::SyncAuthHeaderInput;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthHeaderInput> for SyncAuthHeaderInput {
+        fn from(v: dtos::tasks::SyncAuthHeaderInput) -> Self {
+            Self {
+                name: v.name,
+                value: v.value.into(),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthHeaderInput> for dtos::tasks::SyncAuthHeaderInput {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthHeaderInput) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                value: dtos::config::ValueRef::try_from(v.value)?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthHeaderInput, SyncAuthHeaderInput);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Headers
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthHeaders {
+        pub headers: Vec<tasks::SyncAuthHeader>,
+    }
+
+    impl IntoDto for SyncAuthHeaders {
+        type Dto = dtos::tasks::SyncAuthHeaders;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthHeaders> for SyncAuthHeaders {
+        fn from(v: dtos::tasks::SyncAuthHeaders) -> Self {
+            Self {
+                headers: v.headers.into_iter().map(Into::into).collect(),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthHeaders> for dtos::tasks::SyncAuthHeaders {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthHeaders) -> Result<Self, ValidationError> {
+            Ok(Self {
+                headers: v
+                    .headers
+                    .into_iter()
+                    .map(|i| dtos::tasks::SyncAuthHeader::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthHeaders, SyncAuthHeaders);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(tag = "kind")]
+    pub enum SyncAuthInput {
+        #[serde(alias = "bearer")]
+        Bearer(tasks::SyncAuthInputBearer),
+        #[serde(alias = "aws")]
+        Aws(tasks::SyncAuthInputAws),
+        #[serde(alias = "headers")]
+        Headers(tasks::SyncAuthInputHeaders),
+    }
+
+    impl IntoDto for SyncAuthInput {
+        type Dto = dtos::tasks::SyncAuthInput;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthInput> for SyncAuthInput {
+        fn from(v: dtos::tasks::SyncAuthInput) -> Self {
+            match v {
+                dtos::tasks::SyncAuthInput::Bearer(v) => Self::Bearer(v.into()),
+                dtos::tasks::SyncAuthInput::Aws(v) => Self::Aws(v.into()),
+                dtos::tasks::SyncAuthInput::Headers(v) => Self::Headers(v.into()),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthInput> for dtos::tasks::SyncAuthInput {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthInput) -> Result<Self, Self::Error> {
+            match v {
+                SyncAuthInput::Bearer(v) => Ok(Self::Bearer(v.try_into()?)),
+                SyncAuthInput::Aws(v) => Ok(Self::Aws(v.try_into()?)),
+                SyncAuthInput::Headers(v) => Ok(Self::Headers(v.try_into()?)),
+            }
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthInput, SyncAuthInput);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Aws
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthInputAws {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub endpoint: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub region: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub access_key: Option<StructOrString<config::ValueRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub secret_key: Option<StructOrString<config::ValueRef>>,
+    }
+
+    impl IntoDto for SyncAuthInputAws {
+        type Dto = dtos::tasks::SyncAuthInputAws;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthInputAws> for SyncAuthInputAws {
+        fn from(v: dtos::tasks::SyncAuthInputAws) -> Self {
+            Self {
+                endpoint: v.endpoint,
+                region: v.region,
+                access_key: v.access_key.map(|v| v.into()),
+                secret_key: v.secret_key.map(|v| v.into()),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthInputAws> for dtos::tasks::SyncAuthInputAws {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthInputAws) -> Result<Self, ValidationError> {
+            Ok(Self {
+                endpoint: v.endpoint,
+                region: v.region,
+                access_key: v
+                    .access_key
+                    .map(|v| dtos::config::ValueRef::try_from(v))
+                    .transpose()?,
+                secret_key: v
+                    .secret_key
+                    .map(|v| dtos::config::ValueRef::try_from(v))
+                    .transpose()?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthInputAws, SyncAuthInputAws);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Bearer
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthInputBearer {
+        pub token: StructOrString<config::ValueRef>,
+    }
+
+    impl IntoDto for SyncAuthInputBearer {
+        type Dto = dtos::tasks::SyncAuthInputBearer;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthInputBearer> for SyncAuthInputBearer {
+        fn from(v: dtos::tasks::SyncAuthInputBearer) -> Self {
+            Self {
+                token: v.token.into(),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthInputBearer> for dtos::tasks::SyncAuthInputBearer {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthInputBearer) -> Result<Self, ValidationError> {
+            Ok(Self {
+                token: dtos::config::ValueRef::try_from(v.token)?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthInputBearer, SyncAuthInputBearer);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Headers
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncAuthInputHeaders {
+        pub headers: Vec<tasks::SyncAuthHeaderInput>,
+    }
+
+    impl IntoDto for SyncAuthInputHeaders {
+        type Dto = dtos::tasks::SyncAuthInputHeaders;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncAuthInputHeaders> for SyncAuthInputHeaders {
+        fn from(v: dtos::tasks::SyncAuthInputHeaders) -> Self {
+            Self {
+                headers: v.headers.into_iter().map(Into::into).collect(),
+            }
+        }
+    }
+
+    impl TryFrom<SyncAuthInputHeaders> for dtos::tasks::SyncAuthInputHeaders {
+        type Error = ValidationError;
+        fn try_from(v: SyncAuthInputHeaders) -> Result<Self, ValidationError> {
+            Ok(Self {
+                headers: v
+                    .headers
+                    .into_iter()
+                    .map(|i| dtos::tasks::SyncAuthHeaderInput::try_from(i))
+                    .collect::<Result<_, _>>()?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncAuthInputHeaders, SyncAuthInputHeaders);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncEndpoint {
+        pub url: String,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub auth: Option<tasks::SyncAuth>,
+    }
+
+    impl IntoDto for SyncEndpoint {
+        type Dto = dtos::tasks::SyncEndpoint;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncEndpoint> for SyncEndpoint {
+        fn from(v: dtos::tasks::SyncEndpoint) -> Self {
+            Self {
+                url: v.url,
+                auth: v.auth.map(|v| v.into()),
+            }
+        }
+    }
+
+    impl TryFrom<SyncEndpoint> for dtos::tasks::SyncEndpoint {
+        type Error = ValidationError;
+        fn try_from(v: SyncEndpoint) -> Result<Self, ValidationError> {
+            Ok(Self {
+                url: v.url,
+                auth: v
+                    .auth
+                    .map(|v| dtos::tasks::SyncAuth::try_from(v))
+                    .transpose()?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncEndpoint, SyncEndpoint);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpointInput
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct SyncEndpointInput {
+        pub url: String,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub auth: Option<tasks::SyncAuthInput>,
+    }
+
+    impl IntoDto for SyncEndpointInput {
+        type Dto = dtos::tasks::SyncEndpointInput;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::SyncEndpointInput> for SyncEndpointInput {
+        fn from(v: dtos::tasks::SyncEndpointInput) -> Self {
+            Self {
+                url: v.url,
+                auth: v.auth.map(|v| v.into()),
+            }
+        }
+    }
+
+    impl TryFrom<SyncEndpointInput> for dtos::tasks::SyncEndpointInput {
+        type Error = ValidationError;
+        fn try_from(v: SyncEndpointInput) -> Result<Self, ValidationError> {
+            Ok(Self {
+                url: v.url,
+                auth: v
+                    .auth
+                    .map(|v| dtos::tasks::SyncAuthInput::try_from(v))
+                    .transpose()?,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::SyncEndpointInput, SyncEndpointInput);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskError
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct TaskError {
+        #[serde(flatten)]
+        #[serde(with = "map_value_limited_precision")]
+        pub entries: std::collections::BTreeMap<String, serde_json::Value>,
+    }
+
+    impl IntoDto for TaskError {
+        type Dto = dtos::tasks::TaskError;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskError> for TaskError {
+        fn from(v: dtos::tasks::TaskError) -> Self {
+            Self { entries: v.entries }
+        }
+    }
+
+    impl TryFrom<TaskError> for dtos::tasks::TaskError {
+        type Error = ValidationError;
+        fn try_from(v: TaskError) -> Result<Self, Self::Error> {
+            Ok(Self { entries: v.entries })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskError, TaskError);
+
     // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskOutcome
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -9507,6 +10088,10 @@ pub mod tasks {
     #[serde(rename_all = "camelCase")]
     pub struct TaskOutcomeFailed {
         pub message: String,
+        pub recoverable: bool,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub error: Option<tasks::TaskError>,
     }
 
     impl IntoDto for TaskOutcomeFailed {
@@ -9518,14 +10103,25 @@ pub mod tasks {
 
     impl From<dtos::tasks::TaskOutcomeFailed> for TaskOutcomeFailed {
         fn from(v: dtos::tasks::TaskOutcomeFailed) -> Self {
-            Self { message: v.message }
+            Self {
+                message: v.message,
+                recoverable: v.recoverable,
+                error: v.error.map(|v| v.into()),
+            }
         }
     }
 
     impl TryFrom<TaskOutcomeFailed> for dtos::tasks::TaskOutcomeFailed {
         type Error = ValidationError;
         fn try_from(v: TaskOutcomeFailed) -> Result<Self, ValidationError> {
-            Ok(Self { message: v.message })
+            Ok(Self {
+                message: v.message,
+                recoverable: v.recoverable,
+                error: v
+                    .error
+                    .map(|v| dtos::tasks::TaskError::try_from(v))
+                    .transpose()?,
+            })
         }
     }
 
@@ -9628,8 +10224,14 @@ pub mod tasks {
         Ingest(tasks::TaskSpecIngest),
         #[serde(alias = "transform")]
         Transform(tasks::TaskSpecTransform),
+        #[serde(alias = "syncFrom", alias = "syncfrom")]
+        SyncFrom(tasks::TaskSpecSyncFrom),
+        #[serde(alias = "syncTo", alias = "syncto")]
+        SyncTo(tasks::TaskSpecSyncTo),
         #[serde(alias = "compaction")]
         Compaction(tasks::TaskSpecCompaction),
+        #[serde(alias = "reset")]
+        Reset(tasks::TaskSpecReset),
         #[serde(alias = "garbageCollection", alias = "garbagecollection")]
         GarbageCollection(tasks::TaskSpecGarbageCollection),
         #[serde(alias = "verify")]
@@ -9650,7 +10252,10 @@ pub mod tasks {
             match v {
                 dtos::tasks::TaskSpec::Ingest(v) => Self::Ingest(v.into()),
                 dtos::tasks::TaskSpec::Transform(v) => Self::Transform(v.into()),
+                dtos::tasks::TaskSpec::SyncFrom(v) => Self::SyncFrom(v.into()),
+                dtos::tasks::TaskSpec::SyncTo(v) => Self::SyncTo(v.into()),
                 dtos::tasks::TaskSpec::Compaction(v) => Self::Compaction(v.into()),
+                dtos::tasks::TaskSpec::Reset(v) => Self::Reset(v.into()),
                 dtos::tasks::TaskSpec::GarbageCollection(v) => Self::GarbageCollection(v.into()),
                 dtos::tasks::TaskSpec::Verify(v) => Self::Verify(v.into()),
                 dtos::tasks::TaskSpec::WebhookCall(v) => Self::WebhookCall(v.into()),
@@ -9664,7 +10269,10 @@ pub mod tasks {
             match v {
                 TaskSpec::Ingest(v) => Ok(Self::Ingest(v.try_into()?)),
                 TaskSpec::Transform(v) => Ok(Self::Transform(v.try_into()?)),
+                TaskSpec::SyncFrom(v) => Ok(Self::SyncFrom(v.try_into()?)),
+                TaskSpec::SyncTo(v) => Ok(Self::SyncTo(v.try_into()?)),
                 TaskSpec::Compaction(v) => Ok(Self::Compaction(v.try_into()?)),
+                TaskSpec::Reset(v) => Ok(Self::Reset(v.try_into()?)),
                 TaskSpec::GarbageCollection(v) => Ok(Self::GarbageCollection(v.try_into()?)),
                 TaskSpec::Verify(v) => Ok(Self::Verify(v.try_into()?)),
                 TaskSpec::WebhookCall(v) => Ok(Self::WebhookCall(v.try_into()?)),
@@ -9687,6 +10295,9 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub max_slice_size: Option<ByteSize>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -9705,6 +10316,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
             }
@@ -9719,6 +10331,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
                     .transpose()?,
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
@@ -9739,6 +10355,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<datasets::DatasetHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
     }
 
     impl IntoDto for TaskSpecGarbageCollection {
@@ -9753,6 +10372,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
             }
         }
     }
@@ -9765,6 +10385,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
                     .transpose()?,
             })
         }
@@ -9786,6 +10410,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<datasets::DatasetHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
         pub source: resources::ResourceHandle,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -9804,6 +10431,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 source: v.source.into(),
                 target_records_per_slice: v.target_records_per_slice,
             }
@@ -9818,6 +10446,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
                     .transpose()?,
                 source: dtos::resources::ResourceHandle::try_from(v.source)?,
                 target_records_per_slice: v.target_records_per_slice,
@@ -9836,8 +10468,14 @@ pub mod tasks {
         Ingest(tasks::TaskSpecInputIngest),
         #[serde(alias = "transform")]
         Transform(tasks::TaskSpecInputTransform),
+        #[serde(alias = "syncFrom", alias = "syncfrom")]
+        SyncFrom(tasks::TaskSpecInputSyncFrom),
+        #[serde(alias = "syncTo", alias = "syncto")]
+        SyncTo(tasks::TaskSpecInputSyncTo),
         #[serde(alias = "compaction")]
         Compaction(tasks::TaskSpecInputCompaction),
+        #[serde(alias = "reset")]
+        Reset(tasks::TaskSpecInputReset),
         #[serde(alias = "garbageCollection", alias = "garbagecollection")]
         GarbageCollection(tasks::TaskSpecInputGarbageCollection),
         #[serde(alias = "verify")]
@@ -9858,7 +10496,10 @@ pub mod tasks {
             match v {
                 dtos::tasks::TaskSpecInput::Ingest(v) => Self::Ingest(v.into()),
                 dtos::tasks::TaskSpecInput::Transform(v) => Self::Transform(v.into()),
+                dtos::tasks::TaskSpecInput::SyncFrom(v) => Self::SyncFrom(v.into()),
+                dtos::tasks::TaskSpecInput::SyncTo(v) => Self::SyncTo(v.into()),
                 dtos::tasks::TaskSpecInput::Compaction(v) => Self::Compaction(v.into()),
+                dtos::tasks::TaskSpecInput::Reset(v) => Self::Reset(v.into()),
                 dtos::tasks::TaskSpecInput::GarbageCollection(v) => {
                     Self::GarbageCollection(v.into())
                 }
@@ -9874,7 +10515,10 @@ pub mod tasks {
             match v {
                 TaskSpecInput::Ingest(v) => Ok(Self::Ingest(v.try_into()?)),
                 TaskSpecInput::Transform(v) => Ok(Self::Transform(v.try_into()?)),
+                TaskSpecInput::SyncFrom(v) => Ok(Self::SyncFrom(v.try_into()?)),
+                TaskSpecInput::SyncTo(v) => Ok(Self::SyncTo(v.try_into()?)),
                 TaskSpecInput::Compaction(v) => Ok(Self::Compaction(v.try_into()?)),
+                TaskSpecInput::Reset(v) => Ok(Self::Reset(v.try_into()?)),
                 TaskSpecInput::GarbageCollection(v) => Ok(Self::GarbageCollection(v.try_into()?)),
                 TaskSpecInput::Verify(v) => Ok(Self::Verify(v.try_into()?)),
                 TaskSpecInput::WebhookCall(v) => Ok(Self::WebhookCall(v.try_into()?)),
@@ -9897,6 +10541,9 @@ pub mod tasks {
         pub target: Option<StructOrString<datasets::DatasetRef>>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub max_slice_size: Option<ByteSize>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -9915,6 +10562,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
             }
@@ -9929,6 +10577,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
                     .transpose()?,
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
@@ -9952,6 +10604,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<StructOrString<datasets::DatasetRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
     }
 
     impl IntoDto for TaskSpecInputGarbageCollection {
@@ -9966,6 +10621,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
             }
         }
     }
@@ -9978,6 +10634,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
                     .transpose()?,
             })
         }
@@ -9999,6 +10659,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<StructOrString<datasets::DatasetRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
         pub source: StructOrString<resources::ResourceRef>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -10017,6 +10680,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 source: v.source.into(),
                 target_records_per_slice: v.target_records_per_slice,
             }
@@ -10032,6 +10696,10 @@ pub mod tasks {
                     .target
                     .map(|v| dtos::datasets::DatasetRef::try_from(v))
                     .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
                 source: dtos::resources::ResourceRef::try_from(v.source)?,
                 target_records_per_slice: v.target_records_per_slice,
             })
@@ -10039,6 +10707,198 @@ pub mod tasks {
     }
 
     implement_serde_as!(dtos::tasks::TaskSpecInputIngest, TaskSpecInputIngest);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Reset
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct TaskSpecInputReset {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<StructOrString<datasets::DatasetRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub r#ref: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub new_block_hash: Option<odf::Multihash>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub old_block_hash: Option<odf::Multihash>,
+    }
+
+    impl IntoDto for TaskSpecInputReset {
+        type Dto = dtos::tasks::TaskSpecInputReset;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskSpecInputReset> for TaskSpecInputReset {
+        fn from(v: dtos::tasks::TaskSpecInputReset) -> Self {
+            Self {
+                name: v.name,
+                target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
+                r#ref: v.r#ref,
+                new_block_hash: v.new_block_hash,
+                old_block_hash: v.old_block_hash,
+            }
+        }
+    }
+
+    impl TryFrom<TaskSpecInputReset> for dtos::tasks::TaskSpecInputReset {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecInputReset) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
+                r#ref: v.r#ref,
+                new_block_hash: v.new_block_hash,
+                old_block_hash: v.old_block_hash,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskSpecInputReset, TaskSpecInputReset);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncFrom
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct TaskSpecInputSyncFrom {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<StructOrString<datasets::DatasetRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
+        pub source: tasks::SyncEndpointInput,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub force: Option<bool>,
+    }
+
+    impl IntoDto for TaskSpecInputSyncFrom {
+        type Dto = dtos::tasks::TaskSpecInputSyncFrom;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskSpecInputSyncFrom> for TaskSpecInputSyncFrom {
+        fn from(v: dtos::tasks::TaskSpecInputSyncFrom) -> Self {
+            Self {
+                name: v.name,
+                target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
+                source: v.source.into(),
+                force: v.force,
+            }
+        }
+    }
+
+    impl TryFrom<TaskSpecInputSyncFrom> for dtos::tasks::TaskSpecInputSyncFrom {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecInputSyncFrom) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
+                source: dtos::tasks::SyncEndpointInput::try_from(v.source)?,
+                force: v.force,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskSpecInputSyncFrom, TaskSpecInputSyncFrom);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncTo
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct TaskSpecInputSyncTo {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<StructOrString<datasets::DatasetRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
+        pub destination: tasks::SyncEndpointInput,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub force: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub create_if_not_exists: Option<bool>,
+    }
+
+    impl IntoDto for TaskSpecInputSyncTo {
+        type Dto = dtos::tasks::TaskSpecInputSyncTo;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskSpecInputSyncTo> for TaskSpecInputSyncTo {
+        fn from(v: dtos::tasks::TaskSpecInputSyncTo) -> Self {
+            Self {
+                name: v.name,
+                target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
+                destination: v.destination.into(),
+                force: v.force,
+                create_if_not_exists: v.create_if_not_exists,
+            }
+        }
+    }
+
+    impl TryFrom<TaskSpecInputSyncTo> for dtos::tasks::TaskSpecInputSyncTo {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecInputSyncTo) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
+                destination: dtos::tasks::SyncEndpointInput::try_from(v.destination)?,
+                force: v.force,
+                create_if_not_exists: v.create_if_not_exists,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskSpecInputSyncTo, TaskSpecInputSyncTo);
 
     // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Transform
     #[derive(Debug, Serialize, Deserialize)]
@@ -10051,6 +10911,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<StructOrString<datasets::DatasetRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
     }
 
     impl IntoDto for TaskSpecInputTransform {
@@ -10065,6 +10928,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
             }
         }
     }
@@ -10077,6 +10941,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
                     .transpose()?,
             })
         }
@@ -10097,6 +10965,9 @@ pub mod tasks {
         pub target: Option<StructOrString<datasets::DatasetRef>>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub replay_transform: Option<bool>,
     }
 
@@ -10112,6 +10983,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 replay_transform: v.replay_transform,
             }
         }
@@ -10125,6 +10997,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetRef::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
                     .transpose()?,
                 replay_transform: v.replay_transform,
             })
@@ -10141,6 +11017,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<StructOrString<auth::AccountRef>>,
         pub endpoint: StructOrString<resources::ResourceRef>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -10161,6 +11040,7 @@ pub mod tasks {
         fn from(v: dtos::tasks::TaskSpecInputWebhookCall) -> Self {
             Self {
                 name: v.name,
+                service_account: v.service_account.map(|v| v.into()),
                 endpoint: v.endpoint.into(),
                 payload: v.payload,
                 retry_policy: v.retry_policy.map(|v| v.into()),
@@ -10173,6 +11053,10 @@ pub mod tasks {
         fn try_from(v: TaskSpecInputWebhookCall) -> Result<Self, ValidationError> {
             Ok(Self {
                 name: v.name,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountRef::try_from(v))
+                    .transpose()?,
                 endpoint: dtos::resources::ResourceRef::try_from(v.endpoint)?,
                 payload: v.payload,
                 retry_policy: v
@@ -10188,6 +11072,198 @@ pub mod tasks {
         TaskSpecInputWebhookCall
     );
 
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Reset
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct TaskSpecReset {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<datasets::DatasetHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub r#ref: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub new_block_hash: Option<odf::Multihash>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub old_block_hash: Option<odf::Multihash>,
+    }
+
+    impl IntoDto for TaskSpecReset {
+        type Dto = dtos::tasks::TaskSpecReset;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskSpecReset> for TaskSpecReset {
+        fn from(v: dtos::tasks::TaskSpecReset) -> Self {
+            Self {
+                name: v.name,
+                target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
+                r#ref: v.r#ref,
+                new_block_hash: v.new_block_hash,
+                old_block_hash: v.old_block_hash,
+            }
+        }
+    }
+
+    impl TryFrom<TaskSpecReset> for dtos::tasks::TaskSpecReset {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecReset) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
+                    .transpose()?,
+                r#ref: v.r#ref,
+                new_block_hash: v.new_block_hash,
+                old_block_hash: v.old_block_hash,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskSpecReset, TaskSpecReset);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncFrom
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct TaskSpecSyncFrom {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<datasets::DatasetHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
+        pub source: tasks::SyncEndpoint,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub force: Option<bool>,
+    }
+
+    impl IntoDto for TaskSpecSyncFrom {
+        type Dto = dtos::tasks::TaskSpecSyncFrom;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskSpecSyncFrom> for TaskSpecSyncFrom {
+        fn from(v: dtos::tasks::TaskSpecSyncFrom) -> Self {
+            Self {
+                name: v.name,
+                target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
+                source: v.source.into(),
+                force: v.force,
+            }
+        }
+    }
+
+    impl TryFrom<TaskSpecSyncFrom> for dtos::tasks::TaskSpecSyncFrom {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecSyncFrom) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
+                    .transpose()?,
+                source: dtos::tasks::SyncEndpoint::try_from(v.source)?,
+                force: v.force,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskSpecSyncFrom, TaskSpecSyncFrom);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncTo
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct TaskSpecSyncTo {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<datasets::DatasetHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
+        pub destination: tasks::SyncEndpoint,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub force: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub create_if_not_exists: Option<bool>,
+    }
+
+    impl IntoDto for TaskSpecSyncTo {
+        type Dto = dtos::tasks::TaskSpecSyncTo;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::TaskSpecSyncTo> for TaskSpecSyncTo {
+        fn from(v: dtos::tasks::TaskSpecSyncTo) -> Self {
+            Self {
+                name: v.name,
+                target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
+                destination: v.destination.into(),
+                force: v.force,
+                create_if_not_exists: v.create_if_not_exists,
+            }
+        }
+    }
+
+    impl TryFrom<TaskSpecSyncTo> for dtos::tasks::TaskSpecSyncTo {
+        type Error = ValidationError;
+        fn try_from(v: TaskSpecSyncTo) -> Result<Self, ValidationError> {
+            Ok(Self {
+                name: v.name,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
+                    .transpose()?,
+                destination: dtos::tasks::SyncEndpoint::try_from(v.destination)?,
+                force: v.force,
+                create_if_not_exists: v.create_if_not_exists,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::TaskSpecSyncTo, TaskSpecSyncTo);
+
     // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Transform
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -10199,6 +11275,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub target: Option<datasets::DatasetHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
     }
 
     impl IntoDto for TaskSpecTransform {
@@ -10213,6 +11292,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
             }
         }
     }
@@ -10225,6 +11305,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
                     .transpose()?,
             })
         }
@@ -10245,6 +11329,9 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub replay_transform: Option<bool>,
     }
 
@@ -10260,6 +11347,7 @@ pub mod tasks {
             Self {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
+                service_account: v.service_account.map(|v| v.into()),
                 replay_transform: v.replay_transform,
             }
         }
@@ -10273,6 +11361,10 @@ pub mod tasks {
                 target: v
                     .target
                     .map(|v| dtos::datasets::DatasetHandle::try_from(v))
+                    .transpose()?,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
                     .transpose()?,
                 replay_transform: v.replay_transform,
             })
@@ -10289,6 +11381,9 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub name: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub service_account: Option<auth::AccountHandle>,
         pub endpoint: resources::ResourceHandle,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -10306,6 +11401,7 @@ pub mod tasks {
         fn from(v: dtos::tasks::TaskSpecWebhookCall) -> Self {
             Self {
                 name: v.name,
+                service_account: v.service_account.map(|v| v.into()),
                 endpoint: v.endpoint.into(),
                 payload: v.payload,
             }
@@ -10317,6 +11413,10 @@ pub mod tasks {
         fn try_from(v: TaskSpecWebhookCall) -> Result<Self, ValidationError> {
             Ok(Self {
                 name: v.name,
+                service_account: v
+                    .service_account
+                    .map(|v| dtos::auth::AccountHandle::try_from(v))
+                    .transpose()?,
                 endpoint: dtos::resources::ResourceHandle::try_from(v.endpoint)?,
                 payload: v.payload,
             })
@@ -10331,14 +11431,10 @@ pub mod tasks {
     pub enum TaskStatus {
         #[serde(alias = "pending")]
         Pending,
-        #[serde(alias = "planning")]
-        Planning,
-        #[serde(alias = "ready")]
-        Ready,
+        #[serde(alias = "queued")]
+        Queued,
         #[serde(alias = "running")]
         Running,
-        #[serde(alias = "committing")]
-        Committing,
         #[serde(alias = "finished")]
         Finished,
     }
@@ -10354,10 +11450,8 @@ pub mod tasks {
         fn from(v: dtos::tasks::TaskStatus) -> Self {
             match v {
                 dtos::tasks::TaskStatus::Pending => Self::Pending,
-                dtos::tasks::TaskStatus::Planning => Self::Planning,
-                dtos::tasks::TaskStatus::Ready => Self::Ready,
+                dtos::tasks::TaskStatus::Queued => Self::Queued,
                 dtos::tasks::TaskStatus::Running => Self::Running,
-                dtos::tasks::TaskStatus::Committing => Self::Committing,
                 dtos::tasks::TaskStatus::Finished => Self::Finished,
             }
         }
@@ -10368,10 +11462,8 @@ pub mod tasks {
         fn try_from(v: TaskStatus) -> Result<Self, Self::Error> {
             match v {
                 TaskStatus::Pending => Ok(Self::Pending),
-                TaskStatus::Planning => Ok(Self::Planning),
-                TaskStatus::Ready => Ok(Self::Ready),
+                TaskStatus::Queued => Ok(Self::Queued),
                 TaskStatus::Running => Ok(Self::Running),
-                TaskStatus::Committing => Ok(Self::Committing),
                 TaskStatus::Finished => Ok(Self::Finished),
             }
         }

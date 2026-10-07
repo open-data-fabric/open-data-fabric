@@ -10,6 +10,7 @@ pub fn format_ident<'a>(ident: &'a str) -> Cow<'a, str> {
     let reserved = RESERVED_WORDS.get_or_init(|| {
         let mut set = HashSet::new();
         set.insert("type");
+        set.insert("ref");
         set
     });
 

@@ -2024,7 +2024,10 @@ table FlowTriggerInputWrapper {
 union TaskSpecInput {
   TaskSpecInputIngest,
   TaskSpecInputTransform,
+  TaskSpecInputSyncFrom,
+  TaskSpecInputSyncTo,
   TaskSpecInputCompaction,
+  TaskSpecInputReset,
   TaskSpecInputGarbageCollection,
   TaskSpecInputVerify,
   TaskSpecInputWebhookCall,
@@ -2042,6 +2045,8 @@ table TaskSpecInputIngest {
   name: string;
   // Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
   target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
   // Reference to the source resource that defines how to fetch data.
   source: ResourceRef;
   // Target number of records to ingest per data slice.
@@ -2060,6 +2065,139 @@ table TaskSpecInputTransform {
   name: string;
   // Reference to the derivative dataset that defines how to transform data.
   target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInput
+// Credentials used to access a remote location during a sync.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union SyncAuthInput {
+  SyncAuthInputBearer,
+  SyncAuthInputAws,
+  SyncAuthInputHeaders,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInputBearer
+// Authenticates with a bearer token, e.g. an access token of a remote ODF node.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Bearer
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthInputBearer {
+  // Reference to a secret containing the token.
+  token: ValueRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInputAws
+// Authenticates with AWS or an AWS-compatible object storage.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Aws
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthInputAws {
+  // S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores.
+  endpoint: string;
+  // AWS region where the bucket is located e.g. `us-west-2`.
+  region: string;
+  // Reference to a secret containing the AWS access key ID.
+  access_key: ValueRef;
+  // Reference to a secret containing the AWS secret access key.
+  secret_key: ValueRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthHeaderInput
+// A request header whose value is taken from a `VariableSet` or a `SecretSet`.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeaderInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthHeaderInput {
+  // Name of the header.
+  name: string;
+  // Reference to the value of the header.
+  value: ValueRef;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthInputHeaders
+// Authenticates by passing custom request headers.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthInput#/$defs/Headers
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthInputHeaders {
+  // Headers to pass with every request.
+  headers: [SyncAuthHeaderInput];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncEndpointInput
+// A remote location a dataset is synced with.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpointInput
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncEndpointInput {
+  // URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`.
+  url: string;
+  // Credentials used to access the remote location.
+  auth: SyncAuthInput;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecInputSyncFrom
+// Pulls new blocks from a remote dataset into a local dataset.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncFrom
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecInputSyncFrom {
+  // An alias for the task used to refer to it in flows and access the results
+  name: string;
+  // Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
+  target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
+  // Remote dataset to pull from.
+  source: SyncEndpointInput;
+  // Overwrite the local dataset even if its history has diverged from the source.
+  //
+  // Defaults to: false
+  force: bool = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecInputSyncTo
+// Pushes new blocks of a local dataset to a remote dataset.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/SyncTo
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecInputSyncTo {
+  // An alias for the task used to refer to it in flows and access the results
+  name: string;
+  // Reference to the local dataset to push. Defaults to the flow-level target when omitted.
+  target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
+  // Remote dataset to push to.
+  destination: SyncEndpointInput;
+  // Overwrite the remote dataset even if its history has diverged from the local one.
+  //
+  // Defaults to: false
+  force: bool = null;
+  // Create the remote dataset if it does not exist.
+  //
+  // Defaults to: true
+  create_if_not_exists: bool = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2074,10 +2212,36 @@ table TaskSpecInputCompaction {
   name: string;
   // Reference to the dataset to compact. Defaults to the flow-level target when omitted.
   target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
   // Target maximum size of each compacted data slice e.g. `100MiB`.
   max_slice_size: uint64 = null;
   // Target maximum number of records per compacted data slice.
   max_slice_records: uint64 = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecInputReset
+// Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Reset
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecInputReset {
+  // An alias for the task used to refer to it in flows and access the results
+  name: string;
+  // Reference to the dataset to reset. Defaults to the flow-level target when omitted.
+  target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
+  // Name of the block reference to reset.
+  //
+  // Defaults to: "head"
+  ref: string;
+  // Hash of the block the reference will point to. Defaults to the `Seed` block when omitted.
+  new_block_hash: [ubyte];
+  // Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates.
+  old_block_hash: [ubyte];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2092,6 +2256,8 @@ table TaskSpecInputGarbageCollection {
   name: string;
   // Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
   target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2106,6 +2272,8 @@ table TaskSpecInputVerify {
   name: string;
   // Reference to the dataset to verify. Defaults to the flow-level target when omitted.
   target: DatasetRef;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
   // If true, re-executes transformations on derivative datasets to verify reproducibility.
   replay_transform: bool = null;
 }
@@ -2148,6 +2316,8 @@ table RetryPolicy {
 table TaskSpecInputWebhookCall {
   // An alias for the task used to refer to it in flows and access the results
   name: string;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountRef;
   // Reference to the `WebhookEndpoint`.
   endpoint: ResourceRef;
   // The payload to send. May include templating.
@@ -2170,6 +2340,8 @@ table TaskSpecInputWrapper {
 table FlowSpecInput {
   // Defines resources for which this flow will be instantiated.
   target: ResourceSelector;
+  // Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
+  service_account: AccountRef;
   // Conditions that cause this flow to execute.
   triggers: [FlowTriggerInputWrapper];
   // List of tasks to run consecutively.
@@ -2188,6 +2360,8 @@ table FlowSpecInput {
 table FlowRunSpecInput {
   // Defines the default target resources on which tasks will be performed.
   target: ResourceRef;
+  // Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
+  service_account: AccountRef;
   // List of tasks to run consecutively.
   tasks: [TaskSpecInputWrapper];
 }
@@ -2329,7 +2503,10 @@ table FlowRunRetry {
 union TaskSpec {
   TaskSpecIngest,
   TaskSpecTransform,
+  TaskSpecSyncFrom,
+  TaskSpecSyncTo,
   TaskSpecCompaction,
+  TaskSpecReset,
   TaskSpecGarbageCollection,
   TaskSpecVerify,
   TaskSpecWebhookCall,
@@ -2347,6 +2524,8 @@ table TaskSpecIngest {
   name: string;
   // Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
   // Reference to the source resource that defines how to fetch data.
   source: ResourceHandle;
   // Target number of records to ingest per data slice.
@@ -2365,6 +2544,139 @@ table TaskSpecTransform {
   name: string;
   // Reference to the derivative dataset that defines how to transform data.
   target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuth
+// Credentials used to access a remote location during a sync.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+union SyncAuth {
+  SyncAuthBearer,
+  SyncAuthAws,
+  SyncAuthHeaders,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthBearer
+// Authenticates with a bearer token, e.g. an access token of a remote ODF node.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Bearer
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthBearer {
+  // Reference to a secret containing the token.
+  token: ValueHandle;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthAws
+// Authenticates with AWS or an AWS-compatible object storage.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Aws
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthAws {
+  // S3 endpoint URL. If omitted, defaults to AWS S3. Use for S3-compatible stores.
+  endpoint: string;
+  // AWS region where the bucket is located e.g. `us-west-2`.
+  region: string;
+  // Reference to a secret containing the AWS access key ID.
+  access_key: ValueHandle;
+  // Reference to a secret containing the AWS secret access key.
+  secret_key: ValueHandle;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthHeader
+// A request header whose value is taken from a `VariableSet` or a `SecretSet`.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuthHeader
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthHeader {
+  // Name of the header.
+  name: string;
+  // Reference to the value of the header.
+  value: ValueHandle;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncAuthHeaders
+// Authenticates by passing custom request headers.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth#/$defs/Headers
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncAuthHeaders {
+  // Headers to pass with every request.
+  headers: [SyncAuthHeader];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SyncEndpoint
+// A remote location a dataset is synced with.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table SyncEndpoint {
+  // URL of the remote dataset. The scheme selects the transfer protocol e.g. `odf+https://`, `s3://`, `file://`.
+  url: string;
+  // Credentials used to access the remote location.
+  auth: SyncAuth;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecSyncFrom
+// Pulls new blocks from a remote dataset into a local dataset.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncFrom
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecSyncFrom {
+  // An alias for the task used to refer to it in flows and access the results
+  name: string;
+  // Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.
+  target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
+  // Remote dataset to pull from.
+  source: SyncEndpoint;
+  // Overwrite the local dataset even if its history has diverged from the source.
+  //
+  // Defaults to: false
+  force: bool = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecSyncTo
+// Pushes new blocks of a local dataset to a remote dataset.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/SyncTo
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecSyncTo {
+  // An alias for the task used to refer to it in flows and access the results
+  name: string;
+  // Reference to the local dataset to push. Defaults to the flow-level target when omitted.
+  target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
+  // Remote dataset to push to.
+  destination: SyncEndpoint;
+  // Overwrite the remote dataset even if its history has diverged from the local one.
+  //
+  // Defaults to: false
+  force: bool = null;
+  // Create the remote dataset if it does not exist.
+  //
+  // Defaults to: true
+  create_if_not_exists: bool = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2379,10 +2691,36 @@ table TaskSpecCompaction {
   name: string;
   // Reference to the dataset to compact. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
   // Target maximum size of each compacted data slice e.g. `100MiB`.
   max_slice_size: uint64 = null;
   // Target maximum number of records per compacted data slice.
   max_slice_records: uint64 = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskSpecReset
+// Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Reset
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskSpecReset {
+  // An alias for the task used to refer to it in flows and access the results
+  name: string;
+  // Reference to the dataset to reset. Defaults to the flow-level target when omitted.
+  target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
+  // Name of the block reference to reset.
+  //
+  // Defaults to: "head"
+  ref: string;
+  // Hash of the block the reference will point to. Defaults to the `Seed` block when omitted.
+  new_block_hash: [ubyte];
+  // Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates.
+  old_block_hash: [ubyte];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2397,6 +2735,8 @@ table TaskSpecGarbageCollection {
   name: string;
   // Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2411,6 +2751,8 @@ table TaskSpecVerify {
   name: string;
   // Reference to the dataset to verify. Defaults to the flow-level target when omitted.
   target: DatasetHandle;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
   // If true, re-executes transformations on derivative datasets to verify reproducibility.
   replay_transform: bool = null;
 }
@@ -2425,6 +2767,8 @@ table TaskSpecVerify {
 table TaskSpecWebhookCall {
   // An alias for the task used to refer to it in flows and access the results
   name: string;
+  // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
+  service_account: AccountHandle;
   // Reference to the `WebhookEndpoint`.
   endpoint: ResourceHandle;
   // The payload to send. May include templating.
@@ -2445,6 +2789,8 @@ table TaskSpecWrapper {
 table FlowRunSpec {
   // Defines the default target resources on which tasks will be performed.
   target: ResourceHandle;
+  // Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`.
+  service_account: AccountHandle;
   // List of tasks to run consecutively.
   tasks: [TaskSpecWrapper];
 }
@@ -2471,10 +2817,8 @@ enum FlowRunStatusValue: int32 {
 
 enum TaskStatus: int32 {
   Pending,
-  Planning,
-  Ready,
+  Queued,
   Running,
-  Committing,
   Finished,
 }
 
@@ -2510,6 +2854,23 @@ table TaskOutcomeSuccess {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TaskError
+// Type-specific details of a task failure. The `kind` property identifies the error, e.g. `InputDatasetCompacted`, and the remaining properties depend on it.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskError
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table TaskErrorEntry {
+  key: string (key);
+  // JSON encoded
+  value: string (json);
+}
+table TaskError {
+  // Key-value map
+  entries: [TaskErrorEntry];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TaskOutcomeFailed
 // Task failed.
 //
@@ -2519,6 +2880,10 @@ table TaskOutcomeSuccess {
 table TaskOutcomeFailed {
   // Human-readable description of the failure.
   message: string;
+  // Whether retrying the task could succeed, e.g. after a network error. An unrecoverable failure, such as an invalid query, would fail the same way again.
+  recoverable: bool;
+  // Type-specific details of the failure.
+  error: TaskError;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2589,6 +2954,8 @@ table FlowTriggerWrapper {
 table FlowSpec {
   // Defines resources for which this flow will be instantiated.
   target: ResourceSelector;
+  // Service account whose permissions the tasks of this flow execute with. Must be an account of service account type. Required for flows owned by an organization. When omitted, tasks execute with the permissions of the user account that owns the flow.
+  service_account: AccountHandle;
   // Conditions that cause this flow to execute.
   triggers: [FlowTriggerWrapper];
   // List of tasks to run consecutively.
@@ -3153,17 +3520,21 @@ table ResourceHeaders {
   owner_references: [ResourceHandle];
   // A sequential number that changes every time the resource header and spec are updated. Does not increment on status changes, thus signifying changes to the desired state. Populated by the system. Starts with `1`.
   generation: uint64;
+  // A sequential number that changes every time the resource status is updated. Can be passed back as a precondition of a status update to make sure the status was not modified since it was read. Populated by the system. Starts with `1`.
+  status_generation: uint64;
   // Time when the resource was first applied and assigned an identity.
   created_at: Timestamp;
   // Time when the resource was last updated, including header, spec, and status updates.
   updated_at: Timestamp;
+  // Time when deletion of the resource was requested. The resource remains visible until its controllers finish cleaning up and the deletion completes.
+  deletion_requested_at: Timestamp;
   // Time when the resource was deleted.
   deleted_at: Timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ResourcePhase
-// Represents the reconciliation phase of a resource.
+// Represents the reconciliation or deletion phase of a resource.
 //
 // Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ResourcePhase
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3174,6 +3545,8 @@ enum ResourcePhase: int32 {
   Ready,
   Degraded,
   Failed,
+  Deleting,
+  Deleted,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

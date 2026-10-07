@@ -12,6 +12,11 @@
       "unevaluatedProperties": false,
       "description": "Defines the default target resources on which tasks will be performed."
     },
+    "serviceAccount": {
+      "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+      "unevaluatedProperties": false,
+      "description": "Service account whose permissions the tasks of this run execute with. Must be an account of service account type. A run created by the flow controller copies it from the `Flow`."
+    },
     "tasks": {
       "type": "array",
       "items": {

@@ -19,6 +19,11 @@
           "description": "Reference to the dataset to ingest into. Defaults to the flow-level target when omitted.",
           "unevaluatedProperties": false
         },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
         "source": {
           "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
           "description": "Reference to the source resource that defines how to fetch data.",
@@ -44,6 +49,82 @@
           "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
           "description": "Reference to the derivative dataset that defines how to transform data.",
           "unevaluatedProperties": false
+        },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        }
+      }
+    },
+    "SyncFrom": {
+      "description": "Pulls new blocks from a remote dataset into a local dataset.",
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the local dataset to pull into. Defaults to the flow-level target when omitted.",
+          "unevaluatedProperties": false
+        },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "source": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint",
+          "description": "Remote dataset to pull from.",
+          "unevaluatedProperties": false
+        },
+        "force": {
+          "type": "boolean",
+          "default": false,
+          "description": "Overwrite the local dataset even if its history has diverged from the source."
+        }
+      }
+    },
+    "SyncTo": {
+      "description": "Pushes new blocks of a local dataset to a remote dataset.",
+      "type": "object",
+      "required": [
+        "destination"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the local dataset to push. Defaults to the flow-level target when omitted.",
+          "unevaluatedProperties": false
+        },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "destination": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint",
+          "description": "Remote dataset to push to.",
+          "unevaluatedProperties": false
+        },
+        "force": {
+          "type": "boolean",
+          "default": false,
+          "description": "Overwrite the remote dataset even if its history has diverged from the local one."
+        },
+        "createIfNotExists": {
+          "type": "boolean",
+          "default": true,
+          "description": "Create the remote dataset if it does not exist."
         }
       }
     },
@@ -61,6 +142,11 @@
           "description": "Reference to the dataset to compact. Defaults to the flow-level target when omitted.",
           "unevaluatedProperties": false
         },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
         "maxSliceSize": {
           "type": "string",
           "format": "byte-size",
@@ -70,6 +156,42 @@
           "type": "integer",
           "format": "uint64",
           "description": "Target maximum number of records per compacted data slice."
+        }
+      }
+    },
+    "Reset": {
+      "description": "Moves a block reference of a dataset to an earlier block, discarding the history that follows it.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "target": {
+          "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
+          "description": "Reference to the dataset to reset. Defaults to the flow-level target when omitted.",
+          "unevaluatedProperties": false
+        },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "ref": {
+          "type": "string",
+          "default": "head",
+          "description": "Name of the block reference to reset."
+        },
+        "newBlockHash": {
+          "type": "string",
+          "format": "multihash",
+          "description": "Hash of the block the reference will point to. Defaults to the `Seed` block when omitted."
+        },
+        "oldBlockHash": {
+          "type": "string",
+          "format": "multihash",
+          "description": "Expected hash of the block the reference currently points to. When specified, the task fails if the reference has moved, protecting against concurrent updates."
         }
       }
     },
@@ -86,6 +208,11 @@
           "$ref": "https://opendatafabric.org/schemas/datasets/v1alpha1/DatasetHandle",
           "description": "Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted.",
           "unevaluatedProperties": false
+        },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         }
       }
     },
@@ -103,6 +230,11 @@
           "description": "Reference to the dataset to verify. Defaults to the flow-level target when omitted.",
           "unevaluatedProperties": false
         },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
         "replayTransform": {
           "type": "boolean",
           "description": "If true, re-executes transformations on derivative datasets to verify reproducibility."
@@ -119,6 +251,11 @@
         "name": {
           "type": "string",
           "description": "An alias for the task used to refer to it in flows and access the results"
+        },
+        "serviceAccount": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/AccountHandle",
+          "unevaluatedProperties": false,
+          "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
         "endpoint": {
           "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
@@ -175,6 +312,42 @@
           "properties": {
             "kind": {
               "type": "string",
+              "const": "SyncFrom"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/SyncFrom"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SyncTo"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/SyncTo"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
               "const": "Compaction"
             }
           },
@@ -184,6 +357,24 @@
         },
         {
           "$ref": "#/$defs/Compaction"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Reset"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Reset"
         }
       ]
     },
