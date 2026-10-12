@@ -1,6 +1,6 @@
 # Open Data Fabric
 
-Version: 0.39.0
+Version: 0.40.0
 
 # Abstract
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -1229,7 +1229,6 @@ See also:
   - [AttachmentEmbedded](#attachmentembedded-schema)
   - [Attachments](#attachments-schema)
   - [Checkpoint](#checkpoint-schema)
-  - [CompactionParams](#compactionparams-schema)
   - [DataSlice](#dataslice-schema)
   - [Dataset](#dataset-schema)
   - [DatasetHandle](#datasethandle-schema)
@@ -1279,6 +1278,7 @@ See also:
   - [FlowRunStatus](#flowrunstatus-schema)
   - [FlowSpec](#flowspec-schema)
   - [FlowSpecInput](#flowspecinput-schema)
+  - [FlowStatus](#flowstatus-schema)
   - [FlowTrigger](#flowtrigger-schema)
   - [FlowTriggerInput](#flowtriggerinput-schema)
   - [RetryBackoff](#retrybackoff-schema)
@@ -1306,14 +1306,13 @@ See also:
   - [ResourceSelector](#resourceselector-schema)
   - [ResourceStatus](#resourcestatus-schema)
 - [sinks](#reference-sinks)
-  - [WebhookTarget](#webhooktarget-schema)
-  - [WebhookTargetSpec](#webhooktargetspec-schema)
-  - [WebhookTargetSpecInput](#webhooktargetspecinput-schema)
+  - [WebhookEndpoint](#webhookendpoint-schema)
+  - [WebhookEndpointSpec](#webhookendpointspec-schema)
+  - [WebhookEndpointSpecInput](#webhookendpointspecinput-schema)
 - [sources](#reference-sources)
   - [CompressionFormat](#compressionformat-schema)
   - [EnvVar](#envvar-schema)
   - [EventTimeSource](#eventtimesource-schema)
-  - [IngestParams](#ingestparams-schema)
   - [Ingress](#ingress-schema)
   - [IngressBuffer](#ingressbuffer-schema)
   - [MergeStrategy](#mergestrategy-schema)
@@ -2180,19 +2179,6 @@ Describes a checkpoint produced by an engine
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="compactionparams-schema"></a>
-##### CompactionParams
-Optional parameters to control ingestion behavior.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `maxSliceSize` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Target maximum size of each compacted data slice e.g. `100MiB`. |
-| `maxSliceRecords` | `integer` |  | `uint64` | Target maximum number of records per compacted data slice. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/datasets/v1alpha1/CompactionParams.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
 <a name="dataslice-schema"></a>
 ##### DataSlice
 Describes a slice of data added to a dataset or produced via transformation
@@ -2910,6 +2896,7 @@ Condition linking this FlowRun to the previous FlowRun it is retrying. Set by th
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `retryOf` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the FlowRun this run is retrying. |
+| `retryNumber` | `integer` | V | `uint32` | Retry attempt number (1 = first retry, i.e. second run total). |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowRunRetry.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -3011,6 +2998,64 @@ Defines a sequence of tasks to be executed upon certain trigger conditions.
 | `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a flow should react to failures. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowstatus-schema"></a>
+##### FlowStatus
+Condition tracking the overall status of a Flow and a summary of recent runs.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `status` | [FlowStatus::Value](#flowstatus-value-schema) | V |  | Overall operational status of the Flow. |
+| `recentBindings` | array([FlowStatus::BindingEntry](#flowstatus-bindingentry-schema)) |  |  | Last N resources matched by the flow's target selector. Bounded by spec.recentBindingsRetention. |
+| `bindingsTotal` | `integer` |  | `uint64` | Total number of resources currently matched by the flow's target selector. |
+| `recentRuns` | array([FlowStatus::RunEntry](#flowstatus-runentry-schema)) |  |  | Summaries of recent FlowRuns. Bounded by spec.recentRunsRetention. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowStatus.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowstatus-bindingentry-schema"></a>
+##### FlowStatus::BindingEntry
+A resource currently matched by the flow's target selector.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `target` | [ResourceHandle](#resourcehandle-schema) | V |  | The matched resource. |
+| `boundAt` | `string` | V | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time at which this binding was established. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowStatus.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowstatus-runentry-schema"></a>
+##### FlowStatus::RunEntry
+Summary of a recent FlowRun.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `flowRun` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the FlowRun resource. |
+| `status` | `string` | V |  | Execution status of this run. |
+| `outcome` | `string` |  |  | Outcome of this run, if finished. |
+| `finishedAt` | `string` |  | [date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1) | Time at which this run finished. |
+| `retryOf` | [ResourceHandle](#resourcehandle-schema) |  |  | Reference to the FlowRun this run is retrying, if applicable. |
+| `retryNumber` | `integer` |  | `uint32` | Retry attempt number (1 = first retry, i.e. second run total). |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowStatus.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="flowstatus-value-schema"></a>
+##### FlowStatus::Value
+Overall operational status of the Flow.
+
+| Enum Value |
+| :---: |
+| Active |
+| Paused |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/flows/v1alpha1/FlowStatus.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3634,43 +3679,43 @@ Resource lifecycle and reconciliation information.
 
 <a name="reference-sinks"></a>
 #### sinks
-<a name="webhooktarget-schema"></a>
-##### WebhookTarget
-Defines a webhook target endpoint that can receive event notifications and data.
+<a name="webhookendpoint-schema"></a>
+##### WebhookEndpoint
+Defines a webhook endpoint that can receive event notifications and data.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `$schema` | `string` | V |  | Identifies this resource type. |
 | `headers` | [ResourceHeadersInput](#resourceheadersinput-schema) | V |  | Container for identity and ownership information of a resource. |
-| `spec` | [WebhookTargetSpecInput](#webhooktargetspecinput-schema) | V |  | Specifies the desired state of the resource. |
+| `spec` | [WebhookEndpointSpecInput](#webhookendpointspecinput-schema) | V |  | Specifies the desired state of the resource. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookTarget.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookEndpoint.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="webhooktargetspec-schema"></a>
-##### WebhookTargetSpec
-Defines a webhook target endpoint that can receive event notifications and data.
+<a name="webhookendpointspec-schema"></a>
+##### WebhookEndpointSpec
+Defines a webhook endpoint that can receive event notifications and data.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `url` | `string` | V | `url` | Target url of the webhook. |
+| `url` | `string` | V | `url` | URL of the webhook endpoint. |
 | `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookTargetSpec.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookEndpointSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="webhooktargetspecinput-schema"></a>
-##### WebhookTargetSpecInput
-Defines a webhook target endpoint that can receive event notifications and data.
+<a name="webhookendpointspecinput-schema"></a>
+##### WebhookEndpointSpecInput
+Defines a webhook endpoint that can receive event notifications and data.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `url` | `string` | V | `url` | Target url of the webhook. |
+| `url` | `string` | V | `url` | URL of the webhook endpoint. |
 | `secret` | [Secret](#secret-schema) |  |  | Shared secret used for HMAC signature of the request payload for authentication. |
 
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookTargetSpecInput.json)
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sinks/v1alpha1/WebhookEndpointSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -3742,18 +3787,6 @@ Extracts event time from the path component of the source.
 Assigns event time from the system time source.
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/EventTimeSource.json)
-[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
-[^](#reference-information)
-
-<a name="ingestparams-schema"></a>
-##### IngestParams
-Optional parameters to control ingestion behavior.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `targetSliceRecords` | `integer` |  | `uint64` | Target number of records to ingest per data slice. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/sources/v1alpha1/IngestParams.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
@@ -4531,7 +4564,8 @@ An individual work item to be executed as part of a flow.
 | [TaskSpec::Transform](#taskspec-transform-schema) | Executes transformation of data defined in a derivative dataset. |
 | [TaskSpec::Compaction](#taskspec-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
 | [TaskSpec::GarbageCollection](#taskspec-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
-| [TaskSpec::WebhookCall](#taskspec-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
+| [TaskSpec::Verify](#taskspec-verify-schema) | Checks dataset metadata for integrity. |
+| [TaskSpec::WebhookCall](#taskspec-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookEndpoint`. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4544,7 +4578,9 @@ Compacts data files in matching datasets to improve query performance.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
-| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to compact. Defaults to the flow-level target when omitted. |
+| `maxSliceSize` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Target maximum size of each compacted data slice e.g. `100MiB`. |
+| `maxSliceRecords` | `integer` |  | `uint64` | Target maximum number of records per compacted data slice. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4557,6 +4593,7 @@ Removes unreferenced data files from matching datasets.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4569,8 +4606,9 @@ Fetches data from a source and appends it to a dataset.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to ingest into. Defaults to the flow-level target when omitted. |
 | `source` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the source resource that defines how to fetch data. |
-| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+| `targetRecordsPerSlice` | `integer` |  | `uint64` | Target number of records to ingest per data slice. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4589,14 +4627,28 @@ Executes transformation of data defined in a derivative dataset.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="taskspec-webhookcall-schema"></a>
-##### TaskSpec::WebhookCall
-Dispatches a certain payload to a specific `WebhookTarget`.
+<a name="taskspec-verify-schema"></a>
+##### TaskSpec::Verify
+Checks dataset metadata for integrity.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
-| `target` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the `WebhookTarget`. |
+| `target` | [DatasetHandle](#datasethandle-schema) |  |  | Reference to the dataset to verify. Defaults to the flow-level target when omitted. |
+| `replayTransform` | `boolean` |  |  | If true, re-executes transformations on derivative datasets to verify reproducibility. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspec-webhookcall-schema"></a>
+##### TaskSpec::WebhookCall
+Dispatches a certain payload to a specific `WebhookEndpoint`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `endpoint` | [ResourceHandle](#resourcehandle-schema) | V |  | Reference to the `WebhookEndpoint`. |
 | `payload` | `string` |  |  | The payload to send. May include templating. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpec.json)
@@ -4613,7 +4665,8 @@ An individual work item to be executed as part of a flow.
 | [TaskSpecInput::Transform](#taskspecinput-transform-schema) | Executes transformation of data defined in a derivative dataset. |
 | [TaskSpecInput::Compaction](#taskspecinput-compaction-schema) | Compacts data files in matching datasets to improve query performance. |
 | [TaskSpecInput::GarbageCollection](#taskspecinput-garbagecollection-schema) | Removes unreferenced data files from matching datasets. |
-| [TaskSpecInput::WebhookCall](#taskspecinput-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookTarget`. |
+| [TaskSpecInput::Verify](#taskspecinput-verify-schema) | Checks dataset metadata for integrity. |
+| [TaskSpecInput::WebhookCall](#taskspecinput-webhookcall-schema) | Dispatches a certain payload to a specific `WebhookEndpoint`. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4626,7 +4679,9 @@ Compacts data files in matching datasets to improve query performance.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
-| `params` | [CompactionParams](#compactionparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to compact. Defaults to the flow-level target when omitted. |
+| `maxSliceSize` | `string` |  | [byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML) | Target maximum size of each compacted data slice e.g. `100MiB`. |
+| `maxSliceRecords` | `integer` |  | `uint64` | Target maximum number of records per compacted data slice. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4639,6 +4694,7 @@ Removes unreferenced data files from matching datasets.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to collect garbage from. Defaults to the flow-level target when omitted. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4651,8 +4707,9 @@ Fetches data from a source and appends it to a dataset.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to ingest into. Defaults to the flow-level target when omitted. |
 | `source` | [ResourceRef](#resourceref-schema) | V |  | Reference to the source resource that defines how to fetch data. |
-| `params` | [IngestParams](#ingestparams-schema) |  |  | Optional parameters to control ingestion behavior. |
+| `targetRecordsPerSlice` | `integer` |  | `uint64` | Target number of records to ingest per data slice. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
@@ -4671,14 +4728,28 @@ Executes transformation of data defined in a derivative dataset.
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
 [^](#reference-information)
 
-<a name="taskspecinput-webhookcall-schema"></a>
-##### TaskSpecInput::WebhookCall
-Dispatches a certain payload to a specific `WebhookTarget`.
+<a name="taskspecinput-verify-schema"></a>
+##### TaskSpecInput::Verify
+Checks dataset metadata for integrity.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
-| `target` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookTarget`. |
+| `target` | [DatasetRef](#datasetref-schema) |  |  | Reference to the dataset to verify. Defaults to the flow-level target when omitted. |
+| `replayTransform` | `boolean` |  |  | If true, re-executes transformations on derivative datasets to verify reproducibility. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/tasks/v1alpha1/TaskSpecInput.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)
+[^](#reference-information)
+
+<a name="taskspecinput-webhookcall-schema"></a>
+##### TaskSpecInput::WebhookCall
+Dispatches a certain payload to a specific `WebhookEndpoint`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `name` | `string` |  |  | An alias for the task used to refer to it in flows and access the results |
+| `endpoint` | [ResourceRef](#resourceref-schema) | V |  | Reference to the `WebhookEndpoint`. |
 | `payload` | `string` |  |  | The payload to send. May include templating. |
 | `retryPolicy` | [RetryPolicy](#retrypolicy-schema) |  |  | Defines how a webhook should react to failures. |
 
