@@ -27,6 +27,15 @@ pub mod auth {
     #[allow(unused_imports)]
     use super::*;
 
+    /// Create `PolicyBinding` resources that reference this resource as `object`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/actions/BindPolicy
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct BindPolicy {
+        /// Subject of the binding being created, allowing policies to restrict granting access to e.g. `Everyone`.
+        pub subject: auth::SubjectHandle,
+    }
+
     /// A named, possibly nested set of principals. Policies can be bound to groups so that permissions are granted to all members at once. Some group names are reserved, e.g. `{org}/admins` and `{org}/members` are created together with an organization.
     ///
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
@@ -2745,15 +2754,6 @@ pub mod resources {
         pub label_type: TypeUri,
         /// Value of the label being added.
         pub label_value: serde_json::Value,
-    }
-
-    /// Create `PolicyBinding` resources that reference this resource as `object`.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/BindPolicy
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct BindPolicy {
-        /// Subject of the binding being created, allowing policies to restrict granting access to e.g. `Everyone`.
-        pub subject: auth::SubjectHandle,
     }
 
     /// Create a new resource instance of a type (object is a type URI) under an account.

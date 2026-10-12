@@ -4,7 +4,7 @@
 
 **Start Date**: 2026-09-23
 
-**Published Date**: ???
+**Published Date**: 2026-10-12
 
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)

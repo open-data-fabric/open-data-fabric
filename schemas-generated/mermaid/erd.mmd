@@ -15,6 +15,7 @@ graph TD
   classDef ctx_storage fill:#e8d6f0,stroke:#999,color:#000
 
   subgraph auth["auth"]
+    BindPolicy
     Group
     GroupSpec
     GroupSpecInput
@@ -56,7 +57,7 @@ graph TD
     UserSpec
     UserSpecInput
   end
-  class Group,GroupSpec,GroupSpecInput,Node,NodeSpec,NodeSpecInput,Organization,OrganizationSpec,OrganizationSpecInput,Policy,PolicyBinding,PolicyBindingSpec,PolicyBindingSpecInput,PolicyRef,PolicySpec,PolicySpec_Cedar,PolicySpec_Generic,PolicySpecInput,PolicySpecInput_Cedar,PolicySpecInput_Generic,PrincipalHandle,PrincipalRef,ResourceOwnerHandle,ResourceOwnerRef,ServiceAccount,ServiceAccountSpec,ServiceAccountSpecInput,SubjectHandle,SubjectHandle_Anonymous,SubjectHandle_Authenticated,SubjectHandle_Everyone,SubjectHandle_Resource,SubjectRef,SubjectRef_Anonymous,SubjectRef_Authenticated,SubjectRef_Everyone,SubjectRef_Resource,User,UserSpec,UserSpecInput ctx_auth
+  class BindPolicy,Group,GroupSpec,GroupSpecInput,Node,NodeSpec,NodeSpecInput,Organization,OrganizationSpec,OrganizationSpecInput,Policy,PolicyBinding,PolicyBindingSpec,PolicyBindingSpecInput,PolicyRef,PolicySpec,PolicySpec_Cedar,PolicySpec_Generic,PolicySpecInput,PolicySpecInput_Cedar,PolicySpecInput_Generic,PrincipalHandle,PrincipalRef,ResourceOwnerHandle,ResourceOwnerRef,ServiceAccount,ServiceAccountSpec,ServiceAccountSpecInput,SubjectHandle,SubjectHandle_Anonymous,SubjectHandle_Authenticated,SubjectHandle_Everyone,SubjectHandle_Resource,SubjectRef,SubjectRef_Anonymous,SubjectRef_Authenticated,SubjectRef_Everyone,SubjectRef_Resource,User,UserSpec,UserSpecInput ctx_auth
 
   subgraph config["config"]
     Decrypt
@@ -204,7 +205,6 @@ graph TD
 
   subgraph resources["resources"]
     AddLabel
-    BindPolicy
     Create
     Delete
     Edit
@@ -225,7 +225,7 @@ graph TD
     ResourceStatus
     View
   end
-  class AddLabel,BindPolicy,Create,Delete,Edit,LabelFilter,List,RemoveLabel,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus,View ctx_resources
+  class AddLabel,Create,Delete,Edit,LabelFilter,List,RemoveLabel,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus,View ctx_resources
 
   subgraph sinks["sinks"]
     WebhookEndpoint

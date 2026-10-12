@@ -1186,6 +1186,7 @@ See also:
 ## Metadata Reference
 
 - [auth](#reference-auth)
+  - [BindPolicy](#bindpolicy-schema)
   - [Group](#group-schema)
   - [GroupSpec](#groupspec-schema)
   - [GroupSpecInput](#groupspecinput-schema)
@@ -1309,7 +1310,6 @@ See also:
   - [SetPollingSource](#setpollingsource-schema)
 - [resources](#reference-resources)
   - [AddLabel](#addlabel-schema)
-  - [BindPolicy](#bindpolicy-schema)
   - [Create](#create-schema)
   - [Delete](#delete-schema)
   - [Edit](#edit-schema)
@@ -1376,6 +1376,17 @@ See also:
 
 <a name="reference-auth"></a>
 #### auth
+<a name="bindpolicy-schema"></a>
+##### BindPolicy
+Create `PolicyBinding` resources that reference this resource as `object`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `subject` | [SubjectHandle](#subjecthandle-schema) | V |  | Subject of the binding being created, allowing policies to restrict granting access to e.g. `Everyone`. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/auth/v1alpha1/actions/BindPolicy.json)
+[^](#reference-information)
+
 <a name="group-schema"></a>
 ##### Group
 A named, possibly nested set of principals. Policies can be bound to groups so that permissions are granted to all members at once. Some group names are reserved, e.g. `{org}/admins` and `{org}/members` are created together with an organization.
@@ -3809,17 +3820,6 @@ Apply a specific label to the resource.
 | `labelValue` | `any` | V |  | Value of the label being added. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/AddLabel.json)
-[^](#reference-information)
-
-<a name="bindpolicy-schema"></a>
-##### BindPolicy
-Create `PolicyBinding` resources that reference this resource as `object`.
-
-| Property | Type | Required | Format | Description |
-| :---: | :---: | :---: | :---: | --- |
-| `subject` | [SubjectHandle](#subjecthandle-schema) | V |  | Subject of the binding being created, allowing policies to restrict granting access to e.g. `Everyone`. |
-
-[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](schemas/resources/v1alpha1/actions/BindPolicy.json)
 [^](#reference-information)
 
 <a name="create-schema"></a>

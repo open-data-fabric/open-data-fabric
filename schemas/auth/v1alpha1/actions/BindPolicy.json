@@ -1,5 +1,5 @@
 {
-  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/actions/BindPolicy",
+  "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/actions/BindPolicy",
   "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/Action",
   "description": "Create `PolicyBinding` resources that reference this resource as `object`.",
   "type": "object",

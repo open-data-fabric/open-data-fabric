@@ -2,9 +2,9 @@
 
 [![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/131?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/131)
 
-**Start Date**: 2026-10-10
+**Start Date**: 2026-09-10
 
-**Published Date**: 2026-10-22
+**Published Date**: 2026-09-22
 
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
@@ -29,6 +29,7 @@ This RFC proposes a new set of resources to define and control workload scheduli
   - [`Flow`](#flow)
     - [Target Selector](#target-selector)
   - [`FlowTrigger`](#flowtrigger)
+  - [Authorization](#authorization)
 - [Appendix A: Flow System Prototype in Kamu](#appendix-a-flow-system-prototype-in-kamu)
 
 ## Current Prototype Implementation in Kamu
