@@ -108,16 +108,17 @@ Depending on where the data comes from datasets can be of these kinds:
 ### Root Dataset
 Root datasets are the points of entry of external data into the system. They are usually owned by the organization that has full authority and responsibility over that data, i.e. a trusted source.
 
-Root dataset definition includes:
+Data gets into root datasets via [Ingestion](#ingestion) from sources that are defined separately from the dataset as `Source` [Resources](#resource). A source definition includes:
 - Where to fetch the data from - e.g. source URL, a protocol to use, cache control
 - How to prepare the binary data - e.g. decompression, file filtering, format conversions
 - How to interpret the data - e.g. data format, schema to apply, error handling
 - How to combine data ingested in the past with the new data - e.g. append as log or diff as a snapshot of the current state
 
-All this information is stored in the [Metadata Chain](#metadata-chain) and can change over time as the dataset evolves.
+Source definitions are not part of the [Metadata Chain](#metadata-chain), as they don't contribute to provenance or validity of data, and may reveal sensitive information about the infrastructure of a publisher. The metadata chain records the outcome of every ingestion, including the data, its schema, and the state of the source needed to resume ingestion.
 
 See also:
-- [Merge Strategy](../open-data-fabric.md#merge-strategies)
+- [Ingestion](datasets/ingestion.md)
+- [Merge Strategy](datasets/ingestion.md#merge-strategies)
 
 
 ### Derivative Dataset
@@ -181,10 +182,10 @@ See also:
 
 
 ## Ingestion
-Ingestion is the process by which external data gets into the system. Typical ingestion steps that describe how data is obtained and read (e.g. fetching data from some URL on the web, decompressing it, and reading it as CSV) are a part of the [Root Dataset](#root-dataset) definition.
+Ingestion is the process by which external data gets into the system. Typical ingestion steps that describe how data is obtained and read (e.g. fetching data from some URL on the web, decompressing it, and reading it as CSV) are defined by `Source` [Resources](#resource), and the ingested data is added to [Root Datasets](#root-dataset).
 
 See also:
-- [Data Ingestion](../open-data-fabric.md#data-ingestion)
+- [Ingestion](datasets/ingestion.md)
 
 
 ## Manifest
@@ -206,12 +207,12 @@ See also:
 ## Merge Strategy
 By [design](../open-data-fabric.md#nature-of-data), the system only stores data in the append-only event log format to preserve the entire history. Unfortunately, a lot of data in the world is not stored or exposed this way. Some organizations may expose their data in the form of periodic database dumps, while some choose to provide it as a log of changes between current and the previous export.
 
-When [ingesting data](#ingestion) from external sources, the [Root Datasets](#root-dataset) can choose between different [Merge Strategies](../open-data-fabric.md#merge-strategies) that define how to combine the newly-ingested data with the existing one.
+When [ingesting data](#ingestion) from external sources, the [Root Datasets](#root-dataset) can choose between different [Merge Strategies](datasets/ingestion.md#merge-strategies) that define how to combine the newly-ingested data with the existing one.
 
 For example, when dealing with the daily database dumps, a user can choose the merge strategy that performs [change data capture](https://en.wikipedia.org/wiki/Change_data_capture), transforming dumps into a set of events that signify record creation, update, or deletion.
 
 See also:
-- [Merge Strategies](../open-data-fabric.md#merge-strategies)
+- [Merge Strategies](datasets/ingestion.md#merge-strategies)
 
 
 ## Metadata
@@ -220,7 +221,7 @@ Refers to information about a [Dataset](#dataset) stored in its [Metadata Chain]
 
 ## Metadata Chain
 Metadata Chain captures all essential information about the [Dataset](#dataset), including:
-- Where the data comes from (see [Data Ingestion](../open-data-fabric.md#data-ingestion))
+- Which data was added and when (see [Ingestion](datasets/ingestion.md))
 - How data was processed (see [Query](#query))
 - Its [Schema](#schema)
 - Log of all modifications made to the data, including information used to verify the integrity of data

@@ -5,6 +5,9 @@
 
 **Start Date**: 2023-10-25
 
+**Specs**:
+- [Ingestion](../specs/datasets/ingestion.md)
+
 **Authors**:
 - [Sergiy Zaychenko](mailto:sergiy.zaychenko@kamu.dev), [Kamu](https://kamu.dev)
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)

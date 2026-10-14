@@ -766,7 +766,7 @@ table MergeStrategyLedger {
 // 
 // This strategy transforms snapshot data into an append-only event stream where data already added is immutable. It does so by performing Change Data Capture - essentially diffing the current state of data against the reconstructed previous state and recording differences as retractions or corrections. The Operation Type "op" column will contain:
 //   - append (`+A`) when a row appears for the first time
-//   - retraction (`-D`) when row disappears
+//   - retraction (`-R`) when row disappears
 //   - correction (`-C`, `+C`) when row data has changed, with `-C` event carrying the old value of the row and `+C` carrying the new value.
 // 
 // To correctly associate rows between old and new snapshots this strategy relies on user-specified primary key columns.

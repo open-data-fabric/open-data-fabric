@@ -343,53 +343,6 @@ For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` tabl
 
 The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).
 
-### Data Ingestion
-It is not the goal of this document to standardize the data ingestion techniques. This section exists only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see in [Root Datasets](specs/glossary.md#root-dataset).
-
-When interacting with data on the web we cannot make any assumptions about the guarantees the external source provides - we cannot tell if data is immutable, or if it's replicated for availability, we can't even be sure the domain that hosts it will still exist the next day. The ingestion step is about getting the data into the system as efficiently as possible, where all such properties can be guaranteed and made explicit by [Root Datasets](specs/glossary.md#root-dataset).
-
-#### Source Types
-
-##### Push Source
-In the simplest scenario a [Root Dataset](specs/glossary.md#root-dataset) is created and periodically written to, i.e. data being "pushed" into it. This can happen in variety of forms like exporting data from external system as a CDC stream, or IoT device reporting measurements, or recording domain events that occur in a business process.
-
-Push ingestion may support the following phases:
-- **Read phase** - Reads the data in some format into a structured form.
-- **Preprocess phase** (optional) - Reshapes data into another form. This can include renaming columns, type conversions, nesting, etc.
-- **Merge phase** - Combines the new data with the history of previously seen data. This can include deduplication, CDC etc.
-
-##### Polling Sources
-Although we aspire to reach a state where all authoritative data publishers **push** new events into the datasets as soon as those occur, we realize that this level of integration will take time to achieve. We believe that for a long time the vast majority of data will be ingested via the **polling** model, where the system periodically scans a remote data source and ingests the latest updates.
-
-Polling ingestion may support the following phases:
-- **Fetch phase** - Obtains the data from some external source (e.g. HTTP/FTP) in its original raw form.
-- **Prepare phase** (optional) - Transforms the raw data into one of the supported formats. This can include extracting an archive, filtering and rearranging files, using external tools to convert between formats.
-- **Read phase** - Reads the data in some format into a structured form.
-- **Preprocess phase** (optional) - Reshapes data into another form. This can include renaming columns, type conversions, nesting, etc.
-- **Merge phase** - Combines the new data from the source with the history of previously seen data.
-
-#### Merge Strategies
-[Merge Strategies](specs/glossary.md#merge-strategy) deserve special attention as they bridge the gap between the [wide variety of data](#nature-of-data) in the external world with the strict event-based world of our system.
-
-##### Append Merge Strategy
-Under this strategy, the new data will be appended to the [Dataset](specs/glossary.md#dataset) in its original form without any modifications.
-
-##### Ledger Merge Strategy
-This strategy should be used for data sources containing append-only event streams. New data exports can have new rows added, but once data already made it into one export it should never change or disappear. A user-specified primary key is used to identify which events were already seen, not to duplicate them.
-
-##### Snapshot Merge Strategy
-This strategy can be used for data exports that are taken periodically and contain only the latest state snapshot of the observed entity or system. Over time such exports can have new rows added, and old rows either removed or modified.
-
-This strategy transforms snapshot data into an append-only event stream by performing the [change data capture](https://en.wikipedia.org/wiki/Change_data_capture). It relies on a user-specified primary key to correlate the rows between the two snapshots. A new event is added into the output stream whenever:
-
-- A row with a certain primary key appears for the first time
-- A row with a certain key disappears from the snapshot
-- A row data associated with a certain key has changed
-
-Each event will have an additional column that signifies the kind of observation that was encountered.
-
-The `Snapshot` strategy also requires special treatment in regard to the [Event Time](specs/glossary.md#event-time). Since snapshot-style data exports represent the state of some system at a certain time - it is important to know what that time was. This time is usually captured in some form of metadata (e.g. in the name of the snapshot file, in the URL, or the HTTP caching headers). It should be possible to extract and propagate this time into a data column.
-
 ### Derivative Transformations
 [Previously](specs/transformations/engine-contract.md#execute-query) we looked at how an [Engine](specs/glossary.md#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](specs/glossary.md#coordinator) side.
 
