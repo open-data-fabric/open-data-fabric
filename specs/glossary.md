@@ -151,8 +151,8 @@ Usage examples:
 - The trustworthiness of any [Dataset](#dataset) can be established by reviewing the transformations it claims to be performing on data (contained in the [Metadata Chain](#metadata-chain)), re-applying those transformations in a trusted environment, and then comparing the hash sums of the result slices.
 
 See also:
-- [Data Hashing](../open-data-fabric.md#data-hashing)
-- [Checkpoint Hashing](../open-data-fabric.md#checkpoint-hashing)
+- [Data Hashing](datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes)
+- [Checkpoint Hashing](datasets/data-and-checkpoint-hashing.md#checkpoint-hashing)
 - [Metadata Block Hashing](../open-data-fabric.md#metadata-block-hashing)
 
 

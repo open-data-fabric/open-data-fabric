@@ -2,6 +2,9 @@
 
 **Start Date**: 2021-11-15
 
+**Specs**:
+- [Data & Checkpoint Hashing](../specs/datasets/data-and-checkpoint-hashing.md)
+
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/1?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/1)
 
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/16?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/16)

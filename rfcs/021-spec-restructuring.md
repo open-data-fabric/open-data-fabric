@@ -62,7 +62,7 @@ Domain-independent documents that serve as an entry point into the specs:
 | Document | Scope | Sources | Status |
 | --- | --- | --- | --- |
 | **Overview** | Problem statement, requirements, design decisions, map of all specs and their dependencies, conformance profiles. Mostly non-normative. | Abstract, Problem Statement, Requirements, Scope, Design Decisions | Existing |
-| **Glossary** | Definitions of core concepts and terms shared by all specs | Concepts and Components | Existing |
+| ✅ **Glossary** | Definitions of core concepts and terms shared by all specs | Concepts and Components | Existing |
 
 ### Domains
 
@@ -79,11 +79,11 @@ Status legend:
 | --- | --- | --- | --- |
 | **Overview** | Overview of the dataset logical structure and its components | Nature of Data, Evolution of Data, Dataset, Data, Data Slice, Metadata | Existing |
 | **Identity** | `did:odf` DID method, key pairs and proof of ownership, aliases and references | Dataset Identity, [RFC-012] | Existing |
-| **Data Format** | Bitemporal event model, common data schema (offset, operation type, system / event time), changelog representation of retractions and corrections, Parquet layout, schema evolution rules | Data Format, Common Data Schema, Retractions and Corrections, Schema Evolution, [RFC-001], [RFC-015] | Existing |
-| **Data Schema** | ODF logical schema format for describing data independently of its physical format (Parquet, Avro, etc.), logical types and their mapping to physical types | Schema Format, [RFC-010], [RFC-016] | Existing |
-| **Logical Data Hashing** | Stable hashing of data records independent of physical encoding, canonical representation of logical types, hashing algorithm (currently defined in [arrow-digest](https://github.com/sergiimk/arrow-digest)) and its multicodec code | Physical and Logical Hashes, [RFC-002] | Existing |
+| ✅ **Data Format** | Bitemporal event model, common data schema (offset, operation type, system / event time), changelog representation of retractions and corrections, Parquet layout, schema evolution rules | Data Format, Common Data Schema, Retractions and Corrections, Schema Evolution, [RFC-001], [RFC-015] | Existing |
+| ✅ **Data Schema** | ODF logical schema format for describing data independently of its physical format (Parquet, Avro, etc.), logical types and their mapping to physical types | Schema Format, [RFC-010], [RFC-016] | Existing |
 | **Metadata Chain** | Blocks, events, semantics and consistency rules, binary and human-readable encodings, block hashing, hash representation (multihash / multibase), extensibility and annotations | Metadata, Metadata Chain, Metadata Format, Metadata Block Hashing, Hash Representation, [RFC-004], [RFC-005], [RFC-012] | Existing |
-| **Storage Layout** | Dataset structure, refs, tags, branches, named vs. content-addressable layouts, physical hashing of data and checkpoint files, linked large files | Dataset Layout, Physical and Logical Hashes, Checkpoint Hashing, [RFC-003], [RFC-006], [RFC-017] | Existing |
+| ✅ **Data & Checkpoint Hashing** | Physical hashing of data and checkpoint files, stable hashing of data records independent of physical encoding, canonical representation of logical types, hashing algorithm (currently defined in [arrow-digest](https://github.com/sergiimk/arrow-digest)) and its multicodec code | Physical and Logical Hashes, Checkpoint Hashing, [RFC-002] | Existing |
+| **Storage Layout** | Dataset structure, refs, tags, branches, named vs. content-addressable layouts, linked large files | Dataset Layout, [RFC-003], [RFC-006], [RFC-017] | Existing |
 | **Compactions** | Soft compactions (merging data files while preserving history) and hard compactions (permanent removal of history for compliance or storage optimization) |  | New |
 
 #### Transformations

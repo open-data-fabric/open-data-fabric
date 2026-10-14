@@ -440,18 +440,7 @@ The main functions of the [Coordinator](specs/glossary.md#coordinator) are:
 ### Common Metadata Operations
 This section describes the operations performed by the [Coordinator](specs/glossary.md#coordinator) as part of the usual [Metadata Chain](specs/glossary.md#metadata-chain) maintenance.
 
-#### Data Hashing
-
-##### Physical and Logical Hashes
-Because the on-disk Parquet data format is non-deterministic (serializing same logical data may result in different binary layouts depending on heuristics and implementation) two different hash sums are maintained by the coordinator:
-- **Physical hash** - a (non-reproducible) hash sum of an entire binary file as originally produced by the owner of the dataset
-- **Logical hash** - a stable (reproducible) hash sum computed on data records, resistant to encoding variations
-
-**Physical hash** is used only in the context of uploading and downloading data files to/from content-addressable systems, where hash sum acts as an identifier of the data file. Physical hash is calculated using [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) algorithm on entire data part file.
-
-**Logical hash** is used for integrity and equivalence checks. We use a specially-designed algorithm [arrow-digest](https://github.com/sergiimk/arrow-digest) that computes a hash sum over in-memory representation of data in Apache Arrow format. Refer to the repository for algorithm details.
-
-##### Hash Representation
+#### Hash Representation
 To be able to evolve hashing algorithms over time we encode the identity of the algorithm used along with the hash sum itself using the [multiformats](https://github.com/multiformats/multiformats) specification, specifically:
 - [multihash](https://github.com/multiformats/multihash) - describes how to encode algorithm ID alongside the hash value.
 - [multibase](https://github.com/multiformats/multibase) - describes encoding used to represent a binary value as text (e.g. in YAML format or as a file name) without ambiguity of which encoding was used.
@@ -467,18 +456,8 @@ For consistency, we recommended implementations to prefer the `base16` encoding.
 
 For representing the identity of hashing algorithms the official [multicodec](https://github.com/multiformats/multicodec/) table is used.
 
-The `multicodec` table is extended with the following codes in the "private use area":
-
-| Codec             | Code       |
-| ----------------- | ---------- |
-| `arrow0-sha3-256` | `0x300016` |
-
 See also:
-- [RFC-002](/rfcs/002-logical-data-hashes.md)
 - [RFC-012](/rfcs/012-recommend-base16-encoding.md)
-
-#### Checkpoint Hashing
-[Checkpoints](specs/glossary.md#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](specs/glossary.md#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Data Hashing](#data-hashing)).
 
 #### Metadata Block Hashing
 Blocks of the [MetadataChain](specs/glossary.md#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
@@ -553,7 +532,7 @@ Here are the steps that the [Coordinator](specs/glossary.md#coordinator) perform
 - **Batch step** - Analyze the [Metadata Chains](specs/glossary.md#metadata-chain) of the [Dataset](specs/glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
 - **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](specs/glossary.md#engine) [Migrate Query](#migrate-query) operation to make necessary adjustments for the new transformation parameters.
 - **Run query** - Pass the input [Data Slices](specs/glossary.md#data-slice) into the [Engine's](specs/glossary.md#engine) [Execute Query](#execute-query) operation
-- **Hash resulting data and checkpoint** - Obtain a stable [Hash](specs/glossary.md#hash) of the output [Data Slice](specs/glossary.md#data-slice) and [Checkpoint](specs/glossary.md#checkpoint) (see [Data Hashing](#data-hashing) and [Checkpoint Hashing](#checkpoint-hashing))
+- **Hash resulting data and checkpoint** - Obtain a stable [Hash](specs/glossary.md#hash) of the output [Data Slice](specs/glossary.md#data-slice) and [Checkpoint](specs/glossary.md#checkpoint) (see [Data Hashing](specs/datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes) and [Checkpoint Hashing](specs/datasets/data-and-checkpoint-hashing.md#checkpoint-hashing))
 - **Prepare commit** - Creates the next [Metadata Block](specs/glossary.md#metadata-chain) describing the output data
 - **Commit** - Atomically adds the new [Data Slice](specs/glossary.md#data-slice) and the [Metadata Block](specs/glossary.md#metadata-chain) to the [Dataset](specs/glossary.md#dataset)
 
