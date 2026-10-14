@@ -5,8 +5,26 @@ use convert_case::{Case, Casing};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Paths in the generated document are relative to the `specs/` directory
+const ROOT: &str = "..";
+
+const HEADER: &str = indoc::indoc!(
+    r#"
+    # Reference <!-- omit in toc -->
+
+    <!-- THIS FILE IS AUTO-GENERATED FROM `schemas/` - DO NOT MODIFY MANUALLY -->
+
+    Reference of all schemas that ODF specs refer to, grouped by context. Schemas are defined in the [`schemas`](../schemas) directory.
+
+
+    ## Table of Contents <!-- omit in toc -->
+
+    "#
+);
+
 pub fn render(model: model::Model, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-    let lvl = 4;
+    let lvl = 2;
+    write!(w, "{HEADER}")?;
     render_toc(&model, w)?;
 
     writeln!(w)?;
@@ -114,6 +132,7 @@ fn render_header(
     w: &mut dyn std::io::Write,
 ) -> Result<(), std::io::Error> {
     let id = id.unwrap_or_else(|| section_id(name));
+    writeln!(w)?;
     writeln!(w, "<a name=\"{id}\"></a>")?;
     for _ in 0..lvl {
         write!(w, "#")?;
@@ -148,16 +167,16 @@ fn render_schema_links(
 ) -> Result<(), std::io::Error> {
     writeln!(
         w,
-        "[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)]({})",
+        "[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)]({ROOT}/{})",
         path.display()
     )?;
     if flatbuffers {
         writeln!(
             w,
-            "[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](schemas-generated/flatbuffers/opendatafabric.fbs)"
+            "[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)]({ROOT}/schemas-generated/flatbuffers/opendatafabric.fbs)"
         )?;
     }
-    writeln!(w, "[^](#reference-information)")?;
+    writeln!(w, "[^](#table-of-contents)")?;
     Ok(())
 }
 
@@ -396,9 +415,9 @@ fn as_format(typ: &model::Type) -> String {
         model::Type::UInt64 => format!("`uint64`"),
         model::Type::String => String::new(),
         model::Type::Did => format!("`did`"),
-        model::Type::DatasetAlias => format!("[dataset-alias](#dataset-identity)"),
-        model::Type::DatasetId => format!("[dataset-id](#dataset-identity)"),
-        model::Type::DatasetRef => format!("[dataset-ref](#dataset-identity)"),
+        model::Type::DatasetAlias => format!("[dataset-alias](datasets/identity.md#grammar)"),
+        model::Type::DatasetId => format!("[dataset-id](datasets/identity.md#unique-identifiers)"),
+        model::Type::DatasetRef => format!("[dataset-ref](datasets/identity.md#grammar)"),
         model::Type::ByteSize => "[byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML)".to_string(),
         model::Type::DateTime => "[date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1)".to_string(),
         model::Type::Duration => "[duration](https://docs.rs/duration-string/latest/duration_string/)".to_string(),

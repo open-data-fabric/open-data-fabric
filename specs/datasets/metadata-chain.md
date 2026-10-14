@@ -36,11 +36,11 @@ The metadata chain consists of individual **metadata blocks** ([`MetadataBlock`]
 - `sequenceNumber` - sequence number of the block, starting from zero at the first block
 - `event` - one [metadata event](#metadata-events) that describes the transaction that occurred on the dataset
 
-![Diagram: Metadata Chain](../../images/metadata-chain.svg)
+![Diagram: Metadata Chain](metadata-chain/metadata-chain.svg)
 
 Blocks are immutable - the chain only changes by appending new blocks. Since blocks, data part files, and checkpoints are named after and referenced by the hash of their content, a dataset forms a [content-addressable](https://en.wikipedia.org/wiki/Content-addressable_storage) graph, where having a reference to the last block one can traverse the entire chain to discover all components of the dataset (see [Storage Layout](storage-layout.md)).
 
-![Diagram: Dataset as a Content-Addressable Graph](../../images/metadata-chain-2.svg)
+![Diagram: Dataset as a Content-Addressable Graph](metadata-chain/metadata-chain-2.svg)
 
 A block contains exactly one event. Bringing a dataset into a desired state may therefore require several blocks. Consistency is achieved similarly to `git` - a group of blocks that constitutes a consistent state is committed atomically by updating the [block reference](#block-references).
 

@@ -121,7 +121,7 @@ In our design we achieve trust with following solution criteria:
 - All transformations that were applied to it must be known and can be audited
 - The results of those transformations can always be reproduced by following the same transformation steps
 
-![Diagram: Transformation](../images/transform.svg)
+![Diagram: Transformation](overview/transform.svg)
 
 Components:
 - Transformations are expressed using [Queries](glossary.md#query) written in any of the supported languages.
@@ -215,7 +215,7 @@ Nodes communicate with one another to replicate datasets, execute parts of queri
 
 
 ## Specs
-ODF is specified as a set of interconnected specs grouped by domain. Core concepts used by all specs are defined in the [Glossary](glossary.md).
+ODF is specified as a set of interconnected specs grouped by domain. Core concepts used by all specs are defined in the [Glossary](glossary.md), and all schemas are described in the [Reference](reference.md).
 
 | Domain | Spec | Description |
 | --- | --- | --- |

@@ -112,7 +112,7 @@ Verification is not a standalone spec. Different kinds of verification (metadata
 | ✅ **Authorization** | Accounts and their identifiers, groups, auth attributes, policies and policy bindings within a node | [RFC-020] | RFC |
 | **Decentralized Permissions** | Access control spanning multiple nodes and organizations: delegated authorization (UCAN), threshold cryptography |  | New |
 | **Layered Encryption** | Encryption of data and metadata at rest and in transit, key management and rotation, interaction with content hashing |  | New |
-| **Confidential Computing** | Integration of TEEs, ZK proofs, FHE as alternative verification mechanisms; anonymization and other privacy-preserving transformations | Future Topics / Anonymization | New |
+| **Confidential Computing** | Integration of TEEs, ZK proofs, FHE as alternative verification mechanisms; anonymization and other privacy-preserving transformations (e.g. query gateways, portal datasets that expose any dataset as root without disclosing details) | Future Topics / Anonymization | New |
 
 #### Automation
 
@@ -129,8 +129,8 @@ Schemas and API definitions that domain specs refer to, largely generated from m
 
 | Reference | Scope | Sources | Status |
 | --- | --- | --- | --- |
-| **Metadata Schemas** | Metadata blocks, events, and their nested types | Metadata Reference, `MetadataBlock` / `MetadataEvent` and related types in `schemas/{datasets,data}` | Existing |
-| **Resource Schemas** | Resource types and their specs, grouped by API group and version | `schemas/*` | RFC |
+| ✅ **Metadata Schemas** | Metadata blocks, events, and their nested types | Metadata Reference, `MetadataBlock` / `MetadataEvent` and related types in `schemas/{datasets,data}` | Existing |
+| ✅ **Resource Schemas** | Resource types and their specs, grouped by API group and version | `schemas/*` | RFC |
 | **Engine API** | Engine communication interface IDL and messages | Engine API Reference, `schemas/engines` | Existing |
 | **Transfer Protocol API** | Simple and smart transfer protocol endpoints and messages | Repository API Reference, `protocols/smart-transfer-protocol.{openapi,asyncapi}.yaml` | Existing |
 

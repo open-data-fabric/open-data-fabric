@@ -82,7 +82,7 @@ This operation is used by the [Coordinator](../glossary.md#coordinator) to perfo
 
 The [Coordinator](../glossary.md#coordinator) is designed to isolate the [Engines](../glossary.md#engine) from the complexity of managing the [Metadata Chain](../glossary.md#metadata-chain) and make processing look as close as possible to a regular stream processing.
 
-![Sequence Diagram: Execute Query](../../images/engine_transform.svg)
+![Sequence Diagram: Execute Query](engine-contract/engine_transform.svg)
 
 Inputs (`TransformRequest`):
 - ID and alias of the output [Dataset](../glossary.md#dataset)

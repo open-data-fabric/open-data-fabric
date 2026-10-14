@@ -59,7 +59,7 @@ case class DatasetRefAny(s: String) extends AnyVal {
 
 DEFAULT_INDENT = 2
 
-DOCS_URL = 'https://github.com/kamu-data/open-data-fabric/blob/master/open-data-fabric.md#{}-schema'
+DOCS_URL = 'https://github.com/open-data-fabric/open-data-fabric/blob/master/specs/reference.md#{}-schema'
 
 extra_types = []
 external_traits = {}

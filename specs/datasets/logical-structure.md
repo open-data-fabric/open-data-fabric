@@ -27,7 +27,7 @@ ODF operates on data expressed as immutable events (see [Nature of Data](../over
 - **Metadata Chain** - an append-only log of blocks that captures the entire history of the dataset (see [Metadata Chain](metadata-chain.md))
 - **Checkpoints** - engine-specific state used to resume stream processing (see [Processing Model](../transformations/processing-model.md#checkpoints))
 
-![Diagram: Dataset/Data](../../images/dataset.svg)
+![Diagram: Dataset/Data](logical-structure/dataset.svg)
 
 All components of a dataset except the block references are immutable and content-addressed, so having only a hash of the last metadata block one can discover and verify all of them (see [Storage Layout](storage-layout.md)).
 
@@ -39,7 +39,7 @@ Data never appears in the system alone, as we would not be able to tell where it
 
 Data arrives into the system in arbitrarily large sets of events called [Data Slices](../glossary.md#data-slice). Every slice is a continuous part of data with the same [Schema](../glossary.md#schema), defined by its interval of [Offsets](../glossary.md#offset), and is stored as a separate data part file.
 
-![Diagram: Data Slices and Metadata](../../images/metadata.svg)
+![Diagram: Data Slices and Metadata](logical-structure/metadata.svg)
 
 All records carry the system columns of the common data schema, including the offset, the [Operation Type](../glossary.md#operation-type), the [System Time](../glossary.md#system-time), and the [Event Time](../glossary.md#event-time) (see [Data Model](data-model.md)). The logical structure of data is described using the ODF schema format (see [Data Schema](data-schema.md)).
 
@@ -57,7 +57,7 @@ Depending on where the data comes from, datasets can be of two kinds:
 
 Datasets connected through transformations form a graph, where data of every derivative dataset can be traced back to the root datasets it was derived from.
 
-![Diagram: Dataset Graph](../../images/dataset_graph.svg)
+![Diagram: Dataset Graph](logical-structure/dataset_graph.svg)
 
 
 ## Evolution of Data

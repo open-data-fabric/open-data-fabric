@@ -78,7 +78,7 @@ Checkpoints are hashed and stored as described in [Data & Checkpoint Hashing](..
 ## Derivative Transformations
 The [Engine Contract](engine-contract.md#execute-query) describes how an [Engine](../glossary.md#engine) executes the transformation query. This section describes what happens on the [Coordinator](../glossary.md#coordinator) side.
 
-![Sequence Diagram: Execute Query](../../images/engine_transform.svg)
+![Sequence Diagram: Execute Query](engine-contract/engine_transform.svg)
 
 Here are the steps that the [Coordinator](../glossary.md#coordinator) performs during the transformation:
 - **Batch step** - Analyze the [Metadata Chains](../glossary.md#metadata-chain) of the [Dataset](../glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.

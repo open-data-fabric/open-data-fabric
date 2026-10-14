@@ -73,7 +73,7 @@ Data is a set of [Events](#event) stored in the system. Since events are immutab
 
 Data never appears in the system alone as we would not be able to tell where it came from and whether it can be trusted. Data always appears as part of a [Dataset](#dataset).
 
-![Diagram: Dataset/Data](../images/dataset.svg)
+![Diagram: Dataset/Data](datasets/logical-structure/dataset.svg)
 
 See also:
 - [Data Model](datasets/data-model.md)
@@ -88,7 +88,7 @@ More formally, a slice is a:
 - That has the same [Schema](#schema)
 - Defined by its `[start; end]` [Offset](#offset) interval
 
-![Diagram: Data Slices and Metadata](../images/metadata.svg)
+![Diagram: Data Slices and Metadata](datasets/logical-structure/metadata.svg)
 
 
 ## Dataset
@@ -102,7 +102,7 @@ Depending on where the data comes from datasets can be of these kinds:
 - [Root](#root-dataset)
 - [Derivative](#derivative-dataset)
 
-![Diagram: Dataset Graph](../images/dataset_graph.svg)
+![Diagram: Dataset Graph](datasets/logical-structure/dataset_graph.svg)
 
 See also:
 - [Logical Structure](datasets/logical-structure.md)
@@ -144,7 +144,7 @@ Engine is an interface shared by all specific implementations of a [Query](#quer
 
 Engines run in a sandboxed environments and are not permitted to use any external resources to guarantee the reproducibility of all operations.
 
-![Diagram: Derivative Transformation](../images/engine-execution-env.svg)
+![Diagram: Derivative Transformation](glossary/engine-execution-env.svg)
 
 As Engines are in the full control of all data transformations, they are also responsible for answering the [Provenance](#provenance) queries.
 
@@ -473,7 +473,7 @@ Verifiability provides the foundation upon which *trust* in data can be built:
 ## Watermark
 A watermark defines the point in [Event Time](#event-time) for which with a high probability we've already observed all preceding events.
 
-![Diagram: Watermarks in the Stream](../images/watermarks_in_stream.svg)
+![Diagram: Watermarks in the Stream](glossary/watermarks_in_stream.svg)
 
 When performing time-based windowed operation, aggregations, or joins it is important to know when a certain time window can be considered closed. Watermark tells the system "You most likely will not get event with time less than `T` anymore".
 
@@ -481,6 +481,6 @@ In the [Root Dataset](#root-dataset) events can still arrive even after their ti
 
 Watermarks in the system are defined per every [Metadata Block](#metadata-chain). By default, the [Root Dataset](#root-dataset) will assign the watermark to the maximum observed [Event Time](#event-time) in the [Data Slice](#data-slice). You can and should override this behavior if you expect events to arrive out-of-order to some degree, e.g. offsetting the watermark by `1 day` prior to last seen event.
 
-![Diagram: Watermarks in Time Domains](../images/watermarks_vs_time.svg)
+![Diagram: Watermarks in Time Domains](glossary/watermarks_vs_time.svg)
 
 Watermarks can also be set based on the [System Time](#system-time) manually or semi-automatically. This is valuable for the slow moving [Datasets](#dataset) where it's normal not to see any events in days or even months. Setting the watermark explicitly allows all computations based on such stream to proceed, knowing that there were no events for that time period, where otherwise the output would be stalled assuming the [Dataset](#dataset) was not updated for a while and old data can still arrive.

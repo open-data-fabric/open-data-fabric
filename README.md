@@ -1,7 +1,7 @@
 <div align="center">
 
 <a href="https://opendatafabric.org" target="_blank">
-<img src="./images/odf-blackboard.png" alt="Open Data Fabric" width="600">
+<img src="./specs/overview/odf-blackboard.png" alt="Open Data Fabric" width="600">
 </a>
 
 <p><strong>Open protocol for multi-party exchange and collaborative processing of data</strong></p>
@@ -37,10 +37,14 @@ The goal of this specification is to develop a method of data exchange that woul
 - Improve liquidity of data by speeding up the data propagation times from publishers to consumers
 - Create a feedback loop between data consumers and publishers, allowing them to collaborate on better data availability, recency, and design
 
-ODF protocol combines four decades of evolution in enterprise analytical data architectures with innovations in Web3 cryptography and trustless networks to create a decentralized data supply chain that can provide timely, high-quality, and verifiable data for data science, AI, smart contracts, and applications.
+ODF protocol combines four decades of evolution in enterprise analytical data architectures with innovations in cryptography and trustless networks to create a decentralized data supply chain that can provide timely, high-quality, and verifiable data for data science, AI training and inference, smart contracts, and applications.
 
+## Start Reading
+- [Specification Overview](./specs/overview.md)
+- [Glossary of Terms](./specs/glossary.md)
+- [Schema Reference](./specs/reference.md)
 
-## Quick Summary
+## Quick Summary (TL;DR)
 At a bird's eye view, ODF specifies the following aspects of data management, with every subsequent layer building tightly upon previous:
 
 ### Data Format
@@ -63,7 +67,7 @@ At a bird's eye view, ODF specifies the following aspects of data management, wi
 - Metadata blocks support actor signatures to assign **accountability**
 
 <p align="center">
-<img src="images/odf-dataset.svg" alt="Dataset" width="400">
+<img src="specs/overview/odf-dataset.svg" alt="Dataset" width="400">
 </p>
 
 ### Data Transfer Protocols
@@ -72,7 +76,7 @@ At a bird's eye view, ODF specifies the following aspects of data management, wi
 - "Smart transfer protocol" is provided for secure yet highly efficient direct-to-storage data replication
 
 <p align="center">
-<img src="images/odf-protocols.svg" alt="Dataset" width="700">
+<img src="specs/overview/odf-protocols.svg" alt="Dataset" width="700">
 </p>
 
 ### Processing & query model
@@ -87,11 +91,14 @@ At a bird's eye view, ODF specifies the following aspects of data management, wi
 - **Abstract engine interface** spec allows easily adding new engine implementations as plug-ins.
 
 <p align="center">
-<img src="./src/images/dataset_graph.png" alt="Dataset Graph">
+<img src="./specs/datasets/logical-structure/dataset_graph.svg" alt="Dataset Graph">
 </p>
 
+### Automation
+A Kubernetes-like framework allows to define datasets, users, permissions, and orchestrate transformation, replication, and maintenance tasks across a vast set of datasets.
+
 ### Dataset Discovery
-- Global, permissionless, censorship-proof dataset registry is proposed to advertise datasets (blockchain-based)
+- Global, permissionless, censorship-proof dataset registry is proposed to advertise datasets located on sovereign nodes.
 
 ### Privacy & Access Control
 - Node-level ReBAC permission management
