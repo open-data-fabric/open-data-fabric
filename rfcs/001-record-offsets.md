@@ -3,7 +3,7 @@
 **Start Date**: 2021-06-01
 
 **Specs**:
-- [Data Format](../specs/datasets/data-format.md)
+- [Data Model](../specs/datasets/data-model.md)
 
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/10?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/10)
 

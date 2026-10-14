@@ -1,4 +1,4 @@
-# Data Format <!-- omit in toc -->
+# Data Model <!-- omit in toc -->
 
 **Domain**: Datasets
 **Depends on**: [Data Schema](data-schema.md)

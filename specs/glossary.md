@@ -76,8 +76,8 @@ Data never appears in the system alone as we would not be able to tell where it 
 ![Diagram: Dataset/Data](../images/dataset.svg)
 
 See also:
-- [Data Format](datasets/data-format.md)
-- [Common Data Schema](datasets/data-format.md#common-data-schema)
+- [Data Model](datasets/data-model.md)
+- [Common Data Schema](datasets/data-model.md#common-data-schema)
 
 
 ## Data Slice
@@ -267,8 +267,8 @@ Offset is a monotonically increasing sequential numeric identifier that is assig
 Since past [Events](#event) are immutable, if some event is deemed incorrect later on it can only be rectified by issuing an explicit [retraction or correction](#retractions-and-corrections). Retraction and corrections are also represented as [Events](#event) in the same stream of [Data](#data) and differentiated by a special "operation type" field.
 
 See also:
-- [Common data schema](datasets/data-format.md#common-data-schema)
-- [Representation of retractions and corrections](datasets/data-format.md#representation-of-retractions-and-corrections)
+- [Common data schema](datasets/data-model.md#common-data-schema)
+- [Representation of retractions and corrections](datasets/data-model.md#representation-of-retractions-and-corrections)
 
 
 ## Principal
@@ -396,8 +396,8 @@ Retractions and corrections can also naturally occur in [Derivative](#derivative
 Retractions and corrections model is fundamental to making data processing **maximally autonomous**.
 
 See also:
-- [Common data schema](datasets/data-format.md#common-data-schema)
-- [Representation of retractions and corrections](datasets/data-format.md#representation-of-retractions-and-corrections)
+- [Common data schema](datasets/data-model.md#common-data-schema)
+- [Representation of retractions and corrections](datasets/data-model.md#representation-of-retractions-and-corrections)
 
 
 ## Schema
@@ -415,7 +415,7 @@ date_of_birth DATE,
 
 See also:
 - [Schema Format](datasets/data-schema.md#schema-format)
-- [Schema Evolution](datasets/data-format.md#schema-evolution)
+- [Schema Evolution](datasets/data-model.md#schema-evolution)
 
 
 ## Time

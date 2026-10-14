@@ -56,7 +56,7 @@ Spec-specific sections.
 
 
 ## Scope
-- Keep each spec focused on its own concern. Content that is about another concept belongs to the spec that owns that concept, e.g. the Data Schema spec describes how schemas of arbitrary data files are represented, while schema evolution rules belong to Data Format and the `SetDataSchema` event belongs to Metadata Chain.
+- Keep each spec focused on its own concern. Content that is about another concept belongs to the spec that owns that concept, e.g. the Data Schema spec describes how schemas of arbitrary data files are represented, while schema evolution rules belong to Data Model and the `SetDataSchema` event belongs to Metadata Chain.
 - Don't define general-purpose primitives (hashing, identifiers) in standalone specs. Instead explain how established standards (Multiformats, W3C DID, etc.) are applied in the spec that uses them.
 - Specs describe the current state. Motivation, rejected alternatives, unresolved questions, and future possibilities stay in RFCs.
 

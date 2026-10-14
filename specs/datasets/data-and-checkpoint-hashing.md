@@ -1,7 +1,7 @@
 # Data & Checkpoint Hashing <!-- omit in toc -->
 
 **Domain**: Datasets
-**Depends on**: [Data Format](data-format.md)
+**Depends on**: [Data Model](data-model.md)
 **RFCs**: [RFC-002](../../rfcs/002-logical-data-hashes.md)
 
 

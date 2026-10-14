@@ -1,7 +1,7 @@
 # Engine Contract <!-- omit in toc -->
 
 **Domain**: Transformations
-**Depends on**: [Data Format](../datasets/data-format.md)
+**Depends on**: [Data Model](../datasets/data-model.md)
 **RFCs**: -
 
 
@@ -64,7 +64,7 @@ The exchange of raw data happens out-of-band of the `gRPC` API.
 
 Currently, data and checkpoints are exchanged via files and object stores. The [Coordinator](../glossary.md#coordinator) makes input data part files and the previous [Checkpoint](../glossary.md#checkpoint) available to the [Engine](../glossary.md#engine) and passes their paths in the request, along with the paths where the [Engine](../glossary.md#engine) must write the output data and the new [Checkpoint](../glossary.md#checkpoint).
 
-In future, input and output [Data Slices](../glossary.md#data-slice) may be also exchanged using memory-mapped files (`mmap`) containing data in the common [in-memory format](../datasets/data-format.md#in-memory-and-on-disk-formats). This avoids any intermediate IO and minimizes the copying of data for the best performance.
+In future, input and output [Data Slices](../glossary.md#data-slice) may be also exchanged using memory-mapped files (`mmap`) containing data in the common [in-memory format](../datasets/data-model.md#in-memory-and-on-disk-formats). This avoids any intermediate IO and minimizes the copying of data for the best performance.
 
 
 ## Operations

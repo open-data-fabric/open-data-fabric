@@ -409,7 +409,7 @@ Most parts of the [Dataset](specs/glossary.md#dataset) can [change over time](#e
 #### Query Evolution
 The procedure for modifying the [Query](specs/glossary.md#query) of a [Derivative Dataset](specs/glossary.md#derivative-dataset) is as following:
 1. The [Coordinator](specs/glossary.md#coordinator) invokes the [Engine's](specs/glossary.md#engine) [Validate Query](specs/transformations/engine-contract.md#validate-query) operation to validate the new [Query](specs/glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
-2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](specs/datasets/data-format.md#schema-evolution) rules.
+2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](specs/datasets/data-model.md#schema-evolution) rules.
 3. A new [Metadata Block](specs/glossary.md#metadata-chain) is created and committed.
 
 > **TODO**: Specify how Schema changes in the upstream datasets should be handled
