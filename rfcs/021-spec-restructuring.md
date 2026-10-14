@@ -91,7 +91,7 @@ Status legend:
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
 | **Temporal Processing Model** | Derivative datasets, queries, event time, watermarks, checkpoints, query evolution and migrations, provenance | Derivative Dataset, Query, Time, Watermark, Checkpoint, Provenance, Derivative Transformations, Query Evolution | Existing |
-| **Engine Protocol** | Engine execution model, communication interface, operations, sandboxing, engine versioning and deprecation | Engine, Engine Contract, Engine Deprecation | Existing |
+| ✅ **Engine Contract** | Engine execution model, communication interface, operations, sandboxing, engine versioning and deprecation | Engine, Engine Contract, Engine Deprecation | Existing |
 | **Projections** | Temporal projections (AS AT / AS OF), collapsing changelog streams into state | Projection | Existing |
 
 #### Exchange

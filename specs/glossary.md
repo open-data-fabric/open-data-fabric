@@ -129,7 +129,7 @@ Engines run in a sandboxed environments and are not permitted to use any externa
 As Engines are in the full control of all data transformations, they are also responsible for answering the [Provenance](#provenance) queries.
 
 See also:
-- [Engine Contract](../open-data-fabric.md#engine-contract)
+- [Engine Contract](transformations/engine-contract.md)
 
 
 ## Event
@@ -261,7 +261,7 @@ Depending on the language used by an [Engine](#engine) one approach may work bet
 
 See also:
 - [Provenance in Databases: Why, How, and Where](http://homepages.inf.ed.ac.uk/jcheney/publications/provdbsurvey.pdf)
-- [Engine Contract: Derive Provenance](../open-data-fabric.md#derive-provenance)
+- [Engine Contract: Derive Provenance](transformations/engine-contract.md#derive-provenance)
 
 
 ## Query
@@ -296,7 +296,7 @@ GROUP BY TUMBLE(event_time, INTERVAL '1' MONTH), sku_id
 See also:
 - [Stream Processing Model](../open-data-fabric.md#stream-processing-model)
 - [Derivative Data Transience](../open-data-fabric.md#derivative-data-transience)
-- [Engine Contract](../open-data-fabric.md#engine-contract)
+- [Engine Contract](transformations/engine-contract.md)
 
 
 ## Repository

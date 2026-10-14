@@ -310,112 +310,6 @@ See Also:
 > **TODO:*
 > - Add a separate section specifying the serialization rules or point to codegen as the reference implementation
 
-## Engine Contract
-This section provides the details on the contract between an [Engine](specs/glossary.md#engine) and the [Coordinator](specs/glossary.md#coordinator).
-
-### Execution Model
-[Engine](specs/glossary.md#engine) executes in a very restricted environment (a "sandbox") that prevents it from accessing any external resources other than those explicitly provided by the [Coordinator](specs/glossary.md#coordinator). Isolating the [Engine](specs/glossary.md#engine) from making network calls and accessing any random files ensures both that the [Data](specs/glossary.md#data) being processed cannot be leaked, and that non-deterministic behavior is harder to introduce accidentally.
-
-Our isolation technology of choice is  [OCI containers](https://opencontainers.org/) - a lightweight mechanism that provides good performance and strong isolation guarantees. We rely on OCI-compatible images as the distribution mechanism for the engines.
-
-> **TODO:** Add exact `podman` and `docker` commands to reproduce the sandboxed environment
-
-### Communication Interface
-This section describes the [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) mechanism used in communications between the [Coordinator](specs/glossary.md#coordinator) and the [Engine](specs/glossary.md#engine).
-
-The requirements we put towards the RPC mechanism are:
-- Use common network protocols
-- Wide support in many programming languages
-- Support streaming responses (e.g. for streaming back the operation status and logs)
-
-Our RPC technology of choice is [gRPC](https://grpc.io/) because:
-- It's cross-platform, mature, and available in many languages
-- Natively supports [FlatBuffers](https://google.github.io/flatbuffers/flatbuffers_grpc_guide_use_cpp.html) which is our [metadata format](#metadata-format) of choice, letting us reuse object schemas
-- Supports streaming
-- For our narrow use case, its convenience is more important than interoperability, as we don't expect to have many server and client implementations
-
-[Engine](specs/glossary.md#engine) implementations must expose the `gRPC` API on port `5544`.
-
-> Note: When starting an [Engine](specs/glossary.md#engine) container, the [Coordinator](specs/glossary.md#coordinator) will consider it fully initialized when it can establish a TCP connection to the port `5544`.
-
-#### Data Exchange
-The exchange of raw data happens out-of-band of the `gRPC` API. Input and output [Data Slices](specs/glossary.md#data-slice) are exchanged between the [Coordinator](specs/glossary.md#coordinator) and the [Engine](specs/glossary.md#engine) using the memory-mapped files (`mmap`) containing data in the common [in-memory format](specs/datasets/data-format.md#in-memory-and-on-disk-formats). This avoids any intermediate IO and minimizes the copying of data for the best performance.
-
-> **TODO:*
-> - Needs more details on accessing input data and writing output
-
-### Operations
-Engine implementation should support the following operations:
-- [Validate query](#validate-query) - Validates the user-specified query for basic syntax and schema correctness.
-- [Execute query](#execute-query) - Performs the next iteration of the transformation.
-- [Migrate query](#migrate-query) - Updates the transformation state from one query to another.
-- [Derive Provenance](#derive-provenance) - Explains the origin of some data produced in the past.
-
-See also:
-- [Engine API Reference](#engine-api-reference)
-
-#### Validate Query
-This operation may be used by the [Coordinator](specs/glossary.md#coordinator) when creating a new [Derivative Dataset](specs/glossary.md#derivative-dataset) or when changing the [Query](specs/glossary.md#query) of an existing one to validate the user-specified query for basic syntax and schema correctness.
-
-Inputs:
-- [Schemas](specs/glossary.md#schema) of the input [Datasets](specs/glossary.md#dataset)
-- [Query](specs/glossary.md#query)
-- (optional) Previous [Query](specs/glossary.md#query) in case of an existing [Dataset](specs/glossary.md#dataset) modification
-
-Outputs:
-- [Schema](specs/glossary.md#schema) of the result
-- (alternatively) Validation errors
-
-#### Execute Query
-This operation is used by the [Coordinator](specs/glossary.md#coordinator) to perform the next iteration of the transformation.
-
-The [Coordinator](specs/glossary.md#coordinator) is designed to isolate the [Engines](specs/glossary.md#engine) from the complexity of managing the [Metadata Chain](specs/glossary.md#metadata-chain) and make processing look as close as possible to a regular stream processing.
-
-![Sequence Diagram: Execute Query](images/engine_transform.svg)
-
-Inputs:
-- Transaction ID
-- Input [Data Slices](specs/glossary.md#data-slice)
-- Input [Watermarks](specs/glossary.md#watermark)
-- [Query](specs/glossary.md#query)
-- Previous [Checkpoint](specs/glossary.md#checkpoint)
-
-Outputs:
-- Output [Data Slice](specs/glossary.md#data-slice)
-- Output [Watermark](specs/glossary.md#watermark)
-- New [Checkpoint](specs/glossary.md#checkpoint)
-- Operation progress, status, and logs
-
-This operation must be [idempotent](https://en.wikipedia.org/wiki/Idempotence) (see [Implementing Exactly-Once Semantics](#implementing-exactly-once-semantics)).
-
-When an operation is committed by the [Coordinator](specs/glossary.md#coordinator), the [Engine](specs/glossary.md#engine) will not see the same input data again. If due to the nature of the query (e.g. windowing or watermarking configuration) [Engine](specs/glossary.md#engine) cannot fully process and discard the input data - it should use the [Checkpoint](specs/glossary.md#checkpoint) to buffer it.
-
-#### Migrate Query
-This operation is used by the [Coordinator](specs/glossary.md#coordinator) when data processing hits the point where one transformation [Query](specs/glossary.md#query) is being replaced by another one. It gives the [Engine](specs/glossary.md#engine) all information needed to handle the transition as gracefully as possible, e.g. by reconciling the existing [Checkpoints](specs/glossary.md#checkpoint) with the new [Query](specs/glossary.md#query), or, at the very least, finalizing the processing of the old [Query](specs/glossary.md#query) and clearing the [Checkpoints](specs/glossary.md#checkpoint) before the new one starts to execute.
-
-Inputs:
-- Transaction ID
-- Previous [Query](specs/glossary.md#query)
-- Next [Query](specs/glossary.md#query)
-- Previous [Checkpoint](specs/glossary.md#checkpoint)
-
-Outputs:
-- New [Checkpoint](specs/glossary.md#checkpoint)
-- (optional) [Data](specs/glossary.md#data) that has been produced when finalizing the old [Query](specs/glossary.md#query)
-
-#### Derive Provenance
-This operation is used to trace back a set of events in the output [Dataset](specs/glossary.md#dataset) to input events that contributed to their values or their existence (see [Provenance](specs/glossary.md#provenance)).
-
-> **TODO:** The design of this operation is in progress.
-
-### Engine Versioning
-As [described previously](#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](specs/glossary.md#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](specs/glossary.md#engine) will break this guarantee.
-
-Whenever the [Coordinator](specs/glossary.md#coordinator) uses an [Engine](specs/glossary.md#engine) to execute a query it must specify the full digest of the OCI container image in the resulting [Metadata Block](specs/glossary.md#metadata-chain). [Engine](specs/glossary.md#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
-
-See also:
-- [Engine Deprecation](#engine-deprecation)
-
 ## Coordinator Contract
 The main functions of the [Coordinator](specs/glossary.md#coordinator) are:
 - Maintain the [invariants](#requirements) and the [semantics](#transactional-semantics) of the system
@@ -512,14 +406,14 @@ Each event will have an additional column that signifies the kind of observation
 The `Snapshot` strategy also requires special treatment in regard to the [Event Time](specs/glossary.md#event-time). Since snapshot-style data exports represent the state of some system at a certain time - it is important to know what that time was. This time is usually captured in some form of metadata (e.g. in the name of the snapshot file, in the URL, or the HTTP caching headers). It should be possible to extract and propagate this time into a data column.
 
 ### Derivative Transformations
-[Previously](#execute-query) we looked at how an [Engine](specs/glossary.md#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](specs/glossary.md#coordinator) side.
+[Previously](specs/transformations/engine-contract.md#execute-query) we looked at how an [Engine](specs/glossary.md#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](specs/glossary.md#coordinator) side.
 
 ![Sequence Diagram: Execute Query](images/engine_transform.svg)
 
 Here are the steps that the [Coordinator](specs/glossary.md#coordinator) performs during the transformation:
 - **Batch step** - Analyze the [Metadata Chains](specs/glossary.md#metadata-chain) of the [Dataset](specs/glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
-- **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](specs/glossary.md#engine) [Migrate Query](#migrate-query) operation to make necessary adjustments for the new transformation parameters.
-- **Run query** - Pass the input [Data Slices](specs/glossary.md#data-slice) into the [Engine's](specs/glossary.md#engine) [Execute Query](#execute-query) operation
+- **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](specs/glossary.md#engine) [Migrate Query](specs/transformations/engine-contract.md#migrate-query) operation to make necessary adjustments for the new transformation parameters.
+- **Run query** - Pass the input [Data Slices](specs/glossary.md#data-slice) into the [Engine's](specs/glossary.md#engine) [Execute Query](specs/transformations/engine-contract.md#execute-query) operation
 - **Hash resulting data and checkpoint** - Obtain a stable [Hash](specs/glossary.md#hash) of the output [Data Slice](specs/glossary.md#data-slice) and [Checkpoint](specs/glossary.md#checkpoint) (see [Data Hashing](specs/datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes) and [Checkpoint Hashing](specs/datasets/data-and-checkpoint-hashing.md#checkpoint-hashing))
 - **Prepare commit** - Creates the next [Metadata Block](specs/glossary.md#metadata-chain) describing the output data
 - **Commit** - Atomically adds the new [Data Slice](specs/glossary.md#data-slice) and the [Metadata Block](specs/glossary.md#metadata-chain) to the [Dataset](specs/glossary.md#dataset)
@@ -529,7 +423,7 @@ Most parts of the [Dataset](specs/glossary.md#dataset) can [change over time](#e
 
 #### Query Evolution
 The procedure for modifying the [Query](specs/glossary.md#query) of a [Derivative Dataset](specs/glossary.md#derivative-dataset) is as following:
-1. The [Coordinator](specs/glossary.md#coordinator) invokes the [Engine's](specs/glossary.md#engine) [Validate Query](#validate-query) operation to validate the new [Query](specs/glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
+1. The [Coordinator](specs/glossary.md#coordinator) invokes the [Engine's](specs/glossary.md#engine) [Validate Query](specs/transformations/engine-contract.md#validate-query) operation to validate the new [Query](specs/glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
 2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](specs/datasets/data-format.md#schema-evolution) rules.
 3. A new [Metadata Block](specs/glossary.md#metadata-chain) is created and committed.
 
@@ -552,15 +446,6 @@ The [Derivative Dataset](specs/glossary.md#derivative-dataset) validation confir
 The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](specs/glossary.md#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](specs/glossary.md#metadata-chain).
 
 Due to non-determinism of Parquet format the physical hash may not match the one in metadata so a fallback to logical hash is required to verify that the resulting records are logically the same.
-
-### Engine Deprecation
-Pinning the exact [Engine](specs/glossary.md#engine) version used by every transformation guarantees the reproducibility and verifiability of the results (see [Components of Trust](#components-of-trust)). In the long run, however, this creates a problem where in order to [validate a dataset](#dataset-validation) the [Coordinator](specs/glossary.md#coordinator) will have to use a very large number of different versions of an [Engine](specs/glossary.md#engine) that might've accumulated over the years. This slows down the validation procedure and can result in a significant disk space required for storing these images.
-
-To mitigate this problem the [Coordinator](specs/glossary.md#coordinator) offers the **engine deprecation** operation that works as follows:
-1. The [Coordinator](specs/glossary.md#coordinator) reconstructs the dataset from scratch by repeating all transformation in the [Metadata Chain](specs/glossary.md#metadata-chain).
-2. Instead of the [Engine](specs/glossary.md#engine) version specified in the block, it uses the latest (or provided) version.
-3. If the results produced in every step match the recorded ones - we can safely consider that the newer version of the [Engine](specs/glossary.md#engine) is fully compatible with the older one.
-4. A special [Metadata](specs/glossary.md#metadata-chain) record is created to record this compatibility, therefore, allowing all users to use the latest version of the [Engine](specs/glossary.md#engine) instead of downloading all the versions seen previously.
 
 ## Repository Contract
 > **TODO:**
