@@ -99,9 +99,10 @@ Status legend:
 | --- | --- | --- | --- |
 | ✅ **Transfer Protocols** | Repositories, simple and smart transfer protocols, direct-to-storage transfers, replication | Repository, Data Sharing, Dataset Sharing, Repository Contract, [RFC-007], [RFC-008] | Existing |
 | **Query Protocols** | Standard query interfaces (Flight SQL / ADBC), federated query planning |  | New |
-| **Verification** | Components of trust, determinism and reproducibility, dataset validation and verification procedures | Verifiability, Dataset Validation | Existing |
 | ✅ **Verifiable Batch Queries** | Query commitments and proofs that allow consumers to verify that query results correspond to specific dataset states | [RFC-022] | RFC |
 | **Discovery** | Dataset registries, anchoring of dataset state to external ledgers |  | New |
+
+Verification is not a standalone spec. Different kinds of verification (metadata chain integrity, data and checkpoint hashes, validity of transferred data, reproducibility of transformations, validity of query results) depend on the mechanics of the parts of the system they apply to, so each is specified in the corresponding spec. The **Overview** maps all verification layers to these specs.
 
 
 #### Auth & Privacy

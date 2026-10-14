@@ -19,6 +19,7 @@ This spec defines the structure of the [Metadata Chain](../glossary.md#metadata-
   - [Legacy Events](#legacy-events)
 - [Consistency Rules](#consistency-rules)
   - [Offsets and Intervals](#offsets-and-intervals)
+- [Validation](#validation)
 - [Block References](#block-references)
 - [Extensibility](#extensibility)
 - [Metadata Format](#metadata-format)
@@ -142,6 +143,14 @@ For example, a chain of `AddData` events where the last one only advances the wa
 ```
 
 Similarly, `queryInputs` of `ExecuteTransform` describe the inputs using half-open intervals `(prevBlockHash, newBlockHash]` and `(prevOffset, newOffset]`, where the starting point is always carried over from the previous transaction, even when the interval itself is empty.
+
+
+## Validation
+Since metadata blocks are content-addressed, a chain obtained from any untrusted source can be validated by knowing only the hash of its last block, obtained from a trusted source. Validation involves:
+- Recomputing the [hash](#metadata-block-hashing) of every block and comparing it to the hash by which the block was referenced (via a [block reference](#block-references) or the `prevBlockHash` of the following block)
+- Checking that all [consistency rules](#consistency-rules) are satisfied
+
+A valid chain guarantees the integrity of all data slices and checkpoints it references, as long as their hashes are also verified (see [Data & Checkpoint Hashing: Verification](data-and-checkpoint-hashing.md#verification)).
 
 
 ## Block References

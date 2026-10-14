@@ -19,9 +19,14 @@
   - [Nature of Data](#nature-of-data)
   - [Nature of Transformations](#nature-of-transformations)
     - [Components of Trust](#components-of-trust)
+    - [Verification](#verification)
   - [Stream Processing Model](#stream-processing-model)
   - [Essential Role of Metadata](#essential-role-of-metadata)
   - [Transactional Semantics](#transactional-semantics)
+- [Components](#components)
+  - [Coordinator](#coordinator)
+  - [Engine](#engine)
+  - [Node](#node)
 - [Specs](#specs)
 
 
@@ -138,6 +143,23 @@ The benefits we get in exchange for this strictness are, however, immense:
 All this combined allows us to build **verifiable trust** between parties.
 
 
+#### Verification
+Verification is not a single procedure, but a set of mechanisms specified alongside the parts of the system they apply to. Fully verifying a [Dataset](glossary.md#dataset) involves several layers:
+
+| Layer | What is verified | Spec |
+| --- | --- | --- |
+| Metadata | Integrity and consistency of the metadata chain, given the hash of its last block | [Metadata Chain: Validation](datasets/metadata-chain.md#validation) |
+| Data and checkpoints | Integrity of data part files and checkpoints against hashes in metadata | [Data & Checkpoint Hashing: Verification](datasets/data-and-checkpoint-hashing.md#verification) |
+| Transfer | Validity of all objects received from untrusted repositories and peers | [Transfer Protocols: Validation of Transferred Data](exchange/transfer-protocols.md#validation-of-transferred-data) |
+| Transformations | Data of derivative datasets corresponds to applying the declared transformations to the inputs | [Processing Model: Validation](transformations/processing-model.md#validation) |
+| Queries | Query results correspond to specific states of the queried datasets | [Verifiable Batch Queries](exchange/verifiable-batch-queries.md) |
+
+Verification does not have to happen synchronously with updates of data. Since all components of a dataset are immutable and every block refers to the exact state of its inputs, verification can proceed incrementally and **asynchronously** - e.g. a dataset may already be on block `T` while verification is still processing block `T - 100`, eventually catching up. This allows participants to use data **optimistically**, while preserving the ability to detect and dispute invalid data later.
+
+See also:
+- [Verifiability](glossary.md#verifiability)
+
+
 ### Stream Processing Model
 As we model all data as potentially infinite event streams (see [Nature of Data](#nature-of-data)), it's quite natural to use the **stream processing** techniques for all data transformations.
 
@@ -160,6 +182,36 @@ Metadata also has an immutable append-only nature. While the specs describe it a
 To achieve a perfect reproducibility the system needs to satisfy very strong transactional properties:
 - All coordination operations including things like ingesting, downloading, and sharing data, creating and updating datasets must have [ACID properties](https://en.wikipedia.org/wiki/ACID).
 - All data transformations must have **exactly-once** semantics.
+
+
+## Components
+ODF defines the following components that take part in managing and processing data:
+
+
+### Coordinator
+[Coordinator](glossary.md#coordinator) is an application that implements the common [Dataset](glossary.md#dataset) management logic. Its main functions are to:
+- Maintain the [invariants](#requirements) and the [semantics](#transactional-semantics) of the system
+- Guarantee the validity and integrity of the [Metadata Chain](datasets/metadata-chain.md)
+- Ingest external data into [Root Datasets](glossary.md#root-dataset) (see [Ingestion](datasets/ingestion.md))
+- Interface with the [Engines](#engine) to implement data transformations (see [Processing Model](transformations/processing-model.md))
+- Enable data sharing via [Repositories](glossary.md#repository) (see [Transfer Protocols](exchange/transfer-protocols.md))
+- Provide additional functionality to simplify working with datasets and their metadata
+
+
+### Engine
+[Engine](glossary.md#engine) is a software that knows how to interpret and execute [Queries](glossary.md#query) of a certain dialect. Engines are responsible for applying the queries to input data and returning the result, as well as answering [Provenance](glossary.md#provenance) queries.
+
+To guarantee the reproducibility of all transformations, engines run in a sandboxed environment without access to any external resources, and are strictly versioned (see [Components of Trust](#components-of-trust)). The coordinator communicates with engines according to the [Engine Contract](transformations/engine-contract.md), making engines interchangeable - the set of supported query dialects can be extended by implementing a new engine.
+
+
+### Node
+[Node](glossary.md#node) is an entire ODF deployment that acts under a single identity. It combines a coordinator with a set of engines, and additionally:
+- Hosts datasets and other [Resources](glossary.md#resource) that belong to one or many [Accounts](glossary.md#account), and runs controllers that reconcile their desired state (see [Resource Framework](automation/resource-framework.md))
+- Controls access to resources and data (see [Authorization](auth-and-privacy/authorization.md))
+- Schedules and executes workloads like ingestion and transformations (see [Tasks and Flows](automation/tasks-and-flows.md))
+- Exposes datasets to other participants via transfer and query protocols (see [Transfer Protocols](exchange/transfer-protocols.md) and [Verifiable Batch Queries](exchange/verifiable-batch-queries.md))
+
+Nodes communicate with one another to replicate datasets, execute parts of queries, and exchange other information, forming a decentralized network.
 
 
 ## Specs

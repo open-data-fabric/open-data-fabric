@@ -17,6 +17,7 @@ This spec defines how data of [Derivative Datasets](../glossary.md#derivative-da
 - [Time and Watermarks](#time-and-watermarks)
 - [Checkpoints](#checkpoints)
 - [Derivative Transformations](#derivative-transformations)
+- [Validation](#validation)
 - [Dataset Evolution](#dataset-evolution)
   - [Query Evolution](#query-evolution)
 - [Provenance](#provenance)
@@ -83,9 +84,21 @@ Here are the steps that the [Coordinator](../glossary.md#coordinator) performs d
 - **Batch step** - Analyze the [Metadata Chains](../glossary.md#metadata-chain) of the [Dataset](../glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
 - **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](../glossary.md#engine) [Migrate Query](engine-contract.md#migrate-query) operation to make necessary adjustments for the new transformation parameters.
 - **Run query** - Pass the input [Data Slices](../glossary.md#data-slice) into the [Engine's](../glossary.md#engine) [Execute Query](engine-contract.md#execute-query) operation
-- **Hash resulting data and checkpoint** - Obtain a stable [Hash](../glossary.md#hash) of the output [Data Slice](../glossary.md#data-slice) and [Checkpoint](../glossary.md#checkpoint) (see [Data Hashing](../datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes) and [Checkpoint Hashing](../datasets/data-and-checkpoint-hashing.md#checkpoint-hashing))
+- **Hash resulting data and checkpoint** - Obtain a stable [Hash](../glossary.md#hash) of the output [Data Slice](../glossary.md#data-slice) and [Checkpoint](../glossary.md#checkpoint) (see [Data Hashing](../datasets/data-and-checkpoint-hashing.md#physical-vs-logical-hashes) and [Checkpoint Hashing](../datasets/data-and-checkpoint-hashing.md#checkpoint-hashing))
 - **Prepare commit** - Creates the next [Metadata Block](../glossary.md#metadata-chain) describing the output data
 - **Commit** - Atomically adds the new [Data Slice](../glossary.md#data-slice) and the [Metadata Block](../glossary.md#metadata-chain) to the [Dataset](../glossary.md#dataset)
+
+
+## Validation
+The validation of a [Derivative Dataset](../glossary.md#derivative-dataset) confirms that its data is in fact produced by applying all the transformations stored in its [Metadata Chain](../datasets/metadata-chain.md) to the inputs and was not maliciously altered.
+
+The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations), except instead of the `Commit` step the [Coordinator](../glossary.md#coordinator) compares the hashes of the data produced by the local transformation to the hashes stored in the `ExecuteTransform` events, using the exact versions of engines recorded in the metadata.
+
+Due to non-determinism of the Parquet format the physical hash may not match the one in metadata, so a fallback to the logical hash is required to verify that the resulting records are logically the same (see [Data & Checkpoint Hashing: Verification](../datasets/data-and-checkpoint-hashing.md#verification)).
+
+Since every `ExecuteTransform` event captures the exact intervals of inputs it processed, validation can proceed incrementally and asynchronously from the last validated block, lagging behind the head of the dataset and eventually catching up (see [Verification](../overview.md#verification)).
+
+Validation can be scheduled using the `Verify` task with `replayTransform` enabled (see [Tasks and Flows](../automation/tasks-and-flows.md#task-types)).
 
 
 ## Dataset Evolution

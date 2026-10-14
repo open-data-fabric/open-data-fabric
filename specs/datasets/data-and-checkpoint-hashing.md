@@ -13,6 +13,7 @@ This spec defines how hash sums of data part files and checkpoints are computed,
 ## Table of Contents <!-- omit in toc -->
 
 - [Physical vs. Logical Hashes](#physical-vs-logical-hashes)
+- [Verification](#verification)
 - [Logical Hashing Algorithm](#logical-hashing-algorithm)
   - [Properties](#properties)
   - [Value Encoding](#value-encoding)
@@ -30,6 +31,14 @@ Because the on-disk Parquet data format is non-deterministic (serializing same l
 **Physical hashing** is used in the context of verifying integrity of the datasets and uploading and downloading data files to/from content-addressable systems, where hash sum acts as an identifier of the data file. Physical hash is calculated using [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) algorithm on entire data part file.
 
 **Logical hashing** is used for equivalence checks when reproducing results of computations. It is computed over the in-memory representation of data in [Apache Arrow](https://arrow.apache.org/) format using the algorithm described below.
+
+
+## Verification
+Hashes stored in [Metadata Blocks](../glossary.md#metadata-chain) are used to verify data and checkpoints in two scenarios:
+- **Integrity** - when a data part file or a checkpoint is obtained from any (possibly untrusted) source, its physical hash is computed and compared to the `physicalHash` stored in the corresponding [`DataSlice`](../../schemas/datasets/v1alpha1/DataSlice.json) or [`Checkpoint`](../../schemas/datasets/v1alpha1/Checkpoint.json) object. A mismatch means that the file was corrupted or tampered with, and it must be rejected.
+- **Reproducibility** - when data is reproduced by repeating a transformation (see [Processing Model: Validation](../transformations/processing-model.md#validation)), the physical hash of the result is compared first. If it doesn't match due to non-determinism of the on-disk format, the logical hash is compared instead, and a match confirms that the resulting records are logically the same.
+
+Checkpoints are engine-specific and are not required to be reproducible, so their hashes are only used for integrity checks.
 
 
 ## Logical Hashing Algorithm
@@ -107,7 +116,7 @@ Data consisting of multiple columns is hashed as follows:
 
 
 ## Checkpoint Hashing
-[Checkpoints](../glossary.md#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](../glossary.md#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Physical and Logical Hashes](#physical-and-logical-hashes)).
+[Checkpoints](../glossary.md#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](../glossary.md#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Physical vs. Logical Hashes](#physical-vs-logical-hashes)).
 
 
 ## Hash Codes

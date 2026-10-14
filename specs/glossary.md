@@ -65,7 +65,7 @@ Core responsibilities:
 - Commits the resulting data slices and new metadata blocks
 
 See also:
-- [Coordinator Contract](../open-data-fabric.md#coordinator-contract)
+- [Components: Coordinator](overview.md#coordinator)
 
 
 ## Data
@@ -180,7 +180,7 @@ Usage examples:
 - The trustworthiness of any [Dataset](#dataset) can be established by reviewing the transformations it claims to be performing on data (contained in the [Metadata Chain](#metadata-chain)), re-applying those transformations in a trusted environment, and then comparing the hash sums of the result slices.
 
 See also:
-- [Data Hashing](datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes)
+- [Data Hashing](datasets/data-and-checkpoint-hashing.md#physical-vs-logical-hashes)
 - [Checkpoint Hashing](datasets/data-and-checkpoint-hashing.md#checkpoint-hashing)
 - [Metadata Block Hashing](datasets/metadata-chain.md#metadata-block-hashing)
 
