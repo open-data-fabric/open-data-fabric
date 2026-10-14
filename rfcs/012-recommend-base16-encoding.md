@@ -5,6 +5,9 @@
 
 **Start Date**: 2023-12-14
 
+**Specs**:
+- [Metadata Chain](../specs/datasets/metadata-chain.md)
+
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 

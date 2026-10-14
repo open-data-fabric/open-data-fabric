@@ -178,7 +178,7 @@ Usage examples:
 See also:
 - [Data Hashing](datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes)
 - [Checkpoint Hashing](datasets/data-and-checkpoint-hashing.md#checkpoint-hashing)
-- [Metadata Block Hashing](../open-data-fabric.md#metadata-block-hashing)
+- [Metadata Block Hashing](datasets/metadata-chain.md#metadata-block-hashing)
 
 
 ## Ingestion
@@ -220,35 +220,12 @@ Refers to information about a [Dataset](#dataset) stored in its [Metadata Chain]
 
 
 ## Metadata Chain
-Metadata Chain captures all essential information about the [Dataset](#dataset), including:
-- Which data was added and when (see [Ingestion](datasets/ingestion.md))
-- How data was processed (see [Query](#query))
-- Its [Schema](#schema)
-- Log of all modifications made to the data, including information used to verify the integrity of data
-- Current [Watermark](#watermark)
+Metadata Chain is an append-only log of **Metadata Blocks** that captures the entire history of a [Dataset](#dataset): its identity, [Schema](#schema), what data was added and when, how it was processed (see [Query](#query)), and other information like licenses and descriptions.
 
-Just like [Data](#data), the metadata chain also has a temporal nature. It consists of individual **Metadata Blocks** that refer to the previous block in the chain, forming a singly-linked list. Every block carries one of [Metadata Events](../open-data-fabric.md#reference-metadata-events) that describes how data evolved over time.
-
-![Diagram: Metadata Chain](../images/metadata-chain.svg)
-
-All Metadata Blocks are immutable and changes by appending new blocks. With blocks, data, and checkpoints named after and referenced by the [hash](#hash) of their content - a dataset forms a type of [content-addressable](https://en.wikipedia.org/wiki/Content-addressable_storage) system, where having a reference to the last Metadata Block one can traverse the entire chain to discover all the components of the dataset.
-
-![Diagram: Dataset as a Content-Addressable Graph](../images/metadata-chain-2.svg)
-
-Metadata Chain also supports **Block References** that assign a certain symbolic name to a block hash, effectively acting as a named pointer. At the minimum all datasets have a `head` reference that indicates the current last block in the Metadata Chain. Using multiple references the metadata chain can be organized into a directed acyclic graph that can form branches, allowing for example to stage some subset of events for review or an automated QA process before they are accepted into the main chain.
-
-In addition to core events like adding data, running a query, and change of schema the Metadata Chain is designed to be extended to carry other kinds of information like:
-- Extra meaning and structure of knowledge that data represents (glossary, semantics, ontology)
-- Relevant policies, terms, rules, compliance, and regulations (governance)
-- License, privacy and security concerns (stewardship)
-- Information that aids discovery
-- Collaboration information
-
-These extensions are out of scope of this document.
+Every block carries one metadata event and refers to the [hash](#hash) of the previous block, so having a reference to the last block one can traverse the entire chain and discover and verify all components of the dataset.
 
 See also:
-- [Metadata Format](../open-data-fabric.md#metadata-format)
-- [Metadata Events Reference](../open-data-fabric.md#reference-metadata-events)
+- [Metadata Chain](datasets/metadata-chain.md)
 
 
 ## Node

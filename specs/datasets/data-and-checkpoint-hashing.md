@@ -112,7 +112,7 @@ Data consisting of multiple columns is hashed as follows:
 
 
 ## Hash Codes
-Hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) as described in [Hash Representation](../../open-data-fabric.md#hash-representation).
+Hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) as described in [Hash Representation](metadata-chain.md#hash-representation).
 
 The `multicodec` table is extended with the following codes in the "private use area":
 

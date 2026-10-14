@@ -45,7 +45,7 @@ The requirements we put towards the RPC mechanism are:
 
 Our RPC technology of choice is [gRPC](https://grpc.io/) because:
 - It's cross-platform, mature, and available in many languages
-- Natively supports [FlatBuffers](https://google.github.io/flatbuffers/flatbuffers_grpc_guide_use_cpp.html) which is our [metadata format](../../open-data-fabric.md#metadata-format) of choice, letting us reuse object schemas
+- Natively supports [FlatBuffers](https://google.github.io/flatbuffers/flatbuffers_grpc_guide_use_cpp.html) which is our [metadata format](../datasets/metadata-chain.md#metadata-format) of choice, letting us reuse object schemas
 - Supports streaming
 - For our narrow use case, its convenience is more important than interoperability, as we don't expect to have many server and client implementations
 

@@ -7,6 +7,7 @@
 
 **Specs**:
 - [Ingestion](../specs/datasets/ingestion.md)
+- [Metadata Chain](../specs/datasets/metadata-chain.md)
 
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)

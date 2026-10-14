@@ -111,7 +111,7 @@ The `commitment` section is a succinct commitment to the operation, consisting o
 - `outputHash` - `multihash(canonicalize(output))`
 - `subQueriesHash` - `multihash(canonicalize(subQueries))`
 
-Hashes are represented as described in [Hash Representation](../../open-data-fabric.md#hash-representation), and `canonicalize` is defined in [JSON Hashing](#json-hashing).
+Hashes are represented as described in [Hash Representation](../datasets/metadata-chain.md#hash-representation), and `canonicalize` is defined in [JSON Hashing](#json-hashing).
 
 The `commitment` section is technically redundant, as the consumer has to recompute all hashes to [validate](#response-validation) the response anyway. It is included to protect consumers from implementing hashing in a way that is inconsistent with this spec, and to help isolate inconsistencies to specific parts of the response during validation and dispute resolution.
 

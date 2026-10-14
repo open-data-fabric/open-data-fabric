@@ -2,6 +2,9 @@
 
 **Start Date**: 2022-04-08
 
+**Specs**:
+- [Metadata Chain](../specs/datasets/metadata-chain.md)
+
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/20?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/20)
 
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/21?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/21)

@@ -1470,7 +1470,7 @@ pub mod datasets {
         pub did: DatasetID,
         /// Type of the dataset.
         pub kind: datasets::DatasetKind,
-        /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
+        /// An array of metadata events that will be used to populate the chain, e.g. to set info, licenses, and attachments. As the dataset evolves, it maintains a snapshot of the key events that describe the dataset in its latest state, excluding intermediate transitions (e.g. previous schema changes) and events related to ingestions and transformations.
         pub metadata: Vec<datasets::MetadataEvent>,
         /// Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
         pub volume: resources::ResourceHandle,
@@ -1485,7 +1485,7 @@ pub mod datasets {
         pub did: Option<DatasetID>,
         /// Type of the dataset.
         pub kind: datasets::DatasetKind,
-        /// An array of metadata events that will be used to populate the chain. Here you can define polling and push sources, set licenses, add attachments etc.
+        /// An array of metadata events that will be used to populate the chain, e.g. to set info, licenses, and attachments. As the dataset evolves, it maintains a snapshot of the key events that describe the dataset in its latest state, excluding intermediate transitions (e.g. previous schema changes) and events related to ingestions and transformations.
         pub metadata: Vec<datasets::MetadataEvent>,
         /// Reference to a storage volume where dataset data will be stored. If omitted, the node's default storage is used.
         pub volume: Option<storage::PersistentVolumeRef>,

@@ -192,7 +192,7 @@ The resulting DID is stored in the first [MetadataBlock](specs/glossary.md#metad
 
 Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used to prove ownership and control over a [Dataset](specs/glossary.md#dataset) and to delegate access.
 
-> Note that the only difference between `did:odf` and `did:key` method is the encoding scheme. ODF uses `base16` instead of `base58btc` for reasons explained in the [Hash Representation](#hash-representation) section. Because conversion between the two encodings is trivial, ODF is compatible with authorization frameworks that work with `did:key` method. We expect that in future the `did:key` spec will be extended to allow `base16` encoding too, further minimizing the difference.
+> Note that the only difference between `did:odf` and `did:key` method is the encoding scheme. ODF uses `base16` instead of `base58btc` for reasons explained in the [Hash Representation](specs/datasets/metadata-chain.md#hash-representation) section. Because conversion between the two encodings is trivial, ODF is compatible with authorization frameworks that work with `did:key` method. We expect that in future the `did:key` spec will be extended to allow `base16` encoding too, further minimizing the difference.
 
 See also:
 - [RFC-003: Content Addressability](/rfcs/003-content-addressability.md)
@@ -267,34 +267,6 @@ Url = Scheme "://" [^\n]+
 Scheme = [a-zA-Z0-9]+ ("+" [a-zA-Z0-9]+)*
 ```
 
-## Metadata Format
-The requirements we put towards the metadata format are:
-- Compactness
-- Fast read performance
-- Complex type support (particularly nested structures and unions)
-- Allows for forward and backward compatibility
-- Allows for a controlled way of making breaking changes
-- Possibility to read and write in human-friendly easily editable format
-- Schema-based validation for user-specified data
-
-We use the following combination of formats to satisfy these requirements:
-- [YAML](https://yaml.org/) is used for human-friendly input and output
-  - This format is concise and very readable and widely supported
-  - Only a [JSON-compatible](https://json.org/) subset of `YAML` will be used
-- [JSON Schema](https://json-schema.org/) may be used for validating user-specified `YAML` files
-  - Widely supported and expressive grammar for validating `JSON` and `YAML`
-  - Generates readable and easy to understand errors
-- [FlatBuffers](https://google.github.io/flatbuffers/) format is used for binary representation
-  - Highly efficient and cross-platform serialization format
-
-The `JSON Schemas` and `FlatBuffers Schemas` for all metadata objects are provided as part of this specification (see [Metadata Reference](#metadata-reference)).
-
-See Also:
-- [Metadata Block Hashing](#metadata-block-hashing)
-
-> **TODO:*
-> - Add a separate section specifying the serialization rules or point to codegen as the reference implementation
-
 ## Coordinator Contract
 The main functions of the [Coordinator](specs/glossary.md#coordinator) are:
 - Maintain the [invariants](#requirements) and the [semantics](#transactional-semantics) of the system
@@ -303,45 +275,6 @@ The main functions of the [Coordinator](specs/glossary.md#coordinator) are:
 - Interface with the [Engines](specs/glossary.md#engine) to implement data transformations
 - Enable data sharing functionality via [Repositories](specs/glossary.md#repository)
 - Provide additional functionality to simplify working with [Datasets](specs/glossary.md#dataset) and their metadata
-
-### Common Metadata Operations
-This section describes the operations performed by the [Coordinator](specs/glossary.md#coordinator) as part of the usual [Metadata Chain](specs/glossary.md#metadata-chain) maintenance.
-
-#### Hash Representation
-To be able to evolve hashing algorithms over time we encode the identity of the algorithm used along with the hash sum itself using the [multiformats](https://github.com/multiformats/multiformats) specification, specifically:
-- [multihash](https://github.com/multiformats/multihash) - describes how to encode algorithm ID alongside the hash value.
-- [multibase](https://github.com/multiformats/multibase) - describes encoding used to represent a binary value as text (e.g. in YAML format or as a file name) without ambiguity of which encoding was used.
-
-It is expected that the specific `multibase` encoding is largely a presentation-layer concern that can vary between implementations. For protocol compatibility all implementations must support all encodings in the `final` state of approval in the [`multibase` specification](https://github.com/multiformats/multibase), transcoding the representations when needed.
-
-For consistency, we recommended implementations to prefer the `base16` encoding. Although it produces longer hashes than other encodings, it:
-- Is case-insensitive and can appear in subdomains
-- Does not contain symbols that can be easily confused
-- Does not have a risk of forming an accidental obscenity
-- Does not require padding
-- Is easier to use for partitioning by prefix
-
-For representing the identity of hashing algorithms the official [multicodec](https://github.com/multiformats/multicodec/) table is used.
-
-See also:
-- [RFC-012](/rfcs/012-recommend-base16-encoding.md)
-
-#### Metadata Block Hashing
-Blocks of the [MetadataChain](specs/glossary.md#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
-
-1. The [MetadataBlock](#metadatablock-schema) is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) format following a two-step process to ensure that all variable-size buffers are laid out in memory in a consistent order:
-   1. First, we iterate over all fields of the block in the same order they appear in the [schemas](#metadata-reference) serializing into buffers all vector-like and variable-size fields and recursing into nested data structures (tables) in the depth-first order.
-   2. Second, we iterate over all fields again this time serializing all leftover fixed-size fields
-2. Block content is then nested into a [Manifest](#manifest-schema) object using same serialization rules as above
-3. The resulting `flatbuffer` data is fed into [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) digest algorithm.
-
-For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` table is extended with the following codes in the "private use area":
-
-| Codec                | Code       |
-| -------------------- | ---------- |
-| `odf-metadata-block` | `0x400000` |
-
-The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).
 
 ### Derivative Transformations
 [Previously](specs/transformations/engine-contract.md#execute-query) we looked at how an [Engine](specs/glossary.md#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](specs/glossary.md#coordinator) side.

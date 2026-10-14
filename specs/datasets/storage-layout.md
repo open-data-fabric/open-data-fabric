@@ -32,7 +32,7 @@ A dataset is stored as a set of objects grouped into the following sections:
 | `data` | [Data Slice](../glossary.md#data-slice) part files and [linked objects](#linked-objects) | Physical hash of the file |
 | `checkpoints` | [Checkpoint](../glossary.md#checkpoint) files | Physical hash of the file |
 
-Hashes used as object keys are represented as [multihash](https://github.com/multiformats/multihash) values encoded with [multibase](https://github.com/multiformats/multibase) (see [Hash Representation](../../open-data-fabric.md#hash-representation)), e.g. `f16207e15328e0fcfe47339273e4a00f59f210891d45026d84b71c6b40eecf237ec24`. For data part files and checkpoints this is the physical hash (see [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)).
+Hashes used as object keys are represented as [multihash](https://github.com/multiformats/multihash) values encoded with [multibase](https://github.com/multiformats/multibase) (see [Hash Representation](metadata-chain.md#hash-representation)), e.g. `f16207e15328e0fcfe47339273e4a00f59f210891d45026d84b71c6b40eecf237ec24`. For data part files and checkpoints this is the physical hash (see [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)).
 
 Reference objects contain the hash of the block they point to. Every dataset has a `head` reference that points to the last block in the Metadata Chain. Other references (e.g. for branches and tags) may appear in the `refs` section, but their semantics are not yet specified.
 
