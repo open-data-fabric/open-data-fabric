@@ -114,20 +114,6 @@ The benefits we get in exchange for this strictness are, however, immense:
 
 All this combined allows us to build **verifiable trust** between parties.
 
-### Derivative Data Transience
-Since past data in the input datasets is immutable and all transformations are required to be deterministic - derivative datasets are **functionally dependent** on their inputs. This means that for any given transformation graph it is possible to fully reconstruct data of all derivative datasets from the data of root datasets by simply re-applying all transformations.
-
-> Data in derivative datasets can be considered a **form of caching** and does not require durable storage.
-
-### Stream Processing Model
-As we model all data as potentially infinite event streams (see [Nature of Data](#nature-of-data)), it's quite natural to use the **stream processing** techniques for all data transformations.
-
-When working with temporal events, stream processing has the following benefits:
-- Lets users define a query once and potentially run it forever. This nicely addresses the **timeliness** requirement, allowing us to minimize the latency with which data propagates through the system.
-- Streaming queries are expressive and are closer to _"which question is being asked"_ as opposed to _"how to compute the result"_. They are usually much more concise than equivalent batch queries.
-- They can be expressed in a way that is agnostic of how and how often the new data arrives. Whether the data is ingested once a month in Gigabyte batches, in micro-batches every hour, or as a true near real-time stream - processing logic can stay the same, produce the same results, and guarantee the best propagation times possible.
-- Modern stream processing techniques make complex problems like handling late and out-of-order data much simpler, more explicit, and significantly less error-prone than equivalent batch operations.
-
 ### Essential Role of Metadata
 Metadata is the cornerstone of our design. It contains every aspect of where the data came from, how it was transformed, and everything that ever influenced how data looks like throughout its entire lifetime. In a way it's like a digital passport of data using which we can audit and verify its validity (see [Transfer Protocols: Design Goals](specs/exchange/transfer-protocols.md#design-goals)).
 
@@ -161,35 +147,10 @@ The main functions of the [Coordinator](specs/glossary.md#coordinator) are:
 - Enable data sharing functionality via [Repositories](specs/glossary.md#repository)
 - Provide additional functionality to simplify working with [Datasets](specs/glossary.md#dataset) and their metadata
 
-### Derivative Transformations
-[Previously](specs/transformations/engine-contract.md#execute-query) we looked at how an [Engine](specs/glossary.md#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](specs/glossary.md#coordinator) side.
-
-![Sequence Diagram: Execute Query](images/engine_transform.svg)
-
-Here are the steps that the [Coordinator](specs/glossary.md#coordinator) performs during the transformation:
-- **Batch step** - Analyze the [Metadata Chains](specs/glossary.md#metadata-chain) of the [Dataset](specs/glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
-- **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](specs/glossary.md#engine) [Migrate Query](specs/transformations/engine-contract.md#migrate-query) operation to make necessary adjustments for the new transformation parameters.
-- **Run query** - Pass the input [Data Slices](specs/glossary.md#data-slice) into the [Engine's](specs/glossary.md#engine) [Execute Query](specs/transformations/engine-contract.md#execute-query) operation
-- **Hash resulting data and checkpoint** - Obtain a stable [Hash](specs/glossary.md#hash) of the output [Data Slice](specs/glossary.md#data-slice) and [Checkpoint](specs/glossary.md#checkpoint) (see [Data Hashing](specs/datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes) and [Checkpoint Hashing](specs/datasets/data-and-checkpoint-hashing.md#checkpoint-hashing))
-- **Prepare commit** - Creates the next [Metadata Block](specs/glossary.md#metadata-chain) describing the output data
-- **Commit** - Atomically adds the new [Data Slice](specs/glossary.md#data-slice) and the [Metadata Block](specs/glossary.md#metadata-chain) to the [Dataset](specs/glossary.md#dataset)
-
-### Dataset Evolution
-Most parts of the [Dataset](specs/glossary.md#dataset) can [change over time](#evolution-of-data). To protect downstream consumers of data from braking changes the [Coordinator](specs/glossary.md#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](specs/glossary.md#metadata-chain).
-
-#### Query Evolution
-The procedure for modifying the [Query](specs/glossary.md#query) of a [Derivative Dataset](specs/glossary.md#derivative-dataset) is as following:
-1. The [Coordinator](specs/glossary.md#coordinator) invokes the [Engine's](specs/glossary.md#engine) [Validate Query](specs/transformations/engine-contract.md#validate-query) operation to validate the new [Query](specs/glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
-2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](specs/datasets/data-model.md#schema-evolution) rules.
-3. A new [Metadata Block](specs/glossary.md#metadata-chain) is created and committed.
-
-> **TODO**: Specify how Schema changes in the upstream datasets should be handled
-> - Do we stop processing and ask user to validate that the query takes into account the new columns?
-
 ### Dataset Validation
 The [Derivative Dataset](specs/glossary.md#derivative-dataset) validation confirms that the event data is in fact produced by applying all the transformations stored in the [Metadata](specs/glossary.md#metadata-chain) to the inputs and was not maliciously altered.
 
-The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](specs/glossary.md#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](specs/glossary.md#metadata-chain).
+The process of validation is almost identical to the [Derivative Transformation](specs/transformations/processing-model.md#derivative-transformations) except instead of the `Commit` phase the [Coordinator](specs/glossary.md#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](specs/glossary.md#metadata-chain).
 
 Due to non-determinism of Parquet format the physical hash may not match the one in metadata so a fallback to logical hash is required to verify that the resulting records are logically the same.
 

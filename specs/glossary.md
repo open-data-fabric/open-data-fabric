@@ -132,7 +132,8 @@ They are defined by the combination of:
 This information is stored in the [Metadata Chain](#metadata-chain) and can change over time as the dataset evolves.
 
 See also:
-- [Derivative Data Transience](../open-data-fabric.md#derivative-data-transience)
+- [Processing Model](transformations/processing-model.md)
+- [Derivative Data Transience](transformations/processing-model.md#derivative-data-transience)
 
 
 ## Engine
@@ -324,8 +325,8 @@ GROUP BY TUMBLE(event_time, INTERVAL '1' MONTH), sku_id
 ```
 
 See also:
-- [Stream Processing Model](../open-data-fabric.md#stream-processing-model)
-- [Derivative Data Transience](../open-data-fabric.md#derivative-data-transience)
+- [Stream Processing Model](transformations/processing-model.md#stream-processing-model)
+- [Derivative Data Transience](transformations/processing-model.md#derivative-data-transience)
 - [Engine Contract](transformations/engine-contract.md)
 
 

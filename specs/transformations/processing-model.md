@@ -1,0 +1,112 @@
+# Processing Model <!-- omit in toc -->
+
+**Domain**: Transformations
+**Depends on**: [Data Model](../datasets/data-model.md), [Metadata Chain](../datasets/metadata-chain.md), [Engine Contract](engine-contract.md)
+**RFCs**: -
+
+
+## Abstract <!-- omit in toc -->
+
+This spec defines how data of [Derivative Datasets](../glossary.md#derivative-dataset) is produced from their inputs. It describes the stream processing model used for all transformations, how derivative datasets are defined, how [Event Time](../glossary.md#event-time), [Watermarks](../glossary.md#watermark), and [Checkpoints](../glossary.md#checkpoint) are used to process potentially infinite event streams incrementally with exactly-once semantics, the steps a [Coordinator](../glossary.md#coordinator) performs during a transformation, and how transformation queries can evolve over time.
+
+
+## Table of Contents <!-- omit in toc -->
+
+- [Stream Processing Model](#stream-processing-model)
+- [Derivative Datasets](#derivative-datasets)
+  - [Derivative Data Transience](#derivative-data-transience)
+- [Time and Watermarks](#time-and-watermarks)
+- [Checkpoints](#checkpoints)
+- [Derivative Transformations](#derivative-transformations)
+- [Dataset Evolution](#dataset-evolution)
+  - [Query Evolution](#query-evolution)
+- [Provenance](#provenance)
+
+
+## Stream Processing Model
+As we model all data as potentially infinite event streams (see [Nature of Data](../../open-data-fabric.md#nature-of-data)), it's quite natural to use the **stream processing** techniques for all data transformations.
+
+When working with temporal events, stream processing has the following benefits:
+- Lets users define a query once and potentially run it forever. This nicely addresses the **timeliness** requirement, allowing us to minimize the latency with which data propagates through the system.
+- Streaming queries are expressive and are closer to _"which question is being asked"_ as opposed to _"how to compute the result"_. They are usually much more concise than equivalent batch queries.
+- They can be expressed in a way that is agnostic of how and how often the new data arrives. Whether the data is ingested once a month in Gigabyte batches, in micro-batches every hour, or as a true near real-time stream - processing logic can stay the same, produce the same results, and guarantee the best propagation times possible.
+- Modern stream processing techniques make complex problems like handling late and out-of-order data much simpler, more explicit, and significantly less error-prone than equivalent batch operations.
+
+
+## Derivative Datasets
+A [Derivative Dataset](../glossary.md#derivative-dataset) is defined by the [`SetTransform`](../../schemas/datasets/v1alpha1/SetTransform.json) event in its [Metadata Chain](../datasets/metadata-chain.md), which specifies:
+- `inputs` ([`TransformInput`](../../schemas/datasets/v1alpha1/TransformInput.json)) - the input datasets, each with an `alias` under which it is available in queries (see [Identity: References in Metadata](../datasets/identity.md#references-in-metadata))
+- `transform` ([`Transform`](../../schemas/datasets/v1alpha1/Transform.json)) - the [Query](../glossary.md#query), the [Engine](../glossary.md#engine) that executes it, and the engine version
+
+```yaml
+kind: SetTransform
+inputs:
+  - datasetRef: sensor.temp
+transform:
+  kind: Sql
+  engine: flink
+  query: |
+    SELECT
+      TUMBLE_START(event_time, INTERVAL '1' HOUR) as event_time,
+      min(value) as value_min,
+      max(value) as value_max
+    FROM `sensor.temp`
+    GROUP BY TUMBLE(event_time, INTERVAL '1' HOUR)
+```
+
+Queries can consist of multiple steps, where every step acts as a shorthand for `CREATE TEMPORARY VIEW <alias> AS (<query>)` and the last step produces the output. When stored in the metadata, a single `query` is always converted into the `queries` array.
+
+Every execution of the transformation is recorded in the chain as an [`ExecuteTransform`](../../schemas/datasets/v1alpha1/ExecuteTransform.json) event that captures the exact intervals of input blocks and records that were processed, and the resulting data, checkpoint, and watermark (see [Metadata Chain: Offsets and Intervals](../datasets/metadata-chain.md#offsets-and-intervals)).
+
+
+### Derivative Data Transience
+Since past data in the input datasets is immutable and all transformations are required to be deterministic - derivative datasets are **functionally dependent** on their inputs. This means that for any given transformation graph it is possible to fully reconstruct data of all derivative datasets from the data of root datasets by simply re-applying all transformations.
+
+> Data in derivative datasets can be considered a **form of caching** and does not require durable storage.
+
+
+## Time and Watermarks
+Following the [bitemporal](../glossary.md#time) data model, all records carry the [System Time](../glossary.md#system-time) when they were observed by the system, and the [Event Time](../glossary.md#event-time) when they occurred from the perspective of the outside world. Transformations operate primarily in event time.
+
+When performing time-based windowed operations, aggregations, or joins it is important to know when a certain time window can be considered closed. Every `AddData` and `ExecuteTransform` event can carry a new [Watermark](../glossary.md#watermark) of the dataset - the point in event time for which all preceding events have most likely been observed:
+- In [Root Datasets](../glossary.md#root-dataset) watermarks are advanced during ingestion, and can also be advanced without adding new data, e.g. for slow-moving datasets where it is normal not to see any events for a long time
+- In derivative datasets, watermarks of the inputs are passed into the [Engine](../glossary.md#engine) along with the data (see [Engine Contract: Execute Query](engine-contract.md#execute-query)), and the engine determines the output watermark
+
+Watermarks are monotonically non-decreasing. Events that arrive after their time interval was closed by the watermark are considered "late", and it's up to individual queries to decide how to handle them - ignore them, emit them into a side output, or emit [corrections](../glossary.md#retractions-and-corrections) into the output.
+
+
+## Checkpoints
+Engines store the computation state between different invocations of a query in [Checkpoints](../glossary.md#checkpoint). Checkpoints are fully engine-specific and opaque to the system, but they are an essential durable part of a dataset, necessary to pause and resume streaming queries.
+
+Every transaction restores the state from the checkpoint referenced by `prevCheckpoint` and records the new checkpoint in `newCheckpoint` of the `ExecuteTransform` event, atomically with the output data. Together with the exact intervals of processed inputs, this provides **exactly-once** processing semantics - every input record contributes to the output exactly once, even if the transformation is interrupted and resumed.
+
+Checkpoints are hashed and stored as described in [Data & Checkpoint Hashing](../datasets/data-and-checkpoint-hashing.md#checkpoint-hashing) and [Storage Layout](../datasets/storage-layout.md#checkpoints).
+
+
+## Derivative Transformations
+The [Engine Contract](engine-contract.md#execute-query) describes how an [Engine](../glossary.md#engine) executes the transformation query. This section describes what happens on the [Coordinator](../glossary.md#coordinator) side.
+
+![Sequence Diagram: Execute Query](../../images/engine_transform.svg)
+
+Here are the steps that the [Coordinator](../glossary.md#coordinator) performs during the transformation:
+- **Batch step** - Analyze the [Metadata Chains](../glossary.md#metadata-chain) of the [Dataset](../glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
+- **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](../glossary.md#engine) [Migrate Query](engine-contract.md#migrate-query) operation to make necessary adjustments for the new transformation parameters.
+- **Run query** - Pass the input [Data Slices](../glossary.md#data-slice) into the [Engine's](../glossary.md#engine) [Execute Query](engine-contract.md#execute-query) operation
+- **Hash resulting data and checkpoint** - Obtain a stable [Hash](../glossary.md#hash) of the output [Data Slice](../glossary.md#data-slice) and [Checkpoint](../glossary.md#checkpoint) (see [Data Hashing](../datasets/data-and-checkpoint-hashing.md#physical-and-logical-hashes) and [Checkpoint Hashing](../datasets/data-and-checkpoint-hashing.md#checkpoint-hashing))
+- **Prepare commit** - Creates the next [Metadata Block](../glossary.md#metadata-chain) describing the output data
+- **Commit** - Atomically adds the new [Data Slice](../glossary.md#data-slice) and the [Metadata Block](../glossary.md#metadata-chain) to the [Dataset](../glossary.md#dataset)
+
+
+## Dataset Evolution
+Most parts of the [Dataset](../glossary.md#dataset) can [change over time](../../open-data-fabric.md#evolution-of-data). To protect downstream consumers of data from breaking changes the [Coordinator](../glossary.md#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](../glossary.md#metadata-chain).
+
+
+### Query Evolution
+The procedure for modifying the [Query](../glossary.md#query) of a [Derivative Dataset](../glossary.md#derivative-dataset) is as following:
+1. The [Coordinator](../glossary.md#coordinator) invokes the [Engine's](../glossary.md#engine) [Validate Query](engine-contract.md#validate-query) operation to validate the new [Query](../glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
+2. The new [Schema](../glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](../datasets/data-model.md#schema-evolution) rules.
+3. A new [Metadata Block](../glossary.md#metadata-chain) is created and committed.
+
+
+## Provenance
+Since the [Engines](../glossary.md#engine) are responsible for all data transformations, it's also the engine's responsibility to answer [Provenance](../glossary.md#provenance) queries, i.e. to explain which input data elements an output element was derived from and how. Provenance is derived using the [Derive Provenance](engine-contract.md#derive-provenance) operation of the engine.
