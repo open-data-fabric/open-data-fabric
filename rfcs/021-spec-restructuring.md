@@ -108,7 +108,7 @@ Status legend:
 
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
-| **Node-level Authorization** | Accounts and their identifiers, groups, auth attributes, policies and policy bindings within a node | [RFC-020] | RFC |
+| ✅ **Authorization** | Accounts and their identifiers, groups, auth attributes, policies and policy bindings within a node | [RFC-020] | RFC |
 | **Decentralized Permissions** | Access control spanning multiple nodes and organizations: delegated authorization (UCAN), threshold cryptography |  | New |
 | **Layered Encryption** | Encryption of data and metadata at rest and in transit, key management and rotation, interaction with content hashing |  | New |
 | **Confidential Computing** | Integration of TEEs, ZK proofs, FHE as alternative verification mechanisms; anonymization and other privacy-preserving transformations | Future Topics / Anonymization | New |
@@ -202,7 +202,7 @@ Proposed layout of the repository:
 
 ### Naming and Versioning
 
-Each spec is stored as `/specs/{domain}/{spec}.md`, where both domain and spec names are the kebab-cased titles from the [Domains](#domains) tables, e.g. `/specs/auth/node-level-authorization.md`. Domain-independent documents (`overview.md`, `glossary.md`, `reference.md`) are stored at the root of `/specs`.
+Each spec is stored as `/specs/{domain}/{spec}.md`, where both domain and spec names are the kebab-cased titles from the [Domains](#domains) tables, e.g. `/specs/auth-and-privacy/authorization.md`. Domain-independent documents (`overview.md`, `glossary.md`, `reference.md`) are stored at the root of `/specs`.
 
 All specs are versioned together as a single set, i.e. a release of ODF includes all specs at their current state, and the version is not tracked per individual spec.
 

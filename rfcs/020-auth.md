@@ -6,6 +6,9 @@
 
 **Published Date**: 2026-10-12
 
+**Specs**:
+- [Authorization](../specs/auth-and-privacy/authorization.md)
+
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 - [Sergiy Zaychenko](mailto:sergiy.zaychenko@kamu.dev), [Kamu](https://kamu.dev)

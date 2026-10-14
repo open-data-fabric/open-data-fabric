@@ -21,7 +21,7 @@ specs/
 └── reference.md
 ```
 
-- Domain and spec file names are kebab-cased titles from RFC-021 (e.g. `specs/auth/node-level-authorization.md`).
+- Domain and spec file names are kebab-cased titles from RFC-021 (e.g. `specs/auth-and-privacy/authorization.md`).
 - All specs are versioned together - individual specs don't carry a version.
 
 

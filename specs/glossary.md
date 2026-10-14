@@ -5,6 +5,7 @@ Definitions of core concepts and terms shared by all ODF specs.
 
 ## Table of Contents <!-- omit in toc -->
 
+- [Account](#account)
 - [Checkpoint](#checkpoint)
 - [Coordinator](#coordinator)
 - [Data](#data)
@@ -13,6 +14,7 @@ Definitions of core concepts and terms shared by all ODF specs.
   - [Root Dataset](#root-dataset)
   - [Derivative Dataset](#derivative-dataset)
 - [Engine](#engine)
+- [Entity](#entity)
 - [Event](#event)
 - [Hash](#hash)
 - [Ingestion](#ingestion)
@@ -20,12 +22,15 @@ Definitions of core concepts and terms shared by all ODF specs.
 - [Merge Strategy](#merge-strategy)
 - [Metadata](#metadata)
 - [Metadata Chain](#metadata-chain)
+- [Node](#node)
 - [Offset](#offset)
 - [Operation Type](#operation-type)
+- [Principal](#principal)
 - [Projection](#projection)
 - [Provenance](#provenance)
 - [Query](#query)
 - [Repository](#repository)
+- [Resource](#resource)
 - [Retractions and Corrections](#retractions-and-corrections)
 - [Schema](#schema)
 - [Time](#time)
@@ -33,6 +38,16 @@ Definitions of core concepts and terms shared by all ODF specs.
   - [Event Time](#event-time)
 - [Verifiability](#verifiability)
 - [Watermark](#watermark)
+
+
+## Account
+A named identity within a [Node](#node) that can own [Resources](#resource) or act as a [Principal](#principal). Accounts can be users, organizations, service accounts, or the node itself.
+
+Every resource belongs to an account, making accounts the unit of multi-tenancy - resources of the same type and name can exist under different accounts.
+
+See also:
+- [Authorization: Accounts](auth-and-privacy/authorization.md#accounts)
+- [RFC-018: Multi-tenancy](../rfcs/018-iac-resource-framework.md#multi-tenancy)
 
 
 ## Checkpoint
@@ -132,6 +147,15 @@ See also:
 - [Engine Contract](transformations/engine-contract.md)
 
 
+## Entity
+A data plane object materialized from a [Resource](#resource) to fulfill its desired state, e.g. an ODF [Dataset](#dataset) stored in an S3 bucket, a secret, or an encryption key.
+
+Entities are separate from the resources that describe them. For example, when a dataset is replicated between two nodes, each node has its own `Dataset` resource with a different ID, while both describe the same dataset entity with the same DID.
+
+See also:
+- [RFC-018: IDs vs. DIDs](../rfcs/018-iac-resource-framework.md#ids-vs-dids)
+
+
 ## Event
 As described in the [Nature of Data](../open-data-fabric.md#nature-of-data) section, the system operates only on data expressed as past events, observations, or propositions believed to be true at a certain time. For simplicity, we will use the term "event" throughout to refer to such data tuples.
 
@@ -214,6 +238,15 @@ See also:
 - [Metadata Events Reference](../open-data-fabric.md#reference-metadata-events)
 
 
+## Node
+An entire ODF deployment acting under a single identity. A node hosts [Datasets](#dataset) and other [Resources](#resource) belonging to one or many [Accounts](#account), manages them using the [Coordinator](#coordinator) logic, and exposes them to other participants via [Repository](#repository) and query protocols.
+
+A node also acts as a [Principal](#principal) in system tasks and node-to-node communications.
+
+See also:
+- [Authorization: Node](auth-and-privacy/authorization.md#node)
+
+
 ## Offset
 Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset is `0`.
 
@@ -224,6 +257,13 @@ Since past [Events](#event) are immutable, if some event is deemed incorrect lat
 See also:
 - [Common data schema](datasets/data-format.md#common-data-schema)
 - [Representation of retractions and corrections](datasets/data-format.md#representation-of-retractions-and-corrections)
+
+
+## Principal
+The identity performing an action, established through authentication: a user, a service account, a [Node](#node), or an anonymous caller. Principals are the parties whose permissions are checked during authorization, and are recorded as initiators of operations (e.g. the identity a scheduled flow runs as).
+
+See also:
+- [Authorization: Principals](auth-and-privacy/authorization.md#principals)
 
 
 ## Projection
@@ -317,6 +357,21 @@ An advanced repository can support more functionality like:
 
 See also:
 - [Repository Contract](../open-data-fabric.md#repository-contract)
+
+
+## Resource
+A managed object of a [Node](#node) that has an identity and whose desired state is described declaratively in a manifest, e.g. `Dataset`, `SecretSet`, `Flow`, or `User`. Resources form the control plane of the system - controllers continuously reconcile the actual state with the desired state, materializing resources into [Entities](#entity) in the data plane.
+
+A resource manifest consists of:
+- `$schema` - URI of the JSON schema that identifies the resource type
+- `headers` - identity and ownership information, labels, and annotations
+- `spec` - the desired state
+- `status` - the current state and progress of reconciliation, maintained by the node
+
+A resource is identified by its type, owning [Account](#account), and name, and is assigned a stable ID by the node upon creation.
+
+See also:
+- [RFC-018: Infrastructure-as-Code Resource Framework](../rfcs/018-iac-resource-framework.md)
 
 
 ## Retractions and Corrections
