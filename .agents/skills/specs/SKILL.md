@@ -85,6 +85,7 @@ While content is being moved out of `src/open-data-fabric.md`:
   - In `specs/` links to not-yet-moved sections point to the generated `open-data-fabric.md` at the repository root (e.g. `../../open-data-fabric.md#metadata-chain`).
   - Update links in the glossary and other already-extracted specs that pointed to moved sections.
 - When updating a spec based on an RFC, cross-check the RFC against the actual JSON schemas - they may have evolved since the RFC was accepted.
+- Don't treat implementations (e.g. `kamu`) as normative - their behavior is likely to change. Use them only to cross-check RFCs, and base spec content on RFCs, schemas, and explicit decisions.
 
 
 ## RFCs

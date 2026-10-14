@@ -310,18 +310,6 @@ See Also:
 > **TODO:*
 > - Add a separate section specifying the serialization rules or point to codegen as the reference implementation
 
-## Dataset Layout
-The recommended layout of the dataset on disk is:
-
-![Diagram: Dataset Layout](images/dataset_layout.svg)
-
-This layout must be used when sharing datasets via file or object-based [Repositories](specs/glossary.md#repository) (e.g. local FS, S3, IPFS, DAT...).
-
-When a [Dataset](specs/glossary.md#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](specs/glossary.md#coordinator) implementation, as we expect all interactions with the [Dataset](specs/glossary.md#dataset) to go through it.
-
-See Also:
-- [Dataset Sharing](#dataset-sharing)
-
 ## Engine Contract
 This section provides the details on the contract between an [Engine](specs/glossary.md#engine) and the [Coordinator](specs/glossary.md#coordinator).
 

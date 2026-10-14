@@ -83,7 +83,7 @@ Status legend:
 | ✅ **Data Schema** | ODF logical schema format for describing data independently of its physical format (Parquet, Avro, etc.), logical types and their mapping to physical types | Schema Format, [RFC-010], [RFC-016] | Existing |
 | **Metadata Chain** | Blocks, events, semantics and consistency rules, binary and human-readable encodings, block hashing, hash representation (multihash / multibase), extensibility and annotations | Metadata, Metadata Chain, Metadata Format, Metadata Block Hashing, Hash Representation, [RFC-004], [RFC-005], [RFC-012] | Existing |
 | ✅ **Data & Checkpoint Hashing** | Physical hashing of data and checkpoint files, stable hashing of data records independent of physical encoding, canonical representation of logical types, hashing algorithm (currently defined in [arrow-digest](https://github.com/sergiimk/arrow-digest)) and its multicodec code | Physical and Logical Hashes, Checkpoint Hashing, [RFC-002] | Existing |
-| **Storage Layout** | Dataset structure, refs, tags, branches, named vs. content-addressable layouts, linked large files | Dataset Layout, [RFC-003], [RFC-006], [RFC-017] | Existing |
+| ✅ **Storage Layout** | Dataset structure, refs, tags, branches, named vs. content-addressable layouts, linked large files | Dataset Layout, [RFC-003], [RFC-006], [RFC-017] | Existing |
 | **Compactions** | Soft compactions (merging data files while preserving history) and hard compactions (permanent removal of history for compliance or storage optimization) |  | New |
 
 #### Transformations

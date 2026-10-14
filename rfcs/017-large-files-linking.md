@@ -7,6 +7,9 @@
 
 **Published Date**: 2025-08-25
 
+**Specs**:
+- [Storage Layout](../specs/datasets/storage-layout.md)
+
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 

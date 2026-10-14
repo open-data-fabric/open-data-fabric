@@ -2,6 +2,9 @@
 
 **Start Date**: 2021-11-20
 
+**Specs**:
+- [Storage Layout](../specs/datasets/storage-layout.md)
+
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/6?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/6)
 
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/17?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/17)
