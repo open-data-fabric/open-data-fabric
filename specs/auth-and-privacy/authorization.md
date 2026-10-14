@@ -1,13 +1,13 @@
 # Authorization <!-- omit in toc -->
 
 **Domain**: Auth & Privacy
-**Depends on**: -
+**Depends on**: [Resource Framework](../automation/resource-framework.md)
 **RFCs**: [RFC-020](../../rfcs/020-auth.md)
 
 
 ## Abstract
 
-This spec defines the authorization model of ODF nodes - how accounts, groups, auth attributes, actions, and policies are expressed as resources of the [Resource Framework](../../rfcs/018-iac-resource-framework.md). The model is engine-agnostic: a minimal node can implement simple ownership checks, while a full node can plug in an RBAC / ABAC / ReBAC policy engine, with both remaining interoperable at the level of resources.
+This spec defines the authorization model of ODF nodes - how accounts, groups, auth attributes, actions, and policies are expressed as resources of the [Resource Framework](../automation/resource-framework.md). The model is engine-agnostic: a minimal node can implement simple ownership checks, while a full node can plug in an RBAC / ABAC / ReBAC policy engine, with both remaining interoperable at the level of resources.
 
 
 ## Table of Contents <!-- omit in toc -->
@@ -127,7 +127,7 @@ Some names cannot be used by accounts - see [Reserved Names](#reserved-names).
 
 
 ## Ownership
-Every resource is owned by the account specified in its `headers.account` (see [RFC-018](../../rfcs/018-iac-resource-framework.md)). Only `User`, `Organization`, and `Node` accounts can own resources, and are referenced using `ResourceOwnerRef`, whose short form is the account name.
+Every resource is owned by the account specified in its `headers.account` (see [Resource Framework: Ownership](../automation/resource-framework.md#ownership)). Only `User`, `Organization`, and `Node` accounts can own resources, and are referenced using `ResourceOwnerRef`, whose short form is the account name.
 
 Owners hold all actions on the resources they own and on the entities materialized from them. For resources owned by an organization, the same rights are held by members of its `{org}/admins` group.
 
@@ -207,7 +207,7 @@ Groups owned by the `Node` account, like `Group:node/admins`, can be used to rep
 
 
 ## Auth Attributes
-Properties of a resource that directly affect access control (e.g. whether a dataset allows public reads) are expressed using resource labels (see [RFC-018](../../rfcs/018-iac-resource-framework.md#labels--annotations)).
+Properties of a resource that directly affect access control (e.g. whether a dataset allows public reads) are expressed using resource labels (see [Resource Framework: Labels and Annotations](../automation/resource-framework.md#labels-and-annotations)).
 
 A label schema that declares `labelProperties.isAuthAttribute: true` signals that any resource carrying that label should have its value materialized into an auth attribute:
 

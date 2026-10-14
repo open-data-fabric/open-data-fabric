@@ -849,7 +849,7 @@ pub mod config {
         /// Examples:
         /// - "SecretSet"
         /// - "VariableSet"
-        /// - "https://opendatafabric.org/config/v1/SecretSet"
+        /// - "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
         pub r#type: Option<TypeRef>,
         /// Name of a resource.
         pub name: Option<ResourceName>,
@@ -2794,6 +2794,20 @@ pub mod resources {
         pub target_owner: auth::ResourceOwnerHandle,
     }
 
+    /// Condition describing why the controller failed to reconcile the latest generation of a resource. Set by the controller; never written by users.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ReconciliationError
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct ReconciliationError {
+        /// Machine-readable code identifying the type of the error.
+        ///
+        /// Examples:
+        /// - "unresolved-reference"
+        pub code: String,
+        /// Human-readable description of the error.
+        pub message: String,
+    }
+
     /// Remove a specific label from the resource.
     ///
     /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/actions/RemoveLabel
@@ -2810,7 +2824,7 @@ pub mod resources {
     /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct Resource<SpecT> {
-        /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset.json`.
+        /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset`.
         pub schema: TypeUri,
         /// Container for identity and ownership information of a resource.
         pub headers: resources::ResourceHeaders,
@@ -2954,7 +2968,7 @@ pub mod resources {
         ///
         /// Examples:
         /// - "SecretSet"
-        /// - "https://opendatafabric.org/config/v1/SecretSet"
+        /// - "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
         pub r#type: Option<TypeRef>,
         /// Name of a resource.
         pub name: Option<ResourceName>,

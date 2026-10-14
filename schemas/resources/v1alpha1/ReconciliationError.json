@@ -1,0 +1,23 @@
+{
+  "$id": "https://opendatafabric.org/schemas/resources/v1alpha1/ReconciliationError",
+  "$schema": "https://opendatafabric.org/schemas/resources/v1alpha1/meta/ResourceCondition",
+  "description": "Condition describing why the controller failed to reconcile the latest generation of a resource. Set by the controller; never written by users.",
+  "type": "object",
+  "required": [
+    "code",
+    "message"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "examples": [
+        "unresolved-reference"
+      ],
+      "description": "Machine-readable code identifying the type of the error."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the error."
+    }
+  }
+}

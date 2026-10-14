@@ -7272,6 +7272,43 @@ pub mod resources {
 
     implement_serde_as!(dtos::resources::LabelFilter, LabelFilter);
 
+    // Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ReconciliationError
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct ReconciliationError {
+        pub code: String,
+        pub message: String,
+    }
+
+    impl IntoDto for ReconciliationError {
+        type Dto = dtos::resources::ReconciliationError;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::resources::ReconciliationError> for ReconciliationError {
+        fn from(v: dtos::resources::ReconciliationError) -> Self {
+            Self {
+                code: v.code,
+                message: v.message,
+            }
+        }
+    }
+
+    impl TryFrom<ReconciliationError> for dtos::resources::ReconciliationError {
+        type Error = ValidationError;
+        fn try_from(v: ReconciliationError) -> Result<Self, ValidationError> {
+            Ok(Self {
+                code: v.code,
+                message: v.message,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::resources::ReconciliationError, ReconciliationError);
+
     // Schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]

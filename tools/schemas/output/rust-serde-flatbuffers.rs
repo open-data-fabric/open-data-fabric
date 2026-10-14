@@ -5839,6 +5839,35 @@ impl<'fb> FlatbuffersDeserializable<fb::ReadStepParquet<'fb>> for odf::sources::
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ReconciliationError
+// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ReconciliationError
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::resources::ReconciliationError {
+    type OffsetT = WIPOffset<fb::ReconciliationError<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let code_offset = { fb.create_string(&self.code) };
+        let message_offset = { fb.create_string(&self.message) };
+        let mut builder = fb::ReconciliationErrorBuilder::new(fb);
+        builder.add_code(code_offset);
+        builder.add_message(message_offset);
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::ReconciliationError<'fb>>
+    for odf::resources::ReconciliationError
+{
+    fn deserialize(proxy: fb::ReconciliationError<'fb>) -> Self {
+        odf::resources::ReconciliationError {
+            code: proxy.code().map(|v| v.to_owned()).unwrap(),
+            message: proxy.message().map(|v| v.to_owned()).unwrap(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // RequestHeader
 // Schema: https://opendatafabric.org/schemas/sources/v1alpha1/RequestHeader
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

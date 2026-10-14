@@ -953,7 +953,7 @@ table ValueRef {
   // Examples:
   // - "SecretSet"
   // - "VariableSet"
-  // - "https://opendatafabric.org/config/v1/SecretSet"
+  // - "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
   type: string;
   // Name of a resource.
   name: string;
@@ -1107,7 +1107,7 @@ table ResourceRef {
   //
   // Examples:
   // - "SecretSet"
-  // - "https://opendatafabric.org/config/v1/SecretSet"
+  // - "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
   type: string;
   // Name of a resource.
   name: string;
@@ -1891,7 +1891,7 @@ table ResourceSelector {
   id: [ubyte];
   // DID of the resource.
   did: [ubyte];
-  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/config/v1/SecretSet.json`.
+  // Short type name of the target resource e.g. `SecretSet` or a full schema URI e.g. `https://opendatafabric.org/schemas/config/v1alpha1/SecretSet`.
   type: string;
   // Name pattern in SQL `LIKE` format.
   //
@@ -3719,6 +3719,23 @@ table RawQueryResponseRoot {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ReconciliationError
+// Condition describing why the controller failed to reconcile the latest generation of a resource. Set by the controller; never written by users.
+//
+// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/ReconciliationError
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table ReconciliationError {
+  // Machine-readable code identifying the type of the error.
+  //
+  // Examples:
+  // - "unresolved-reference"
+  code: string;
+  // Human-readable description of the error.
+  message: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ResourceHeaders
 // Container for identity and ownership information of a resource.
 //
@@ -3816,7 +3833,7 @@ table ResourceStatus {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table Resource {
-  // Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset.json`.
+  // Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset`.
   schema: string;
   // Container for identity and ownership information of a resource.
   headers: ResourceHeaders;

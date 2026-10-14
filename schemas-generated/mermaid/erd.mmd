@@ -210,6 +210,7 @@ graph TD
     Edit
     LabelFilter
     List
+    ReconciliationError
     RemoveLabel
     Resource
     ResourceAnnotations
@@ -225,7 +226,7 @@ graph TD
     ResourceStatus
     View
   end
-  class AddLabel,Create,Delete,Edit,LabelFilter,List,RemoveLabel,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus,View ctx_resources
+  class AddLabel,Create,Delete,Edit,LabelFilter,List,ReconciliationError,RemoveLabel,Resource,ResourceAnnotations,ResourceConditions,ResourceHandle,ResourceHeaders,ResourceHeadersInput,ResourceInput,ResourceLabels,ResourcePhase,ResourceRef,ResourceSelector,ResourceStatus,View ctx_resources
 
   subgraph sinks["sinks"]
     WebhookEndpoint

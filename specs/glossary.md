@@ -47,7 +47,7 @@ Every resource belongs to an account, making accounts the unit of multi-tenancy 
 
 See also:
 - [Authorization: Accounts](auth-and-privacy/authorization.md#accounts)
-- [RFC-018: Multi-tenancy](../rfcs/018-iac-resource-framework.md#multi-tenancy)
+- [Resource Framework: Ownership](automation/resource-framework.md#ownership)
 
 
 ## Checkpoint
@@ -153,7 +153,7 @@ A data plane object materialized from a [Resource](#resource) to fulfill its des
 Entities are separate from the resources that describe them. For example, when a dataset is replicated between two nodes, each node has its own `Dataset` resource with a different ID, while both describe the same dataset entity with the same DID.
 
 See also:
-- [RFC-018: IDs vs. DIDs](../rfcs/018-iac-resource-framework.md#ids-vs-dids)
+- [Resource Framework: Resources and Entities](automation/resource-framework.md#resources-and-entities)
 
 
 ## Event
@@ -188,7 +188,19 @@ See also:
 
 
 ## Manifest
-When [Metadata](#metadata) objects are saved on disk or transmitted on the network the typically wrapped in an extra [`Manifest`](../open-data-fabric.md#manifest-schema) layer.
+A declarative configuration (e.g. a YAML file) that describes the desired state of a [Resource](#resource). Applying a manifest to a [Node](#node) creates or updates the corresponding resource, after which controllers reconcile the actual state of the system with the desired state.
+
+```yaml
+$schema: https://opendatafabric.org/schemas/config/v1alpha1/SecretSet
+headers:
+  name: my-secrets
+spec: {}
+```
+
+> **Note:** Earlier versions of the spec used the term for the legacy [`Manifest`](../schemas/legacy/v0/Manifest.json) wrapper of metadata objects (e.g. `DatasetSnapshot`) that is now deprecated.
+
+See also:
+- [Resource Framework: Resource Manifests](automation/resource-framework.md#resource-manifests)
 
 
 ## Merge Strategy
@@ -360,7 +372,7 @@ See also:
 
 
 ## Resource
-A managed object of a [Node](#node) that has an identity and whose desired state is described declaratively in a manifest, e.g. `Dataset`, `SecretSet`, `Flow`, or `User`. Resources form the control plane of the system - controllers continuously reconcile the actual state with the desired state, materializing resources into [Entities](#entity) in the data plane.
+A managed object of a [Node](#node) that has an identity and whose desired state is described declaratively in a [Manifest](#manifest), e.g. `Dataset`, `SecretSet`, `Flow`, or `User`. Resources form the control plane of the system - controllers continuously reconcile the actual state with the desired state, materializing resources into [Entities](#entity) in the data plane.
 
 A resource manifest consists of:
 - `$schema` - URI of the JSON schema that identifies the resource type
@@ -371,7 +383,7 @@ A resource manifest consists of:
 A resource is identified by its type, owning [Account](#account), and name, and is assigned a stable ID by the node upon creation.
 
 See also:
-- [RFC-018: Infrastructure-as-Code Resource Framework](../rfcs/018-iac-resource-framework.md)
+- [Resource Framework](automation/resource-framework.md)
 
 
 ## Retractions and Corrections

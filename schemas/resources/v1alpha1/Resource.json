@@ -14,7 +14,7 @@
     "$schema": {
       "type": "string",
       "format": "type-uri",
-      "description": "Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset.json`."
+      "description": "Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset`."
     },
     "headers": {
       "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHeaders",

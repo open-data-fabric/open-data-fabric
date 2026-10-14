@@ -6,6 +6,9 @@
 
 **Published Date**: 2026-06-28
 
+**Specs**:
+- [Resource Framework](../specs/automation/resource-framework.md)
+
 **Authors**:
 - [Sergiy Zaychenko](mailto:sergiy.zaychenko@kamu.dev), [Kamu](https://kamu.dev)
 - [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)

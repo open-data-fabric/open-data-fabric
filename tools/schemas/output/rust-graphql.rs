@@ -1477,7 +1477,7 @@ impl From<odf::metadata::sources::RequestHeader> for RequestHeader {
 /// Schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
 #[derive(SimpleObject, Debug, Clone)]
 pub struct Resource {
-    /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}.json` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset.json`.
+    /// Identifies the controlling entity, a bounded context that this resource belongs to, and the version. Url should follow the pattern `{base-url}/{context}/{version}/{name}` e.g. `https://opendatafabric.org/schemas/datasets/v1/Dataset`.
     pub schema: TypeUri<'static>,
     /// Container for identity and ownership information of a resource.
     pub headers: ResourceHeaders,

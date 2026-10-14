@@ -5,6 +5,7 @@
   - [Human authoring](#human-authoring)
   - [Roundtrip stability](#roundtrip-stability)
 - [Resource Contexts](#resource-contexts)
+- [Metaschemas](#metaschemas)
 - [Schema Patterns \& Extensions](#schema-patterns--extensions)
   - [Extended Formats](#extended-formats)
   - [Default Values](#default-values)
@@ -41,7 +42,7 @@ Exceptions:
 
 
 ## Resource Contexts
-`Resource` is a top-level envelope that describes a desired state of a resource instance in ODF.
+`Resource` is a top-level envelope that describes a desired state of a resource instance in ODF. See the [Resource Framework](specs/automation/resource-framework.md) spec for the full resource model.
 
 The `$schema` property identifies the type and version of the resource. It doubles as a resolvable URL where the schema file is hosted:
 
@@ -51,26 +52,47 @@ headers: {}
 spec: {}
 ```
 
-Schema URL must follow the pattern `{base-url}/{context}/{version}/{Name}`.
+Schema URL must follow the pattern `{base-url}/{context}/{version}/{Name}`. Schema IDs (`$id`) never include the `.json` extension, while the schema files are stored in the repository as `schemas/{context}/{version}/{Name}.json`.
 
 In case of the core ODF spec the `base-url` is `https://opendatafabric.org/schemas` and contexts are:
 
 | Context | Description |
 | --- | --- |
-| `auth` | Accounts, relationships, permissions |
+| `auth` | Accounts, groups, policies, and authorization actions |
 | `config` | Secrets and variables |
 | `data` | Data types and schema definitions |
-| `dataset` | Root and derivative datasets, metadata events |
-| `engine` | Engine RPC protocol |
-| `flow` | Triggers and complex workflows that spawn tasks |
-| `ingest` | Polling and push sources, fetch/read/merge steps |
-| `resource` | Generic resource envelope and shared headers/status |
+| `datasets` | Root and derivative datasets, metadata events, dataset actions |
+| `engines` | Engine RPC protocol |
+| `events` | Filters for domain events |
+| `flows` | Triggers and complex workflows that spawn tasks |
+| `legacy` | Deprecated types kept for compatibility, e.g. `DatasetSnapshot` and its `Manifest` wrapper |
+| `meta` | Generic metaschemas |
+| `resources` | Generic resource envelope, shared headers / status, references, and resource metaschemas |
+| `sinks` | Delivery of events to external systems, e.g. webhooks |
+| `sources` | Polling and push sources, fetch / read / merge steps |
+| `storage` | Persistent volumes and storage credentials |
+| `tasks` | Units of work executed by nodes |
+
+
+## Metaschemas
+Some schemas are themselves validated against ODF metaschemas that extend JSON Schema with additional requirements or ODF-specific properties:
+
+| Metaschema | Used by |
+| --- | --- |
+| [`resources/v1alpha1/meta/Resource`](schemas/resources/v1alpha1/meta/Resource.json) | Canonical resource schemas (require `$schema`, `headers`, `spec`, `status`) |
+| [`resources/v1alpha1/meta/ResourceInput`](schemas/resources/v1alpha1/meta/ResourceInput.json) | User-authored resource schemas (require `$schema`, `headers`, `spec`) |
+| [`resources/v1alpha1/meta/ResourceRef`](schemas/resources/v1alpha1/meta/ResourceRef.json) | Reference types, e.g. `DatasetRef` |
+| [`resources/v1alpha1/meta/ResourceHandle`](schemas/resources/v1alpha1/meta/ResourceHandle.json) | Resolved reference types, e.g. `DatasetHandle` |
+| [`resources/v1alpha1/meta/ResourceLabel`](schemas/resources/v1alpha1/meta/ResourceLabel.json) | Label schemas, with `labelProperties` |
+| [`resources/v1alpha1/meta/ResourceAnnotation`](schemas/resources/v1alpha1/meta/ResourceAnnotation.json) | Annotation schemas |
+| [`resources/v1alpha1/meta/ResourceCondition`](schemas/resources/v1alpha1/meta/ResourceCondition.json) | Status condition schemas, e.g. `ReconciliationError` |
+| [`resources/v1alpha1/meta/Action`](schemas/resources/v1alpha1/meta/Action.json) | Authorization action schemas, with `actionProperties` |
 
 
 ## Schema Patterns & Extensions
 
 ### Extended Formats
-The `format` schema proeprty can be used to specify richer type information on top of basic JSON types.
+The `format` schema property can be used to specify richer type information on top of basic JSON types.
 
 Example:
 ```json
@@ -157,7 +179,7 @@ secret:
   # contentEncoding: null
 ```
 
-Would be a lot more conviniently written as:
+Would be a lot more conveniently written as:
 ```yaml
 secret: swordfish
 ```
@@ -339,16 +361,16 @@ Codegen notes:
 
 
 ## Input vs. Canonical Types
-Often we want to give users more convenience and expressiveness when authoring manifests by creating alternative ways to define somthing. But at the same time we don't want these alternatives seeping into the core layer where strictness and lack of ambiguity is preferred. A good example is `ResourceRef` type that allows users to reference a resource in variety of ways: by name, ID, DID or all the above - in the core layer we want references to always include stable identifiers.
+Often we want to give users more convenience and expressiveness when authoring manifests by creating alternative ways to define something. But at the same time we don't want these alternatives seeping into the core layer where strictness and lack of ambiguity is preferred. A good example is `ResourceRef` type that allows users to reference a resource in variety of ways: by name, ID, DID or all the above - in the core layer we want references to always include stable identifiers.
 
 Similarly, some parts of resources are not meant to be modified by users and presence of those fields in schemas would cause confusion.
 
-For these reasons we allow separating "input" (user-authored) and "canoncial" (system) schemas.
+For these reasons we allow separating "input" (user-authored) and "canonical" (system) schemas.
 
-A good example are [`ResourceHeaders`](/schemas/resource/v1alpha1/ResourceHeaders.json) and [`ResourceHeadersInput`](/schemas/resource/v1alpha1/ResourceHeadersInput.json) schemas:
+A good example are [`ResourceHeaders`](schemas/resources/v1alpha1/ResourceHeaders.json) and [`ResourceHeadersInput`](schemas/resources/v1alpha1/ResourceHeadersInput.json) schemas:
 
 - The input schema contains only fields that user can modify, while system fields like `generation` are only present in the canonical type
-- The input schema is using `AccountRef` type to allow referencing the owning `account` by name or ID, while canonical type is using `AccountHandle` to represent a fully resolved reference.
+- The input schema is using `ResourceOwnerRef` type to allow referencing the owning `account` by name, ID, or DID, while canonical type is using `ResourceOwnerHandle` to represent a fully resolved reference.
 
 Note that input type references its canonical type like so:
 
