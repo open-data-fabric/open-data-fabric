@@ -5,6 +5,9 @@
 
 **Start Date**: 2023-12-17
 
+**Specs**:
+- [Data Format](../specs/datasets/data-format.md)
+
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 

@@ -2,6 +2,7 @@
 
 **Domain**: Datasets
 **Depends on**: [Data Schema](data-schema.md)
+**RFCs**: [RFC-001](../../rfcs/001-record-offsets.md), [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 
 ## Abstract
@@ -77,7 +78,7 @@ The `retract` and `correct-from` events must carry the same exact data fields (a
 The `correct-to` event carries the new values for the event being corrected. This event must immediately follow the `correct-from` event. This model allows data engines that operate on changelog / diff events that simultaneously carry both old and new values for event during a correction to reconstruct such events easily by sequentially reading the [Data Slice](../glossary.md#data-slice).
 
 See also:
-- [RFC-015: Unified Changelog Stream Schema](/rfcs/015-unified-changelog-stream-schema.md)
+- [RFC-015: Unified Changelog Stream Schema](../../rfcs/015-unified-changelog-stream-schema.md)
 
 
 ## Schema Evolution

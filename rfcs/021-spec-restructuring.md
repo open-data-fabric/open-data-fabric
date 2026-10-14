@@ -29,9 +29,7 @@ Proposes a reorganization of the ODF specification from a single document into a
     - [Datasets](#datasets)
     - [Transformations](#transformations)
     - [Exchange](#exchange)
-    - [Interoperability](#interoperability)
-    - [Auth](#auth)
-    - [Privacy](#privacy)
+    - [Auth \& Privacy](#auth--privacy)
     - [Automation](#automation)
     - [Reference](#reference)
   - [Repository Structure](#repository-structure)
@@ -85,6 +83,7 @@ Status legend:
 | ✅ **Data & Checkpoint Hashing** | Physical hashing of data and checkpoint files, stable hashing of data records independent of physical encoding, canonical representation of logical types, hashing algorithm (currently defined in [arrow-digest](https://github.com/sergiimk/arrow-digest)) and its multicodec code | Physical and Logical Hashes, Checkpoint Hashing, [RFC-002] | Existing |
 | ✅ **Storage Layout** | Dataset structure, refs, tags, branches, named vs. content-addressable layouts, linked large files | Dataset Layout, [RFC-003], [RFC-006], [RFC-017] | Existing |
 | **Compactions** | Soft compactions (merging data files while preserving history) and hard compactions (permanent removal of history for compliance or storage optimization) |  | New |
+| **Ingestion** | Root datasets, polling and push sources, source state, merge strategies | Root Dataset, Ingestion, Merge Strategy, Data Ingestion, [RFC-009], [RFC-011], [RFC-014] | Existing |
 
 #### Transformations
 
@@ -101,29 +100,16 @@ Status legend:
 | **Transfer Protocols** | Repositories, simple and smart transfer protocols, direct-to-storage transfers, replication | Repository, Data Sharing, Dataset Sharing, Repository Contract, [RFC-007], [RFC-008] | Existing |
 | **Query Protocols** | Standard query interfaces (Flight SQL / ADBC), federated query planning |  | New |
 | **Verification** | Components of trust, determinism and reproducibility, dataset validation and verification procedures | Verifiability, Components of Trust, Dataset Validation | Existing |
-| **Verifiable Querying** | Query commitments and proofs that allow consumers to verify that query results correspond to specific dataset states |  | New |
+| ✅ **Verifiable Batch Queries** | Query commitments and proofs that allow consumers to verify that query results correspond to specific dataset states | [RFC-022] | RFC |
 | **Discovery** | Dataset registries, anchoring of dataset state to external ledgers |  | New |
 
-#### Interoperability
 
-Integrations with external systems - sources and sinks. Each sink is described by its own spec.
-
-| Spec | Scope | Sources | Status |
-| --- | --- | --- | --- |
-| **Ingestion** | Root datasets, polling and push sources, source state, merge strategies | Root Dataset, Ingestion, Merge Strategy, Data Ingestion, [RFC-009], [RFC-011], [RFC-014] | Existing |
-| **Webhooks** | Delivery of dataset events to external HTTP endpoints | `sinks/v1alpha1` schemas | New |
-
-#### Auth
+#### Auth & Privacy
 
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
 | **Node-level Authorization** | Accounts and their identifiers, groups, auth attributes, policies and policy bindings within a node | [RFC-020] | RFC |
 | **Decentralized Permissions** | Access control spanning multiple nodes and organizations: delegated authorization (UCAN), threshold cryptography |  | New |
-
-#### Privacy
-
-| Spec | Scope | Sources | Status |
-| --- | --- | --- | --- |
 | **Layered Encryption** | Encryption of data and metadata at rest and in transit, key management and rotation, interaction with content hashing |  | New |
 | **Confidential Computing** | Integration of TEEs, ZK proofs, FHE as alternative verification mechanisms; anonymization and other privacy-preserving transformations | Future Topics / Anonymization | New |
 
@@ -132,7 +118,9 @@ Integrations with external systems - sources and sinks. Each sink is described b
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
 | **Resource Framework** | Manifest format, resource model, desired vs. observed state, extensibility of resource types | Manifest, [RFC-018] | RFC |
+| **Event Bus** | The delivery mechanism and common types of events flowing in the system | | New |
 | **Tasks and Flows** | Workload scheduling and execution resources within ODF nodes | [RFC-019] | RFC |
+| **Webhooks** | Delivery of dataset events to external HTTP endpoints | `sinks/v1alpha1` schemas | New |
 
 #### Reference
 
@@ -228,6 +216,7 @@ All spec files follow a common structure:
 
 **Domain**: {Domain}
 **Depends on**: [{Spec}](../{domain}/{spec}.md), ...
+**RFCs**: [RFC-{NNN}](../../rfcs/{NNN}-{rfc}.md), ...
 
 ## Abstract
 One paragraph describing what this spec covers.
@@ -237,6 +226,8 @@ One paragraph describing what this spec covers.
 ## ...
 Spec-specific sections.
 ```
+
+The **RFCs** field lists the RFCs that introduced or changed the spec, mirroring the **Specs** field in RFC headers, so the two are linked in both directions.
 
 
 ## Drawbacks
@@ -295,3 +286,4 @@ Alternatives considered:
 [RFC-018]: ./018-iac-resource-framework.md
 [RFC-019]: ./019-iac-task-flow-system.md
 [RFC-020]: ./020-auth.md
+[RFC-022]: ./022-batch-query-commitments.md

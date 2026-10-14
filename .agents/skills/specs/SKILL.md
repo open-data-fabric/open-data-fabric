@@ -33,6 +33,7 @@ Every spec file starts with:
 
 **Domain**: {Domain}
 **Depends on**: [{Spec}](../{domain}/{spec}.md), ... (or `-` if none)
+**RFCs**: [RFC-{NNN}](../../rfcs/{NNN}-{rfc}.md), ... (or `-` if none)
 
 
 ## Abstract
@@ -50,6 +51,7 @@ Spec-specific sections.
 ```
 
 - **Depends on** lists other specs this spec builds upon. Keep it accurate - it will be used to generate the dependency map.
+- **RFCs** lists the RFCs that introduced or changed the spec, in ascending order. It must mirror the `**Specs**:` field of those RFCs (see [Cross-linking](#cross-linking)).
 - Don't add manual change history - history is provided by GitHub.
 
 
@@ -67,7 +69,7 @@ Spec-specific sections.
 
 ## Cross-linking
 - **Specs → schemas**: link to JSON schema files (e.g. `../../schemas/data/v1alpha1/DataSchema.json`) instead of the generated metadata reference.
-- **RFCs → specs**: every RFC lists the specs it affects in a `**Specs**:` field under its dates. When a spec is created or changed according to an RFC, update that field.
+- **RFCs ↔ specs**: every RFC lists the specs it affects in a `**Specs**:` field under its dates, and every spec lists the RFCs that affected it in its `**RFCs**:` header field. When a spec is created or changed according to an RFC, update both fields.
 
 ```markdown
 **Specs**:

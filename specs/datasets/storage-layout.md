@@ -2,6 +2,7 @@
 
 **Domain**: Datasets
 **Depends on**: [Data Format](data-format.md), [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)
+**RFCs**: [RFC-003](../../rfcs/003-content-addressability.md), [RFC-006](../../rfcs/006-checkpoints-as-files.md), [RFC-017](../../rfcs/017-large-files-linking.md)
 
 
 ## Abstract

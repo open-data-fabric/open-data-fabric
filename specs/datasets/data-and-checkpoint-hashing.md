@@ -2,6 +2,7 @@
 
 **Domain**: Datasets
 **Depends on**: [Data Format](data-format.md)
+**RFCs**: [RFC-002](../../rfcs/002-logical-data-hashes.md)
 
 
 ## Abstract
