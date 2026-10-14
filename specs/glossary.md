@@ -104,6 +104,9 @@ Depending on where the data comes from datasets can be of these kinds:
 
 ![Diagram: Dataset Graph](../images/dataset_graph.svg)
 
+See also:
+- [Logical Structure](datasets/logical-structure.md)
+
 
 ### Root Dataset
 Root datasets are the points of entry of external data into the system. They are usually owned by the organization that has full authority and responsibility over that data, i.e. a trusted source.
@@ -159,7 +162,7 @@ See also:
 
 
 ## Event
-As described in the [Nature of Data](../open-data-fabric.md#nature-of-data) section, the system operates only on data expressed as past events, observations, or propositions believed to be true at a certain time. For simplicity, we will use the term "event" throughout to refer to such data tuples.
+As described in the [Nature of Data](overview.md#nature-of-data) section, the system operates only on data expressed as past events, observations, or propositions believed to be true at a certain time. For simplicity, we will use the term "event" throughout to refer to such data tuples.
 
 
 ## Hash
@@ -206,7 +209,7 @@ See also:
 
 
 ## Merge Strategy
-By [design](../open-data-fabric.md#nature-of-data), the system only stores data in the append-only event log format to preserve the entire history. Unfortunately, a lot of data in the world is not stored or exposed this way. Some organizations may expose their data in the form of periodic database dumps, while some choose to provide it as a log of changes between current and the previous export.
+By [design](overview.md#nature-of-data), the system only stores data in the append-only event log format to preserve the entire history. Unfortunately, a lot of data in the world is not stored or exposed this way. Some organizations may expose their data in the form of periodic database dumps, while some choose to provide it as a log of changes between current and the previous export.
 
 When [ingesting data](#ingestion) from external sources, the [Root Datasets](#root-dataset) can choose between different [Merge Strategies](datasets/ingestion.md#merge-strategies) that define how to combine the newly-ingested data with the existing one.
 
@@ -325,7 +328,7 @@ GROUP BY TUMBLE(event_time, INTERVAL '1' MONTH), sku_id
 ```
 
 See also:
-- [Stream Processing Model](transformations/processing-model.md#stream-processing-model)
+- [Stream Processing Model](overview.md#stream-processing-model)
 - [Derivative Data Transience](transformations/processing-model.md#derivative-data-transience)
 - [Engine Contract](transformations/engine-contract.md)
 

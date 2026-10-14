@@ -59,7 +59,7 @@ Domain-independent documents that serve as an entry point into the specs:
 
 | Document | Scope | Sources | Status |
 | --- | --- | --- | --- |
-| **Overview** | Problem statement, requirements, design decisions, map of all specs and their dependencies, conformance profiles. Mostly non-normative. | Abstract, Problem Statement, Requirements, Scope, Design Decisions | Existing |
+| ✅ **Overview** | Problem statement, requirements, design decisions, map of all specs and their dependencies, conformance profiles. Mostly non-normative. | Abstract, Problem Statement, Requirements, Scope, Design Decisions | Existing |
 | ✅ **Glossary** | Definitions of core concepts and terms shared by all specs | Concepts and Components | Existing |
 
 ### Domains
@@ -75,7 +75,7 @@ Status legend:
 
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
-| **Overview** | Overview of the dataset logical structure and its components | Nature of Data, Evolution of Data, Dataset, Data, Data Slice, Metadata | Existing |
+| ✅ **Logical Structure** | Overview of the dataset logical structure and its components | Nature of Data, Evolution of Data, Dataset, Data, Data Slice, Metadata | Existing |
 | ✅ **Identity** | `did:odf` DID method, key pairs and proof of ownership, aliases and references | Dataset Identity, [RFC-003], [RFC-007], [RFC-012] | Existing |
 | ✅ **Data Model** | Bitemporal event model, common data schema (offset, operation type, system / event time), changelog representation of retractions and corrections, Parquet layout, schema evolution rules | Data Format, Common Data Schema, Retractions and Corrections, Schema Evolution, [RFC-001], [RFC-015] | Existing |
 | ✅ **Data Schema** | ODF logical schema format for describing data independently of its physical format (Parquet, Avro, etc.), logical types and their mapping to physical types | Schema Format, [RFC-010], [RFC-016] | Existing |
@@ -99,7 +99,7 @@ Status legend:
 | --- | --- | --- | --- |
 | ✅ **Transfer Protocols** | Repositories, simple and smart transfer protocols, direct-to-storage transfers, replication | Repository, Data Sharing, Dataset Sharing, Repository Contract, [RFC-007], [RFC-008] | Existing |
 | **Query Protocols** | Standard query interfaces (Flight SQL / ADBC), federated query planning |  | New |
-| **Verification** | Components of trust, determinism and reproducibility, dataset validation and verification procedures | Verifiability, Components of Trust, Dataset Validation | Existing |
+| **Verification** | Components of trust, determinism and reproducibility, dataset validation and verification procedures | Verifiability, Dataset Validation | Existing |
 | ✅ **Verifiable Batch Queries** | Query commitments and proofs that allow consumers to verify that query results correspond to specific dataset states | [RFC-022] | RFC |
 | **Discovery** | Dataset registries, anchoring of dataset state to external ledgers |  | New |
 
@@ -204,7 +204,7 @@ Proposed layout of the repository:
 
 Each spec is stored as `/specs/{domain}/{spec}.md`, where both domain and spec names are the kebab-cased titles from the [Domains](#domains) tables, e.g. `/specs/auth-and-privacy/authorization.md`. Domain-independent documents (`overview.md`, `glossary.md`, `reference.md`) are stored at the root of `/specs`.
 
-All specs are versioned together as a single set, i.e. a release of ODF includes all specs at their current state, and the version is not tracked per individual spec.
+All specs are versioned together as a single set, i.e. a release of ODF includes all specs at their current state. Releases are versioned by tagging the repository - the version is not written into the spec documents, neither as a whole nor per individual spec.
 
 
 ### Common Spec Template

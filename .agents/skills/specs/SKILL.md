@@ -22,7 +22,7 @@ specs/
 ```
 
 - Domain and spec file names are kebab-cased titles from RFC-021 (e.g. `specs/auth-and-privacy/authorization.md`).
-- All specs are versioned together - individual specs don't carry a version.
+- All specs are versioned together by tagging the repository - spec documents don't carry a version.
 
 
 ## Spec Template

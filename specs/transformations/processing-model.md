@@ -7,12 +7,11 @@
 
 ## Abstract <!-- omit in toc -->
 
-This spec defines how data of [Derivative Datasets](../glossary.md#derivative-dataset) is produced from their inputs. It describes the stream processing model used for all transformations, how derivative datasets are defined, how [Event Time](../glossary.md#event-time), [Watermarks](../glossary.md#watermark), and [Checkpoints](../glossary.md#checkpoint) are used to process potentially infinite event streams incrementally with exactly-once semantics, the steps a [Coordinator](../glossary.md#coordinator) performs during a transformation, and how transformation queries can evolve over time.
+This spec defines how data of [Derivative Datasets](../glossary.md#derivative-dataset) is produced from their inputs. It describes how derivative datasets are defined, how [Event Time](../glossary.md#event-time), [Watermarks](../glossary.md#watermark), and [Checkpoints](../glossary.md#checkpoint) are used to process potentially infinite event streams incrementally with exactly-once semantics, the steps a [Coordinator](../glossary.md#coordinator) performs during a transformation, and how transformation queries can evolve over time.
 
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Stream Processing Model](#stream-processing-model)
 - [Derivative Datasets](#derivative-datasets)
   - [Derivative Data Transience](#derivative-data-transience)
 - [Time and Watermarks](#time-and-watermarks)
@@ -23,17 +22,9 @@ This spec defines how data of [Derivative Datasets](../glossary.md#derivative-da
 - [Provenance](#provenance)
 
 
-## Stream Processing Model
-As we model all data as potentially infinite event streams (see [Nature of Data](../../open-data-fabric.md#nature-of-data)), it's quite natural to use the **stream processing** techniques for all data transformations.
-
-When working with temporal events, stream processing has the following benefits:
-- Lets users define a query once and potentially run it forever. This nicely addresses the **timeliness** requirement, allowing us to minimize the latency with which data propagates through the system.
-- Streaming queries are expressive and are closer to _"which question is being asked"_ as opposed to _"how to compute the result"_. They are usually much more concise than equivalent batch queries.
-- They can be expressed in a way that is agnostic of how and how often the new data arrives. Whether the data is ingested once a month in Gigabyte batches, in micro-batches every hour, or as a true near real-time stream - processing logic can stay the same, produce the same results, and guarantee the best propagation times possible.
-- Modern stream processing techniques make complex problems like handling late and out-of-order data much simpler, more explicit, and significantly less error-prone than equivalent batch operations.
-
-
 ## Derivative Datasets
+All transformations in ODF follow the stream processing model (see [Stream Processing Model](../overview.md#stream-processing-model)).
+
 A [Derivative Dataset](../glossary.md#derivative-dataset) is defined by the [`SetTransform`](../../schemas/datasets/v1alpha1/SetTransform.json) event in its [Metadata Chain](../datasets/metadata-chain.md), which specifies:
 - `inputs` ([`TransformInput`](../../schemas/datasets/v1alpha1/TransformInput.json)) - the input datasets, each with an `alias` under which it is available in queries (see [Identity: References in Metadata](../datasets/identity.md#references-in-metadata))
 - `transform` ([`Transform`](../../schemas/datasets/v1alpha1/Transform.json)) - the [Query](../glossary.md#query), the [Engine](../glossary.md#engine) that executes it, and the engine version
@@ -98,7 +89,7 @@ Here are the steps that the [Coordinator](../glossary.md#coordinator) performs d
 
 
 ## Dataset Evolution
-Most parts of the [Dataset](../glossary.md#dataset) can [change over time](../../open-data-fabric.md#evolution-of-data). To protect downstream consumers of data from breaking changes the [Coordinator](../glossary.md#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](../glossary.md#metadata-chain).
+Most parts of the [Dataset](../glossary.md#dataset) can [change over time](../datasets/logical-structure.md#evolution-of-data). To protect downstream consumers of data from breaking changes the [Coordinator](../glossary.md#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](../glossary.md#metadata-chain).
 
 
 ### Query Evolution

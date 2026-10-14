@@ -158,7 +158,7 @@ This operation is used to trace back a set of events in the output [Dataset](../
 
 
 ## Engine Versioning
-As [described previously](../../open-data-fabric.md#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](../glossary.md#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](../glossary.md#engine) will break this guarantee.
+As described in [Components of Trust](../overview.md#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](../glossary.md#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](../glossary.md#engine) will break this guarantee.
 
 Whenever the [Coordinator](../glossary.md#coordinator) uses an [Engine](../glossary.md#engine) to execute a query it must specify the full digest of the OCI container image in the resulting [Metadata Block](../glossary.md#metadata-chain). [Engine](../glossary.md#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
 
@@ -167,7 +167,7 @@ See also:
 
 
 ## Engine Deprecation
-Pinning the exact [Engine](../glossary.md#engine) version used by every transformation guarantees the reproducibility and verifiability of the results (see [Components of Trust](../../open-data-fabric.md#components-of-trust)). In the long run, however, this creates a problem where in order to [validate a dataset](../../open-data-fabric.md#dataset-validation) the [Coordinator](../glossary.md#coordinator) will have to use a very large number of different versions of an [Engine](../glossary.md#engine) that might've accumulated over the years. This slows down the validation procedure and can result in a significant disk space required for storing these images.
+Pinning the exact [Engine](../glossary.md#engine) version used by every transformation guarantees the reproducibility and verifiability of the results (see [Components of Trust](../overview.md#components-of-trust)). In the long run, however, this creates a problem where in order to [validate a dataset](../../open-data-fabric.md#dataset-validation) the [Coordinator](../glossary.md#coordinator) will have to use a very large number of different versions of an [Engine](../glossary.md#engine) that might've accumulated over the years. This slows down the validation procedure and can result in a significant disk space required for storing these images.
 
 To mitigate this problem the [Coordinator](../glossary.md#coordinator) offers the **engine deprecation** operation that works as follows:
 1. The [Coordinator](../glossary.md#coordinator) reconstructs the dataset from scratch by repeating all transformation in the [Metadata Chain](../glossary.md#metadata-chain).
