@@ -5,7 +5,7 @@
 **RFCs**: [RFC-009](../../rfcs/009-ingest-source-state.md), [RFC-011](../../rfcs/011-push-ingest-sources.md), [RFC-014](../../rfcs/014-minimize-offset-scanning.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines how external data is brought into [Root Datasets](../glossary.md#root-dataset). It defines the `Source` resource that describes where data comes from and how it is read, the phases of the ingestion process, the [Merge Strategies](../glossary.md#merge-strategy) that turn data of various nature into an append-only history of events, how [Event Time](../glossary.md#event-time) is determined, and how the state of a source is preserved to allow incremental ingestion.
 

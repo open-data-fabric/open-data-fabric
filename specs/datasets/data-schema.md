@@ -5,14 +5,13 @@
 **RFCs**: [RFC-016](../../rfcs/016-odf-schema.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines the ODF schema format used to describe the logical structure of [data](../glossary.md#data) independently of how it is physically encoded in files (e.g. Parquet, Avro, CSV) or in memory (e.g. Arrow). It defines the set of supported logical types, the mechanism for attaching custom attributes to schemas and fields, and the rules for converting between ODF and Apache Arrow schemas.
 
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Abstract](#abstract)
 - [Logical Types vs. Encoding](#logical-types-vs-encoding)
 - [Schema Format](#schema-format)
   - [Nullability](#nullability)

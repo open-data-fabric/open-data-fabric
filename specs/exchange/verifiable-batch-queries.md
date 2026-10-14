@@ -5,7 +5,7 @@
 **RFCs**: [RFC-022](../../rfcs/022-batch-query-commitments.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines a commitment scheme for results of batch queries executed by ODF nodes. A commitment cryptographically binds the result of a [Query](../glossary.md#query) to all of its inputs, including the exact states of the queried [Datasets](../glossary.md#dataset), and to the identity of the node that executed it. This allows consumers to process query results optimistically and hold every party involved in producing the result accountable long after the response was received, by verifying and disputing the results later.
 

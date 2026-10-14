@@ -5,7 +5,7 @@
 **RFCs**: [RFC-019](../../rfcs/019-iac-task-flow-system.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines the resources used to define, schedule, and execute workloads within ODF [Nodes](../glossary.md#node). A `Task` represents a single unit of work like ingesting or transforming data of a [Dataset](../glossary.md#dataset), a `FlowRun` executes a sequence of tasks, and a `Flow` acts as a template that instantiates flow runs for a set of target resources when its triggers fire.
 

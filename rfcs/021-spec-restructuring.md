@@ -212,16 +212,16 @@ All specs are versioned together as a single set, i.e. a release of ODF includes
 All spec files follow a common structure:
 
 ```markdown
-# {Spec Title}
+# {Spec Title} <!-- omit in toc -->
 
 **Domain**: {Domain}
 **Depends on**: [{Spec}](../{domain}/{spec}.md), ...
 **RFCs**: [RFC-{NNN}](../../rfcs/{NNN}-{rfc}.md), ...
 
-## Abstract
+## Abstract <!-- omit in toc -->
 One paragraph describing what this spec covers.
 
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
 ## ...
 Spec-specific sections.

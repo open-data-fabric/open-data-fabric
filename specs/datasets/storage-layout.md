@@ -5,7 +5,7 @@
 **RFCs**: [RFC-003](../../rfcs/003-content-addressability.md), [RFC-006](../../rfcs/006-checkpoints-as-files.md), [RFC-017](../../rfcs/017-large-files-linking.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines how components of a [Dataset](../glossary.md#dataset) - metadata blocks, references, data part files, checkpoints, and linked objects - are laid out in file systems, conventional object stores, and content-addressable and permanent storage networks.
 

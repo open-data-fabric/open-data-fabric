@@ -5,14 +5,13 @@
 **RFCs**: -
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines the contract between a [Coordinator](../glossary.md#coordinator) and an [Engine](../glossary.md#engine) - the sandboxed execution environment of engines, the communication interface and the operations engines must support, and how engine versions are pinned and deprecated to preserve reproducibility of transformations.
 
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Abstract](#abstract)
 - [Execution Model](#execution-model)
 - [Communication Interface](#communication-interface)
   - [Data Exchange](#data-exchange)

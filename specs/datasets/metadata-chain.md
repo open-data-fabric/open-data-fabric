@@ -5,7 +5,7 @@
 **RFCs**: [RFC-004](../../rfcs/004-metadata-extensibility.md), [RFC-005](../../rfcs/005-dataset-annotations.md), [RFC-010](../../rfcs/010-data-schema-in-metadata.md), [RFC-012](../../rfcs/012-recommend-base16-encoding.md), [RFC-014](../../rfcs/014-minimize-offset-scanning.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines the structure of the [Metadata Chain](../glossary.md#metadata-chain) - the append-only log of blocks that captures the entire history of a [Dataset](../glossary.md#dataset). It defines metadata blocks and the events they carry, the rules that keep the chain consistent, the formats used to represent metadata, and how blocks and other objects are hashed and linked together.
 

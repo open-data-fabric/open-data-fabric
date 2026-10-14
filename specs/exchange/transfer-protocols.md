@@ -5,7 +5,7 @@
 **RFCs**: [RFC-007](../../rfcs/007-simple-transfer-protocol.md), [RFC-008](../../rfcs/008-smart-transfer-protocol.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines how [Datasets](../glossary.md#dataset) are shared and synchronized between [Repositories](../glossary.md#repository). It defines the minimal read-only Simple Transfer Protocol that works on top of any storage that can read objects by key, the efficient read-write Smart Transfer Protocol that allows transferring data directly to and from the storage of a repository, and the rules that keep shared datasets consistent for concurrent readers.
 

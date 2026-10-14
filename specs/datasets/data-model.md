@@ -5,7 +5,7 @@
 **RFCs**: [RFC-001](../../rfcs/001-record-offsets.md), [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines how data of a dataset is represented in memory and at rest, the system columns that all data in ODF carries to support the bitemporal event model, the changelog representation of retractions and corrections, and the rules according to which a dataset's schema is allowed to evolve over time.
 

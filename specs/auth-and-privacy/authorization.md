@@ -5,7 +5,7 @@
 **RFCs**: [RFC-020](../../rfcs/020-auth.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines the authorization model of ODF nodes - how accounts, groups, auth attributes, actions, and policies are expressed as resources of the [Resource Framework](../automation/resource-framework.md). The model is engine-agnostic: a minimal node can implement simple ownership checks, while a full node can plug in an RBAC / ABAC / ReBAC policy engine, with both remaining interoperable at the level of resources.
 

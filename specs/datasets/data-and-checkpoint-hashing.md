@@ -5,14 +5,13 @@
 **RFCs**: [RFC-002](../../rfcs/002-logical-data-hashes.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines how hash sums of data part files and checkpoints are computed, including the physical hashes used to identify files in content-addressable storage and the logical hashes of data records that remain stable regardless of how data is physically encoded.
 
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Abstract](#abstract)
 - [Physical vs. Logical Hashes](#physical-vs-logical-hashes)
 - [Logical Hashing Algorithm](#logical-hashing-algorithm)
   - [Properties](#properties)

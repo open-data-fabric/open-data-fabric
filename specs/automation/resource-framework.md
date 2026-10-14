@@ -5,7 +5,7 @@
 **RFCs**: [RFC-018](../../rfcs/018-iac-resource-framework.md)
 
 
-## Abstract
+## Abstract <!-- omit in toc -->
 
 This spec defines the declarative Infrastructure-as-Code framework used to configure ODF nodes. It defines the common manifest format of [Resources](../glossary.md#resource), how resource types are identified and versioned, how resources are identified, owned, labeled, and reference one another, and how [Nodes](../glossary.md#node) apply manifests and reconcile the actual state of the system with the desired state they describe. Individual resource types (datasets, sources, flows, accounts, etc.) are defined by the specs of their respective domains.
 
