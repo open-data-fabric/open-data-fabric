@@ -76,7 +76,7 @@ Status legend:
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
 | **Overview** | Overview of the dataset logical structure and its components | Nature of Data, Evolution of Data, Dataset, Data, Data Slice, Metadata | Existing |
-| **Identity** | `did:odf` DID method, key pairs and proof of ownership, aliases and references | Dataset Identity, [RFC-012] | Existing |
+| ✅ **Identity** | `did:odf` DID method, key pairs and proof of ownership, aliases and references | Dataset Identity, [RFC-003], [RFC-007], [RFC-012] | Existing |
 | ✅ **Data Model** | Bitemporal event model, common data schema (offset, operation type, system / event time), changelog representation of retractions and corrections, Parquet layout, schema evolution rules | Data Format, Common Data Schema, Retractions and Corrections, Schema Evolution, [RFC-001], [RFC-015] | Existing |
 | ✅ **Data Schema** | ODF logical schema format for describing data independently of its physical format (Parquet, Avro, etc.), logical types and their mapping to physical types | Schema Format, [RFC-010], [RFC-016] | Existing |
 | ✅ **Metadata Chain** | Blocks, events, semantics and consistency rules, binary and human-readable encodings, block hashing, hash representation (multihash / multibase), extensibility and annotations | Metadata, Metadata Chain, Metadata Format, Metadata Block Hashing, Hash Representation, [RFC-004], [RFC-005], [RFC-010], [RFC-012], [RFC-014] | Existing |

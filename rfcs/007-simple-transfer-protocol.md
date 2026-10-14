@@ -4,6 +4,7 @@
 
 **Specs**:
 - [Transfer Protocols](../specs/exchange/transfer-protocols.md)
+- [Identity](../specs/datasets/identity.md)
 
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/26?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/26)
 

@@ -93,7 +93,7 @@ More formally, a slice is a:
 
 ## Dataset
 Dataset is the main unit of data exchange in the system. It's simply a combination of:
-- [Identity](../open-data-fabric.md#dataset-identity)
+- [Identity](datasets/identity.md)
 - [Data](#data)
 - [Metadata Chain](#metadata-chain)
 - [Checkpoints](#checkpoint)

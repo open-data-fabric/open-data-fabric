@@ -7,6 +7,7 @@
 
 **Specs**:
 - [Metadata Chain](../specs/datasets/metadata-chain.md)
+- [Identity](../specs/datasets/identity.md)
 
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)

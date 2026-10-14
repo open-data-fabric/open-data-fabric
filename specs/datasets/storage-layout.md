@@ -100,7 +100,7 @@ Uploads may be batched - a single upload can contain deltas of multiple updates 
 
 
 ### Naming and Resolution
-Since locators change with every update, an additional mechanism is needed to resolve a stable dataset identity (see [Identity](../../open-data-fabric.md#dataset-identity)) or name into the locator of its latest state. Such mechanisms are network-specific, e.g. mutable names in IPFS ([IPNS](https://docs.ipfs.tech/concepts/ipns/), [DNSLink](https://docs.ipfs.tech/concepts/dnslink/)), or transaction tags indexed by gateways in Arweave.
+Since locators change with every update, an additional mechanism is needed to resolve a stable dataset identity (see [Identity](identity.md)) or name into the locator of its latest state. Such mechanisms are network-specific, e.g. mutable names in IPFS ([IPNS](https://docs.ipfs.tech/concepts/ipns/), [DNSLink](https://docs.ipfs.tech/concepts/dnslink/)), or transaction tags indexed by gateways in Arweave.
 
 Resolution should not depend on infrastructure operated by a single party. Wherever possible, information needed for resolution (e.g. dataset ID and the hash of the `head` block) should be stored alongside the data in the network itself, so that it can be independently verified, and the mapping can be reconstructed by indexing the network if needed.
 

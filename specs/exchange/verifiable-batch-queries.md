@@ -90,7 +90,7 @@ The `input` section contains all information needed to fully reproduce the resul
 - The query and its dialect
 - All parameters that affect the output, including the requested data and schema formats
 - The list of queried datasets, each with:
-  - `id` - the [unique identifier](../../open-data-fabric.md#unique-identifiers) of the dataset
+  - `id` - the [unique identifier](../datasets/identity.md#unique-identifiers) of the dataset
   - `alias` - the name under which the dataset was referred to in the query
   - `blockHash` - hash of the [Metadata Chain](../glossary.md#metadata-chain) block that represents the exact state of the dataset the query was executed against
 
