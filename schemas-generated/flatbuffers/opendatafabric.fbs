@@ -1878,6 +1878,18 @@ table EventFilter {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FailureBehavior
+// Determines how a flow run proceeds when a task finishes with a `Failed` outcome.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum FailureBehavior: int32 {
+  Fail,
+  Continue,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ResourceSelector
 // Matches zero or many resources using identity and label filters.
 //
@@ -1934,9 +1946,10 @@ table PrincipalRef {
 union FlowTriggerInput {
   FlowTriggerInputManual,
   FlowTriggerInputSchedule,
+  FlowTriggerInputInterval,
   FlowTriggerInputEvent,
   FlowTriggerInputSource,
-  FlowTriggerInputDataset,
+  FlowTriggerInputInputsUpdated,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1947,6 +1960,14 @@ union FlowTriggerInput {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerInputManual {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1957,8 +1978,36 @@ table FlowTriggerInputManual {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerInputSchedule {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
   // Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
   cron: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerInputInterval
+// Triggers the flow at regular intervals.
+//
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Interval
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowTriggerInputInterval {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
+  // Interval between activations e.g. `15m`.
+  interval: Duration;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1969,11 +2018,15 @@ table FlowTriggerInputSchedule {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerInputEvent {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
   // Filters the event by type and fields.
   events: EventFilter;
-  // The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
   cooldown: Duration;
-  // If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
   cooldown_max_batch: uint64 = null;
 }
 
@@ -1985,6 +2038,14 @@ table FlowTriggerInputEvent {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerInputSource {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
   // Reference to the source resource that drives this trigger.
   source: ResourceRef;
   // Minimum number of new records to accumulate before triggering.
@@ -1994,17 +2055,27 @@ table FlowTriggerInputSource {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FlowTriggerInputDataset
-// Triggers the flow when matching datasets are updated.
+// FlowTriggerInputInputsUpdated
+// Triggers the flow when inputs of a derivative dataset receive new data, with optional batching controls.
 //
-// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Dataset
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/InputsUpdated
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table FlowTriggerInputDataset {
-  // Selector that identifies which datasets can trigger this flow.
-  dataset: DatasetSelector;
-  // Set of event bus event IDs that this trigger will react to
-  events: [string];
+table FlowTriggerInputInputsUpdated {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
+  // Selector of derivative datasets whose inputs are watched. Defaults to the flow-level target when omitted.
+  target: DatasetSelector;
+  // Minimum number of new input records to accumulate before triggering.
+  min_records_to_await: uint64 = null;
+  // Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
+  max_await_interval: Duration;
 }
 
 table FlowTriggerInputWrapper {
@@ -2031,6 +2102,18 @@ union TaskSpecInput {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NoOpBehavior
+// Determines how a flow run proceeds when a task finishes with a `NoOp` outcome.
+//
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+enum NoOpBehavior: int32 {
+  Continue,
+  Break,
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TaskSpecInputIngest
 // Fetches data from a source and appends it to a dataset.
 //
@@ -2044,6 +2127,14 @@ table TaskSpecInputIngest {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Reference to the source resource that defines how to fetch data.
   source: ResourceRef;
   // Target number of records to ingest per data slice.
@@ -2064,6 +2155,14 @@ table TaskSpecInputTransform {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2163,6 +2262,14 @@ table TaskSpecInputSyncFrom {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Remote dataset to pull from.
   source: SyncEndpointInput;
   // Overwrite the local dataset even if its history has diverged from the source.
@@ -2185,6 +2292,14 @@ table TaskSpecInputSyncTo {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Remote dataset to push to.
   destination: SyncEndpointInput;
   // Overwrite the remote dataset even if its history has diverged from the local one.
@@ -2211,6 +2326,14 @@ table TaskSpecInputCompaction {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Target maximum size of each compacted data slice e.g. `100MiB`.
   max_slice_size: uint64 = null;
   // Target maximum number of records per compacted data slice.
@@ -2231,6 +2354,14 @@ table TaskSpecInputReset {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Name of the block reference to reset.
   //
   // Defaults to: "head"
@@ -2255,6 +2386,14 @@ table TaskSpecInputGarbageCollection {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2271,6 +2410,14 @@ table TaskSpecInputVerify {
   target: DatasetRef;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // If true, re-executes transformations on derivative datasets to verify reproducibility.
   replay_transform: bool = null;
 }
@@ -2299,7 +2446,7 @@ table RetryPolicy {
   max_attempts: uint32 = null;
   // How long to wait until the first retry.
   min_delay: Duration;
-  // Type of the backoff scaling.
+  // Type of the backoff scaling. When omitted, retries use a constant `minDelay`.
   backoff: RetryBackoff = null;
 }
 
@@ -2315,6 +2462,14 @@ table TaskSpecInputWebhookCall {
   name: string;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalRef;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Reference to the `WebhookEndpoint`.
   endpoint: ResourceRef;
   // The payload to send. May include templating.
@@ -2325,6 +2480,32 @@ table TaskSpecInputWebhookCall {
 
 table TaskSpecInputWrapper {
   value: TaskSpecInput;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RecentBindingsRetention
+// Controls how many recent bindings are reported in `FlowStatus.recentBindings`.
+//
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentBindingsRetention
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table RecentBindingsRetention {
+  // Maximum number of recent bindings to report.
+  max_bindings: uint32 = null;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RecentRunsRetention
+// Controls how many recent runs are reported in `FlowStatus.recentRuns`. Implementations may additionally cap these values.
+//
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentRunsRetention
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table RecentRunsRetention {
+  // Maximum number of recent runs to report.
+  max_runs: uint32 = null;
+  // Maximum age of a finished run to be reported e.g. `30d`.
+  max_age: Duration;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2345,6 +2526,10 @@ table FlowSpecInput {
   tasks: [TaskSpecInputWrapper];
   // Defines how a flow should react to failures.
   retry_policy: RetryPolicy;
+  // Controls retention of `FlowStatus.recentBindings`.
+  recent_bindings_retention: RecentBindingsRetention;
+  // Controls retention of `FlowStatus.recentRuns`.
+  recent_runs_retention: RecentRunsRetention;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2393,9 +2578,10 @@ table PrincipalHandle {
 union FlowTrigger {
   FlowTriggerManual,
   FlowTriggerSchedule,
+  FlowTriggerInterval,
   FlowTriggerEvent,
   FlowTriggerSource,
-  FlowTriggerDataset,
+  FlowTriggerInputsUpdated,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2406,6 +2592,14 @@ union FlowTrigger {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerManual {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2416,8 +2610,36 @@ table FlowTriggerManual {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerSchedule {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
   // Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
   cron: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerInterval
+// Triggers the flow at regular intervals.
+//
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Interval
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+table FlowTriggerInterval {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
+  // Interval between activations e.g. `15m`.
+  interval: Duration;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2428,11 +2650,15 @@ table FlowTriggerSchedule {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerEvent {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
   // Filters the event by type and fields.
   events: EventFilter;
-  // The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
   cooldown: Duration;
-  // If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
   cooldown_max_batch: uint64 = null;
 }
 
@@ -2444,6 +2670,14 @@ table FlowTriggerEvent {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table FlowTriggerSource {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
   // Reference to the source resource that drives this trigger.
   source: ResourceHandle;
   // Minimum number of new records to accumulate before triggering.
@@ -2453,17 +2687,27 @@ table FlowTriggerSource {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FlowTriggerDataset
-// Triggers the flow when matching datasets are updated.
+// FlowTriggerInputsUpdated
+// Triggers the flow when inputs of a derivative dataset receive new data, with optional batching controls.
 //
-// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Dataset
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/InputsUpdated
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-table FlowTriggerDataset {
-  // Selector that identifies which datasets can trigger this flow.
-  dataset: DatasetSelector;
-  // Set of event bus event IDs that this trigger will react to
-  events: [string];
+table FlowTriggerInputsUpdated {
+  // Allows to pause an individual trigger.
+  //
+  // Defaults to: true
+  enabled: bool = null;
+  // Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+  cooldown: Duration;
+  // If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+  cooldown_max_batch: uint64 = null;
+  // Selector of derivative datasets whose inputs are watched. Defaults to the flow-level target when omitted.
+  target: DatasetSelector;
+  // Minimum number of new input records to accumulate before triggering.
+  min_records_to_await: uint64 = null;
+  // Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
+  max_await_interval: Duration;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2543,6 +2787,14 @@ table TaskSpecIngest {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Reference to the source resource that defines how to fetch data.
   source: ResourceHandle;
   // Target number of records to ingest per data slice.
@@ -2563,6 +2815,14 @@ table TaskSpecTransform {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2662,6 +2922,14 @@ table TaskSpecSyncFrom {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Remote dataset to pull from.
   source: SyncEndpoint;
   // Overwrite the local dataset even if its history has diverged from the source.
@@ -2684,6 +2952,14 @@ table TaskSpecSyncTo {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Remote dataset to push to.
   destination: SyncEndpoint;
   // Overwrite the remote dataset even if its history has diverged from the local one.
@@ -2710,6 +2986,14 @@ table TaskSpecCompaction {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Target maximum size of each compacted data slice e.g. `100MiB`.
   max_slice_size: uint64 = null;
   // Target maximum number of records per compacted data slice.
@@ -2730,6 +3014,14 @@ table TaskSpecReset {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Name of the block reference to reset.
   //
   // Defaults to: "head"
@@ -2754,6 +3046,14 @@ table TaskSpecGarbageCollection {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2770,6 +3070,14 @@ table TaskSpecVerify {
   target: DatasetHandle;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // If true, re-executes transformations on derivative datasets to verify reproducibility.
   replay_transform: bool = null;
 }
@@ -2786,10 +3094,20 @@ table TaskSpecWebhookCall {
   name: string;
   // Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
   service_account: PrincipalHandle;
+  // How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+  //
+  // Defaults to: "Continue"
+  on_no_op: NoOpBehavior = null;
+  // How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+  //
+  // Defaults to: "Fail"
+  on_failure: FailureBehavior = null;
   // Reference to the `WebhookEndpoint`.
   endpoint: ResourceHandle;
   // The payload to send. May include templating.
   payload: string;
+  // Defines how a webhook should react to failures.
+  retry_policy: RetryPolicy;
 }
 
 table TaskSpecWrapper {
@@ -2979,6 +3297,10 @@ table FlowSpec {
   tasks: [TaskSpecWrapper];
   // Defines how a flow should react to failures.
   retry_policy: RetryPolicy;
+  // Controls retention of `FlowStatus.recentBindings`.
+  recent_bindings_retention: RecentBindingsRetention;
+  // Controls retention of `FlowStatus.recentRuns`.
+  recent_runs_retention: RecentRunsRetention;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

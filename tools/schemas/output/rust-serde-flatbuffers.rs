@@ -1903,6 +1903,30 @@ impl<'fb> FlatbuffersDeserializable<fb::ExtraAttributes<'fb>> for odf::data::Ext
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FailureBehavior
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl From<odf::tasks::FailureBehavior> for fb::FailureBehavior {
+    fn from(v: odf::tasks::FailureBehavior) -> Self {
+        match v {
+            odf::tasks::FailureBehavior::Fail => fb::FailureBehavior::Fail,
+            odf::tasks::FailureBehavior::Continue => fb::FailureBehavior::Continue,
+        }
+    }
+}
+
+impl Into<odf::tasks::FailureBehavior> for fb::FailureBehavior {
+    fn into(self) -> odf::tasks::FailureBehavior {
+        match self {
+            fb::FailureBehavior::Fail => odf::tasks::FailureBehavior::Fail,
+            fb::FailureBehavior::Continue => odf::tasks::FailureBehavior::Continue,
+            _ => panic!("Invalid enum value: {}", self.0),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FetchStep
 // Schema: https://opendatafabric.org/schemas/legacy/v0/FetchStep
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2569,12 +2593,20 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowSpec {
             fb.create_vector(&offsets)
         };
         let retry_policy_offset = self.retry_policy.as_ref().map(|v| v.serialize(fb));
+        let recent_bindings_retention_offset = self
+            .recent_bindings_retention
+            .as_ref()
+            .map(|v| v.serialize(fb));
+        let recent_runs_retention_offset =
+            self.recent_runs_retention.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::FlowSpecBuilder::new(fb);
         builder.add_target(target_offset);
         service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_triggers(triggers_offset);
         builder.add_tasks(tasks_offset);
         retry_policy_offset.map(|off| builder.add_retry_policy(off));
+        recent_bindings_retention_offset.map(|off| builder.add_recent_bindings_retention(off));
+        recent_runs_retention_offset.map(|off| builder.add_recent_runs_retention(off));
         builder.finish()
     }
 }
@@ -2612,6 +2644,12 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowSpec<'fb>> for odf::flows::FlowSpec 
             retry_policy: proxy
                 .retry_policy()
                 .map(|v| odf::flows::RetryPolicy::deserialize(v)),
+            recent_bindings_retention: proxy
+                .recent_bindings_retention()
+                .map(|v| odf::flows::RecentBindingsRetention::deserialize(v)),
+            recent_runs_retention: proxy
+                .recent_runs_retention()
+                .map(|v| odf::flows::RecentRunsRetention::deserialize(v)),
         }
     }
 }
@@ -2656,12 +2694,20 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowSpecInput {
             fb.create_vector(&offsets)
         };
         let retry_policy_offset = self.retry_policy.as_ref().map(|v| v.serialize(fb));
+        let recent_bindings_retention_offset = self
+            .recent_bindings_retention
+            .as_ref()
+            .map(|v| v.serialize(fb));
+        let recent_runs_retention_offset =
+            self.recent_runs_retention.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::FlowSpecInputBuilder::new(fb);
         builder.add_target(target_offset);
         service_account_offset.map(|off| builder.add_service_account(off));
         builder.add_triggers(triggers_offset);
         builder.add_tasks(tasks_offset);
         retry_policy_offset.map(|off| builder.add_retry_policy(off));
+        recent_bindings_retention_offset.map(|off| builder.add_recent_bindings_retention(off));
+        recent_runs_retention_offset.map(|off| builder.add_recent_runs_retention(off));
         builder.finish()
     }
 }
@@ -2705,6 +2751,12 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowSpecInput<'fb>> for odf::flows::Flow
             retry_policy: proxy
                 .retry_policy()
                 .map(|v| odf::flows::RetryPolicy::deserialize(v)),
+            recent_bindings_retention: proxy
+                .recent_bindings_retention()
+                .map(|v| odf::flows::RecentBindingsRetention::deserialize(v)),
+            recent_runs_retention: proxy
+                .recent_runs_retention()
+                .map(|v| odf::flows::RecentRunsRetention::deserialize(v)),
         }
     }
 }
@@ -2873,6 +2925,10 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::FlowTrigger> for odf::flows::Flow
                 fb::FlowTrigger::FlowTriggerSchedule,
                 v.serialize(fb).as_union_value(),
             ),
+            odf::flows::FlowTrigger::Interval(v) => (
+                fb::FlowTrigger::FlowTriggerInterval,
+                v.serialize(fb).as_union_value(),
+            ),
             odf::flows::FlowTrigger::Event(v) => (
                 fb::FlowTrigger::FlowTriggerEvent,
                 v.serialize(fb).as_union_value(),
@@ -2881,8 +2937,8 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::FlowTrigger> for odf::flows::Flow
                 fb::FlowTrigger::FlowTriggerSource,
                 v.serialize(fb).as_union_value(),
             ),
-            odf::flows::FlowTrigger::Dataset(v) => (
-                fb::FlowTrigger::FlowTriggerDataset,
+            odf::flows::FlowTrigger::InputsUpdated(v) => (
+                fb::FlowTrigger::FlowTriggerInputsUpdated,
                 v.serialize(fb).as_union_value(),
             ),
         }
@@ -2902,6 +2958,11 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::FlowTrigger> for odf::flows::Fl
                     unsafe { fb::FlowTriggerSchedule::init_from_table(table) },
                 ))
             }
+            fb::FlowTrigger::FlowTriggerInterval => {
+                odf::flows::FlowTrigger::Interval(odf::flows::FlowTriggerInterval::deserialize(
+                    unsafe { fb::FlowTriggerInterval::init_from_table(table) },
+                ))
+            }
             fb::FlowTrigger::FlowTriggerEvent => {
                 odf::flows::FlowTrigger::Event(odf::flows::FlowTriggerEvent::deserialize(unsafe {
                     fb::FlowTriggerEvent::init_from_table(table)
@@ -2912,49 +2973,12 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::FlowTrigger> for odf::flows::Fl
                     unsafe { fb::FlowTriggerSource::init_from_table(table) },
                 ))
             }
-            fb::FlowTrigger::FlowTriggerDataset => {
-                odf::flows::FlowTrigger::Dataset(odf::flows::FlowTriggerDataset::deserialize(
-                    unsafe { fb::FlowTriggerDataset::init_from_table(table) },
-                ))
-            }
+            fb::FlowTrigger::FlowTriggerInputsUpdated => odf::flows::FlowTrigger::InputsUpdated(
+                odf::flows::FlowTriggerInputsUpdated::deserialize(unsafe {
+                    fb::FlowTriggerInputsUpdated::init_from_table(table)
+                }),
+            ),
             _ => panic!("Invalid enum value: {}", t.0),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FlowTriggerDataset
-// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Dataset
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerDataset {
-    type OffsetT = WIPOffset<fb::FlowTriggerDataset<'fb>>;
-
-    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let dataset_offset = { self.dataset.serialize(fb) };
-        let events_offset = self.events.as_ref().map(|v| {
-            let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
-            fb.create_vector(&offsets)
-        });
-        let mut builder = fb::FlowTriggerDatasetBuilder::new(fb);
-        builder.add_dataset(dataset_offset);
-        events_offset.map(|off| builder.add_events(off));
-        builder.finish()
-    }
-}
-
-impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerDataset<'fb>>
-    for odf::flows::FlowTriggerDataset
-{
-    fn deserialize(proxy: fb::FlowTriggerDataset<'fb>) -> Self {
-        odf::flows::FlowTriggerDataset {
-            dataset: proxy
-                .dataset()
-                .map(|v| odf::datasets::DatasetSelector::deserialize(v))
-                .unwrap(),
-            events: proxy
-                .events()
-                .map(|v| v.iter().map(|i| i.to_owned()).collect()),
         }
     }
 }
@@ -2970,6 +2994,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerEvent {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let events_offset = { self.events.serialize(fb) };
         let mut builder = fb::FlowTriggerEventBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
         builder.add_events(events_offset);
         self.cooldown
             .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
@@ -2982,12 +3007,88 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerEvent {
 impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerEvent<'fb>> for odf::flows::FlowTriggerEvent {
     fn deserialize(proxy: fb::FlowTriggerEvent<'fb>) -> Self {
         odf::flows::FlowTriggerEvent {
+            enabled: proxy.enabled().map(|v| v),
             events: proxy
                 .events()
                 .map(|v| odf::events::EventFilter::deserialize(v))
                 .unwrap(),
             cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
             cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerInputsUpdated
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/InputsUpdated
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputsUpdated {
+    type OffsetT = WIPOffset<fb::FlowTriggerInputsUpdated<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::FlowTriggerInputsUpdatedBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
+        target_offset.map(|off| builder.add_target(off));
+        self.min_records_to_await
+            .map(|v| builder.add_min_records_to_await(v));
+        self.max_await_interval
+            .map(|v| builder.add_max_await_interval(&duration_to_fb(&v)));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputsUpdated<'fb>>
+    for odf::flows::FlowTriggerInputsUpdated
+{
+    fn deserialize(proxy: fb::FlowTriggerInputsUpdated<'fb>) -> Self {
+        odf::flows::FlowTriggerInputsUpdated {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetSelector::deserialize(v)),
+            min_records_to_await: proxy.min_records_to_await().map(|v| v),
+            max_await_interval: proxy.max_await_interval().map(|v| fb_to_duration(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerInterval
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Interval
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInterval {
+    type OffsetT = WIPOffset<fb::FlowTriggerInterval<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let mut builder = fb::FlowTriggerIntervalBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
+        builder.add_interval(&duration_to_fb(&self.interval));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInterval<'fb>>
+    for odf::flows::FlowTriggerInterval
+{
+    fn deserialize(proxy: fb::FlowTriggerInterval<'fb>) -> Self {
+        odf::flows::FlowTriggerInterval {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+            interval: proxy.interval().map(|v| fb_to_duration(v)).unwrap(),
         }
     }
 }
@@ -3002,13 +3103,22 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerManual {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let mut builder = fb::FlowTriggerManualBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
         builder.finish()
     }
 }
 
 impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerManual<'fb>> for odf::flows::FlowTriggerManual {
     fn deserialize(proxy: fb::FlowTriggerManual<'fb>) -> Self {
-        odf::flows::FlowTriggerManual {}
+        odf::flows::FlowTriggerManual {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+        }
     }
 }
 
@@ -3023,6 +3133,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerSchedule {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let cron_offset = { fb.create_string(&self.cron) };
         let mut builder = fb::FlowTriggerScheduleBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
         builder.add_cron(cron_offset);
         builder.finish()
     }
@@ -3033,6 +3148,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerSchedule<'fb>>
 {
     fn deserialize(proxy: fb::FlowTriggerSchedule<'fb>) -> Self {
         odf::flows::FlowTriggerSchedule {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
             cron: proxy.cron().map(|v| v.to_owned()).unwrap(),
         }
     }
@@ -3049,6 +3167,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerSource {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let source_offset = { self.source.serialize(fb) };
         let mut builder = fb::FlowTriggerSourceBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
         builder.add_source(source_offset);
         self.min_records_to_await
             .map(|v| builder.add_min_records_to_await(v));
@@ -3061,6 +3184,9 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerSource {
 impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerSource<'fb>> for odf::flows::FlowTriggerSource {
     fn deserialize(proxy: fb::FlowTriggerSource<'fb>) -> Self {
         odf::flows::FlowTriggerSource {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
             source: proxy
                 .source()
                 .map(|v| odf::resources::ResourceHandle::deserialize(v))
@@ -3090,6 +3216,10 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::FlowTriggerInput> for odf::flows:
                 fb::FlowTriggerInput::FlowTriggerInputSchedule,
                 v.serialize(fb).as_union_value(),
             ),
+            odf::flows::FlowTriggerInput::Interval(v) => (
+                fb::FlowTriggerInput::FlowTriggerInputInterval,
+                v.serialize(fb).as_union_value(),
+            ),
             odf::flows::FlowTriggerInput::Event(v) => (
                 fb::FlowTriggerInput::FlowTriggerInputEvent,
                 v.serialize(fb).as_union_value(),
@@ -3098,8 +3228,8 @@ impl<'fb> FlatbuffersEnumSerializable<'fb, fb::FlowTriggerInput> for odf::flows:
                 fb::FlowTriggerInput::FlowTriggerInputSource,
                 v.serialize(fb).as_union_value(),
             ),
-            odf::flows::FlowTriggerInput::Dataset(v) => (
-                fb::FlowTriggerInput::FlowTriggerInputDataset,
+            odf::flows::FlowTriggerInput::InputsUpdated(v) => (
+                fb::FlowTriggerInput::FlowTriggerInputInputsUpdated,
                 v.serialize(fb).as_union_value(),
             ),
         }
@@ -3123,6 +3253,13 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::FlowTriggerInput>
                     }),
                 )
             }
+            fb::FlowTriggerInput::FlowTriggerInputInterval => {
+                odf::flows::FlowTriggerInput::Interval(
+                    odf::flows::FlowTriggerInputInterval::deserialize(unsafe {
+                        fb::FlowTriggerInputInterval::init_from_table(table)
+                    }),
+                )
+            }
             fb::FlowTriggerInput::FlowTriggerInputEvent => {
                 odf::flows::FlowTriggerInput::Event(odf::flows::FlowTriggerInputEvent::deserialize(
                     unsafe { fb::FlowTriggerInputEvent::init_from_table(table) },
@@ -3133,49 +3270,14 @@ impl<'fb> FlatbuffersEnumDeserializable<'fb, fb::FlowTriggerInput>
                     fb::FlowTriggerInputSource::init_from_table(table)
                 }),
             ),
-            fb::FlowTriggerInput::FlowTriggerInputDataset => odf::flows::FlowTriggerInput::Dataset(
-                odf::flows::FlowTriggerInputDataset::deserialize(unsafe {
-                    fb::FlowTriggerInputDataset::init_from_table(table)
-                }),
-            ),
+            fb::FlowTriggerInput::FlowTriggerInputInputsUpdated => {
+                odf::flows::FlowTriggerInput::InputsUpdated(
+                    odf::flows::FlowTriggerInputInputsUpdated::deserialize(unsafe {
+                        fb::FlowTriggerInputInputsUpdated::init_from_table(table)
+                    }),
+                )
+            }
             _ => panic!("Invalid enum value: {}", t.0),
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FlowTriggerInputDataset
-// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Dataset
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputDataset {
-    type OffsetT = WIPOffset<fb::FlowTriggerInputDataset<'fb>>;
-
-    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
-        let dataset_offset = { self.dataset.serialize(fb) };
-        let events_offset = self.events.as_ref().map(|v| {
-            let offsets: Vec<_> = v.iter().map(|i| fb.create_string(&i)).collect();
-            fb.create_vector(&offsets)
-        });
-        let mut builder = fb::FlowTriggerInputDatasetBuilder::new(fb);
-        builder.add_dataset(dataset_offset);
-        events_offset.map(|off| builder.add_events(off));
-        builder.finish()
-    }
-}
-
-impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputDataset<'fb>>
-    for odf::flows::FlowTriggerInputDataset
-{
-    fn deserialize(proxy: fb::FlowTriggerInputDataset<'fb>) -> Self {
-        odf::flows::FlowTriggerInputDataset {
-            dataset: proxy
-                .dataset()
-                .map(|v| odf::datasets::DatasetSelector::deserialize(v))
-                .unwrap(),
-            events: proxy
-                .events()
-                .map(|v| v.iter().map(|i| i.to_owned()).collect()),
         }
     }
 }
@@ -3191,6 +3293,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputEvent {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let events_offset = { self.events.serialize(fb) };
         let mut builder = fb::FlowTriggerInputEventBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
         builder.add_events(events_offset);
         self.cooldown
             .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
@@ -3205,12 +3308,88 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputEvent<'fb>>
 {
     fn deserialize(proxy: fb::FlowTriggerInputEvent<'fb>) -> Self {
         odf::flows::FlowTriggerInputEvent {
+            enabled: proxy.enabled().map(|v| v),
             events: proxy
                 .events()
                 .map(|v| odf::events::EventFilter::deserialize(v))
                 .unwrap(),
             cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
             cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerInputInputsUpdated
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/InputsUpdated
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputInputsUpdated {
+    type OffsetT = WIPOffset<fb::FlowTriggerInputInputsUpdated<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let target_offset = self.target.as_ref().map(|v| v.serialize(fb));
+        let mut builder = fb::FlowTriggerInputInputsUpdatedBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
+        target_offset.map(|off| builder.add_target(off));
+        self.min_records_to_await
+            .map(|v| builder.add_min_records_to_await(v));
+        self.max_await_interval
+            .map(|v| builder.add_max_await_interval(&duration_to_fb(&v)));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputInputsUpdated<'fb>>
+    for odf::flows::FlowTriggerInputInputsUpdated
+{
+    fn deserialize(proxy: fb::FlowTriggerInputInputsUpdated<'fb>) -> Self {
+        odf::flows::FlowTriggerInputInputsUpdated {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+            target: proxy
+                .target()
+                .map(|v| odf::datasets::DatasetSelector::deserialize(v)),
+            min_records_to_await: proxy.min_records_to_await().map(|v| v),
+            max_await_interval: proxy.max_await_interval().map(|v| fb_to_duration(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FlowTriggerInputInterval
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Interval
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputInterval {
+    type OffsetT = WIPOffset<fb::FlowTriggerInputInterval<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let mut builder = fb::FlowTriggerInputIntervalBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
+        builder.add_interval(&duration_to_fb(&self.interval));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputInterval<'fb>>
+    for odf::flows::FlowTriggerInputInterval
+{
+    fn deserialize(proxy: fb::FlowTriggerInputInterval<'fb>) -> Self {
+        odf::flows::FlowTriggerInputInterval {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+            interval: proxy.interval().map(|v| fb_to_duration(v)).unwrap(),
         }
     }
 }
@@ -3225,6 +3404,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputManual {
 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let mut builder = fb::FlowTriggerInputManualBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
         builder.finish()
     }
 }
@@ -3233,7 +3417,11 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputManual<'fb>>
     for odf::flows::FlowTriggerInputManual
 {
     fn deserialize(proxy: fb::FlowTriggerInputManual<'fb>) -> Self {
-        odf::flows::FlowTriggerInputManual {}
+        odf::flows::FlowTriggerInputManual {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
+        }
     }
 }
 
@@ -3248,6 +3436,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputSchedule 
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let cron_offset = { fb.create_string(&self.cron) };
         let mut builder = fb::FlowTriggerInputScheduleBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
         builder.add_cron(cron_offset);
         builder.finish()
     }
@@ -3258,6 +3451,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputSchedule<'fb>>
 {
     fn deserialize(proxy: fb::FlowTriggerInputSchedule<'fb>) -> Self {
         odf::flows::FlowTriggerInputSchedule {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
             cron: proxy.cron().map(|v| v.to_owned()).unwrap(),
         }
     }
@@ -3274,6 +3470,11 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::FlowTriggerInputSource {
     fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
         let source_offset = { self.source.serialize(fb) };
         let mut builder = fb::FlowTriggerInputSourceBuilder::new(fb);
+        self.enabled.map(|v| builder.add_enabled(v));
+        self.cooldown
+            .map(|v| builder.add_cooldown(&duration_to_fb(&v)));
+        self.cooldown_max_batch
+            .map(|v| builder.add_cooldown_max_batch(v));
         builder.add_source(source_offset);
         self.min_records_to_await
             .map(|v| builder.add_min_records_to_await(v));
@@ -3288,6 +3489,9 @@ impl<'fb> FlatbuffersDeserializable<fb::FlowTriggerInputSource<'fb>>
 {
     fn deserialize(proxy: fb::FlowTriggerInputSource<'fb>) -> Self {
         odf::flows::FlowTriggerInputSource {
+            enabled: proxy.enabled().map(|v| v),
+            cooldown: proxy.cooldown().map(|v| fb_to_duration(v)),
+            cooldown_max_batch: proxy.cooldown_max_batch().map(|v| v),
             source: proxy
                 .source()
                 .map(|v| odf::resources::ResourceRef::deserialize(v))
@@ -4287,6 +4491,30 @@ impl<'fb> FlatbuffersDeserializable<fb::MqttTopicSubscription<'fb>>
         odf::sources::MqttTopicSubscription {
             path: proxy.path().map(|v| v.to_owned()).unwrap(),
             qos: proxy.qos().map(|v| v.into()),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NoOpBehavior
+// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl From<odf::tasks::NoOpBehavior> for fb::NoOpBehavior {
+    fn from(v: odf::tasks::NoOpBehavior) -> Self {
+        match v {
+            odf::tasks::NoOpBehavior::Continue => fb::NoOpBehavior::Continue,
+            odf::tasks::NoOpBehavior::Break => fb::NoOpBehavior::Break,
+        }
+    }
+}
+
+impl Into<odf::tasks::NoOpBehavior> for fb::NoOpBehavior {
+    fn into(self) -> odf::tasks::NoOpBehavior {
+        match self {
+            fb::NoOpBehavior::Continue => odf::tasks::NoOpBehavior::Continue,
+            fb::NoOpBehavior::Break => odf::tasks::NoOpBehavior::Break,
+            _ => panic!("Invalid enum value: {}", self.0),
         }
     }
 }
@@ -5834,6 +6062,59 @@ impl<'fb> FlatbuffersDeserializable<fb::ReadStepParquet<'fb>> for odf::sources::
             schema: proxy
                 .schema()
                 .map(|v| odf::data::DataSchema::deserialize(v)),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RecentBindingsRetention
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentBindingsRetention
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::RecentBindingsRetention {
+    type OffsetT = WIPOffset<fb::RecentBindingsRetention<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let mut builder = fb::RecentBindingsRetentionBuilder::new(fb);
+        self.max_bindings.map(|v| builder.add_max_bindings(v));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::RecentBindingsRetention<'fb>>
+    for odf::flows::RecentBindingsRetention
+{
+    fn deserialize(proxy: fb::RecentBindingsRetention<'fb>) -> Self {
+        odf::flows::RecentBindingsRetention {
+            max_bindings: proxy.max_bindings().map(|v| v),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RecentRunsRetention
+// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentRunsRetention
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl<'fb> FlatbuffersSerializable<'fb> for odf::flows::RecentRunsRetention {
+    type OffsetT = WIPOffset<fb::RecentRunsRetention<'fb>>;
+
+    fn serialize(&self, fb: &mut FlatBufferBuilder<'fb>) -> Self::OffsetT {
+        let mut builder = fb::RecentRunsRetentionBuilder::new(fb);
+        self.max_runs.map(|v| builder.add_max_runs(v));
+        self.max_age
+            .map(|v| builder.add_max_age(&duration_to_fb(&v)));
+        builder.finish()
+    }
+}
+
+impl<'fb> FlatbuffersDeserializable<fb::RecentRunsRetention<'fb>>
+    for odf::flows::RecentRunsRetention
+{
+    fn deserialize(proxy: fb::RecentRunsRetention<'fb>) -> Self {
+        odf::flows::RecentRunsRetention {
+            max_runs: proxy.max_runs().map(|v| v),
+            max_age: proxy.max_age().map(|v| fb_to_duration(v)),
         }
     }
 }
@@ -8323,6 +8604,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecCompaction {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         self.max_slice_size
             .map(|v| builder.add_max_slice_size(v.as_u64()));
         self.max_slice_records
@@ -8343,6 +8626,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecCompaction<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             max_slice_size: proxy.max_slice_size().map(|v| ByteSize::from(v)),
             max_slice_records: proxy.max_slice_records().map(|v| v),
         }
@@ -8365,6 +8650,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecGarbageCollection
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.finish()
     }
 }
@@ -8381,6 +8668,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecGarbageCollection<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
         }
     }
 }
@@ -8402,6 +8691,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecIngest {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_source(source_offset);
         self.target_records_per_slice
             .map(|v| builder.add_target_records_per_slice(v));
@@ -8419,6 +8710,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecIngest<'fb>> for odf::tasks::Tas
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             source: proxy
                 .source()
                 .map(|v| odf::resources::ResourceHandle::deserialize(v))
@@ -8453,6 +8746,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecReset {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         ref_offset.map(|off| builder.add_ref_(off));
         new_block_hash_offset.map(|off| builder.add_new_block_hash(off));
         old_block_hash_offset.map(|off| builder.add_old_block_hash(off));
@@ -8470,6 +8765,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecReset<'fb>> for odf::tasks::Task
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             r#ref: proxy.ref_().map(|v| v.to_owned()),
             new_block_hash: proxy
                 .new_block_hash()
@@ -8498,6 +8795,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecSyncFrom {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_source(source_offset);
         self.force.map(|v| builder.add_force(v));
         builder.finish()
@@ -8514,6 +8813,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecSyncFrom<'fb>> for odf::tasks::T
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             source: proxy
                 .source()
                 .map(|v| odf::tasks::SyncEndpoint::deserialize(v))
@@ -8540,6 +8841,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecSyncTo {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_destination(destination_offset);
         self.force.map(|v| builder.add_force(v));
         self.create_if_not_exists
@@ -8558,6 +8861,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecSyncTo<'fb>> for odf::tasks::Tas
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             destination: proxy
                 .destination()
                 .map(|v| odf::tasks::SyncEndpoint::deserialize(v))
@@ -8584,6 +8889,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecTransform {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.finish()
     }
 }
@@ -8598,6 +8905,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecTransform<'fb>> for odf::tasks::
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
         }
     }
 }
@@ -8618,6 +8927,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecVerify {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         self.replay_transform
             .map(|v| builder.add_replay_transform(v));
         builder.finish()
@@ -8634,6 +8945,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecVerify<'fb>> for odf::tasks::Tas
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             replay_transform: proxy.replay_transform().map(|v| v),
         }
     }
@@ -8652,11 +8965,15 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecWebhookCall {
         let service_account_offset = self.service_account.as_ref().map(|v| v.serialize(fb));
         let endpoint_offset = { self.endpoint.serialize(fb) };
         let payload_offset = self.payload.as_ref().map(|v| fb.create_string(&v));
+        let retry_policy_offset = self.retry_policy.as_ref().map(|v| v.serialize(fb));
         let mut builder = fb::TaskSpecWebhookCallBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_endpoint(endpoint_offset);
         payload_offset.map(|off| builder.add_payload(off));
+        retry_policy_offset.map(|off| builder.add_retry_policy(off));
         builder.finish()
     }
 }
@@ -8670,11 +8987,16 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecWebhookCall<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalHandle::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             endpoint: proxy
                 .endpoint()
                 .map(|v| odf::resources::ResourceHandle::deserialize(v))
                 .unwrap(),
             payload: proxy.payload().map(|v| v.to_owned()),
+            retry_policy: proxy
+                .retry_policy()
+                .map(|v| odf::flows::RetryPolicy::deserialize(v)),
         }
     }
 }
@@ -8801,6 +9123,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputCompaction {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         self.max_slice_size
             .map(|v| builder.add_max_slice_size(v.as_u64()));
         self.max_slice_records
@@ -8821,6 +9145,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputCompaction<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             max_slice_size: proxy.max_slice_size().map(|v| ByteSize::from(v)),
             max_slice_records: proxy.max_slice_records().map(|v| v),
         }
@@ -8843,6 +9169,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputGarbageColle
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.finish()
     }
 }
@@ -8859,6 +9187,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputGarbageCollection<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
         }
     }
 }
@@ -8880,6 +9210,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputIngest {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_source(source_offset);
         self.target_records_per_slice
             .map(|v| builder.add_target_records_per_slice(v));
@@ -8899,6 +9231,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputIngest<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             source: proxy
                 .source()
                 .map(|v| odf::resources::ResourceRef::deserialize(v))
@@ -8933,6 +9267,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputReset {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         ref_offset.map(|off| builder.add_ref_(off));
         new_block_hash_offset.map(|off| builder.add_new_block_hash(off));
         old_block_hash_offset.map(|off| builder.add_old_block_hash(off));
@@ -8952,6 +9288,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputReset<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             r#ref: proxy.ref_().map(|v| v.to_owned()),
             new_block_hash: proxy
                 .new_block_hash()
@@ -8980,6 +9318,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputSyncFrom {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_source(source_offset);
         self.force.map(|v| builder.add_force(v));
         builder.finish()
@@ -8998,6 +9338,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputSyncFrom<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             source: proxy
                 .source()
                 .map(|v| odf::tasks::SyncEndpointInput::deserialize(v))
@@ -9024,6 +9366,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputSyncTo {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_destination(destination_offset);
         self.force.map(|v| builder.add_force(v));
         self.create_if_not_exists
@@ -9044,6 +9388,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputSyncTo<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             destination: proxy
                 .destination()
                 .map(|v| odf::tasks::SyncEndpointInput::deserialize(v))
@@ -9070,6 +9416,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputTransform {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.finish()
     }
 }
@@ -9086,6 +9434,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputTransform<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
         }
     }
 }
@@ -9106,6 +9456,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputVerify {
         name_offset.map(|off| builder.add_name(off));
         target_offset.map(|off| builder.add_target(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         self.replay_transform
             .map(|v| builder.add_replay_transform(v));
         builder.finish()
@@ -9124,6 +9476,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputVerify<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             replay_transform: proxy.replay_transform().map(|v| v),
         }
     }
@@ -9146,6 +9500,8 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::tasks::TaskSpecInputWebhookCall 
         let mut builder = fb::TaskSpecInputWebhookCallBuilder::new(fb);
         name_offset.map(|off| builder.add_name(off));
         service_account_offset.map(|off| builder.add_service_account(off));
+        self.on_no_op.map(|v| builder.add_on_no_op(v.into()));
+        self.on_failure.map(|v| builder.add_on_failure(v.into()));
         builder.add_endpoint(endpoint_offset);
         payload_offset.map(|off| builder.add_payload(off));
         retry_policy_offset.map(|off| builder.add_retry_policy(off));
@@ -9162,6 +9518,8 @@ impl<'fb> FlatbuffersDeserializable<fb::TaskSpecInputWebhookCall<'fb>>
             service_account: proxy
                 .service_account()
                 .map(|v| odf::auth::PrincipalRef::deserialize(v)),
+            on_no_op: proxy.on_no_op().map(|v| v.into()),
+            on_failure: proxy.on_failure().map(|v| v.into()),
             endpoint: proxy
                 .endpoint()
                 .map(|v| odf::resources::ResourceRef::deserialize(v))

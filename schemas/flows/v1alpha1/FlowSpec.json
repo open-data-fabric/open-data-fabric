@@ -39,6 +39,16 @@
       "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/RetryPolicy",
       "unevaluatedProperties": false,
       "description": "Defines how a flow should react to failures."
+    },
+    "recentBindingsRetention": {
+      "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/RecentBindingsRetention",
+      "unevaluatedProperties": false,
+      "description": "Controls retention of `FlowStatus.recentBindings`."
+    },
+    "recentRunsRetention": {
+      "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/RecentRunsRetention",
+      "unevaluatedProperties": false,
+      "description": "Controls retention of `FlowStatus.recentRuns`."
     }
   }
 }

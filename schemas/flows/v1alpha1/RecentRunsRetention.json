@@ -1,0 +1,19 @@
+{
+  "$id": "https://opendatafabric.org/schemas/flows/v1alpha1/RecentRunsRetention",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Controls how many recent runs are reported in `FlowStatus.recentRuns`. Implementations may additionally cap these values.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "maxRuns": {
+      "type": "integer",
+      "format": "uint32",
+      "description": "Maximum number of recent runs to report."
+    },
+    "maxAge": {
+      "type": "string",
+      "format": "duration",
+      "description": "Maximum age of a finished run to be reported e.g. `30d`."
+    }
+  }
+}

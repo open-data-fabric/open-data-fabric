@@ -6,6 +6,9 @@
 
 **Published Date**: 2026-09-22
 
+**Specs**:
+- [Tasks and Flows](../specs/automation/tasks-and-flows.md)
+
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 - [Sergiy Zaychenko](mailto:sergiy.zaychenko@kamu.dev), [Kamu](https://kamu.dev)
@@ -63,7 +66,7 @@ The resource `phase` reflects the work of the **task controller**, whose job is 
 
 Example of a task as created by a `FlowRun` controller (spec describes only the intent, no plan yet):
 ```yaml
-$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Task
+$schema: https://opendatafabric.org/schemas/tasks/v1alpha1/Task
 headers:
   ownerReferences:
     - FlowRun:c27331ce-ce88-4ff9-8c5a-4ce8107cc03f  # ResourceRef of the FlowRun that spawned this task
@@ -78,7 +81,7 @@ Task resources are **deleted as soon as they finish**, so the existing tasks are
 
 Example of the same task after planning and execution:
 ```yaml
-$schema: https://opendatafabric.org/schemas/flows/v1alpha1/Task
+$schema: https://opendatafabric.org/schemas/tasks/v1alpha1/Task
 headers:
   ownerReferences:
     - FlowRun:c27331ce-ce88-4ff9-8c5a-4ce8107cc03f  # ResourceRef of the FlowRun that spawned this task
@@ -263,7 +266,7 @@ status:
   conditions:
     # Tracks the overall status and the tasks that were spawned during the execution
     https://opendatafabric.org/schemas/flows/v1alpha1/FlowRunStatus:
-      status: Running  # Waiting / Running / Retrying / Finished
+      status: Running  # Waiting / Running / Finished
       tasks:
         - name: task-0-transform  # Corresponds to spec.tasks[0]
           task: Task:a1b2c3d4-1111-2222-3333-444444444444  # ResourceHandle
@@ -331,7 +334,7 @@ spec:
   retryPolicy:
     maxAttempts: 3
     minDelay: 1min
-    backoff: Exponential    # None / Linear / Exponential
+    backoff: Exponential    # optional: Linear / Exponential, constant delay when omitted
   recentBindingsRetention:  # Controls retention for `FlowStatus.recentBindings`
     maxBindings: 10
   recentRunsRetention:      # Controls retention for `FlowStatus.recentRuns`
@@ -412,16 +415,16 @@ events:
 kind: InputsUpdated
 target: Dataset:sergiimk/bar
 minRecordsToAwait: 100  # optional batching
-maxAwaitInterval: 1h  # run at least once an hour if minNewRecords have not been reached
+maxAwaitInterval: 1h  # run at least once an hour if minRecordsToAwait have not been reached
 ```
 
-`SourceUpdated` trigger - fires when specified source is updated.
+`Source` trigger - fires when the specified source receives new data.
 
 ```yaml
-kind: SourceUpdated
+kind: Source
 source: Source:sensor.temp.http
 minRecordsToAwait: 100  # optional batching
-maxAwaitInterval: 1h  # run at least once an hour if minNewRecords have not been reached
+maxAwaitInterval: 1h  # run at least once an hour if minRecordsToAwait have not been reached
 ```
 
 Besides triggers defined in ODF spec custom triggers can also be specified.
@@ -436,6 +439,7 @@ The following properties are common across all trigger types:
 ```yaml
 enabled: true  # Allows to pause an individual trigger
 cooldown: 10m  # Don't fire more often than every 10 minutes (batches multiple activations into one)
+cooldownMaxBatch: 100  # Fire without waiting for the cooldown to end after this many activations
 ```
 
 

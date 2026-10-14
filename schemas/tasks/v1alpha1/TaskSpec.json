@@ -24,6 +24,18 @@
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
+        },
         "source": {
           "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
           "description": "Reference to the source resource that defines how to fetch data.",
@@ -54,6 +66,18 @@
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
         }
       }
     },
@@ -77,6 +101,18 @@
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
         },
         "source": {
           "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint",
@@ -110,6 +146,18 @@
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
         },
         "destination": {
           "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/SyncEndpoint",
@@ -147,6 +195,18 @@
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
+        },
         "maxSliceSize": {
           "type": "string",
           "format": "byte-size",
@@ -177,6 +237,18 @@
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
         },
         "ref": {
           "type": "string",
@@ -213,6 +285,18 @@
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
         }
       }
     },
@@ -234,6 +318,18 @@
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle",
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
+        },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
         },
         "replayTransform": {
           "type": "boolean",
@@ -257,6 +353,18 @@
           "unevaluatedProperties": false,
           "description": "Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted."
         },
+        "onNoOp": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+          "unevaluatedProperties": false,
+          "default": "Continue",
+          "description": "How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error."
+        },
+        "onFailure": {
+          "$ref": "https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior",
+          "unevaluatedProperties": false,
+          "default": "Fail",
+          "description": "How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task."
+        },
         "endpoint": {
           "$ref": "https://opendatafabric.org/schemas/resources/v1alpha1/ResourceHandle",
           "description": "Reference to the `WebhookEndpoint`.",
@@ -265,6 +373,11 @@
         "payload": {
           "type": "string",
           "description": "The payload to send. May include templating."
+        },
+        "retryPolicy": {
+          "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/RetryPolicy",
+          "unevaluatedProperties": false,
+          "description": "Defines how a webhook should react to failures."
         }
       }
     }

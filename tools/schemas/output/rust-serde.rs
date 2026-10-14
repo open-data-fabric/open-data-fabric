@@ -5744,6 +5744,12 @@ pub mod flows {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub retry_policy: Option<flows::RetryPolicy>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub recent_bindings_retention: Option<flows::RecentBindingsRetention>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub recent_runs_retention: Option<flows::RecentRunsRetention>,
     }
 
     impl IntoDto for FlowSpec {
@@ -5761,6 +5767,8 @@ pub mod flows {
                 triggers: v.triggers.into_iter().map(Into::into).collect(),
                 tasks: v.tasks.into_iter().map(Into::into).collect(),
                 retry_policy: v.retry_policy.map(|v| v.into()),
+                recent_bindings_retention: v.recent_bindings_retention.map(|v| v.into()),
+                recent_runs_retention: v.recent_runs_retention.map(|v| v.into()),
             }
         }
     }
@@ -5788,6 +5796,14 @@ pub mod flows {
                     .retry_policy
                     .map(|v| dtos::flows::RetryPolicy::try_from(v))
                     .transpose()?,
+                recent_bindings_retention: v
+                    .recent_bindings_retention
+                    .map(|v| dtos::flows::RecentBindingsRetention::try_from(v))
+                    .transpose()?,
+                recent_runs_retention: v
+                    .recent_runs_retention
+                    .map(|v| dtos::flows::RecentRunsRetention::try_from(v))
+                    .transpose()?,
             })
         }
     }
@@ -5808,6 +5824,12 @@ pub mod flows {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub retry_policy: Option<flows::RetryPolicy>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub recent_bindings_retention: Option<flows::RecentBindingsRetention>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub recent_runs_retention: Option<flows::RecentRunsRetention>,
     }
 
     impl IntoDto for FlowSpecInput {
@@ -5825,6 +5847,8 @@ pub mod flows {
                 triggers: v.triggers.into_iter().map(Into::into).collect(),
                 tasks: v.tasks.into_iter().map(Into::into).collect(),
                 retry_policy: v.retry_policy.map(|v| v.into()),
+                recent_bindings_retention: v.recent_bindings_retention.map(|v| v.into()),
+                recent_runs_retention: v.recent_runs_retention.map(|v| v.into()),
             }
         }
     }
@@ -5851,6 +5875,14 @@ pub mod flows {
                 retry_policy: v
                     .retry_policy
                     .map(|v| dtos::flows::RetryPolicy::try_from(v))
+                    .transpose()?,
+                recent_bindings_retention: v
+                    .recent_bindings_retention
+                    .map(|v| dtos::flows::RecentBindingsRetention::try_from(v))
+                    .transpose()?,
+                recent_runs_retention: v
+                    .recent_runs_retention
+                    .map(|v| dtos::flows::RecentRunsRetention::try_from(v))
                     .transpose()?,
             })
         }
@@ -6071,12 +6103,14 @@ pub mod flows {
         Manual(flows::FlowTriggerManual),
         #[serde(alias = "schedule")]
         Schedule(flows::FlowTriggerSchedule),
+        #[serde(alias = "interval")]
+        Interval(flows::FlowTriggerInterval),
         #[serde(alias = "event")]
         Event(flows::FlowTriggerEvent),
         #[serde(alias = "source")]
         Source(flows::FlowTriggerSource),
-        #[serde(alias = "dataset")]
-        Dataset(flows::FlowTriggerDataset),
+        #[serde(alias = "inputsUpdated", alias = "inputsupdated")]
+        InputsUpdated(flows::FlowTriggerInputsUpdated),
     }
 
     impl IntoDto for FlowTrigger {
@@ -6091,9 +6125,10 @@ pub mod flows {
             match v {
                 dtos::flows::FlowTrigger::Manual(v) => Self::Manual(v.into()),
                 dtos::flows::FlowTrigger::Schedule(v) => Self::Schedule(v.into()),
+                dtos::flows::FlowTrigger::Interval(v) => Self::Interval(v.into()),
                 dtos::flows::FlowTrigger::Event(v) => Self::Event(v.into()),
                 dtos::flows::FlowTrigger::Source(v) => Self::Source(v.into()),
-                dtos::flows::FlowTrigger::Dataset(v) => Self::Dataset(v.into()),
+                dtos::flows::FlowTrigger::InputsUpdated(v) => Self::InputsUpdated(v.into()),
             }
         }
     }
@@ -6104,59 +6139,24 @@ pub mod flows {
             match v {
                 FlowTrigger::Manual(v) => Ok(Self::Manual(v.try_into()?)),
                 FlowTrigger::Schedule(v) => Ok(Self::Schedule(v.try_into()?)),
+                FlowTrigger::Interval(v) => Ok(Self::Interval(v.try_into()?)),
                 FlowTrigger::Event(v) => Ok(Self::Event(v.try_into()?)),
                 FlowTrigger::Source(v) => Ok(Self::Source(v.try_into()?)),
-                FlowTrigger::Dataset(v) => Ok(Self::Dataset(v.try_into()?)),
+                FlowTrigger::InputsUpdated(v) => Ok(Self::InputsUpdated(v.try_into()?)),
             }
         }
     }
 
     implement_serde_as!(dtos::flows::FlowTrigger, FlowTrigger);
 
-    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Dataset
-    #[derive(Debug, Serialize, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    #[serde(rename_all = "camelCase")]
-    pub struct FlowTriggerDataset {
-        pub dataset: StructOrString<datasets::DatasetSelector>,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub events: Option<Vec<String>>,
-    }
-
-    impl IntoDto for FlowTriggerDataset {
-        type Dto = dtos::flows::FlowTriggerDataset;
-        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
-            self.try_into()
-        }
-    }
-
-    impl From<dtos::flows::FlowTriggerDataset> for FlowTriggerDataset {
-        fn from(v: dtos::flows::FlowTriggerDataset) -> Self {
-            Self {
-                dataset: v.dataset.into(),
-                events: v.events,
-            }
-        }
-    }
-
-    impl TryFrom<FlowTriggerDataset> for dtos::flows::FlowTriggerDataset {
-        type Error = ValidationError;
-        fn try_from(v: FlowTriggerDataset) -> Result<Self, ValidationError> {
-            Ok(Self {
-                dataset: dtos::datasets::DatasetSelector::try_from(v.dataset)?,
-                events: v.events,
-            })
-        }
-    }
-
-    implement_serde_as!(dtos::flows::FlowTriggerDataset, FlowTriggerDataset);
-
     // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Event
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct FlowTriggerEvent {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
         pub events: events::EventFilter,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -6176,6 +6176,7 @@ pub mod flows {
     impl From<dtos::flows::FlowTriggerEvent> for FlowTriggerEvent {
         fn from(v: dtos::flows::FlowTriggerEvent) -> Self {
             Self {
+                enabled: v.enabled,
                 events: v.events.into(),
                 cooldown: v.cooldown,
                 cooldown_max_batch: v.cooldown_max_batch,
@@ -6187,6 +6188,7 @@ pub mod flows {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerEvent) -> Result<Self, ValidationError> {
             Ok(Self {
+                enabled: v.enabled,
                 events: dtos::events::EventFilter::try_from(v.events)?,
                 cooldown: v.cooldown,
                 cooldown_max_batch: v.cooldown_max_batch,
@@ -6205,12 +6207,14 @@ pub mod flows {
         Manual(flows::FlowTriggerInputManual),
         #[serde(alias = "schedule")]
         Schedule(flows::FlowTriggerInputSchedule),
+        #[serde(alias = "interval")]
+        Interval(flows::FlowTriggerInputInterval),
         #[serde(alias = "event")]
         Event(flows::FlowTriggerInputEvent),
         #[serde(alias = "source")]
         Source(flows::FlowTriggerInputSource),
-        #[serde(alias = "dataset")]
-        Dataset(flows::FlowTriggerInputDataset),
+        #[serde(alias = "inputsUpdated", alias = "inputsupdated")]
+        InputsUpdated(flows::FlowTriggerInputInputsUpdated),
     }
 
     impl IntoDto for FlowTriggerInput {
@@ -6225,9 +6229,10 @@ pub mod flows {
             match v {
                 dtos::flows::FlowTriggerInput::Manual(v) => Self::Manual(v.into()),
                 dtos::flows::FlowTriggerInput::Schedule(v) => Self::Schedule(v.into()),
+                dtos::flows::FlowTriggerInput::Interval(v) => Self::Interval(v.into()),
                 dtos::flows::FlowTriggerInput::Event(v) => Self::Event(v.into()),
                 dtos::flows::FlowTriggerInput::Source(v) => Self::Source(v.into()),
-                dtos::flows::FlowTriggerInput::Dataset(v) => Self::Dataset(v.into()),
+                dtos::flows::FlowTriggerInput::InputsUpdated(v) => Self::InputsUpdated(v.into()),
             }
         }
     }
@@ -6238,62 +6243,24 @@ pub mod flows {
             match v {
                 FlowTriggerInput::Manual(v) => Ok(Self::Manual(v.try_into()?)),
                 FlowTriggerInput::Schedule(v) => Ok(Self::Schedule(v.try_into()?)),
+                FlowTriggerInput::Interval(v) => Ok(Self::Interval(v.try_into()?)),
                 FlowTriggerInput::Event(v) => Ok(Self::Event(v.try_into()?)),
                 FlowTriggerInput::Source(v) => Ok(Self::Source(v.try_into()?)),
-                FlowTriggerInput::Dataset(v) => Ok(Self::Dataset(v.try_into()?)),
+                FlowTriggerInput::InputsUpdated(v) => Ok(Self::InputsUpdated(v.try_into()?)),
             }
         }
     }
 
     implement_serde_as!(dtos::flows::FlowTriggerInput, FlowTriggerInput);
 
-    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Dataset
-    #[derive(Debug, Serialize, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    #[serde(rename_all = "camelCase")]
-    pub struct FlowTriggerInputDataset {
-        pub dataset: StructOrString<datasets::DatasetSelector>,
-        #[serde(default)]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub events: Option<Vec<String>>,
-    }
-
-    impl IntoDto for FlowTriggerInputDataset {
-        type Dto = dtos::flows::FlowTriggerInputDataset;
-        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
-            self.try_into()
-        }
-    }
-
-    impl From<dtos::flows::FlowTriggerInputDataset> for FlowTriggerInputDataset {
-        fn from(v: dtos::flows::FlowTriggerInputDataset) -> Self {
-            Self {
-                dataset: v.dataset.into(),
-                events: v.events,
-            }
-        }
-    }
-
-    impl TryFrom<FlowTriggerInputDataset> for dtos::flows::FlowTriggerInputDataset {
-        type Error = ValidationError;
-        fn try_from(v: FlowTriggerInputDataset) -> Result<Self, ValidationError> {
-            Ok(Self {
-                dataset: dtos::datasets::DatasetSelector::try_from(v.dataset)?,
-                events: v.events,
-            })
-        }
-    }
-
-    implement_serde_as!(
-        dtos::flows::FlowTriggerInputDataset,
-        FlowTriggerInputDataset
-    );
-
     // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Event
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct FlowTriggerInputEvent {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
         pub events: events::EventFilter,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -6313,6 +6280,7 @@ pub mod flows {
     impl From<dtos::flows::FlowTriggerInputEvent> for FlowTriggerInputEvent {
         fn from(v: dtos::flows::FlowTriggerInputEvent) -> Self {
             Self {
+                enabled: v.enabled,
                 events: v.events.into(),
                 cooldown: v.cooldown,
                 cooldown_max_batch: v.cooldown_max_batch,
@@ -6324,6 +6292,7 @@ pub mod flows {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerInputEvent) -> Result<Self, ValidationError> {
             Ok(Self {
+                enabled: v.enabled,
                 events: dtos::events::EventFilter::try_from(v.events)?,
                 cooldown: v.cooldown,
                 cooldown_max_batch: v.cooldown_max_batch,
@@ -6333,11 +6302,140 @@ pub mod flows {
 
     implement_serde_as!(dtos::flows::FlowTriggerInputEvent, FlowTriggerInputEvent);
 
+    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/InputsUpdated
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct FlowTriggerInputInputsUpdated {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<StructOrString<datasets::DatasetSelector>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub min_records_to_await: Option<u64>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub max_await_interval: Option<DurationString>,
+    }
+
+    impl IntoDto for FlowTriggerInputInputsUpdated {
+        type Dto = dtos::flows::FlowTriggerInputInputsUpdated;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::flows::FlowTriggerInputInputsUpdated> for FlowTriggerInputInputsUpdated {
+        fn from(v: dtos::flows::FlowTriggerInputInputsUpdated) -> Self {
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                target: v.target.map(|v| v.into()),
+                min_records_to_await: v.min_records_to_await,
+                max_await_interval: v.max_await_interval,
+            }
+        }
+    }
+
+    impl TryFrom<FlowTriggerInputInputsUpdated> for dtos::flows::FlowTriggerInputInputsUpdated {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerInputInputsUpdated) -> Result<Self, ValidationError> {
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetSelector::try_from(v))
+                    .transpose()?,
+                min_records_to_await: v.min_records_to_await,
+                max_await_interval: v.max_await_interval,
+            })
+        }
+    }
+
+    implement_serde_as!(
+        dtos::flows::FlowTriggerInputInputsUpdated,
+        FlowTriggerInputInputsUpdated
+    );
+
+    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Interval
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct FlowTriggerInputInterval {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
+        pub interval: DurationString,
+    }
+
+    impl IntoDto for FlowTriggerInputInterval {
+        type Dto = dtos::flows::FlowTriggerInputInterval;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::flows::FlowTriggerInputInterval> for FlowTriggerInputInterval {
+        fn from(v: dtos::flows::FlowTriggerInputInterval) -> Self {
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                interval: v.interval,
+            }
+        }
+    }
+
+    impl TryFrom<FlowTriggerInputInterval> for dtos::flows::FlowTriggerInputInterval {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerInputInterval) -> Result<Self, ValidationError> {
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                interval: v.interval,
+            })
+        }
+    }
+
+    implement_serde_as!(
+        dtos::flows::FlowTriggerInputInterval,
+        FlowTriggerInputInterval
+    );
+
     // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Manual
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
-    pub struct FlowTriggerInputManual {}
+    pub struct FlowTriggerInputManual {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
+    }
 
     impl IntoDto for FlowTriggerInputManual {
         type Dto = dtos::flows::FlowTriggerInputManual;
@@ -6348,14 +6446,22 @@ pub mod flows {
 
     impl From<dtos::flows::FlowTriggerInputManual> for FlowTriggerInputManual {
         fn from(v: dtos::flows::FlowTriggerInputManual) -> Self {
-            Self {}
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+            }
         }
     }
 
     impl TryFrom<FlowTriggerInputManual> for dtos::flows::FlowTriggerInputManual {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerInputManual) -> Result<Self, ValidationError> {
-            Ok(Self {})
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+            })
         }
     }
 
@@ -6366,6 +6472,15 @@ pub mod flows {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct FlowTriggerInputSchedule {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
         pub cron: String,
     }
 
@@ -6378,14 +6493,24 @@ pub mod flows {
 
     impl From<dtos::flows::FlowTriggerInputSchedule> for FlowTriggerInputSchedule {
         fn from(v: dtos::flows::FlowTriggerInputSchedule) -> Self {
-            Self { cron: v.cron }
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                cron: v.cron,
+            }
         }
     }
 
     impl TryFrom<FlowTriggerInputSchedule> for dtos::flows::FlowTriggerInputSchedule {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerInputSchedule) -> Result<Self, ValidationError> {
-            Ok(Self { cron: v.cron })
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                cron: v.cron,
+            })
         }
     }
 
@@ -6399,6 +6524,15 @@ pub mod flows {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct FlowTriggerInputSource {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
         pub source: StructOrString<resources::ResourceRef>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -6418,6 +6552,9 @@ pub mod flows {
     impl From<dtos::flows::FlowTriggerInputSource> for FlowTriggerInputSource {
         fn from(v: dtos::flows::FlowTriggerInputSource) -> Self {
             Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
                 source: v.source.into(),
                 min_records_to_await: v.min_records_to_await,
                 max_await_interval: v.max_await_interval,
@@ -6429,6 +6566,9 @@ pub mod flows {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerInputSource) -> Result<Self, ValidationError> {
             Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
                 source: dtos::resources::ResourceRef::try_from(v.source)?,
                 min_records_to_await: v.min_records_to_await,
                 max_await_interval: v.max_await_interval,
@@ -6438,11 +6578,137 @@ pub mod flows {
 
     implement_serde_as!(dtos::flows::FlowTriggerInputSource, FlowTriggerInputSource);
 
+    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/InputsUpdated
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct FlowTriggerInputsUpdated {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub target: Option<StructOrString<datasets::DatasetSelector>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub min_records_to_await: Option<u64>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub max_await_interval: Option<DurationString>,
+    }
+
+    impl IntoDto for FlowTriggerInputsUpdated {
+        type Dto = dtos::flows::FlowTriggerInputsUpdated;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::flows::FlowTriggerInputsUpdated> for FlowTriggerInputsUpdated {
+        fn from(v: dtos::flows::FlowTriggerInputsUpdated) -> Self {
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                target: v.target.map(|v| v.into()),
+                min_records_to_await: v.min_records_to_await,
+                max_await_interval: v.max_await_interval,
+            }
+        }
+    }
+
+    impl TryFrom<FlowTriggerInputsUpdated> for dtos::flows::FlowTriggerInputsUpdated {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerInputsUpdated) -> Result<Self, ValidationError> {
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                target: v
+                    .target
+                    .map(|v| dtos::datasets::DatasetSelector::try_from(v))
+                    .transpose()?,
+                min_records_to_await: v.min_records_to_await,
+                max_await_interval: v.max_await_interval,
+            })
+        }
+    }
+
+    implement_serde_as!(
+        dtos::flows::FlowTriggerInputsUpdated,
+        FlowTriggerInputsUpdated
+    );
+
+    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Interval
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct FlowTriggerInterval {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
+        pub interval: DurationString,
+    }
+
+    impl IntoDto for FlowTriggerInterval {
+        type Dto = dtos::flows::FlowTriggerInterval;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::flows::FlowTriggerInterval> for FlowTriggerInterval {
+        fn from(v: dtos::flows::FlowTriggerInterval) -> Self {
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                interval: v.interval,
+            }
+        }
+    }
+
+    impl TryFrom<FlowTriggerInterval> for dtos::flows::FlowTriggerInterval {
+        type Error = ValidationError;
+        fn try_from(v: FlowTriggerInterval) -> Result<Self, ValidationError> {
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                interval: v.interval,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::flows::FlowTriggerInterval, FlowTriggerInterval);
+
     // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Manual
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
-    pub struct FlowTriggerManual {}
+    pub struct FlowTriggerManual {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
+    }
 
     impl IntoDto for FlowTriggerManual {
         type Dto = dtos::flows::FlowTriggerManual;
@@ -6453,14 +6719,22 @@ pub mod flows {
 
     impl From<dtos::flows::FlowTriggerManual> for FlowTriggerManual {
         fn from(v: dtos::flows::FlowTriggerManual) -> Self {
-            Self {}
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+            }
         }
     }
 
     impl TryFrom<FlowTriggerManual> for dtos::flows::FlowTriggerManual {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerManual) -> Result<Self, ValidationError> {
-            Ok(Self {})
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+            })
         }
     }
 
@@ -6471,6 +6745,15 @@ pub mod flows {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct FlowTriggerSchedule {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
         pub cron: String,
     }
 
@@ -6483,14 +6766,24 @@ pub mod flows {
 
     impl From<dtos::flows::FlowTriggerSchedule> for FlowTriggerSchedule {
         fn from(v: dtos::flows::FlowTriggerSchedule) -> Self {
-            Self { cron: v.cron }
+            Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                cron: v.cron,
+            }
         }
     }
 
     impl TryFrom<FlowTriggerSchedule> for dtos::flows::FlowTriggerSchedule {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerSchedule) -> Result<Self, ValidationError> {
-            Ok(Self { cron: v.cron })
+            Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
+                cron: v.cron,
+            })
         }
     }
 
@@ -6501,6 +6794,15 @@ pub mod flows {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct FlowTriggerSource {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub enabled: Option<bool>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown: Option<DurationString>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cooldown_max_batch: Option<u64>,
         pub source: resources::ResourceHandle,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -6520,6 +6822,9 @@ pub mod flows {
     impl From<dtos::flows::FlowTriggerSource> for FlowTriggerSource {
         fn from(v: dtos::flows::FlowTriggerSource) -> Self {
             Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
                 source: v.source.into(),
                 min_records_to_await: v.min_records_to_await,
                 max_await_interval: v.max_await_interval,
@@ -6531,6 +6836,9 @@ pub mod flows {
         type Error = ValidationError;
         fn try_from(v: FlowTriggerSource) -> Result<Self, ValidationError> {
             Ok(Self {
+                enabled: v.enabled,
+                cooldown: v.cooldown,
+                cooldown_max_batch: v.cooldown_max_batch,
                 source: dtos::resources::ResourceHandle::try_from(v.source)?,
                 min_records_to_await: v.min_records_to_await,
                 max_await_interval: v.max_await_interval,
@@ -6539,6 +6847,86 @@ pub mod flows {
     }
 
     implement_serde_as!(dtos::flows::FlowTriggerSource, FlowTriggerSource);
+
+    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentBindingsRetention
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct RecentBindingsRetention {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub max_bindings: Option<u32>,
+    }
+
+    impl IntoDto for RecentBindingsRetention {
+        type Dto = dtos::flows::RecentBindingsRetention;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::flows::RecentBindingsRetention> for RecentBindingsRetention {
+        fn from(v: dtos::flows::RecentBindingsRetention) -> Self {
+            Self {
+                max_bindings: v.max_bindings,
+            }
+        }
+    }
+
+    impl TryFrom<RecentBindingsRetention> for dtos::flows::RecentBindingsRetention {
+        type Error = ValidationError;
+        fn try_from(v: RecentBindingsRetention) -> Result<Self, ValidationError> {
+            Ok(Self {
+                max_bindings: v.max_bindings,
+            })
+        }
+    }
+
+    implement_serde_as!(
+        dtos::flows::RecentBindingsRetention,
+        RecentBindingsRetention
+    );
+
+    // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentRunsRetention
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    #[serde(rename_all = "camelCase")]
+    pub struct RecentRunsRetention {
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub max_runs: Option<u32>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub max_age: Option<DurationString>,
+    }
+
+    impl IntoDto for RecentRunsRetention {
+        type Dto = dtos::flows::RecentRunsRetention;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::flows::RecentRunsRetention> for RecentRunsRetention {
+        fn from(v: dtos::flows::RecentRunsRetention) -> Self {
+            Self {
+                max_runs: v.max_runs,
+                max_age: v.max_age,
+            }
+        }
+    }
+
+    impl TryFrom<RecentRunsRetention> for dtos::flows::RecentRunsRetention {
+        type Error = ValidationError;
+        fn try_from(v: RecentRunsRetention) -> Result<Self, ValidationError> {
+            Ok(Self {
+                max_runs: v.max_runs,
+                max_age: v.max_age,
+            })
+        }
+    }
+
+    implement_serde_as!(dtos::flows::RecentRunsRetention, RecentRunsRetention);
 
     // Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RetryBackoff
     #[derive(Debug, Serialize, Deserialize)]
@@ -10415,6 +10803,82 @@ pub mod tasks {
     #[allow(unused_imports)]
     use super::*;
 
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub enum FailureBehavior {
+        #[serde(alias = "fail")]
+        Fail,
+        #[serde(alias = "continue")]
+        Continue,
+    }
+
+    impl IntoDto for FailureBehavior {
+        type Dto = dtos::tasks::FailureBehavior;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::FailureBehavior> for FailureBehavior {
+        fn from(v: dtos::tasks::FailureBehavior) -> Self {
+            match v {
+                dtos::tasks::FailureBehavior::Fail => Self::Fail,
+                dtos::tasks::FailureBehavior::Continue => Self::Continue,
+            }
+        }
+    }
+
+    impl TryFrom<FailureBehavior> for dtos::tasks::FailureBehavior {
+        type Error = ValidationError;
+        fn try_from(v: FailureBehavior) -> Result<Self, Self::Error> {
+            match v {
+                FailureBehavior::Fail => Ok(Self::Fail),
+                FailureBehavior::Continue => Ok(Self::Continue),
+            }
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::FailureBehavior, FailureBehavior);
+
+    // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub enum NoOpBehavior {
+        #[serde(alias = "continue")]
+        Continue,
+        #[serde(alias = "break")]
+        Break,
+    }
+
+    impl IntoDto for NoOpBehavior {
+        type Dto = dtos::tasks::NoOpBehavior;
+        fn into_dto(self) -> Result<Self::Dto, ValidationError> {
+            self.try_into()
+        }
+    }
+
+    impl From<dtos::tasks::NoOpBehavior> for NoOpBehavior {
+        fn from(v: dtos::tasks::NoOpBehavior) -> Self {
+            match v {
+                dtos::tasks::NoOpBehavior::Continue => Self::Continue,
+                dtos::tasks::NoOpBehavior::Break => Self::Break,
+            }
+        }
+    }
+
+    impl TryFrom<NoOpBehavior> for dtos::tasks::NoOpBehavior {
+        type Error = ValidationError;
+        fn try_from(v: NoOpBehavior) -> Result<Self, Self::Error> {
+            match v {
+                NoOpBehavior::Continue => Ok(Self::Continue),
+                NoOpBehavior::Break => Ok(Self::Break),
+            }
+        }
+    }
+
+    implement_serde_as!(dtos::tasks::NoOpBehavior, NoOpBehavior);
+
     // Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -11238,6 +11702,12 @@ pub mod tasks {
         pub service_account: Option<auth::PrincipalHandle>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub max_slice_size: Option<ByteSize>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11257,6 +11727,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
             }
@@ -11275,6 +11747,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
@@ -11298,6 +11778,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<auth::PrincipalHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
     }
 
     impl IntoDto for TaskSpecGarbageCollection {
@@ -11313,6 +11799,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
             }
         }
     }
@@ -11329,6 +11817,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
             })
         }
@@ -11353,6 +11849,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<auth::PrincipalHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub source: resources::ResourceHandle,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11372,6 +11874,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 source: v.source.into(),
                 target_records_per_slice: v.target_records_per_slice,
             }
@@ -11390,6 +11894,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 source: dtos::resources::ResourceHandle::try_from(v.source)?,
                 target_records_per_slice: v.target_records_per_slice,
@@ -11484,6 +11996,12 @@ pub mod tasks {
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub max_slice_size: Option<ByteSize>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11503,6 +12021,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
             }
@@ -11521,6 +12041,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 max_slice_size: v.max_slice_size,
                 max_slice_records: v.max_slice_records,
@@ -11547,6 +12075,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
     }
 
     impl IntoDto for TaskSpecInputGarbageCollection {
@@ -11562,6 +12096,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
             }
         }
     }
@@ -11578,6 +12114,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
             })
         }
@@ -11602,6 +12146,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub source: StructOrString<resources::ResourceRef>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11621,6 +12171,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 source: v.source.into(),
                 target_records_per_slice: v.target_records_per_slice,
             }
@@ -11639,6 +12191,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 source: dtos::resources::ResourceRef::try_from(v.source)?,
                 target_records_per_slice: v.target_records_per_slice,
@@ -11664,6 +12224,12 @@ pub mod tasks {
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub r#ref: Option<String>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11686,6 +12252,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 r#ref: v.r#ref,
                 new_block_hash: v.new_block_hash,
                 old_block_hash: v.old_block_hash,
@@ -11705,6 +12273,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 r#ref: v.r#ref,
                 new_block_hash: v.new_block_hash,
@@ -11729,6 +12305,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub source: tasks::SyncEndpointInput,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11748,6 +12330,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 source: v.source.into(),
                 force: v.force,
             }
@@ -11766,6 +12350,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 source: dtos::tasks::SyncEndpointInput::try_from(v.source)?,
                 force: v.force,
@@ -11789,6 +12381,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub destination: tasks::SyncEndpointInput,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11811,6 +12409,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 destination: v.destination.into(),
                 force: v.force,
                 create_if_not_exists: v.create_if_not_exists,
@@ -11830,6 +12430,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 destination: dtos::tasks::SyncEndpointInput::try_from(v.destination)?,
                 force: v.force,
@@ -11854,6 +12462,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
     }
 
     impl IntoDto for TaskSpecInputTransform {
@@ -11869,6 +12483,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
             }
         }
     }
@@ -11885,6 +12501,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
             })
         }
@@ -11908,6 +12532,12 @@ pub mod tasks {
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub replay_transform: Option<bool>,
     }
 
@@ -11924,6 +12554,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 replay_transform: v.replay_transform,
             }
         }
@@ -11941,6 +12573,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 replay_transform: v.replay_transform,
             })
@@ -11960,6 +12600,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<StructOrString<auth::PrincipalRef>>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub endpoint: StructOrString<resources::ResourceRef>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -11981,6 +12627,8 @@ pub mod tasks {
             Self {
                 name: v.name,
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 endpoint: v.endpoint.into(),
                 payload: v.payload,
                 retry_policy: v.retry_policy.map(|v| v.into()),
@@ -11996,6 +12644,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalRef::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 endpoint: dtos::resources::ResourceRef::try_from(v.endpoint)?,
                 payload: v.payload,
@@ -12028,6 +12684,12 @@ pub mod tasks {
         pub service_account: Option<auth::PrincipalHandle>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub r#ref: Option<String>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -12050,6 +12712,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 r#ref: v.r#ref,
                 new_block_hash: v.new_block_hash,
                 old_block_hash: v.old_block_hash,
@@ -12069,6 +12733,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 r#ref: v.r#ref,
                 new_block_hash: v.new_block_hash,
@@ -12093,6 +12765,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<auth::PrincipalHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub source: tasks::SyncEndpoint,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -12112,6 +12790,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 source: v.source.into(),
                 force: v.force,
             }
@@ -12130,6 +12810,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 source: dtos::tasks::SyncEndpoint::try_from(v.source)?,
                 force: v.force,
@@ -12153,6 +12841,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<auth::PrincipalHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub destination: tasks::SyncEndpoint,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -12175,6 +12869,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 destination: v.destination.into(),
                 force: v.force,
                 create_if_not_exists: v.create_if_not_exists,
@@ -12194,6 +12890,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 destination: dtos::tasks::SyncEndpoint::try_from(v.destination)?,
                 force: v.force,
@@ -12218,6 +12922,12 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<auth::PrincipalHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
     }
 
     impl IntoDto for TaskSpecTransform {
@@ -12233,6 +12943,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
             }
         }
     }
@@ -12249,6 +12961,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
             })
         }
@@ -12272,6 +12992,12 @@ pub mod tasks {
         pub service_account: Option<auth::PrincipalHandle>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub replay_transform: Option<bool>,
     }
 
@@ -12288,6 +13014,8 @@ pub mod tasks {
                 name: v.name,
                 target: v.target.map(|v| v.into()),
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 replay_transform: v.replay_transform,
             }
         }
@@ -12305,6 +13033,14 @@ pub mod tasks {
                 service_account: v
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
+                    .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
                     .transpose()?,
                 replay_transform: v.replay_transform,
             })
@@ -12324,10 +13060,19 @@ pub mod tasks {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub service_account: Option<auth::PrincipalHandle>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub on_failure: Option<tasks::FailureBehavior>,
         pub endpoint: resources::ResourceHandle,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub payload: Option<String>,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub retry_policy: Option<flows::RetryPolicy>,
     }
 
     impl IntoDto for TaskSpecWebhookCall {
@@ -12342,8 +13087,11 @@ pub mod tasks {
             Self {
                 name: v.name,
                 service_account: v.service_account.map(|v| v.into()),
+                on_no_op: v.on_no_op.map(|v| v.into()),
+                on_failure: v.on_failure.map(|v| v.into()),
                 endpoint: v.endpoint.into(),
                 payload: v.payload,
+                retry_policy: v.retry_policy.map(|v| v.into()),
             }
         }
     }
@@ -12357,8 +13105,20 @@ pub mod tasks {
                     .service_account
                     .map(|v| dtos::auth::PrincipalHandle::try_from(v))
                     .transpose()?,
+                on_no_op: v
+                    .on_no_op
+                    .map(|v| dtos::tasks::NoOpBehavior::try_from(v))
+                    .transpose()?,
+                on_failure: v
+                    .on_failure
+                    .map(|v| dtos::tasks::FailureBehavior::try_from(v))
+                    .transpose()?,
                 endpoint: dtos::resources::ResourceHandle::try_from(v.endpoint)?,
                 payload: v.payload,
+                retry_policy: v
+                    .retry_policy
+                    .map(|v| dtos::flows::RetryPolicy::try_from(v))
+                    .transpose()?,
             })
         }
     }

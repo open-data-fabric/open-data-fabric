@@ -94,7 +94,7 @@ spec:
       - event_time
 ```
 
-A source is decoupled from the datasets it writes to. Ingestion is performed by an `Ingest` task that references the `Source` and the target root dataset, and that can be scheduled by a flow (see [RFC-019](../../rfcs/019-iac-task-flow-system.md)):
+A source is decoupled from the datasets it writes to. Ingestion is performed by an `Ingest` task that references the `Source` and the target root dataset, and that can be scheduled by a flow (see [Tasks and Flows](../automation/tasks-and-flows.md)):
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/flows/v1alpha1/Flow

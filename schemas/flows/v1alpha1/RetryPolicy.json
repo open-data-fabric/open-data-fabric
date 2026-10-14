@@ -18,7 +18,7 @@
     "backoff": {
       "$ref": "https://opendatafabric.org/schemas/flows/v1alpha1/RetryBackoff",
       "unevaluatedProperties": false,
-      "description": "Type of the backoff scaling."
+      "description": "Type of the backoff scaling. When omitted, retries use a constant `minDelay`."
     }
   }
 }

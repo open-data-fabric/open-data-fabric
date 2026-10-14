@@ -119,7 +119,7 @@ Status legend:
 | --- | --- | --- | --- |
 | ✅ **Resource Framework** | Manifest format, resource model, desired vs. observed state, extensibility of resource types | Manifest, [RFC-018] | RFC |
 | **Event Bus** | The delivery mechanism and common types of events flowing in the system | | New |
-| **Tasks and Flows** | Workload scheduling and execution resources within ODF nodes | [RFC-019] | RFC |
+| ✅ **Tasks and Flows** | Workload scheduling and execution resources within ODF nodes | [RFC-019] | RFC |
 | **Webhooks** | Delivery of dataset events to external HTTP endpoints | `sinks/v1alpha1` schemas | New |
 
 #### Reference

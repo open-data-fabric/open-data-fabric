@@ -1,0 +1,10 @@
+{
+  "$id": "https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Determines how a flow run proceeds when a task finishes with a `NoOp` outcome.",
+  "type": "string",
+  "enum": [
+    "Continue",
+    "Break"
+  ]
+}

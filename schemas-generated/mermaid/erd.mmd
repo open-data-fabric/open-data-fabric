@@ -171,21 +171,25 @@ graph TD
     FlowStatus_RunEntry["FlowStatus::RunEntry"]
     FlowStatus_Value["FlowStatus::Value"]
     FlowTrigger
-    FlowTrigger_Dataset["FlowTrigger::Dataset"]
     FlowTrigger_Event["FlowTrigger::Event"]
+    FlowTrigger_InputsUpdated["FlowTrigger::InputsUpdated"]
+    FlowTrigger_Interval["FlowTrigger::Interval"]
     FlowTrigger_Manual["FlowTrigger::Manual"]
     FlowTrigger_Schedule["FlowTrigger::Schedule"]
     FlowTrigger_Source["FlowTrigger::Source"]
     FlowTriggerInput
-    FlowTriggerInput_Dataset["FlowTriggerInput::Dataset"]
     FlowTriggerInput_Event["FlowTriggerInput::Event"]
+    FlowTriggerInput_InputsUpdated["FlowTriggerInput::InputsUpdated"]
+    FlowTriggerInput_Interval["FlowTriggerInput::Interval"]
     FlowTriggerInput_Manual["FlowTriggerInput::Manual"]
     FlowTriggerInput_Schedule["FlowTriggerInput::Schedule"]
     FlowTriggerInput_Source["FlowTriggerInput::Source"]
+    RecentBindingsRetention
+    RecentRunsRetention
     RetryBackoff
     RetryPolicy
   end
-  class Flow,FlowRun,FlowRunActivationCause,FlowRunActivationCauses,FlowRunRetry,FlowRunSpec,FlowRunSpecInput,FlowRunStatus,FlowRunStatus_TaskEntry,FlowRunStatus_Value,FlowSpec,FlowSpecInput,FlowStatus,FlowStatus_BindingEntry,FlowStatus_RunEntry,FlowStatus_Value,FlowTrigger,FlowTrigger_Dataset,FlowTrigger_Event,FlowTrigger_Manual,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Dataset,FlowTriggerInput_Event,FlowTriggerInput_Manual,FlowTriggerInput_Schedule,FlowTriggerInput_Source,RetryBackoff,RetryPolicy ctx_flows
+  class Flow,FlowRun,FlowRunActivationCause,FlowRunActivationCauses,FlowRunRetry,FlowRunSpec,FlowRunSpecInput,FlowRunStatus,FlowRunStatus_TaskEntry,FlowRunStatus_Value,FlowSpec,FlowSpecInput,FlowStatus,FlowStatus_BindingEntry,FlowStatus_RunEntry,FlowStatus_Value,FlowTrigger,FlowTrigger_Event,FlowTrigger_InputsUpdated,FlowTrigger_Interval,FlowTrigger_Manual,FlowTrigger_Schedule,FlowTrigger_Source,FlowTriggerInput,FlowTriggerInput_Event,FlowTriggerInput_InputsUpdated,FlowTriggerInput_Interval,FlowTriggerInput_Manual,FlowTriggerInput_Schedule,FlowTriggerInput_Source,RecentBindingsRetention,RecentRunsRetention,RetryBackoff,RetryPolicy ctx_flows
 
   subgraph legacy["legacy"]
     AddPushSource
@@ -288,6 +292,8 @@ graph TD
   class AwsCredentials,AwsCredentialsInput,PersistentVolume,PersistentVolumeRef,PersistentVolumeSpec,PersistentVolumeSpec_S3,PersistentVolumeSpecInput,PersistentVolumeSpecInput_S3,VolumeCapacity ctx_storage
 
   subgraph tasks["tasks"]
+    FailureBehavior
+    NoOpBehavior
     SyncAuth
     SyncAuth_Aws["SyncAuth::Aws"]
     SyncAuth_Bearer["SyncAuth::Bearer"]
@@ -330,7 +336,7 @@ graph TD
     TaskSpecInput_WebhookCall["TaskSpecInput::WebhookCall"]
     TaskStatus
   end
-  class SyncAuth,SyncAuth_Aws,SyncAuth_Bearer,SyncAuth_Headers,SyncAuthHeader,SyncAuthHeaderInput,SyncAuthInput,SyncAuthInput_Aws,SyncAuthInput_Bearer,SyncAuthInput_Headers,SyncEndpoint,SyncEndpointInput,Task,TaskError,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Reset,TaskSpec_SyncFrom,TaskSpec_SyncTo,TaskSpec_Transform,TaskSpec_Verify,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Reset,TaskSpecInput_SyncFrom,TaskSpecInput_SyncTo,TaskSpecInput_Transform,TaskSpecInput_Verify,TaskSpecInput_WebhookCall,TaskStatus ctx_tasks
+  class FailureBehavior,NoOpBehavior,SyncAuth,SyncAuth_Aws,SyncAuth_Bearer,SyncAuth_Headers,SyncAuthHeader,SyncAuthHeaderInput,SyncAuthInput,SyncAuthInput_Aws,SyncAuthInput_Bearer,SyncAuthInput_Headers,SyncEndpoint,SyncEndpointInput,Task,TaskError,TaskOutcome,TaskOutcome_Cancelled,TaskOutcome_Failed,TaskOutcome_NoOp,TaskOutcome_Success,TaskPlan,TaskSpec,TaskSpec_Compaction,TaskSpec_GarbageCollection,TaskSpec_Ingest,TaskSpec_Reset,TaskSpec_SyncFrom,TaskSpec_SyncTo,TaskSpec_Transform,TaskSpec_Verify,TaskSpec_WebhookCall,TaskSpecInput,TaskSpecInput_Compaction,TaskSpecInput_GarbageCollection,TaskSpecInput_Ingest,TaskSpecInput_Reset,TaskSpecInput_SyncFrom,TaskSpecInput_SyncTo,TaskSpecInput_Transform,TaskSpecInput_Verify,TaskSpecInput_WebhookCall,TaskStatus ctx_tasks
 
   AddData -->|"new_data"| DataSlice
   AddData -->|"new_checkpoint"| Checkpoint
@@ -418,11 +424,15 @@ graph TD
   FlowSpec -->|"triggers"| FlowTrigger
   FlowSpec -->|"tasks"| TaskSpec
   FlowSpec -->|"retry_policy"| RetryPolicy
+  FlowSpec -->|"recent_bindings_retention"| RecentBindingsRetention
+  FlowSpec -->|"recent_runs_retention"| RecentRunsRetention
   FlowSpecInput -->|"target"| ResourceSelector
   FlowSpecInput -->|"service_account"| PrincipalRef
   FlowSpecInput -->|"triggers"| FlowTriggerInput
   FlowSpecInput -->|"tasks"| TaskSpecInput
   FlowSpecInput -->|"retry_policy"| RetryPolicy
+  FlowSpecInput -->|"recent_bindings_retention"| RecentBindingsRetention
+  FlowSpecInput -->|"recent_runs_retention"| RecentRunsRetention
   FlowStatus -->|"status"| FlowStatus_Value
   FlowStatus -->|"recent_bindings"| FlowStatus_BindingEntry
   FlowStatus -->|"recent_runs"| FlowStatus_RunEntry
@@ -431,19 +441,21 @@ graph TD
   FlowStatus_RunEntry -->|"retry_of"| ResourceHandle
   FlowTrigger -->|"variant"| FlowTrigger_Manual
   FlowTrigger -->|"variant"| FlowTrigger_Schedule
+  FlowTrigger -->|"variant"| FlowTrigger_Interval
   FlowTrigger -->|"variant"| FlowTrigger_Event
   FlowTrigger -->|"variant"| FlowTrigger_Source
-  FlowTrigger -->|"variant"| FlowTrigger_Dataset
-  FlowTrigger_Dataset -->|"dataset"| DatasetSelector
+  FlowTrigger -->|"variant"| FlowTrigger_InputsUpdated
   FlowTrigger_Event -->|"events"| EventFilter
+  FlowTrigger_InputsUpdated -->|"target"| DatasetSelector
   FlowTrigger_Source -->|"source"| ResourceHandle
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Manual
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Schedule
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_Interval
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Event
   FlowTriggerInput -->|"variant"| FlowTriggerInput_Source
-  FlowTriggerInput -->|"variant"| FlowTriggerInput_Dataset
-  FlowTriggerInput_Dataset -->|"dataset"| DatasetSelector
+  FlowTriggerInput -->|"variant"| FlowTriggerInput_InputsUpdated
   FlowTriggerInput_Event -->|"events"| EventFilter
+  FlowTriggerInput_InputsUpdated -->|"target"| DatasetSelector
   FlowTriggerInput_Source -->|"source"| ResourceRef
   Group -->|"headers"| ResourceHeadersInput
   Group -->|"spec"| GroupSpecInput
@@ -631,25 +643,44 @@ graph TD
   TaskSpec -->|"variant"| TaskSpec_WebhookCall
   TaskSpec_Compaction -->|"target"| DatasetHandle
   TaskSpec_Compaction -->|"service_account"| PrincipalHandle
+  TaskSpec_Compaction -->|"on_no_op"| NoOpBehavior
+  TaskSpec_Compaction -->|"on_failure"| FailureBehavior
   TaskSpec_GarbageCollection -->|"target"| DatasetHandle
   TaskSpec_GarbageCollection -->|"service_account"| PrincipalHandle
+  TaskSpec_GarbageCollection -->|"on_no_op"| NoOpBehavior
+  TaskSpec_GarbageCollection -->|"on_failure"| FailureBehavior
   TaskSpec_Ingest -->|"target"| DatasetHandle
   TaskSpec_Ingest -->|"service_account"| PrincipalHandle
+  TaskSpec_Ingest -->|"on_no_op"| NoOpBehavior
+  TaskSpec_Ingest -->|"on_failure"| FailureBehavior
   TaskSpec_Ingest -->|"source"| ResourceHandle
   TaskSpec_Reset -->|"target"| DatasetHandle
   TaskSpec_Reset -->|"service_account"| PrincipalHandle
+  TaskSpec_Reset -->|"on_no_op"| NoOpBehavior
+  TaskSpec_Reset -->|"on_failure"| FailureBehavior
   TaskSpec_SyncFrom -->|"target"| DatasetHandle
   TaskSpec_SyncFrom -->|"service_account"| PrincipalHandle
+  TaskSpec_SyncFrom -->|"on_no_op"| NoOpBehavior
+  TaskSpec_SyncFrom -->|"on_failure"| FailureBehavior
   TaskSpec_SyncFrom -->|"source"| SyncEndpoint
   TaskSpec_SyncTo -->|"target"| DatasetHandle
   TaskSpec_SyncTo -->|"service_account"| PrincipalHandle
+  TaskSpec_SyncTo -->|"on_no_op"| NoOpBehavior
+  TaskSpec_SyncTo -->|"on_failure"| FailureBehavior
   TaskSpec_SyncTo -->|"destination"| SyncEndpoint
   TaskSpec_Transform -->|"target"| DatasetHandle
   TaskSpec_Transform -->|"service_account"| PrincipalHandle
+  TaskSpec_Transform -->|"on_no_op"| NoOpBehavior
+  TaskSpec_Transform -->|"on_failure"| FailureBehavior
   TaskSpec_Verify -->|"target"| DatasetHandle
   TaskSpec_Verify -->|"service_account"| PrincipalHandle
+  TaskSpec_Verify -->|"on_no_op"| NoOpBehavior
+  TaskSpec_Verify -->|"on_failure"| FailureBehavior
   TaskSpec_WebhookCall -->|"service_account"| PrincipalHandle
+  TaskSpec_WebhookCall -->|"on_no_op"| NoOpBehavior
+  TaskSpec_WebhookCall -->|"on_failure"| FailureBehavior
   TaskSpec_WebhookCall -->|"endpoint"| ResourceHandle
+  TaskSpec_WebhookCall -->|"retry_policy"| RetryPolicy
   TaskSpecInput -->|"variant"| TaskSpecInput_Ingest
   TaskSpecInput -->|"variant"| TaskSpecInput_Transform
   TaskSpecInput -->|"variant"| TaskSpecInput_SyncFrom
@@ -661,24 +692,42 @@ graph TD
   TaskSpecInput -->|"variant"| TaskSpecInput_WebhookCall
   TaskSpecInput_Compaction -->|"target"| DatasetRef
   TaskSpecInput_Compaction -->|"service_account"| PrincipalRef
+  TaskSpecInput_Compaction -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_Compaction -->|"on_failure"| FailureBehavior
   TaskSpecInput_GarbageCollection -->|"target"| DatasetRef
   TaskSpecInput_GarbageCollection -->|"service_account"| PrincipalRef
+  TaskSpecInput_GarbageCollection -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_GarbageCollection -->|"on_failure"| FailureBehavior
   TaskSpecInput_Ingest -->|"target"| DatasetRef
   TaskSpecInput_Ingest -->|"service_account"| PrincipalRef
+  TaskSpecInput_Ingest -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_Ingest -->|"on_failure"| FailureBehavior
   TaskSpecInput_Ingest -->|"source"| ResourceRef
   TaskSpecInput_Reset -->|"target"| DatasetRef
   TaskSpecInput_Reset -->|"service_account"| PrincipalRef
+  TaskSpecInput_Reset -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_Reset -->|"on_failure"| FailureBehavior
   TaskSpecInput_SyncFrom -->|"target"| DatasetRef
   TaskSpecInput_SyncFrom -->|"service_account"| PrincipalRef
+  TaskSpecInput_SyncFrom -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_SyncFrom -->|"on_failure"| FailureBehavior
   TaskSpecInput_SyncFrom -->|"source"| SyncEndpointInput
   TaskSpecInput_SyncTo -->|"target"| DatasetRef
   TaskSpecInput_SyncTo -->|"service_account"| PrincipalRef
+  TaskSpecInput_SyncTo -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_SyncTo -->|"on_failure"| FailureBehavior
   TaskSpecInput_SyncTo -->|"destination"| SyncEndpointInput
   TaskSpecInput_Transform -->|"target"| DatasetRef
   TaskSpecInput_Transform -->|"service_account"| PrincipalRef
+  TaskSpecInput_Transform -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_Transform -->|"on_failure"| FailureBehavior
   TaskSpecInput_Verify -->|"target"| DatasetRef
   TaskSpecInput_Verify -->|"service_account"| PrincipalRef
+  TaskSpecInput_Verify -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_Verify -->|"on_failure"| FailureBehavior
   TaskSpecInput_WebhookCall -->|"service_account"| PrincipalRef
+  TaskSpecInput_WebhookCall -->|"on_no_op"| NoOpBehavior
+  TaskSpecInput_WebhookCall -->|"on_failure"| FailureBehavior
   TaskSpecInput_WebhookCall -->|"endpoint"| ResourceRef
   TaskSpecInput_WebhookCall -->|"retry_policy"| RetryPolicy
   Transform -->|"variant"| Transform_Sql

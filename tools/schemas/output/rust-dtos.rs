@@ -2317,6 +2317,10 @@ pub mod flows {
         pub tasks: Vec<tasks::TaskSpec>,
         /// Defines how a flow should react to failures.
         pub retry_policy: Option<flows::RetryPolicy>,
+        /// Controls retention of `FlowStatus.recentBindings`.
+        pub recent_bindings_retention: Option<flows::RecentBindingsRetention>,
+        /// Controls retention of `FlowStatus.recentRuns`.
+        pub recent_runs_retention: Option<flows::RecentRunsRetention>,
     }
 
     /// Defines a sequence of tasks to be executed upon certain trigger conditions.
@@ -2334,6 +2338,10 @@ pub mod flows {
         pub tasks: Vec<tasks::TaskSpecInput>,
         /// Defines how a flow should react to failures.
         pub retry_policy: Option<flows::RetryPolicy>,
+        /// Controls retention of `FlowStatus.recentBindings`.
+        pub recent_bindings_retention: Option<flows::RecentBindingsRetention>,
+        /// Controls retention of `FlowStatus.recentRuns`.
+        pub recent_runs_retention: Option<flows::RecentRunsRetention>,
     }
 
     /// Condition tracking the overall status of a Flow and a summary of recent runs.
@@ -2397,40 +2405,54 @@ pub mod flows {
     pub enum FlowTrigger {
         Manual(flows::FlowTriggerManual),
         Schedule(flows::FlowTriggerSchedule),
+        Interval(flows::FlowTriggerInterval),
         Event(flows::FlowTriggerEvent),
         Source(flows::FlowTriggerSource),
-        Dataset(flows::FlowTriggerDataset),
+        InputsUpdated(flows::FlowTriggerInputsUpdated),
     }
 
     impl_enum_with_variants!(FlowTrigger);
     impl_enum_variant!(FlowTrigger::Manual(flows::FlowTriggerManual));
     impl_enum_variant!(FlowTrigger::Schedule(flows::FlowTriggerSchedule));
+    impl_enum_variant!(FlowTrigger::Interval(flows::FlowTriggerInterval));
     impl_enum_variant!(FlowTrigger::Event(flows::FlowTriggerEvent));
     impl_enum_variant!(FlowTrigger::Source(flows::FlowTriggerSource));
-    impl_enum_variant!(FlowTrigger::Dataset(flows::FlowTriggerDataset));
-
-    /// Triggers the flow when matching datasets are updated.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Dataset
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct FlowTriggerDataset {
-        /// Selector that identifies which datasets can trigger this flow.
-        pub dataset: datasets::DatasetSelector,
-        /// Set of event bus event IDs that this trigger will react to
-        pub events: Option<Vec<String>>,
-    }
+    impl_enum_variant!(FlowTrigger::InputsUpdated(flows::FlowTriggerInputsUpdated));
 
     /// Triggers the flow when an event bus event matching one of the filters is observed.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Event
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct FlowTriggerEvent {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
         /// Filters the event by type and fields.
         pub events: events::EventFilter,
-        /// The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
         pub cooldown: Option<DurationString>,
-        /// If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
         pub cooldown_max_batch: Option<u64>,
+    }
+
+    impl FlowTriggerEvent {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerEvent {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.events == other.events
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+        }
     }
 
     /// Condition that causes a flow to be executed.
@@ -2440,62 +2462,218 @@ pub mod flows {
     pub enum FlowTriggerInput {
         Manual(flows::FlowTriggerInputManual),
         Schedule(flows::FlowTriggerInputSchedule),
+        Interval(flows::FlowTriggerInputInterval),
         Event(flows::FlowTriggerInputEvent),
         Source(flows::FlowTriggerInputSource),
-        Dataset(flows::FlowTriggerInputDataset),
+        InputsUpdated(flows::FlowTriggerInputInputsUpdated),
     }
 
     impl_enum_with_variants!(FlowTriggerInput);
     impl_enum_variant!(FlowTriggerInput::Manual(flows::FlowTriggerInputManual));
     impl_enum_variant!(FlowTriggerInput::Schedule(flows::FlowTriggerInputSchedule));
+    impl_enum_variant!(FlowTriggerInput::Interval(flows::FlowTriggerInputInterval));
     impl_enum_variant!(FlowTriggerInput::Event(flows::FlowTriggerInputEvent));
     impl_enum_variant!(FlowTriggerInput::Source(flows::FlowTriggerInputSource));
-    impl_enum_variant!(FlowTriggerInput::Dataset(flows::FlowTriggerInputDataset));
-
-    /// Triggers the flow when matching datasets are updated.
-    ///
-    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Dataset
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct FlowTriggerInputDataset {
-        /// Selector that identifies which datasets can trigger this flow.
-        pub dataset: datasets::DatasetSelector,
-        /// Set of event bus event IDs that this trigger will react to
-        pub events: Option<Vec<String>>,
-    }
+    impl_enum_variant!(FlowTriggerInput::InputsUpdated(
+        flows::FlowTriggerInputInputsUpdated
+    ));
 
     /// Triggers the flow when an event bus event matching one of the filters is observed.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Event
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct FlowTriggerInputEvent {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
         /// Filters the event by type and fields.
         pub events: events::EventFilter,
-        /// The trigger will fire upon first observed event. If another event arrives withing the `cooldown` interval the firing will be postponed until `cooldown` interval ends. I.e. trigger is guaranteed to fire, but may batch multiple events together into one flow run.
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
         pub cooldown: Option<DurationString>,
-        /// If an event is observed a `cooldownMaxBatch` number of times during the `cooldown` interval it will fire the trigger without waiting for cooldown to finish.
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
         pub cooldown_max_batch: Option<u64>,
+    }
+
+    impl FlowTriggerInputEvent {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputEvent {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.events == other.events
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+        }
+    }
+
+    /// Triggers the flow when inputs of a derivative dataset receive new data, with optional batching controls.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/InputsUpdated
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct FlowTriggerInputInputsUpdated {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
+        /// Selector of derivative datasets whose inputs are watched. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetSelector>,
+        /// Minimum number of new input records to accumulate before triggering.
+        pub min_records_to_await: Option<u64>,
+        /// Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
+        pub max_await_interval: Option<DurationString>,
+    }
+
+    impl FlowTriggerInputInputsUpdated {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputInputsUpdated {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.target == other.target
+                && self.min_records_to_await == other.min_records_to_await
+                && self.max_await_interval == other.max_await_interval
+        }
+    }
+
+    /// Triggers the flow at regular intervals.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Interval
+    #[derive(Clone, Debug, Eq)]
+    pub struct FlowTriggerInputInterval {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
+        /// Interval between activations e.g. `15m`.
+        pub interval: DurationString,
+    }
+
+    impl FlowTriggerInputInterval {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputInterval {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.interval == other.interval
+        }
     }
 
     /// Triggers the flow via an API call or UI action.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Manual
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
-    pub struct FlowTriggerInputManual {}
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct FlowTriggerInputManual {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
+    }
+
+    impl FlowTriggerInputManual {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputManual {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+        }
+    }
 
     /// Triggers the flow on a cron schedule.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Schedule
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct FlowTriggerInputSchedule {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
         /// Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
         pub cron: String,
+    }
+
+    impl FlowTriggerInputSchedule {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputSchedule {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.cron == other.cron
+        }
     }
 
     /// Triggers the flow when a source receives new data, with optional batching controls.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTriggerInput#/$defs/Source
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct FlowTriggerInputSource {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
         /// Reference to the source resource that drives this trigger.
         pub source: resources::ResourceRef,
         /// Minimum number of new records to accumulate before triggering.
@@ -2504,32 +2682,234 @@ pub mod flows {
         pub max_await_interval: Option<DurationString>,
     }
 
+    impl FlowTriggerInputSource {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputSource {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.source == other.source
+                && self.min_records_to_await == other.min_records_to_await
+                && self.max_await_interval == other.max_await_interval
+        }
+    }
+
+    /// Triggers the flow when inputs of a derivative dataset receive new data, with optional batching controls.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/InputsUpdated
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct FlowTriggerInputsUpdated {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
+        /// Selector of derivative datasets whose inputs are watched. Defaults to the flow-level target when omitted.
+        pub target: Option<datasets::DatasetSelector>,
+        /// Minimum number of new input records to accumulate before triggering.
+        pub min_records_to_await: Option<u64>,
+        /// Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
+        pub max_await_interval: Option<DurationString>,
+    }
+
+    impl FlowTriggerInputsUpdated {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInputsUpdated {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.target == other.target
+                && self.min_records_to_await == other.min_records_to_await
+                && self.max_await_interval == other.max_await_interval
+        }
+    }
+
+    /// Triggers the flow at regular intervals.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Interval
+    #[derive(Clone, Debug, Eq)]
+    pub struct FlowTriggerInterval {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
+        /// Interval between activations e.g. `15m`.
+        pub interval: DurationString,
+    }
+
+    impl FlowTriggerInterval {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerInterval {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.interval == other.interval
+        }
+    }
+
     /// Triggers the flow via an API call or UI action.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Manual
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
-    pub struct FlowTriggerManual {}
+    #[derive(Clone, Debug, Eq, Default)]
+    pub struct FlowTriggerManual {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
+    }
+
+    impl FlowTriggerManual {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerManual {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+        }
+    }
 
     /// Triggers the flow on a cron schedule.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Schedule
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct FlowTriggerSchedule {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
         /// Cron5 expression defining the schedule e.g. `@daily` or `*/30 * * * *`.
         pub cron: String,
+    }
+
+    impl FlowTriggerSchedule {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerSchedule {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.cron == other.cron
+        }
     }
 
     /// Triggers the flow when a source receives new data, with optional batching controls.
     ///
     /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/FlowTrigger#/$defs/Source
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct FlowTriggerSource {
+        /// Allows to pause an individual trigger.
+        ///
+        /// Defaults to: true
+        pub enabled: Option<bool>,
+        /// Minimum interval between activations of the trigger. If the trigger fires again within the interval, the activation is postponed until the interval ends, batching multiple activations into one flow run.
+        pub cooldown: Option<DurationString>,
+        /// If the trigger is activated this many times during the `cooldown` interval, it fires without waiting for the interval to end.
+        pub cooldown_max_batch: Option<u64>,
         /// Reference to the source resource that drives this trigger.
         pub source: resources::ResourceHandle,
         /// Minimum number of new records to accumulate before triggering.
         pub min_records_to_await: Option<u64>,
         /// Maximum time to wait for `minRecordsToAwait` before triggering anyway e.g. `1h`.
         pub max_await_interval: Option<DurationString>,
+    }
+
+    impl FlowTriggerSource {
+        pub fn default_enabled() -> bool {
+            true
+        }
+        pub fn enabled(&self) -> bool {
+            self.enabled.unwrap_or(Self::default_enabled())
+        }
+    }
+
+    impl PartialEq for FlowTriggerSource {
+        fn eq(&self, other: &Self) -> bool {
+            self.enabled.or_else(|| Some(Self::default_enabled()))
+                == other.enabled.or_else(|| Some(Self::default_enabled()))
+                && self.cooldown == other.cooldown
+                && self.cooldown_max_batch == other.cooldown_max_batch
+                && self.source == other.source
+                && self.min_records_to_await == other.min_records_to_await
+                && self.max_await_interval == other.max_await_interval
+        }
+    }
+
+    /// Controls how many recent bindings are reported in `FlowStatus.recentBindings`.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentBindingsRetention
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct RecentBindingsRetention {
+        /// Maximum number of recent bindings to report.
+        pub max_bindings: Option<u32>,
+    }
+
+    /// Controls how many recent runs are reported in `FlowStatus.recentRuns`. Implementations may additionally cap these values.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/flows/v1alpha1/RecentRunsRetention
+    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    pub struct RecentRunsRetention {
+        /// Maximum number of recent runs to report.
+        pub max_runs: Option<u32>,
+        /// Maximum age of a finished run to be reported e.g. `30d`.
+        pub max_age: Option<DurationString>,
     }
 
     /// Type of the backoff scaling.
@@ -2550,7 +2930,7 @@ pub mod flows {
         pub max_attempts: Option<u32>,
         /// How long to wait until the first retry.
         pub min_delay: Option<DurationString>,
-        /// Type of the backoff scaling.
+        /// Type of the backoff scaling. When omitted, retries use a constant `minDelay`.
         pub backoff: Option<flows::RetryBackoff>,
     }
 }
@@ -4103,6 +4483,24 @@ pub mod tasks {
     #[allow(unused_imports)]
     use super::*;
 
+    /// Determines how a flow run proceeds when a task finishes with a `Failed` outcome.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/FailureBehavior
+    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+    pub enum FailureBehavior {
+        Fail,
+        Continue,
+    }
+
+    /// Determines how a flow run proceeds when a task finishes with a `NoOp` outcome.
+    ///
+    /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/NoOpBehavior
+    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+    pub enum NoOpBehavior {
+        Continue,
+        Break,
+    }
+
     /// Credentials used to access a remote location during a sync.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/SyncAuth
@@ -4366,7 +4764,7 @@ pub mod tasks {
     /// Compacts data files in matching datasets to improve query performance.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Compaction
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecCompaction {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4374,16 +4772,55 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Target maximum size of each compacted data slice e.g. `100MiB`.
         pub max_slice_size: Option<ByteSize>,
         /// Target maximum number of records per compacted data slice.
         pub max_slice_records: Option<u64>,
     }
 
+    impl TaskSpecCompaction {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecCompaction {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.max_slice_size == other.max_slice_size
+                && self.max_slice_records == other.max_slice_records
+        }
+    }
+
     /// Removes unreferenced data files from matching datasets.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/GarbageCollection
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecGarbageCollection {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4391,12 +4828,49 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
+    }
+
+    impl TaskSpecGarbageCollection {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecGarbageCollection {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+        }
     }
 
     /// Fetches data from a source and appends it to a dataset.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Ingest
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct TaskSpecIngest {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4404,10 +4878,49 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Reference to the source resource that defines how to fetch data.
         pub source: resources::ResourceHandle,
         /// Target number of records to ingest per data slice.
         pub target_records_per_slice: Option<u64>,
+    }
+
+    impl TaskSpecIngest {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecIngest {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.source == other.source
+                && self.target_records_per_slice == other.target_records_per_slice
+        }
     }
 
     /// An individual work item to be executed as part of a flow.
@@ -4442,7 +4955,7 @@ pub mod tasks {
     /// Compacts data files in matching datasets to improve query performance.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Compaction
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecInputCompaction {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4450,16 +4963,55 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Target maximum size of each compacted data slice e.g. `100MiB`.
         pub max_slice_size: Option<ByteSize>,
         /// Target maximum number of records per compacted data slice.
         pub max_slice_records: Option<u64>,
     }
 
+    impl TaskSpecInputCompaction {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputCompaction {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.max_slice_size == other.max_slice_size
+                && self.max_slice_records == other.max_slice_records
+        }
+    }
+
     /// Removes unreferenced data files from matching datasets.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/GarbageCollection
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecInputGarbageCollection {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4467,12 +5019,49 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
+    }
+
+    impl TaskSpecInputGarbageCollection {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputGarbageCollection {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+        }
     }
 
     /// Fetches data from a source and appends it to a dataset.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Ingest
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct TaskSpecInputIngest {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4480,10 +5069,49 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Reference to the source resource that defines how to fetch data.
         pub source: resources::ResourceRef,
         /// Target number of records to ingest per data slice.
         pub target_records_per_slice: Option<u64>,
+    }
+
+    impl TaskSpecInputIngest {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputIngest {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.source == other.source
+                && self.target_records_per_slice == other.target_records_per_slice
+        }
     }
 
     /// Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
@@ -4497,6 +5125,14 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Name of the block reference to reset.
         ///
         /// Defaults to: "head"
@@ -4508,6 +5144,18 @@ pub mod tasks {
     }
 
     impl TaskSpecInputReset {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
         pub fn default_ref() -> &'static str {
             "head"
         }
@@ -4521,6 +5169,12 @@ pub mod tasks {
             self.name == other.name
                 && self.target == other.target
                 && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
                 && self.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
                     == other.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
                 && self.new_block_hash == other.new_block_hash
@@ -4539,6 +5193,14 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Remote dataset to pull from.
         pub source: tasks::SyncEndpointInput,
         /// Overwrite the local dataset even if its history has diverged from the source.
@@ -4548,6 +5210,18 @@ pub mod tasks {
     }
 
     impl TaskSpecInputSyncFrom {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
         pub fn default_force() -> bool {
             false
         }
@@ -4561,6 +5235,12 @@ pub mod tasks {
             self.name == other.name
                 && self.target == other.target
                 && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
                 && self.source == other.source
                 && self.force.or_else(|| Some(Self::default_force()))
                     == other.force.or_else(|| Some(Self::default_force()))
@@ -4578,6 +5258,14 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Remote dataset to push to.
         pub destination: tasks::SyncEndpointInput,
         /// Overwrite the remote dataset even if its history has diverged from the local one.
@@ -4591,6 +5279,18 @@ pub mod tasks {
     }
 
     impl TaskSpecInputSyncTo {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
         pub fn default_force() -> bool {
             false
         }
@@ -4611,6 +5311,12 @@ pub mod tasks {
             self.name == other.name
                 && self.target == other.target
                 && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
                 && self.destination == other.destination
                 && self.force.or_else(|| Some(Self::default_force()))
                     == other.force.or_else(|| Some(Self::default_force()))
@@ -4626,7 +5332,7 @@ pub mod tasks {
     /// Executes transformation of data defined in a derivative dataset.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Transform
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecInputTransform {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4634,12 +5340,49 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
+    }
+
+    impl TaskSpecInputTransform {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputTransform {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+        }
     }
 
     /// Checks dataset metadata for integrity.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/Verify
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecInputVerify {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4647,25 +5390,102 @@ pub mod tasks {
         pub target: Option<datasets::DatasetRef>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// If true, re-executes transformations on derivative datasets to verify reproducibility.
         pub replay_transform: Option<bool>,
+    }
+
+    impl TaskSpecInputVerify {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputVerify {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.replay_transform == other.replay_transform
+        }
     }
 
     /// Dispatches a certain payload to a specific `WebhookEndpoint`.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpecInput#/$defs/WebhookCall
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct TaskSpecInputWebhookCall {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalRef>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Reference to the `WebhookEndpoint`.
         pub endpoint: resources::ResourceRef,
         /// The payload to send. May include templating.
         pub payload: Option<String>,
         /// Defines how a webhook should react to failures.
         pub retry_policy: Option<flows::RetryPolicy>,
+    }
+
+    impl TaskSpecInputWebhookCall {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecInputWebhookCall {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.endpoint == other.endpoint
+                && self.payload == other.payload
+                && self.retry_policy == other.retry_policy
+        }
     }
 
     /// Moves a block reference of a dataset to an earlier block, discarding the history that follows it.
@@ -4679,6 +5499,14 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Name of the block reference to reset.
         ///
         /// Defaults to: "head"
@@ -4690,6 +5518,18 @@ pub mod tasks {
     }
 
     impl TaskSpecReset {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
         pub fn default_ref() -> &'static str {
             "head"
         }
@@ -4703,6 +5543,12 @@ pub mod tasks {
             self.name == other.name
                 && self.target == other.target
                 && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
                 && self.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
                     == other.r#ref.as_deref().or_else(|| Some(Self::default_ref()))
                 && self.new_block_hash == other.new_block_hash
@@ -4721,6 +5567,14 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Remote dataset to pull from.
         pub source: tasks::SyncEndpoint,
         /// Overwrite the local dataset even if its history has diverged from the source.
@@ -4730,6 +5584,18 @@ pub mod tasks {
     }
 
     impl TaskSpecSyncFrom {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
         pub fn default_force() -> bool {
             false
         }
@@ -4743,6 +5609,12 @@ pub mod tasks {
             self.name == other.name
                 && self.target == other.target
                 && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
                 && self.source == other.source
                 && self.force.or_else(|| Some(Self::default_force()))
                     == other.force.or_else(|| Some(Self::default_force()))
@@ -4760,6 +5632,14 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Remote dataset to push to.
         pub destination: tasks::SyncEndpoint,
         /// Overwrite the remote dataset even if its history has diverged from the local one.
@@ -4773,6 +5653,18 @@ pub mod tasks {
     }
 
     impl TaskSpecSyncTo {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
         pub fn default_force() -> bool {
             false
         }
@@ -4793,6 +5685,12 @@ pub mod tasks {
             self.name == other.name
                 && self.target == other.target
                 && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
                 && self.destination == other.destination
                 && self.force.or_else(|| Some(Self::default_force()))
                     == other.force.or_else(|| Some(Self::default_force()))
@@ -4808,7 +5706,7 @@ pub mod tasks {
     /// Executes transformation of data defined in a derivative dataset.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Transform
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecTransform {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4816,12 +5714,49 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
+    }
+
+    impl TaskSpecTransform {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecTransform {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+        }
     }
 
     /// Checks dataset metadata for integrity.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/Verify
-    #[derive(Clone, Debug, Eq, PartialEq, Default)]
+    #[derive(Clone, Debug, Eq, Default)]
     pub struct TaskSpecVerify {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
@@ -4829,23 +5764,102 @@ pub mod tasks {
         pub target: Option<datasets::DatasetHandle>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// If true, re-executes transformations on derivative datasets to verify reproducibility.
         pub replay_transform: Option<bool>,
+    }
+
+    impl TaskSpecVerify {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecVerify {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.target == other.target
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.replay_transform == other.replay_transform
+        }
     }
 
     /// Dispatches a certain payload to a specific `WebhookEndpoint`.
     ///
     /// Schema: https://opendatafabric.org/schemas/tasks/v1alpha1/TaskSpec#/$defs/WebhookCall
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct TaskSpecWebhookCall {
         /// An alias for the task used to refer to it in flows and access the results
         pub name: Option<String>,
         /// Service account whose permissions the task executes with. Must be an account of service account type. Defaults to the service account of the run when omitted.
         pub service_account: Option<auth::PrincipalHandle>,
+        /// How the flow run proceeds when this task finishes with a `NoOp` outcome: `Continue` executes the next task, while `Break` finishes the flow run early without an error.
+        ///
+        /// Defaults to: "Continue"
+        pub on_no_op: Option<tasks::NoOpBehavior>,
+        /// How the flow run proceeds when this task finishes with a `Failed` outcome: `Fail` finishes the flow run with an error, while `Continue` executes the next task.
+        ///
+        /// Defaults to: "Fail"
+        pub on_failure: Option<tasks::FailureBehavior>,
         /// Reference to the `WebhookEndpoint`.
         pub endpoint: resources::ResourceHandle,
         /// The payload to send. May include templating.
         pub payload: Option<String>,
+        /// Defines how a webhook should react to failures.
+        pub retry_policy: Option<flows::RetryPolicy>,
+    }
+
+    impl TaskSpecWebhookCall {
+        pub fn default_on_no_op() -> tasks::NoOpBehavior {
+            tasks::NoOpBehavior::Continue
+        }
+        pub fn on_no_op(&self) -> tasks::NoOpBehavior {
+            self.on_no_op.unwrap_or(Self::default_on_no_op())
+        }
+        pub fn default_on_failure() -> tasks::FailureBehavior {
+            tasks::FailureBehavior::Fail
+        }
+        pub fn on_failure(&self) -> tasks::FailureBehavior {
+            self.on_failure.unwrap_or(Self::default_on_failure())
+        }
+    }
+
+    impl PartialEq for TaskSpecWebhookCall {
+        fn eq(&self, other: &Self) -> bool {
+            self.name == other.name
+                && self.service_account == other.service_account
+                && self.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                    == other.on_no_op.or_else(|| Some(Self::default_on_no_op()))
+                && self.on_failure.or_else(|| Some(Self::default_on_failure()))
+                    == other
+                        .on_failure
+                        .or_else(|| Some(Self::default_on_failure()))
+                && self.endpoint == other.endpoint
+                && self.payload == other.payload
+                && self.retry_policy == other.retry_policy
+        }
     }
 
     /// Execution phase of a task.
