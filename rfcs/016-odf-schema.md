@@ -7,6 +7,9 @@
 
 **Published Date**: 2025-08-25
 
+**Specs**:
+- [Data Schema](../specs/datasets/data-schema.md)
+
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:smikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)
 

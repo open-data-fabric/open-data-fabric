@@ -282,104 +282,6 @@ Url = Scheme "://" [^\n]+
 Scheme = [a-zA-Z0-9]+ ("+" [a-zA-Z0-9]+)*
 ```
 
-## Data Format
-We differentiate two data formats by their purpose:
-- **In-memory format** - used when passing data around between the subsystems (e.g. when [Coordinator](specs/glossary.md#coordinator) communicates with the [Engine](specs/glossary.md#engine)).
-- **On-disk format** - used for data at rest and by query engines when querying data from the entire dataset.
-
-For our **in-memory format** we chose [Apache Arrow](https://arrow.apache.org/), as it is:
-- Purposefully designed for minimal overhead interoperability between data processing systems
-- Minimizes copying of data
-- Hardware efficient
-- Supports streaming
-
-For our **on-disk format** we choose [Apache Parquet](https://parquet.apache.org/), as it is:
-- Fast to decode into [Apache Arrow](https://arrow.apache.org/)
-- Space and IO efficient thanks to the built-in compression
-- Efficient for querying thanks to the columnar structure and built-in basic indexing
-
-Data on disk is stored in the multiple "part" files. Once a part file is written it is immutable for the entire lifetime of the dataset.
-
-## Schema Format
-We chose SQL-like [DDL](https://en.wikipedia.org/wiki/Data_definition_language) syntax for defining data [Schemas](specs/glossary.md#schema), as it:
-- Operates with logical types, abstracting the physical data layout from the user
-- Widely familiar
-- Has high interoperability with modern data processing systems
-
-Example:
-```
-registration_time TIMESTAMP(3),
-registration_id UUID,
-email STRING,
-first_name STRING,
-last_name STRING,
-date_of_birth DATE,
-```
-
-Supported types:
-
-|    DDL Type    |                                        Parquet Type                                        |
-| :------------: | :----------------------------------------------------------------------------------------: |
-|   `BOOLEAN`    |                                         `boolean`                                          |
-|     `INT`      |                                          `int32`                                           |
-|    `BIGINT`    |                                          `int64`                                           |
-| `DECIMAL(p,s)` |  see [spec](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#decimal)  |
-|    `FLOAT`     |                                          `float`                                           |
-|    `DOUBLE`    |                                          `double`                                          |
-|     `UUID`     |                             `fixed_len_byte_array(16) (UUID)`                              |
-|    `STRING`    |                                      `binary (UTF8)`                                       |
-| `TIMESTAMP(p)` | see [spec](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#timestamp) |
-|     `DATE`     |                                       `int32 (DATE)`                                       |
-|   `TIME(p)`    |   see [spec](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#time)    |
-
-> **TODO:**
-> - Standardize DDL for nested data structures (nested data support highly varies between vendors)
-> - Investigate support for lists/arrays
-> - Investigate support for schema-less data (JSON/BSON)
-> - `VARCHAR`
-
-## Common Data Schema
-All data in the system is guaranteed to have the following columns:
-
-|    Column     | Description                                                                                                                                                                                                                                                                                                                                       |
-| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   `offset`    | [Offset](specs/glossary.md#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                       |
-|     `op`      | [Operation Type](specs/glossary.md#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                 |
-| `system_time` | [System Time](specs/glossary.md#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](specs/glossary.md#root-dataset) or transformation time in the [Derivative Dataset](specs/glossary.md#derivative-dataset)                                                                                                           |
-| `event_time`  | [Event Time](specs/glossary.md#event-time) denotes when to our best knowledge an event has occurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
-
-Representation:
-
-|    Column     |      Arrow Type      |                            Parquet Type                             | Recommended Parquet Encoding |
-| :-----------: | :------------------: | :-----------------------------------------------------------------: | :--------------------------: |
-|   `offset`    |       `uint64`       |                               `INT64`                               |    `DELTA_BINARY_PACKED`     |
-|     `op`      |       `uint8`        |                               `INT32`                               |       `RLE_DICTIONARY`       |
-| `system_time` | `timestamp(ms, UTC)` |           `INT64, TIMESTAMP(MILLIS, AdjustedToUTC=true)`            |      `PLAIN_DICTIONARY`      |
-| `event_time`  | `timestamp(ms, UTC)` | `INT64, TIMESTAMP(MILLIS, AdjustedToUTC=true)`<br/>or `int32, DATE` |                              |
-
-
-> **TODO:**
-> - We are not allowing non-UTC-adjusted timestamps yet as Parquet does not offer a way to encode the timezone, meaning we need a reliable way to pass timezone information between different engines through some other means (e.g. Parquet metadata). Having naive/local timestamps without enforcing that they are accompanied by the specific timezone would be too error-prone.
-
-## Representation of Retractions and Corrections
-[Retractions and corrections](specs/glossary.md#retractions-and-corrections) are differentiated from regular [Events](specs/glossary.md#event) in the [Data Slice](specs/glossary.md#data-slice) via special `op` column, carrying an [Operation Type](specs/glossary.md#operation-type).
-
-Valid operation types are:
-
-| Value | Operation name | Operation short code |
-| :---: | :------------: | :------------------: |
-|   0   |    `append`    |         `+A`         |
-|   1   |   `retract`    |         `-R`         |
-|   2   | `correct-from` |         `-C`         |
-|   3   |  `correct-to`  |         `+C`         |
-
-The `retract` and `correct-from` events must carry the same exact data fields (all fields excluding `offset`, `op`, and `system_time`) as the event that is being retracted.
-
-The `correct-to` event carries the new values for the event being corrected. This event must immediately follow the `correct-from` event. This model allows data engines that operate on changelog / diff events that simultaneously carry both old and new values for event during a correction to reconstruct such events easily by sequentially reading the [Data Slice](specs/glossary.md#data-slice).
-
-See also:
-- [RFC-015: Unified Changelog Stream Schema](/rfcs/015-unified-changelog-stream-schema.md)
-
 ## Metadata Format
 The requirements we put towards the metadata format are:
 - Compactness
@@ -449,7 +351,7 @@ Our RPC technology of choice is [gRPC](https://grpc.io/) because:
 > Note: When starting an [Engine](specs/glossary.md#engine) container, the [Coordinator](specs/glossary.md#coordinator) will consider it fully initialized when it can establish a TCP connection to the port `5544`.
 
 #### Data Exchange
-The exchange of raw data happens out-of-band of the `gRPC` API. Input and output [Data Slices](specs/glossary.md#data-slice) are exchanged between the [Coordinator](specs/glossary.md#coordinator) and the [Engine](specs/glossary.md#engine) using the memory-mapped files (`mmap`) containing data in the common [in-memory format](#data-format). This avoids any intermediate IO and minimizes the copying of data for the best performance.
+The exchange of raw data happens out-of-band of the `gRPC` API. Input and output [Data Slices](specs/glossary.md#data-slice) are exchanged between the [Coordinator](specs/glossary.md#coordinator) and the [Engine](specs/glossary.md#engine) using the memory-mapped files (`mmap`) containing data in the common [in-memory format](specs/datasets/data-format.md#in-memory-and-on-disk-formats). This avoids any intermediate IO and minimizes the copying of data for the best performance.
 
 > **TODO:*
 > - Needs more details on accessing input data and writing output
@@ -658,18 +560,10 @@ Here are the steps that the [Coordinator](specs/glossary.md#coordinator) perform
 ### Dataset Evolution
 Most parts of the [Dataset](specs/glossary.md#dataset) can [change over time](#evolution-of-data). To protect downstream consumers of data from braking changes the [Coordinator](specs/glossary.md#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](specs/glossary.md#metadata-chain).
 
-#### Schema Evolution
-[Dataset](specs/glossary.md#dataset) [Schema](specs/glossary.md#schema) may change when:
-- A different [Ingestion](specs/glossary.md#ingestion) process is specified in the [Root Dataset](specs/glossary.md#root-dataset)
-- A transformation [Query](specs/glossary.md#query) of the [Derivative Dataset](specs/glossary.md#derivative-dataset) is changed
-- A [Schema](specs/glossary.md#schema) of one of the inputs of the [Query](specs/glossary.md#query) changes
-
-In general, [Schema](specs/glossary.md#schema) changes are restricted to only adding new columns. Removing and renaming columns or changing data types would break downstream data consumers and therefore not allowed. A migration procedure should be used instead when it's desired to introduce breaking changes in the [Schema](specs/glossary.md#schema).
-
 #### Query Evolution
 The procedure for modifying the [Query](specs/glossary.md#query) of a [Derivative Dataset](specs/glossary.md#derivative-dataset) is as following:
 1. The [Coordinator](specs/glossary.md#coordinator) invokes the [Engine's](specs/glossary.md#engine) [Validate Query](#validate-query) operation to validate the new [Query](specs/glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
-2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](#schema-evolution) rules.
+2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](specs/datasets/data-format.md#schema-evolution) rules.
 3. A new [Metadata Block](specs/glossary.md#metadata-chain) is created and committed.
 
 > **TODO**: Specify how Schema changes in the upstream datasets should be handled

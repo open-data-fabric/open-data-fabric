@@ -2,6 +2,7 @@
 
 Definitions of core concepts and terms shared by all ODF specs.
 
+
 ## Table of Contents <!-- omit in toc -->
 
 - [Checkpoint](#checkpoint)
@@ -33,8 +34,10 @@ Definitions of core concepts and terms shared by all ODF specs.
 - [Verifiability](#verifiability)
 - [Watermark](#watermark)
 
+
 ## Checkpoint
 Checkpoints are used by the [Engines](#engine) to store the computation state between the different invocations of a [Query](#query). They are fully engine-specific and opaque to the system. They are however an essential durable part of a [Dataset](#dataset) as they are necessary to be able to pause and resume the streaming queries, and are essential in implementing "exactly-once" processing semantics.
+
 
 ## Coordinator
 Coordinator is an application that implements the common [Dataset](#dataset) management logic.
@@ -49,6 +52,7 @@ Core responsibilities:
 See also:
 - [Coordinator Contract](../open-data-fabric.md#coordinator-contract)
 
+
 ## Data
 Data is a set of [Events](#event) stored in the system. Since events are immutable data can only grow over time. Conceptually it's best to think of data as a full log of a potentially infinite event stream.
 
@@ -57,8 +61,9 @@ Data never appears in the system alone as we would not be able to tell where it 
 ![Diagram: Dataset/Data](../images/dataset.svg)
 
 See also:
-- [Data Format](../open-data-fabric.md#data-format)
-- [Common Data Schema](../open-data-fabric.md#common-data-schema)
+- [Data Format](datasets/data-format.md)
+- [Common Data Schema](datasets/data-format.md#common-data-schema)
+
 
 ## Data Slice
 [Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
@@ -69,6 +74,7 @@ More formally, a slice is a:
 - Defined by its `[start; end]` [Offset](#offset) interval
 
 ![Diagram: Data Slices and Metadata](../images/metadata.svg)
+
 
 ## Dataset
 Dataset is the main unit of data exchange in the system. It's simply a combination of:
@@ -82,6 +88,7 @@ Depending on where the data comes from datasets can be of these kinds:
 - [Derivative](#derivative-dataset)
 
 ![Diagram: Dataset Graph](../images/dataset_graph.svg)
+
 
 ### Root Dataset
 Root datasets are the points of entry of external data into the system. They are usually owned by the organization that has full authority and responsibility over that data, i.e. a trusted source.
@@ -97,6 +104,7 @@ All this information is stored in the [Metadata Chain](#metadata-chain) and can 
 See also:
 - [Merge Strategy](../open-data-fabric.md#merge-strategies)
 
+
 ### Derivative Dataset
 Derivative datasets are created by transforming/combining one or multiple existing datasets.
 
@@ -110,6 +118,7 @@ This information is stored in the [Metadata Chain](#metadata-chain) and can chan
 See also:
 - [Derivative Data Transience](../open-data-fabric.md#derivative-data-transience)
 
+
 ## Engine
 Engine is an interface shared by all specific implementations of a [Query](#query) dialect. Engine implementations are responsible for applying defined queries to input data and returning the result. For example, some engines allows you to query data using a series of streaming SQL statements.
 
@@ -122,8 +131,10 @@ As Engines are in the full control of all data transformations, they are also re
 See also:
 - [Engine Contract](../open-data-fabric.md#engine-contract)
 
+
 ## Event
 As described in the [Nature of Data](../open-data-fabric.md#nature-of-data) section, the system operates only on data expressed as past events, observations, or propositions believed to be true at a certain time. For simplicity, we will use the term "event" throughout to refer to such data tuples.
+
 
 ## Hash
 [Cryptographic hash functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function) are used by the system in these three scenarios:
@@ -144,14 +155,17 @@ See also:
 - [Checkpoint Hashing](../open-data-fabric.md#checkpoint-hashing)
 - [Metadata Block Hashing](../open-data-fabric.md#metadata-block-hashing)
 
+
 ## Ingestion
 Ingestion is the process by which external data gets into the system. Typical ingestion steps that describe how data is obtained and read (e.g. fetching data from some URL on the web, decompressing it, and reading it as CSV) are a part of the [Root Dataset](#root-dataset) definition.
 
 See also:
 - [Data Ingestion](../open-data-fabric.md#data-ingestion)
 
+
 ## Manifest
 When [Metadata](#metadata) objects are saved on disk or transmitted on the network the typically wrapped in an extra [`Manifest`](../open-data-fabric.md#manifest-schema) layer.
+
 
 ## Merge Strategy
 By [design](../open-data-fabric.md#nature-of-data), the system only stores data in the append-only event log format to preserve the entire history. Unfortunately, a lot of data in the world is not stored or exposed this way. Some organizations may expose their data in the form of periodic database dumps, while some choose to provide it as a log of changes between current and the previous export.
@@ -163,8 +177,10 @@ For example, when dealing with the daily database dumps, a user can choose the m
 See also:
 - [Merge Strategies](../open-data-fabric.md#merge-strategies)
 
+
 ## Metadata
 Refers to information about a [Dataset](#dataset) stored in its [Metadata Chain](#metadata-chain).
+
 
 ## Metadata Chain
 Metadata Chain captures all essential information about the [Dataset](#dataset), including:
@@ -197,15 +213,18 @@ See also:
 - [Metadata Format](../open-data-fabric.md#metadata-format)
 - [Metadata Events Reference](../open-data-fabric.md#reference-metadata-events)
 
+
 ## Offset
 Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset is `0`.
+
 
 ## Operation Type
 Since past [Events](#event) are immutable, if some event is deemed incorrect later on it can only be rectified by issuing an explicit [retraction or correction](#retractions-and-corrections). Retraction and corrections are also represented as [Events](#event) in the same stream of [Data](#data) and differentiated by a special "operation type" field.
 
 See also:
-- [Common data schema](../open-data-fabric.md#common-data-schema)
-- [Representation of retractions and corrections](../open-data-fabric.md#representation-of-retractions-and-corrections)
+- [Common data schema](datasets/data-format.md#common-data-schema)
+- [Representation of retractions and corrections](datasets/data-format.md#representation-of-retractions-and-corrections)
+
 
 ## Projection
 In relational algebra, a [projection](https://en.wikipedia.org/wiki/Projection_(relational_algebra)) is an operation that removes one or many dimensions from a data tuple. In the context of our system the most common projections are *temporal projections* involving the [System Time](#system-time) and [Event Time](#event-time) dimensions.
@@ -218,6 +237,7 @@ Understanding the difference between these projections is essential when working
 
 See also:
 - [A Brief History of Time in Data Modelling: OLAP Systems](https://www.kamu.dev/blog/a-brief-history-of-time-in-data-modelling-olap-systems/)
+
 
 ## Provenance
 Data provenance describes the origins and the history of data and adds value to data by explaining how it was obtained.
@@ -242,6 +262,7 @@ Depending on the language used by an [Engine](#engine) one approach may work bet
 See also:
 - [Provenance in Databases: Why, How, and Where](http://homepages.inf.ed.ac.uk/jcheney/publications/provdbsurvey.pdf)
 - [Engine Contract: Derive Provenance](../open-data-fabric.md#derive-provenance)
+
 
 ## Query
 Queries define how input data is combined, modified, and re-shaped to produce new data.
@@ -277,6 +298,7 @@ See also:
 - [Derivative Data Transience](../open-data-fabric.md#derivative-data-transience)
 - [Engine Contract](../open-data-fabric.md#engine-contract)
 
+
 ## Repository
 Repositories let participants of the system exchange [Datasets](#dataset) with one another.
 
@@ -296,6 +318,7 @@ An advanced repository can support more functionality like:
 See also:
 - [Repository Contract](../open-data-fabric.md#repository-contract)
 
+
 ## Retractions and Corrections
 Errors in source data are inevitable and require a mechanism for correcting them. Unlike databases, where one could issue `DELETE` or `UPDATE` queries, ODF's core data model is an immutable append-only stream, and thus requires a different mechanism.
 
@@ -306,8 +329,9 @@ Retractions and corrections can also naturally occur in [Derivative](#derivative
 Retractions and corrections model is fundamental to making data processing **maximally autonomous**.
 
 See also:
-- [Common data schema](../open-data-fabric.md#common-data-schema)
-- [Representation of retractions and corrections](../open-data-fabric.md#representation-of-retractions-and-corrections)
+- [Common data schema](datasets/data-format.md#common-data-schema)
+- [Representation of retractions and corrections](datasets/data-format.md#representation-of-retractions-and-corrections)
+
 
 ## Schema
 Schema describes the shape of the [data](#data) by associating names and data types to columns that data is composed of. Schema can change over time and its changes are tracked in the [Metadata Chain](#metadata-chain).
@@ -323,8 +347,9 @@ date_of_birth DATE,
 ```
 
 See also:
-- [Schema Format](../open-data-fabric.md#schema-format)
-- [Schema Evolution](../open-data-fabric.md#schema-evolution)
+- [Schema Format](datasets/data-schema.md#schema-format)
+- [Schema Evolution](datasets/data-format.md#schema-evolution)
+
 
 ## Time
 The system applies the idea of [bitemporal data modelling](https://en.wikipedia.org/wiki/Bitemporal_Modeling) to the event streams. It differentiates two kinds of time:
@@ -333,12 +358,14 @@ The system applies the idea of [bitemporal data modelling](https://en.wikipedia.
 
 Every record in the system has exactly one system time associated with it upon the ingestion but can have zero to many event times.
 
+
 ### System Time
 System time gives us a reference point for when something has occurred from the perspective of the system.
 
 [Projecting](#projection) the data onto the system time axis answers the question: *"what did the system know at the time T?"*, meaning that such projections effectively freeze data in time, providing the natural way to achieve **reproducibility**.
 
 For all intents and purposes system time is treated as **ordered monotonically non-decreasing value** that lets us establish a *before-after* relationship between certain events. Note, however, that *before-after* relationship is only meaningful for data within one [Dataset](#dataset) and its upstream dependencies. System time cannot be used to establish an exact *before-after* relationship between the events of the independent datasets.
+
 
 ### Event Time
 Event time tells us when something happened from the outside world's perspective. This time, therefore, is usually the most useful one for querying and joining data.
@@ -354,6 +381,7 @@ See also:
 * [Watermarks](#watermark)
 * [Streaming 101 by Tyler Akidau](https://www.oreilly.com/radar/the-world-beyond-batch-streaming-101/)
 * [The Dataflow Model  by Tyler Akidau et al](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/43864.pdf)
+
 
 ## Verifiability
 In the scope of this specification, verifiability of data means the ability to establish:
@@ -391,6 +419,7 @@ Verifiability provides the foundation upon which *trust* in data can be built:
 - First in the form **authority** - organizations putting their name behind the data they publish
 - Secondly in the form of **reputation** - trusting the sources or pipelines used by large parts of the community
 - Thirdly in the form of **cross-validation** - e.g. performing outlier detection on data from several similar publishers to establish common truth.
+
 
 ## Watermark
 A watermark defines the point in [Event Time](#event-time) for which with a high probability we've already observed all preceding events.
