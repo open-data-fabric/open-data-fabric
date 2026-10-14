@@ -96,9 +96,9 @@ In our design we achieve trust with following solution criteria:
 ![Diagram: Transformation](images/transform.svg)
 
 Components:
-- Transformations are expressed using [Queries](#query) written in any of the supported languages.
+- Transformations are expressed using [Queries](specs/glossary.md#query) written in any of the supported languages.
 - Queries combine and transform one or many input data streams into an output stream.
-- Queries are executed by the [Engines](#engine) - a software that knows how to interpret and execute a certain query dialect.
+- Queries are executed by the [Engines](specs/glossary.md#engine) - a software that knows how to interpret and execute a certain query dialect.
 - The results of queries must be deterministic - always produce the same results for the same set of inputs.
 - Engines run in a "sandbox" environment, where they don't have access to a network or any other external resources.
 - Engines are strictly versioned as their implementation contributes to the total determinism of the operation.
@@ -143,7 +143,7 @@ Our design goals are, therefore:
 - To support the evolution of transformations over time
 - To provide a way to correct past mistakes in data
 
-While for simplicity we previously considered derivative datasets to be only defined by one transformation query, in fact it can comprise multiple queries that were active during different periods of time. The metadata keeps track of which parts of inputs were processed by which query and which parts of output were produced as the result, ensuring reproducibility. This idea will be further explored when we discuss the [Metadata Chain](#metadata-chain), but for now, get used to the idea that **almost anything that defines a dataset can change over time**.
+While for simplicity we previously considered derivative datasets to be only defined by one transformation query, in fact it can comprise multiple queries that were active during different periods of time. The metadata keeps track of which parts of inputs were processed by which query and which parts of output were produced as the result, ensuring reproducibility. This idea will be further explored when we discuss the [Metadata Chain](specs/glossary.md#metadata-chain), but for now, get used to the idea that **almost anything that defines a dataset can change over time**.
 
 ## Data Sharing
 The guiding factors in designing how data is shared were:
@@ -156,7 +156,7 @@ The way we designed [Metadata](#essential-role-of-metadata) plays a crucial role
 
 Metadata is usually several orders of magnitude smaller than the data it describes, so it's ideally suited to be widely shared. The exact way it's shared is out of scope of this document, but in most simple cases it can be published openly by the provider of data and cryptographically signed to ensure authenticity.
 
-When the metadata of a certain dataset is reliably known, a peer can then download the data from any untrusted source and use the metadata validate the authenticity of every data slice that composes it (see [Hash Function](#hash)) - this means that we need to only ensure the validity of metadata, while the data can be stored almost anywhere with minimal replication factor, as long as one compromised party does not result in the complete loss of data.
+When the metadata of a certain dataset is reliably known, a peer can then download the data from any untrusted source and use the metadata validate the authenticity of every data slice that composes it (see [Hash Function](specs/glossary.md#hash)) - this means that we need to only ensure the validity of metadata, while the data can be stored almost anywhere with minimal replication factor, as long as one compromised party does not result in the complete loss of data.
 
 Metadata also provides us with a way to establish the trustworthiness of any dataset by reviewing the transformations declared in it, re-applying those transformations in a trusted environment, and comparing the results to the original data. In a distributed system, having peers cross-validate each other's published data can guarantee trusted results and allow them to promptly identify and exclude malicious peers from the network.
 
@@ -164,382 +164,6 @@ Metadata also provides us with a way to establish the trustworthiness of any dat
 To achieve a perfect reproducibility the system needs to satisfy very strong transactional properties:
 - All coordination operations including things like ingesting, downloading, and sharing data, creating and updating datasets must have [ACID properties](https://en.wikipedia.org/wiki/ACID).
 - All data transformations must have **exactly-once** semantics.
-
-# Concepts and Components
-
-## Event
-As described in the [Nature of Data](#nature-of-data) section, the system operates only on data expressed as past events, observations, or propositions believed to be true at a certain time. For simplicity, we will use the term "event" throughout to refer to such data tuples.
-
-## Data
-Data is a set of [Events](#event) stored in the system. Since events are immutable data can only grow over time. Conceptually it's best to think of data as a full log of a potentially infinite event stream.
-
-Data never appears in the system alone as we would not be able to tell where it came from and whether it can be trusted. Data always appears as part of a [Dataset](#dataset).
-
-![Diagram: Dataset/Data](images/dataset.svg)
-
-See also:
-- [Data Format](#data-format)
-- [Common Data Schema](#common-data-schema)
-
-## Schema
-Schema describes the shape of the [data](#data) by associating names and data types to columns that data is composed of. Schema can change over time and its changes are tracked in the [Metadata Chain](#metadata-chain).
-
-Example:
-```
-registration_time TIMESTAMP(3),
-registration_id UUID,
-email STRING,
-first_name STRING,
-last_name STRING,
-date_of_birth DATE,
-```
-
-See also:
-- [Schema Format](#schema-format)
-- [Schema Evolution](#schema-evolution)
-
-## Offset
-Offset is a monotonically increasing sequential numeric identifier that is assigned to every record and represents its position relative to the beginning of the dataset. Offsets are used to uniquely identify any record in the dataset. Offset of the first record in a dataset is `0`.
-
-## Operation Type
-Since past [Events](#event) are immutable, if some event is deemed incorrect later on it can only be rectified by issuing an explicit [retraction or correction](#retractions-and-corrections). Retraction and corrections are also represented as [Events](#event) in the same stream of [Data](#data) and differentiated by a special "operation type" field.
-
-See also:
-- [Common data schema](#common-data-schema)
-- [Representation of retractions and corrections](#representation-of-retractions-and-corrections)
-
-## Data Slice
-[Data](#data) arrives into the system as the arbitrary large sets of events. We refer to them as "slices".
-
-More formally, a slice is a:
-- Continuous part of [Data](#data)
-- That has the same [Schema](#schema)
-- Defined by its `[start; end]` [Offset](#offset) interval
-
-![Diagram: Data Slices and Metadata](images/metadata.svg)
-
-## Metadata
-Refers to information about a [Dataset](#dataset) stored in its [Metadata Chain](#metadata-chain).
-
-## Metadata Chain
-Metadata Chain captures all essential information about the [Dataset](#dataset), including:
-- Where the data comes from (see [Data Ingestion](#data-ingestion))
-- How data was processed (see [Query](#query))
-- Its [Schema](#schema)
-- Log of all modifications made to the data, including information used to verify the integrity of data
-- Current [Watermark](#watermark)
-
-Just like [Data](#data), the metadata chain also has a temporal nature. It consists of individual **Metadata Blocks** that refer to the previous block in the chain, forming a singly-linked list. Every block carries one of [Metadata Events](#reference-metadata-events) that describes how data evolved over time.
-
-![Diagram: Metadata Chain](images/metadata-chain.svg)
-
-All Metadata Blocks are immutable and changes by appending new blocks. With blocks, data, and checkpoints named after and referenced by the [hash](#hash) of their content - a dataset forms a type of [content-addressable](https://en.wikipedia.org/wiki/Content-addressable_storage) system, where having a reference to the last Metadata Block one can traverse the entire chain to discover all the components of the dataset.
-
-![Diagram: Dataset as a Content-Addressable Graph](images/metadata-chain-2.svg)
-
-Metadata Chain also supports **Block References** that assign a certain symbolic name to a block hash, effectively acting as a named pointer. At the minimum all datasets have a `head` reference that indicates the current last block in the Metadata Chain. Using multiple references the metadata chain can be organized into a directed acyclic graph that can form branches, allowing for example to stage some subset of events for review or an automated QA process before they are accepted into the main chain.
-
-In addition to core events like adding data, running a query, and change of schema the Metadata Chain is designed to be extended to carry other kinds of information like:
-- Extra meaning and structure of knowledge that data represents (glossary, semantics, ontology)
-- Relevant policies, terms, rules, compliance, and regulations (governance)
-- License, privacy and security concerns (stewardship)
-- Information that aids discovery
-- Collaboration information
-
-These extensions are out of scope of this document.
-
-See also:
-- [Metadata Format](#metadata-format)
-- [Metadata Events Reference](#reference-metadata-events)
-
-## Dataset
-Dataset is the main unit of data exchange in the system. It's simply a combination of:
-- [Identity](#dataset-identity)
-- [Data](#data)
-- [Metadata Chain](#metadata-chain)
-- [Checkpoints](#checkpoint)
-
-Depending on where the data comes from datasets can be of these kinds:
-- [Root](#root-dataset)
-- [Derivative](#derivative-dataset)
-
-![Diagram: Dataset Graph](images/dataset_graph.svg)
-
-### Root Dataset
-Root datasets are the points of entry of external data into the system. They are usually owned by the organization that has full authority and responsibility over that data, i.e. a trusted source.
-
-Root dataset definition includes:
-- Where to fetch the data from - e.g. source URL, a protocol to use, cache control
-- How to prepare the binary data - e.g. decompression, file filtering, format conversions
-- How to interpret the data - e.g. data format, schema to apply, error handling
-- How to combine data ingested in the past with the new data - e.g. append as log or diff as a snapshot of the current state
-
-All this information is stored in the [Metadata Chain](#metadata-chain) and can change over time as the dataset evolves.
-
-See also:
-- [Merge Strategy](#merge-strategies)
-
-### Derivative Dataset
-Derivative datasets are created by transforming/combining one or multiple existing datasets.
-
-They are defined by the combination of:
-- Input datasets
-- A [Query](#query) to apply to those
-- An [Engine](#engine) used to execute the query
-
-This information is stored in the [Metadata Chain](#metadata-chain) and can change over time as the dataset evolves.
-
-See also:
-- [Derivative Data Transience](#derivative-data-transience)
-
-## Query
-Queries define how input data is combined, modified, and re-shaped to produce new data.
-
-Queries are used in two contexts:
-- When defining new [Derivative Datasets](#derivative-dataset)
-- When analyzing and extracting data from an existing [Dataset](#dataset) (locally or from a [repository](#repository))
-
-The system is agnostic to the exact language used to define the query and the set of supported dialects can be extended by implementing a new [Engine](#engine).
-
-All queries, however, must have the following properties:
-- Deterministic
-- Pure
-- Stream/Batch agnostic
-
-In other words, they should be guaranteed to always produce the same result for the same input data, without side effects.
-
-Example windowed aggregation query in streaming SQL:
-
-```sql
-SELECT
-  TUMBLE_ROWTIME(event_time, INTERVAL '1' MONTH) as event_time,
-  sku_id,
-  min(price) as min_monthly_price,
-  max(price) as max_monthly_price,
-  avg(price) as avg_monthly_price
-FROM sku_prices
-GROUP BY TUMBLE(event_time, INTERVAL '1' MONTH), sku_id
-```
-
-See also:
-- [Stream Processing Model](#stream-processing-model)
-- [Derivative Data Transience](#derivative-data-transience)
-- [Engine Contract](#engine-contract)
-
-## Engine
-Engine is an interface shared by all specific implementations of a [Query](#query) dialect. Engine implementations are responsible for applying defined queries to input data and returning the result. For example, some engines allows you to query data using a series of streaming SQL statements.
-
-Engines run in a sandboxed environments and are not permitted to use any external resources to guarantee the reproducibility of all operations.
-
-![Diagram: Derivative Transformation](images/engine-execution-env.svg)
-
-As Engines are in the full control of all data transformations, they are also responsible for answering the [Provenance](#provenance) queries.
-
-See also:
-- [Engine Contract](#engine-contract)
-
-## Checkpoint
-Checkpoints are used by the [Engines](#engine) to store the computation state between the different invocations of a [Query](#query). They are fully engine-specific and opaque to the system. They are however an essential durable part of a [Dataset](#dataset) as they are necessary to be able to pause and resume the streaming queries, and are essential in implementing "exactly-once" processing semantics.
-
-## Coordinator
-Coordinator is an application that implements the common [Dataset](#dataset) management logic.
-
-Core responsibilities:
-- Handles all [Metadata Chain](#metadata-chain) operations
-- Splits the transformation work into batches based on the dataset's evolution timeline
-- Collects relevant data slices of the input datasets
-- Delegates data processing to the [Engines](#engine), making all transformations look to them as conventional stream processing
-- Commits the resulting data slices and new metadata blocks
-
-See also:
-- [Coordinator Contract](#coordinator-contract)
-
-## Ingestion
-Ingestion is the process by which external data gets into the system. Typical ingestion steps that describe how data is obtained and read (e.g. fetching data from some URL on the web, decompressing it, and reading it as CSV) are a part of the [Root Dataset](#root-dataset) definition.
-
-See also:
-- [Data Ingestion](#data-ingestion)
-
-## Merge Strategy
-By [design](#nature-of-data), the system only stores data in the append-only event log format to preserve the entire history. Unfortunately, a lot of data in the world is not stored or exposed this way. Some organizations may expose their data in the form of periodic database dumps, while some choose to provide it as a log of changes between current and the previous export.
-
-When [ingesting data](#ingestion) from external sources, the [Root Datasets](#root-dataset) can choose between different [Merge Strategies](#merge-strategies) that define how to combine the newly-ingested data with the existing one.
-
-For example, when dealing with the daily database dumps, a user can choose the merge strategy that performs [change data capture](https://en.wikipedia.org/wiki/Change_data_capture), transforming dumps into a set of events that signify record creation, update, or deletion.
-
-See also:
-- [Merge Strategies](#merge-strategies)
-
-## Hash
-[Cryptographic hash functions](https://en.wikipedia.org/wiki/Cryptographic_hash_function) are used by the system in these three scenarios:
-- Computing a logical hash sum of a [Data Slice](#data-slice).
-- Computing a physical hash sum of a [Data Slice](#data-slice).
-- Computing a hash sum of a [MetadataBlock](#metadata-chain).
-
-Whenever new events are appended to the [Data](#data) the [Metadata Chain](#metadata-chain) will also be extended with a block containing a hash sum of the new data slice. The hash sum provides a very quick and reliable way to later validate that the data matches the one that has been written earlier.
-
-The new [MetadataBlock](#metadata-chain) will also be cryptographically signed to guarantee its integrity - this excludes any malicious or accidental alterations to the block.
-
-Usage examples:
-- If the [Metadata Chain](#metadata-chain) of a certain dataset is reliably known (e.g. available from many independent peers) a peer can then download the [Data](#data) from any untrusted source and use the hash function to validate the authenticity of every data slice that composes it.
-- The trustworthiness of any [Dataset](#dataset) can be established by reviewing the transformations it claims to be performing on data (contained in the [Metadata Chain](#metadata-chain)), re-applying those transformations in a trusted environment, and then comparing the hash sums of the result slices.
-
-See also:
-- [Data Hashing](#data-hashing)
-- [Checkpoint Hashing](#checkpoint-hashing)
-- [Metadata Block Hashing](#metadata-block-hashing)
-
-## Provenance
-Data provenance describes the origins and the history of data and adds value to data by explaining how it was obtained.
-
-[Metadata Chain](#metadata-chain) alone can already significantly narrow down the search space when you want to explain how a certain piece of data came to be, as it keeps track of all the inputs and queries used to create a dataset. But the goal of the provenance system is to make this type of inquiry effortless.
-
-We differentiate the following kinds of provenance:
-- **Why-provenance** - tells us which input data elements were inspected to decide that an element should be present in the output at all - i.e. defines a sufficient set of elements needed to produce the output.
-- **How-provenance** - tells us the process by which the elements of *why-provenance* caused the output to appear
-- **Where-provenance** - narrows down *why-provenance* to input data elements that were copied or transformed to determine the output element value.
-
-Since the [Engines](#engine) are responsible for all data transformations, it's also the Engine's responsibility to answer provenance queries.
-
-There are many different ways to implement provenance:
-- By statically analyzing the queries
-- By inverting transformations
-- By repeating the computations and logging the data used at every step
-- By propagating provenance data through all computations
-
-Depending on the language used by an [Engine](#engine) one approach may work better in one situation than the other, so we avoid prescribing the exact method to use but instead standardize the language used for provenance-related queries and responses.
-
-See also:
-- [Provenance in Databases: Why, How, and Where](http://homepages.inf.ed.ac.uk/jcheney/publications/provdbsurvey.pdf)
-- [Engine Contract: Derive Provenance](#derive-provenance)
-
-## Verifiability
-In the scope of this specification, verifiability of data means the ability to establish:
-- The ultimate source(s) of data:
-  - Which [Root Datasets](#root-dataset) the data is coming from
-  - Who these datasets belong to (ownership)
-  - And which actor has added the specific records (accountability)
-- The transformations performed to create this data:
-  - The graph of [Derivative Datasets](#derivative-dataset) upstream to the one being verified
-  - Authorship of those datasets (accountability)
-- And finally, that the data in fact corresponds to performing declared transformations on the source data.
-
-In other words, having root datasets `A`, `B` and a derivative dataset `C = f(A, B)`:
-- The data in `A` (and similarly in `B`) is verifiable if:
-  - [Metadata Chain](#metadata-chain) of `A` is valid
-    - Metadata block hashes are valid, forming a valid chain
-    - Blocks point to [Data Slices](#data-slice) and [Checkpoints](#checkpoint) with valid hashes
-- The data in `C` is verifiable if:
-  - [Metadata Chain](#metadata-chain) of `C` is valid
-  - Data in `C` corresponds to applying `f(A, B)` according to all transformation steps declared in the [Metadata Chain](#metadata-chain).
-
-The last step of ensuring that `f(A, B) = C` can be achieved by several means:
-- Reproducibility - by applying same transformations and comparing the results
-- Verifiable computing - different types of proofs that can attest to validity of results without redoing the computations.
-
-Examples of verifiable computing can include:
-- [Trusted Execution Environments](https://en.wikipedia.org/wiki/Trusted_execution_environment) (TEEs)
-- [Non-interactive Proofs](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) (including "zero-knowledge").
-
-Verifiability should not be confused with *trustworthiness* or *reality* of data. Verifying a dataset doesn't prove that the data in it is either truthful or more "real" than other data. The value of verifiability comes from establishing the provenance of data so that:
-- One could understand whether data is coming from reputable sources - sources they can trust (attribution)
-- One could review all derivative transformations applied to the data by intermediate actors (auditability).
-
-Verifiability provides the foundation upon which *trust* in data can be built:
-- First in the form **authority** - organizations putting their name behind the data they publish
-- Secondly in the form of **reputation** - trusting the sources or pipelines used by large parts of the community
-- Thirdly in the form of **cross-validation** - e.g. performing outlier detection on data from several similar publishers to establish common truth.
-
-## Time
-The system applies the idea of [bitemporal data modelling](https://en.wikipedia.org/wiki/Bitemporal_Modeling) to the event streams. It differentiates two kinds of time:
-- [System time](#system-time) - tells us when some event was observed by the system
-- [Event time](#event-time) - tells when some event occurred from the perspective of the outside world
-
-Every record in the system has exactly one system time associated with it upon the ingestion but can have zero to many event times.
-
-### System Time
-System time gives us a reference point for when something has occurred from the perspective of the system.
-
-[Projecting](#projection) the data onto the system time axis answers the question: *"what did the system know at the time T?"*, meaning that such projections effectively freeze data in time, providing the natural way to achieve **reproducibility**.
-
-For all intents and purposes system time is treated as **ordered monotonically non-decreasing value** that lets us establish a *before-after* relationship between certain events. Note, however, that *before-after* relationship is only meaningful for data within one [Dataset](#dataset) and its upstream dependencies. System time cannot be used to establish an exact *before-after* relationship between the events of the independent datasets.
-
-### Event Time
-Event time tells us when something happened from the outside world's perspective. This time, therefore, is usually the most useful one for querying and joining data.
-
-There are no restrictions on the event time in the system - there can be many event times associated with any record, and unlike system time, event times don't have to be monotonic. This allows the system to support many kinds and varieties of event time use, like:
-- Post-dated events and predictions - with event time set into the future
-- Back-dated events and corrections - with event time set into the past
-
-Depending on the type of transformations these restrictions may be more strict, e.g. joining datasets based on event time may require it to be quasi-monotonic increasing to know when the join operation can be considered complete (see [Watermarks](#watermark)).
-
-See also:
-* [Projections](#projection)
-* [Watermarks](#watermark)
-* [Streaming 101 by Tyler Akidau](https://www.oreilly.com/radar/the-world-beyond-batch-streaming-101/)
-* [The Dataflow Model  by Tyler Akidau et al](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/43864.pdf)
-
-## Watermark
-A watermark defines the point in [Event Time](#event-time) for which with a high probability we've already observed all preceding events.
-
-![Diagram: Watermarks in the Stream](images/watermarks_in_stream.svg)
-
-When performing time-based windowed operation, aggregations, or joins it is important to know when a certain time window can be considered closed. Watermark tells the system "You most likely will not get event with time less than `T` anymore".
-
-In the [Root Dataset](#root-dataset) events can still arrive even after their time interval has been already been closed by the watermark. Such events are considered "late" and it's up to the individual [Queries](#query) to decide how to handle them. They can be simply ignored, emitted into a side output, or still considered by emitting the "correction" event into the output.
-
-Watermarks in the system are defined per every [Metadata Block](#metadata-chain). By default, the [Root Dataset](#root-dataset) will assign the watermark to the maximum observed [Event Time](#event-time) in the [Data Slice](#data-slice). You can and should override this behavior if you expect events to arrive out-of-order to some degree, e.g. offsetting the watermark by `1 day` prior to last seen event.
-
-![Diagram: Watermarks in Time Domains](images/watermarks_vs_time.svg)
-
-Watermarks can also be set based on the [System Time](#system-time) manually or semi-automatically. This is valuable for the slow moving [Datasets](#dataset) where it's normal not to see any events in days or even months. Setting the watermark explicitly allows all computations based on such stream to proceed, knowing that there were no events for that time period, where otherwise the output would be stalled assuming the [Dataset](#dataset) was not updated for a while and old data can still arrive.
-
-## Retractions and Corrections
-Errors in source data are inevitable and require a mechanism for correcting them. Unlike databases, where one could issue `DELETE` or `UPDATE` queries, ODF's core data model is an immutable append-only stream, and thus requires a different mechanism.
-
-Retractions and corrections are explicit events that can appear in [Root](#root-dataset) datasets to signify that some previous event was published in error, or to correct some of its fields. They are differentiated from regular events by the special [Operation Type](#operation-type) field.
-
-Retractions and corrections can also naturally occur in [Derivative](#derivative-dataset) datasets in cases when a stream processing operation encounters late data (data arriving past the current [Watermark](#watermark)). In such cases streaming transformation may publish corrections or retractions for previously produced result records that were influenced by the late events.
-
-Retractions and corrections model is fundamental to making data processing **maximally autonomous**.
-
-See also:
-- [Common data schema](#common-data-schema)
-- [Representation of retractions and corrections](#representation-of-retractions-and-corrections)
-
-## Repository
-Repositories let participants of the system exchange [Datasets](#dataset) with one another.
-
-Repository definition includes:
-- Location where the repository can be reached (URL)
-- Protocols that it supports
-- Credentials needed to access it
-- Any necessary protocol-specific configuration
-
-In the most basic form, a [Repository](#repository) can simply be a location where the dataset files are hosted over one of the [supported](#supported-protocols) file or object-based data transfer protocols. The owner of a dataset will have push privileges to this location, while other participants can pull data from it.
-
-An advanced repository can support more functionality like:
-- Push data API for publishers
-- Subscription API for consumers
-- Query API for making use of repository's compute resources and reducing the amount of transferred data
-
-See also:
-- [Repository Contract](#repository-contract)
-
-## Projection
-In relational algebra, a [projection](https://en.wikipedia.org/wiki/Projection_(relational_algebra)) is an operation that removes one or many dimensions from a data tuple. In the context of our system the most common projections are *temporal projections* involving the [System Time](#system-time) and [Event Time](#event-time) dimensions.
-
-Depending on the time axis, we arrive at two most important types of projections in [bitemporal data modelling](https://en.wikipedia.org/wiki/Bitemporal_Modeling):
-- **AS AT** or *"As we knew at that time"*. This projection collapses the system time dimension and shows us what the state of the data was at that time to the best knowledge of the system.
-- **AS OF** or *“As we should've known at the time”*. This projection collapses the event time dimension and shows us what **should've happened** at that time if we knew about all potential corrections and compensating events that were added since then.
-
-Understanding the difference between these projections is essential when working with time series data and for achieving the reproducibility of results.
-
-See also:
-- [A Brief History of Time in Data Modelling: OLAP Systems](https://www.kamu.dev/blog/a-brief-history-of-time-in-data-modelling-olap-systems/)
-
-## Manifest
-When [Metadata](#metadata) objects are saved on disk or transmitted on the network the typically wrapped in an extra [`Manifest`](#manifest-schema) layer.
 
 # Specification
 
@@ -549,9 +173,9 @@ The identity of a dataset consists of:
 - [Aliases and references](#aliases-and-references) - used for human-friendly naming.
 
 ### Unique Identifiers
-ODF is designed to be compatible with [content-addressable storage](https://en.wikipedia.org/wiki/Content-addressable_storage). When stored in such storage, all parts of a [Dataset](#dataset) can be accessed by having only a hash of the last [MetadataBlock](#metadata-chain).
+ODF is designed to be compatible with [content-addressable storage](https://en.wikipedia.org/wiki/Content-addressable_storage). When stored in such storage, all parts of a [Dataset](specs/glossary.md#dataset) can be accessed by having only a hash of the last [MetadataBlock](specs/glossary.md#metadata-chain).
 
-As [Dataset](#dataset) grows, however, a reference to a single [MetadataBlock](#metadata-chain) will only provide access to a subset of its history. To refer to a [Dataset](#dataset) as a whole a different identifier is needed that can be resolved into a hash of the latest block. Such identifiers must be globally unique, issuable with no central authority, and tied to a proof of ownership over a dataset.
+As [Dataset](specs/glossary.md#dataset) grows, however, a reference to a single [MetadataBlock](specs/glossary.md#metadata-chain) will only provide access to a subset of its history. To refer to a [Dataset](specs/glossary.md#dataset) as a whole a different identifier is needed that can be resolved into a hash of the latest block. Such identifiers must be globally unique, issuable with no central authority, and tied to a proof of ownership over a dataset.
 
 ODF follows the [W3C DID Identity Scheme](https://w3c.github.io/did-core/) using a custom `did:odf` method. This method is based closely on [`did:key` method](https://w3c-ccg.github.io/did-method-key/) that derives the unique identity from a public key of a cryptographic key pair.
 
@@ -579,9 +203,9 @@ did-odf-format := 'did:odf:' + MULTIBASE(
 )
 </pre>
 
-The resulting DID is stored in the first [MetadataBlock](#metadata-chain) in the chain of every [Dataset](#dataset), called [Seed](#seed-schema).
+The resulting DID is stored in the first [MetadataBlock](specs/glossary.md#metadata-chain) in the chain of every [Dataset](specs/glossary.md#dataset), called [Seed](#seed-schema).
 
-Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used to prove ownership and control over a [Dataset](#dataset) and to delegate access.
+Tying the identity of a dataset to a cryptographic key pair provides a way to create unique identity in a fully decentralized way. The corresponding private key can be used to prove ownership and control over a [Dataset](specs/glossary.md#dataset) and to delegate access.
 
 > Note that the only difference between `did:odf` and `did:key` method is the encoding scheme. ODF uses `base16` instead of `base58btc` for reasons explained in the [Hash Representation](#hash-representation) section. Because conversion between the two encodings is trivial, ODF is compatible with authorization frameworks that work with `did:key` method. We expect that in future the `did:key` spec will be extended to allow `base16` encoding too, further minimizing the difference.
 
@@ -590,13 +214,13 @@ See also:
 - [RFC-012: Recommend base16 encoding](/rfcs/012-recommend-base16-encoding.md)
 
 ### Aliases and References
-Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](#repository). Unlike [Dataset IDs](#unique-identitifiers) they are not collision-free and mutable.
+Formats described below provide human-friendly ways to refer to a certain dataset. Note that they are only meaningful within the boundaries of a [Repository](specs/glossary.md#repository). Unlike [Dataset IDs](#unique-identitifiers) they are not collision-free and mutable.
 
 Depending on the context we differentiate the following types of references:
 - **Local Format** - used to refer to a dataset within a local workspace (can be single- and multi-tenant)
-- **Remote Format** - used to refer to a dataset located in a known [Repository](#repository) provider.
+- **Remote Format** - used to refer to a dataset located in a known [Repository](specs/glossary.md#repository) provider.
 
-As you will see in the examples below, we recommend (but not require) using the [reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) for [Dataset](#dataset) names.
+As you will see in the examples below, we recommend (but not require) using the [reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) for [Dataset](specs/glossary.md#dataset) names.
 
 Examples:
 <pre>
@@ -660,7 +284,7 @@ Scheme = [a-zA-Z0-9]+ ("+" [a-zA-Z0-9]+)*
 
 ## Data Format
 We differentiate two data formats by their purpose:
-- **In-memory format** - used when passing data around between the subsystems (e.g. when [Coordinator](#coordinator) communicates with the [Engine](#engine)).
+- **In-memory format** - used when passing data around between the subsystems (e.g. when [Coordinator](specs/glossary.md#coordinator) communicates with the [Engine](specs/glossary.md#engine)).
 - **On-disk format** - used for data at rest and by query engines when querying data from the entire dataset.
 
 For our **in-memory format** we chose [Apache Arrow](https://arrow.apache.org/), as it is:
@@ -677,7 +301,7 @@ For our **on-disk format** we choose [Apache Parquet](https://parquet.apache.org
 Data on disk is stored in the multiple "part" files. Once a part file is written it is immutable for the entire lifetime of the dataset.
 
 ## Schema Format
-We chose SQL-like [DDL](https://en.wikipedia.org/wiki/Data_definition_language) syntax for defining data [Schemas](#schema), as it:
+We chose SQL-like [DDL](https://en.wikipedia.org/wiki/Data_definition_language) syntax for defining data [Schemas](specs/glossary.md#schema), as it:
 - Operates with logical types, abstracting the physical data layout from the user
 - Widely familiar
 - Has high interoperability with modern data processing systems
@@ -719,10 +343,10 @@ All data in the system is guaranteed to have the following columns:
 
 |    Column     | Description                                                                                                                                                                                                                                                                                                                                       |
 | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   `offset`    | [Offset](#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                       |
-|     `op`      | [Operation Type](#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                 |
-| `system_time` | [System Time](#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](#root-dataset) or transformation time in the [Derivative Dataset](#derivative-dataset)                                                                                                           |
-| `event_time`  | [Event Time](#event-time) denotes when to our best knowledge an event has occurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
+|   `offset`    | [Offset](specs/glossary.md#offset) is a sequential identifier of a row relative to the start of the dataset (first row has an offset of `0`)                                                                                                                                                                                                                       |
+|     `op`      | [Operation Type](specs/glossary.md#operation-type) is used to differentiate regular append events from retractions and corrections                                                                                                                                                                                                                                 |
+| `system_time` | [System Time](specs/glossary.md#system-time) denotes when an event first appeared in the dataset. This will be an ingestion time for events in the [Root Dataset](specs/glossary.md#root-dataset) or transformation time in the [Derivative Dataset](specs/glossary.md#derivative-dataset)                                                                                                           |
+| `event_time`  | [Event Time](specs/glossary.md#event-time) denotes when to our best knowledge an event has occurred in the real world. By default all temporal computations (windowing, aggregations, joins) are done in the event time space thus giving the user query an appearance of a regular flow of events even when data is backfilled or frequently arrives out-of-order |
 
 Representation:
 
@@ -738,7 +362,7 @@ Representation:
 > - We are not allowing non-UTC-adjusted timestamps yet as Parquet does not offer a way to encode the timezone, meaning we need a reliable way to pass timezone information between different engines through some other means (e.g. Parquet metadata). Having naive/local timestamps without enforcing that they are accompanied by the specific timezone would be too error-prone.
 
 ## Representation of Retractions and Corrections
-[Retractions and corrections](#retractions-and-corrections) are differentiated from regular [Events](#event) in the [Data Slice](#data-slice) via special `op` column, carrying an [Operation Type](#operation-type).
+[Retractions and corrections](specs/glossary.md#retractions-and-corrections) are differentiated from regular [Events](specs/glossary.md#event) in the [Data Slice](specs/glossary.md#data-slice) via special `op` column, carrying an [Operation Type](specs/glossary.md#operation-type).
 
 Valid operation types are:
 
@@ -751,7 +375,7 @@ Valid operation types are:
 
 The `retract` and `correct-from` events must carry the same exact data fields (all fields excluding `offset`, `op`, and `system_time`) as the event that is being retracted.
 
-The `correct-to` event carries the new values for the event being corrected. This event must immediately follow the `correct-from` event. This model allows data engines that operate on changelog / diff events that simultaneously carry both old and new values for event during a correction to reconstruct such events easily by sequentially reading the [Data Slice](#data-slice).
+The `correct-to` event carries the new values for the event being corrected. This event must immediately follow the `correct-from` event. This model allows data engines that operate on changelog / diff events that simultaneously carry both old and new values for event during a correction to reconstruct such events easily by sequentially reading the [Data Slice](specs/glossary.md#data-slice).
 
 See also:
 - [RFC-015: Unified Changelog Stream Schema](/rfcs/015-unified-changelog-stream-schema.md)
@@ -789,25 +413,25 @@ The recommended layout of the dataset on disk is:
 
 ![Diagram: Dataset Layout](images/dataset_layout.svg)
 
-This layout must be used when sharing datasets via file or object-based [Repositories](#repository) (e.g. local FS, S3, IPFS, DAT...).
+This layout must be used when sharing datasets via file or object-based [Repositories](specs/glossary.md#repository) (e.g. local FS, S3, IPFS, DAT...).
 
-When a [Dataset](#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](#coordinator) implementation, as we expect all interactions with the [Dataset](#dataset) to go through it.
+When a [Dataset](specs/glossary.md#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](specs/glossary.md#coordinator) implementation, as we expect all interactions with the [Dataset](specs/glossary.md#dataset) to go through it.
 
 See Also:
 - [Dataset Sharing](#dataset-sharing)
 
 ## Engine Contract
-This section provides the details on the contract between an [Engine](#engine) and the [Coordinator](#coordinator).
+This section provides the details on the contract between an [Engine](specs/glossary.md#engine) and the [Coordinator](specs/glossary.md#coordinator).
 
 ### Execution Model
-[Engine](#engine) executes in a very restricted environment (a "sandbox") that prevents it from accessing any external resources other than those explicitly provided by the [Coordinator](#coordinator). Isolating the [Engine](#engine) from making network calls and accessing any random files ensures both that the [Data](#data) being processed cannot be leaked, and that non-deterministic behavior is harder to introduce accidentally.
+[Engine](specs/glossary.md#engine) executes in a very restricted environment (a "sandbox") that prevents it from accessing any external resources other than those explicitly provided by the [Coordinator](specs/glossary.md#coordinator). Isolating the [Engine](specs/glossary.md#engine) from making network calls and accessing any random files ensures both that the [Data](specs/glossary.md#data) being processed cannot be leaked, and that non-deterministic behavior is harder to introduce accidentally.
 
 Our isolation technology of choice is  [OCI containers](https://opencontainers.org/) - a lightweight mechanism that provides good performance and strong isolation guarantees. We rely on OCI-compatible images as the distribution mechanism for the engines.
 
 > **TODO:** Add exact `podman` and `docker` commands to reproduce the sandboxed environment
 
 ### Communication Interface
-This section describes the [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) mechanism used in communications between the [Coordinator](#coordinator) and the [Engine](#engine).
+This section describes the [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) mechanism used in communications between the [Coordinator](specs/glossary.md#coordinator) and the [Engine](specs/glossary.md#engine).
 
 The requirements we put towards the RPC mechanism are:
 - Use common network protocols
@@ -820,12 +444,12 @@ Our RPC technology of choice is [gRPC](https://grpc.io/) because:
 - Supports streaming
 - For our narrow use case, its convenience is more important than interoperability, as we don't expect to have many server and client implementations
 
-[Engine](#engine) implementations must expose the `gRPC` API on port `5544`.
+[Engine](specs/glossary.md#engine) implementations must expose the `gRPC` API on port `5544`.
 
-> Note: When starting an [Engine](#engine) container, the [Coordinator](#coordinator) will consider it fully initialized when it can establish a TCP connection to the port `5544`.
+> Note: When starting an [Engine](specs/glossary.md#engine) container, the [Coordinator](specs/glossary.md#coordinator) will consider it fully initialized when it can establish a TCP connection to the port `5544`.
 
 #### Data Exchange
-The exchange of raw data happens out-of-band of the `gRPC` API. Input and output [Data Slices](#data-slice) are exchanged between the [Coordinator](#coordinator) and the [Engine](#engine) using the memory-mapped files (`mmap`) containing data in the common [in-memory format](#data-format). This avoids any intermediate IO and minimizes the copying of data for the best performance.
+The exchange of raw data happens out-of-band of the `gRPC` API. Input and output [Data Slices](specs/glossary.md#data-slice) are exchanged between the [Coordinator](specs/glossary.md#coordinator) and the [Engine](specs/glossary.md#engine) using the memory-mapped files (`mmap`) containing data in the common [in-memory format](#data-format). This avoids any intermediate IO and minimizes the copying of data for the best performance.
 
 > **TODO:*
 > - Needs more details on accessing input data and writing output
@@ -841,78 +465,78 @@ See also:
 - [Engine API Reference](#engine-api-reference)
 
 #### Validate Query
-This operation may be used by the [Coordinator](#coordinator) when creating a new [Derivative Dataset](#derivative-dataset) or when changing the [Query](#query) of an existing one to validate the user-specified query for basic syntax and schema correctness.
+This operation may be used by the [Coordinator](specs/glossary.md#coordinator) when creating a new [Derivative Dataset](specs/glossary.md#derivative-dataset) or when changing the [Query](specs/glossary.md#query) of an existing one to validate the user-specified query for basic syntax and schema correctness.
 
 Inputs:
-- [Schemas](#schema) of the input [Datasets](#dataset)
-- [Query](#query)
-- (optional) Previous [Query](#query) in case of an existing [Dataset](#dataset) modification
+- [Schemas](specs/glossary.md#schema) of the input [Datasets](specs/glossary.md#dataset)
+- [Query](specs/glossary.md#query)
+- (optional) Previous [Query](specs/glossary.md#query) in case of an existing [Dataset](specs/glossary.md#dataset) modification
 
 Outputs:
-- [Schema](#schema) of the result
+- [Schema](specs/glossary.md#schema) of the result
 - (alternatively) Validation errors
 
 #### Execute Query
-This operation is used by the [Coordinator](#coordinator) to perform the next iteration of the transformation.
+This operation is used by the [Coordinator](specs/glossary.md#coordinator) to perform the next iteration of the transformation.
 
-The [Coordinator](#coordinator) is designed to isolate the [Engines](#engine) from the complexity of managing the [Metadata Chain](#metadata-chain) and make processing look as close as possible to a regular stream processing.
+The [Coordinator](specs/glossary.md#coordinator) is designed to isolate the [Engines](specs/glossary.md#engine) from the complexity of managing the [Metadata Chain](specs/glossary.md#metadata-chain) and make processing look as close as possible to a regular stream processing.
 
 ![Sequence Diagram: Execute Query](images/engine_transform.svg)
 
 Inputs:
 - Transaction ID
-- Input [Data Slices](#data-slice)
-- Input [Watermarks](#watermark)
-- [Query](#query)
-- Previous [Checkpoint](#checkpoint)
+- Input [Data Slices](specs/glossary.md#data-slice)
+- Input [Watermarks](specs/glossary.md#watermark)
+- [Query](specs/glossary.md#query)
+- Previous [Checkpoint](specs/glossary.md#checkpoint)
 
 Outputs:
-- Output [Data Slice](#data-slice)
-- Output [Watermark](#watermark)
-- New [Checkpoint](#checkpoint)
+- Output [Data Slice](specs/glossary.md#data-slice)
+- Output [Watermark](specs/glossary.md#watermark)
+- New [Checkpoint](specs/glossary.md#checkpoint)
 - Operation progress, status, and logs
 
 This operation must be [idempotent](https://en.wikipedia.org/wiki/Idempotence) (see [Implementing Exactly-Once Semantics](#implementing-exactly-once-semantics)).
 
-When an operation is committed by the [Coordinator](#coordinator), the [Engine](#engine) will not see the same input data again. If due to the nature of the query (e.g. windowing or watermarking configuration) [Engine](#engine) cannot fully process and discard the input data - it should use the [Checkpoint](#checkpoint) to buffer it.
+When an operation is committed by the [Coordinator](specs/glossary.md#coordinator), the [Engine](specs/glossary.md#engine) will not see the same input data again. If due to the nature of the query (e.g. windowing or watermarking configuration) [Engine](specs/glossary.md#engine) cannot fully process and discard the input data - it should use the [Checkpoint](specs/glossary.md#checkpoint) to buffer it.
 
 #### Migrate Query
-This operation is used by the [Coordinator](#coordinator) when data processing hits the point where one transformation [Query](#query) is being replaced by another one. It gives the [Engine](#engine) all information needed to handle the transition as gracefully as possible, e.g. by reconciling the existing [Checkpoints](#checkpoint) with the new [Query](#query), or, at the very least, finalizing the processing of the old [Query](#query) and clearing the [Checkpoints](#checkpoint) before the new one starts to execute.
+This operation is used by the [Coordinator](specs/glossary.md#coordinator) when data processing hits the point where one transformation [Query](specs/glossary.md#query) is being replaced by another one. It gives the [Engine](specs/glossary.md#engine) all information needed to handle the transition as gracefully as possible, e.g. by reconciling the existing [Checkpoints](specs/glossary.md#checkpoint) with the new [Query](specs/glossary.md#query), or, at the very least, finalizing the processing of the old [Query](specs/glossary.md#query) and clearing the [Checkpoints](specs/glossary.md#checkpoint) before the new one starts to execute.
 
 Inputs:
 - Transaction ID
-- Previous [Query](#query)
-- Next [Query](#query)
-- Previous [Checkpoint](#checkpoint)
+- Previous [Query](specs/glossary.md#query)
+- Next [Query](specs/glossary.md#query)
+- Previous [Checkpoint](specs/glossary.md#checkpoint)
 
 Outputs:
-- New [Checkpoint](#checkpoint)
-- (optional) [Data](#data) that has been produced when finalizing the old [Query](#query)
+- New [Checkpoint](specs/glossary.md#checkpoint)
+- (optional) [Data](specs/glossary.md#data) that has been produced when finalizing the old [Query](specs/glossary.md#query)
 
 #### Derive Provenance
-This operation is used to trace back a set of events in the output [Dataset](#dataset) to input events that contributed to their values or their existence (see [Provenance](#provenance)).
+This operation is used to trace back a set of events in the output [Dataset](specs/glossary.md#dataset) to input events that contributed to their values or their existence (see [Provenance](specs/glossary.md#provenance)).
 
 > **TODO:** The design of this operation is in progress.
 
 ### Engine Versioning
-As [described previously](#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](#engine) will break this guarantee.
+As [described previously](#components-of-trust), to guarantee the reproducibility and verifiability of the results a transformation must be associated with an exact version of an [Engine](specs/glossary.md#engine) that is used to perform it. We want to exclude any possibility that the code changes in the [Engine](specs/glossary.md#engine) will break this guarantee.
 
-Whenever the [Coordinator](#coordinator) uses an [Engine](#engine) to execute a query it must specify the full digest of the OCI container image in the resulting [Metadata Block](#metadata-chain). [Engine](#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
+Whenever the [Coordinator](specs/glossary.md#coordinator) uses an [Engine](specs/glossary.md#engine) to execute a query it must specify the full digest of the OCI container image in the resulting [Metadata Block](specs/glossary.md#metadata-chain). [Engine](specs/glossary.md#engine) maintainers are therefore responsible for treating the images as immutable and ensure old versions are never lost.
 
 See also:
 - [Engine Deprecation](#engine-deprecation)
 
 ## Coordinator Contract
-The main functions of the [Coordinator](#coordinator) are:
+The main functions of the [Coordinator](specs/glossary.md#coordinator) are:
 - Maintain the [invariants](#requirements) and the [semantics](#transactional-semantics) of the system
-- Guarantee the validity and integrity of the [Metadata](#metadata-chain)
+- Guarantee the validity and integrity of the [Metadata](specs/glossary.md#metadata-chain)
 - Provide means for ingesting external data into the system
-- Interface with the [Engines](#engine) to implement data transformations
-- Enable data sharing functionality via [Repositories](#repository)
-- Provide additional functionality to simplify working with [Datasets](#dataset) and their metadata
+- Interface with the [Engines](specs/glossary.md#engine) to implement data transformations
+- Enable data sharing functionality via [Repositories](specs/glossary.md#repository)
+- Provide additional functionality to simplify working with [Datasets](specs/glossary.md#dataset) and their metadata
 
 ### Common Metadata Operations
-This section describes the operations performed by the [Coordinator](#coordinator) as part of the usual [Metadata Chain](#metadata-chain) maintenance.
+This section describes the operations performed by the [Coordinator](specs/glossary.md#coordinator) as part of the usual [Metadata Chain](specs/glossary.md#metadata-chain) maintenance.
 
 #### Data Hashing
 
@@ -952,10 +576,10 @@ See also:
 - [RFC-012](/rfcs/012-recommend-base16-encoding.md)
 
 #### Checkpoint Hashing
-[Checkpoints](#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Data Hashing](#data-hashing)).
+[Checkpoints](specs/glossary.md#checkpoint) are stored as opaque files and referenced by [Metadata Blocks](specs/glossary.md#metadata-chain) using their physical hash. The process of computing a hash sum is identical to computing a physical hash for a data part file (see [Data Hashing](#data-hashing)).
 
 #### Metadata Block Hashing
-Blocks of the [MetadataChain](#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
+Blocks of the [MetadataChain](specs/glossary.md#metadata-chain) are referred to and linked together using their cryptographic hashes. The process of serializing and computing a stable hash is as follows:
 
 1. The [MetadataBlock](#metadatablock-schema) is serialized into [FlatBuffers](https://google.github.io/flatbuffers/) format following a two-step process to ensure that all variable-size buffers are laid out in memory in a consistent order:
    1. First, we iterate over all fields of the block in the same order they appear in the [schemas](#metadata-reference) serializing into buffers all vector-like and variable-size fields and recursing into nested data structures (tables) in the depth-first order.
@@ -972,14 +596,14 @@ For use in the [Manifest](#manifest-schema)'s `kind` field the `multicodec` tabl
 The block hashes are represented using [multihash](https://github.com/multiformats/multihash) and [multibase](https://github.com/multiformats/multibase) described [above](#hash-representation).
 
 ### Data Ingestion
-It is not the goal of this document to standardize the data ingestion techniques. This section exists only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see in [Root Datasets](#root-dataset).
+It is not the goal of this document to standardize the data ingestion techniques. This section exists only to illustrate *how* new data can be continuously added into the system in alignment with the properties we want to see in [Root Datasets](specs/glossary.md#root-dataset).
 
-When interacting with data on the web we cannot make any assumptions about the guarantees the external source provides - we cannot tell if data is immutable, or if it's replicated for availability, we can't even be sure the domain that hosts it will still exist the next day. The ingestion step is about getting the data into the system as efficiently as possible, where all such properties can be guaranteed and made explicit by [Root Datasets](#root-dataset).
+When interacting with data on the web we cannot make any assumptions about the guarantees the external source provides - we cannot tell if data is immutable, or if it's replicated for availability, we can't even be sure the domain that hosts it will still exist the next day. The ingestion step is about getting the data into the system as efficiently as possible, where all such properties can be guaranteed and made explicit by [Root Datasets](specs/glossary.md#root-dataset).
 
 #### Source Types
 
 ##### Push Source
-In the simplest scenario a [Root Dataset](#root-dataset) is created and periodically written to, i.e. data being "pushed" into it. This can happen in variety of forms like exporting data from external system as a CDC stream, or IoT device reporting measurements, or recording domain events that occur in a business process.
+In the simplest scenario a [Root Dataset](specs/glossary.md#root-dataset) is created and periodically written to, i.e. data being "pushed" into it. This can happen in variety of forms like exporting data from external system as a CDC stream, or IoT device reporting measurements, or recording domain events that occur in a business process.
 
 Push ingestion may support the following phases:
 - **Read phase** - Reads the data in some format into a structured form.
@@ -997,10 +621,10 @@ Polling ingestion may support the following phases:
 - **Merge phase** - Combines the new data from the source with the history of previously seen data.
 
 #### Merge Strategies
-[Merge Strategies](#merge-strategy) deserve special attention as they bridge the gap between the [wide variety of data](#nature-of-data) in the external world with the strict event-based world of our system.
+[Merge Strategies](specs/glossary.md#merge-strategy) deserve special attention as they bridge the gap between the [wide variety of data](#nature-of-data) in the external world with the strict event-based world of our system.
 
 ##### Append Merge Strategy
-Under this strategy, the new data will be appended to the [Dataset](#dataset) in its original form without any modifications.
+Under this strategy, the new data will be appended to the [Dataset](specs/glossary.md#dataset) in its original form without any modifications.
 
 ##### Ledger Merge Strategy
 This strategy should be used for data sources containing append-only event streams. New data exports can have new rows added, but once data already made it into one export it should never change or disappear. A user-specified primary key is used to identify which events were already seen, not to duplicate them.
@@ -1016,66 +640,66 @@ This strategy transforms snapshot data into an append-only event stream by perfo
 
 Each event will have an additional column that signifies the kind of observation that was encountered.
 
-The `Snapshot` strategy also requires special treatment in regard to the [Event Time](#event-time). Since snapshot-style data exports represent the state of some system at a certain time - it is important to know what that time was. This time is usually captured in some form of metadata (e.g. in the name of the snapshot file, in the URL, or the HTTP caching headers). It should be possible to extract and propagate this time into a data column.
+The `Snapshot` strategy also requires special treatment in regard to the [Event Time](specs/glossary.md#event-time). Since snapshot-style data exports represent the state of some system at a certain time - it is important to know what that time was. This time is usually captured in some form of metadata (e.g. in the name of the snapshot file, in the URL, or the HTTP caching headers). It should be possible to extract and propagate this time into a data column.
 
 ### Derivative Transformations
-[Previously](#execute-query) we looked at how an [Engine](#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](#coordinator) side.
+[Previously](#execute-query) we looked at how an [Engine](specs/glossary.md#engine) executes the transformation query. Here we will look at what happens on the [Coordinator](specs/glossary.md#coordinator) side.
 
 ![Sequence Diagram: Execute Query](images/engine_transform.svg)
 
-Here are the steps that the [Coordinator](#coordinator) performs during the transformation:
-- **Batch step** - Analyze the [Metadata Chains](#metadata-chain) of the [Dataset](#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
-- **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](#engine) [Migrate Query](#migrate-query) operation to make necessary adjustments for the new transformation parameters.
-- **Run query** - Pass the input [Data Slices](#data-slice) into the [Engine's](#engine) [Execute Query](#execute-query) operation
-- **Hash resulting data and checkpoint** - Obtain a stable [Hash](#hash) of the output [Data Slice](#data-slice) and [Checkpoint](#checkpoint) (see [Data Hashing](#data-hashing) and [Checkpoint Hashing](#checkpoint-hashing))
-- **Prepare commit** - Creates the next [Metadata Block](#metadata-chain) describing the output data
-- **Commit** - Atomically adds the new [Data Slice](#data-slice) and the [Metadata Block](#metadata-chain) to the [Dataset](#dataset)
+Here are the steps that the [Coordinator](specs/glossary.md#coordinator) performs during the transformation:
+- **Batch step** - Analyze the [Metadata Chains](specs/glossary.md#metadata-chain) of the [Dataset](specs/glossary.md#dataset) being transformed and all the inputs. The goal here is to decide how far the processing can progress before hitting one of the special conditions, such as a change of schema in one of the inputs or a change of the transformation query.
+- **Run migrations** (when needed) - If a special condition is encountered - call the [Engine's](specs/glossary.md#engine) [Migrate Query](#migrate-query) operation to make necessary adjustments for the new transformation parameters.
+- **Run query** - Pass the input [Data Slices](specs/glossary.md#data-slice) into the [Engine's](specs/glossary.md#engine) [Execute Query](#execute-query) operation
+- **Hash resulting data and checkpoint** - Obtain a stable [Hash](specs/glossary.md#hash) of the output [Data Slice](specs/glossary.md#data-slice) and [Checkpoint](specs/glossary.md#checkpoint) (see [Data Hashing](#data-hashing) and [Checkpoint Hashing](#checkpoint-hashing))
+- **Prepare commit** - Creates the next [Metadata Block](specs/glossary.md#metadata-chain) describing the output data
+- **Commit** - Atomically adds the new [Data Slice](specs/glossary.md#data-slice) and the [Metadata Block](specs/glossary.md#metadata-chain) to the [Dataset](specs/glossary.md#dataset)
 
 ### Dataset Evolution
-Most parts of the [Dataset](#dataset) can [change over time](#evolution-of-data). To protect downstream consumers of data from braking changes the [Coordinator](#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](#metadata-chain).
+Most parts of the [Dataset](specs/glossary.md#dataset) can [change over time](#evolution-of-data). To protect downstream consumers of data from braking changes the [Coordinator](specs/glossary.md#coordinator) has to validate the changes for backward compatibility before accepting them. This section covers the allowed transitions for different parts of the [Metadata](specs/glossary.md#metadata-chain).
 
 #### Schema Evolution
-[Dataset](#dataset) [Schema](#schema) may change when:
-- A different [Ingestion](#ingestion) process is specified in the [Root Dataset](#root-dataset)
-- A transformation [Query](#query) of the [Derivative Dataset](#derivative-dataset) is changed
-- A [Schema](#schema) of one of the inputs of the [Query](#query) changes
+[Dataset](specs/glossary.md#dataset) [Schema](specs/glossary.md#schema) may change when:
+- A different [Ingestion](specs/glossary.md#ingestion) process is specified in the [Root Dataset](specs/glossary.md#root-dataset)
+- A transformation [Query](specs/glossary.md#query) of the [Derivative Dataset](specs/glossary.md#derivative-dataset) is changed
+- A [Schema](specs/glossary.md#schema) of one of the inputs of the [Query](specs/glossary.md#query) changes
 
-In general, [Schema](#schema) changes are restricted to only adding new columns. Removing and renaming columns or changing data types would break downstream data consumers and therefore not allowed. A migration procedure should be used instead when it's desired to introduce breaking changes in the [Schema](#schema).
+In general, [Schema](specs/glossary.md#schema) changes are restricted to only adding new columns. Removing and renaming columns or changing data types would break downstream data consumers and therefore not allowed. A migration procedure should be used instead when it's desired to introduce breaking changes in the [Schema](specs/glossary.md#schema).
 
 #### Query Evolution
-The procedure for modifying the [Query](#query) of a [Derivative Dataset](#derivative-dataset) is as following:
-1. The [Coordinator](#coordinator) invokes the [Engine's](#engine) [Validate Query](#validate-query) operation to validate the new [Query](#query) and determine the validity of the transition according to the engine-specific rules.
-2. The new [Schema](#schema) returned in the previous step is validated according to the [Schema Evolution](#schema-evolution) rules.
-3. A new [Metadata Block](#metadata-chain) is created and committed.
+The procedure for modifying the [Query](specs/glossary.md#query) of a [Derivative Dataset](specs/glossary.md#derivative-dataset) is as following:
+1. The [Coordinator](specs/glossary.md#coordinator) invokes the [Engine's](specs/glossary.md#engine) [Validate Query](#validate-query) operation to validate the new [Query](specs/glossary.md#query) and determine the validity of the transition according to the engine-specific rules.
+2. The new [Schema](specs/glossary.md#schema) returned in the previous step is validated according to the [Schema Evolution](#schema-evolution) rules.
+3. A new [Metadata Block](specs/glossary.md#metadata-chain) is created and committed.
 
 > **TODO**: Specify how Schema changes in the upstream datasets should be handled
 > - Do we stop processing and ask user to validate that the query takes into account the new columns?
 
 ### Dataset Sharing
-Dataset sharing involves uploading the data to some [Repository](#repository) where it can be discovered and accessed by other peers. Due to immutable nature of data and metadata it is very easy to keep shared data up-to-date as only new blocks and part files need to be uploaded.
+Dataset sharing involves uploading the data to some [Repository](specs/glossary.md#repository) where it can be discovered and accessed by other peers. Due to immutable nature of data and metadata it is very easy to keep shared data up-to-date as only new blocks and part files need to be uploaded.
 
 It is important to ensure the atomicity of the sharing, or at least create the perception of atomicity to someone who happens to be downloading the data concurrently with the upload.
 
-For [Repositories](#repository) that do not support atomic file/object operations the following sequence of operations can ensure that concurrent downloads will always see the [Dataset](#dataset) in a consistent state:
+For [Repositories](specs/glossary.md#repository) that do not support atomic file/object operations the following sequence of operations can ensure that concurrent downloads will always see the [Dataset](specs/glossary.md#dataset) in a consistent state:
 1. Upload data part files
 2. Upload metadata blocks
 3. Update references in `metadata/refs` directory
 
 #### Dataset Validation
-The [Derivative Dataset](#derivative-dataset) validation confirms that the event data is in fact produced by applying all the transformations stored in the [Metadata](#metadata-chain) to the inputs and was not maliciously altered.
+The [Derivative Dataset](specs/glossary.md#derivative-dataset) validation confirms that the event data is in fact produced by applying all the transformations stored in the [Metadata](specs/glossary.md#metadata-chain) to the inputs and was not maliciously altered.
 
-The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](#metadata-chain).
+The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](specs/glossary.md#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](specs/glossary.md#metadata-chain).
 
 Due to non-determinism of Parquet format the physical hash may not match the one in metadata so a fallback to logical hash is required to verify that the resulting records are logically the same.
 
 ### Engine Deprecation
-Pinning the exact [Engine](#engine) version used by every transformation guarantees the reproducibility and verifiability of the results (see [Components of Trust](#components-of-trust)). In the long run, however, this creates a problem where in order to [validate a dataset](#dataset-validation) the [Coordinator](#coordinator) will have to use a very large number of different versions of an [Engine](#engine) that might've accumulated over the years. This slows down the validation procedure and can result in a significant disk space required for storing these images.
+Pinning the exact [Engine](specs/glossary.md#engine) version used by every transformation guarantees the reproducibility and verifiability of the results (see [Components of Trust](#components-of-trust)). In the long run, however, this creates a problem where in order to [validate a dataset](#dataset-validation) the [Coordinator](specs/glossary.md#coordinator) will have to use a very large number of different versions of an [Engine](specs/glossary.md#engine) that might've accumulated over the years. This slows down the validation procedure and can result in a significant disk space required for storing these images.
 
-To mitigate this problem the [Coordinator](#coordinator) offers the **engine deprecation** operation that works as follows:
-1. The [Coordinator](#coordinator) reconstructs the dataset from scratch by repeating all transformation in the [Metadata Chain](#metadata-chain).
-2. Instead of the [Engine](#engine) version specified in the block, it uses the latest (or provided) version.
-3. If the results produced in every step match the recorded ones - we can safely consider that the newer version of the [Engine](#engine) is fully compatible with the older one.
-4. A special [Metadata](#metadata-chain) record is created to record this compatibility, therefore, allowing all users to use the latest version of the [Engine](#engine) instead of downloading all the versions seen previously.
+To mitigate this problem the [Coordinator](specs/glossary.md#coordinator) offers the **engine deprecation** operation that works as follows:
+1. The [Coordinator](specs/glossary.md#coordinator) reconstructs the dataset from scratch by repeating all transformation in the [Metadata Chain](specs/glossary.md#metadata-chain).
+2. Instead of the [Engine](specs/glossary.md#engine) version specified in the block, it uses the latest (or provided) version.
+3. If the results produced in every step match the recorded ones - we can safely consider that the newer version of the [Engine](specs/glossary.md#engine) is fully compatible with the older one.
+4. A special [Metadata](specs/glossary.md#metadata-chain) record is created to record this compatibility, therefore, allowing all users to use the latest version of the [Engine](specs/glossary.md#engine) instead of downloading all the versions seen previously.
 
 ## Repository Contract
 > **TODO:**
@@ -1084,11 +708,11 @@ To mitigate this problem the [Coordinator](#coordinator) offers the **engine dep
 
 ### Simple Transfer Protocol
 
-Simple Transfer Protocol specified here is a bare-minimum read-only protocol used for synchronizing [Datasets](#dataset) between [Repositories](#repository). It requires no ODF-specific logic on the server side and can be easily implemented, for example, by serving a dataset directory under an HTTP server. It's designed for maximal interoperability, not for efficiency.
+Simple Transfer Protocol specified here is a bare-minimum read-only protocol used for synchronizing [Datasets](specs/glossary.md#dataset) between [Repositories](specs/glossary.md#repository). It requires no ODF-specific logic on the server side and can be easily implemented, for example, by serving a dataset directory under an HTTP server. It's designed for maximal interoperability, not for efficiency.
 
 To describe the protocol we will use HTTP `GET {object-key}` notation below, but note that this protocol can be implemented on top of any block or file-based protocol that supports Unix path-like object keys.
 
-1) Process begins with `GET /refs/head` to get the hash of the last [Metadata Block](#metadata-chain)
+1) Process begins with `GET /refs/head` to get the hash of the last [Metadata Block](specs/glossary.md#metadata-chain)
 2) The "metadata walking" process starts with `GET /blocks/{blockHash}` and continues following the `prevBlockHash` links
 3) Data part files can be downloaded by using [`DataSlice::physicalHash`](#dataslice-schema) links with `GET /data/{physicalHash}`
 4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoints/{physicalHash}`
