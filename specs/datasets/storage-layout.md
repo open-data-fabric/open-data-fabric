@@ -69,12 +69,12 @@ When storing a dataset in a file system or a conventional object store (e.g. S3)
 
 This layout must be used when sharing datasets via file or object-based [Repositories](../glossary.md#repository) (e.g. local FS, S3, HTTP servers).
 
-Accessing a dataset in this layout only requires the ability to **read an object by key** - it purposefully does not rely on any advanced storage features like listing directories. This allows datasets to be transferred using the [Simple Transfer Protocol](../../open-data-fabric.md#simple-transfer-protocol) on top of any storage that supports Unix path-like keys.
+Accessing a dataset in this layout only requires the ability to **read an object by key** - it purposefully does not rely on any advanced storage features like listing directories. This allows datasets to be transferred using the [Simple Transfer Protocol](../exchange/transfer-protocols.md#simple-transfer-protocol) on top of any storage that supports Unix path-like keys.
 
 When a [Dataset](../glossary.md#dataset) is imported locally, the exact layout is left entirely up to the [Coordinator](../glossary.md#coordinator) implementation, as we expect all interactions with the [Dataset](../glossary.md#dataset) to go through it. Implementations may also store additional implementation-specific information (e.g. configuration, caches, summaries) alongside the dataset, but such information is not a part of the dataset and must not be relied upon by other implementations.
 
 See Also:
-- [Dataset Sharing](../../open-data-fabric.md#dataset-sharing)
+- [Dataset Sharing](../exchange/transfer-protocols.md#dataset-sharing)
 
 
 ## Layout in Content-Addressable Stores
@@ -84,7 +84,7 @@ A dataset is stored in such networks using the same [layout](#layout-in-file-sys
 
 Storage networks identify stored data by their own **locators** (e.g. IPFS CIDs, Arweave transaction IDs). Locators generally differ from ODF hashes of the same objects, as they depend on network-specific settings like chunking of large files, DAG structure, or transaction boundaries. Objects are therefore located by their paths within the dataset directory rather than by their ODF hashes directly.
 
-Networks that provide HTTP gateways allow reading datasets using the [Simple Transfer Protocol](../../open-data-fabric.md#simple-transfer-protocol), as it only requires the ability to read objects by their paths.
+Networks that provide HTTP gateways allow reading datasets using the [Simple Transfer Protocol](../exchange/transfer-protocols.md#simple-transfer-protocol), as it only requires the ability to read objects by their paths.
 
 Because components of a dataset are identical regardless of where they are stored, the same dataset can be stored in multiple places simultaneously, e.g. in a conventional object store for low-latency access and in a permanent storage network for archival and censorship-resistant access. Consistency between such replicas can be verified by comparing the hashes of their `head` blocks.
 

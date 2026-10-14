@@ -2,6 +2,9 @@
 
 **Start Date**: 2022-12-23
 
+**Specs**:
+- [Transfer Protocols](../specs/exchange/transfer-protocols.md)
+
 [![RFC Status](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/35?label=RFC%20Status)](https://github.com/kamu-data/open-data-fabric/issues/35)
 
 [![Spec PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/38?label=Spec%20PR)](https://github.com/kamu-data/open-data-fabric/pull/38)
@@ -77,11 +80,11 @@ asynchronous duplex messaging channel as defined by `AsyncAPI`.
 
 ### Push flow
 
-![Diagram: ODF Smart TransferProtocol Push](../images/smart_transfer_protocol_push.svg)
+![Diagram: ODF Smart TransferProtocol Push](../specs/exchange/transfer-protocols/smart_transfer_protocol_push.svg)
 
 ### Pull flow
 
-![Diagram: ODF Smart TransferProtocol Pull](../images/smart_transfer_protocol_pull.svg)
+![Diagram: ODF Smart TransferProtocol Pull](../specs/exchange/transfer-protocols/smart_transfer_protocol_pull.svg)
 
 
 ## Drawbacks

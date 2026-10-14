@@ -14,7 +14,7 @@ channels:
       operationId: odf.dataset.pull.request
       summary: Initiates dataset pull from the ODF server
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPullRequest
         name: DatasetPullRequest
@@ -42,7 +42,7 @@ channels:
       operationId: odf.dataset.pull.response
       summary: Indicates a successful response to the initiated pull request and provides size estimation
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPullResponse
         name: DatasetPullResponse
@@ -60,7 +60,7 @@ channels:
       operationId: odf.dataset.pull.metadata.request
       summary: Requests download of the metadata from the ODF server
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPullMetadataRequest
         name: DatasetPullMetadataRequest
@@ -74,7 +74,7 @@ channels:
       operationId: odf.dataset.pull.metadata.response
       summary: Response with the metadata for the requested pull range
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetMetadataPullResponse
         name: DatasetMetadataPullResponse
@@ -92,7 +92,7 @@ channels:
       operationId: odf.dataset.pull.objects.transfer.request
       summary: Requests to agree on the strategy for downloading 1 or more object files
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPullObjectsTransferRequest
         name: DatasetPullObjectsTransferRequest
@@ -113,7 +113,7 @@ channels:
       operationId: odf.dataset.pull.objects.transfer.response
       summary: Response on the agreed strategy for objects downloading during the pull
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPullObjectsTransferResponse
         name: DatasetPullObjectsTransferResponse
@@ -134,7 +134,7 @@ channels:
       operationId: odf.dataset.push.request
       summary: Initiates dataset push to the ODF server
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushRequest
         name: DatasetPushRequest
@@ -162,7 +162,7 @@ channels:
       operationId: odf.dataset.push.request.accepted
       summary: Informs about successful acceptance of dataset push request
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushRequestAccepted
         name: DatasetPushRequestAccepted
@@ -176,14 +176,17 @@ channels:
       operationId: odf.dataset.push.metadata
       summary: Initiates upload of the metadata to the ODF server
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushMetadata
         name: DatasetPushMetadata
         contentType: application/json
         payload:
           type: object
-          newBlocks:
+          required:
+            - newBlocks
+          properties:
+            newBlocks:
               $ref: '#/components/schemas/ObjectsBatch'
 
   dataset/push/metadata/accepted:
@@ -191,7 +194,7 @@ channels:
       operationId: odf.dataset.push.metadata.accepted
       summary: Informs about successful acceptance of dataset metadata during push
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushMetadataAccepted
         name: DatasetPushMetadataAccepted
@@ -205,7 +208,7 @@ channels:
       operationId: odf.dataset.push.objects.transfer.request
       summary: Requests to agree on the strategy for uploading 1 or more object files
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushObjectsTransferRequest
         name: DatasetPushObjectsTransferRequest
@@ -221,12 +224,12 @@ channels:
               items:
                 $ref: '#/components/schemas/ObjectFileReference'
 
-  dataset/push/objects/objects/transfer/response:
+  dataset/push/objects/transfer/response:
     publish:
       operationId: odf.dataset.push.objects.transfer.response
       summary: Response on the agreed strategy for objects uploading during the push
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushObjectsTransferResponse
         name: DatasetPushObjectsTransferResponse
@@ -247,7 +250,7 @@ channels:
       operationId: odf.dataset.push.complete
       summary: Informs ODF-server the push operation is complete
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushComplete
         name: DatasetPushComplete
@@ -261,7 +264,7 @@ channels:
       operationId: odf.dataset.push.complete.confirmed
       summary: Informs consumer the push completion is confirmed
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetPushCompleteConfirmed
         name: DatasetPushCompleteConfirmed
@@ -275,7 +278,7 @@ channels:
       operationId: odf.dataset.error
       summary: Informs about error happened during one of API operations with the dataset
       security:
-        - jwt: []
+        - odf_access_token: []
       message:
         messageId: odf.dataset.DatasetError
         name: DatasetError
@@ -418,7 +421,7 @@ components:
           description: Optional extra fields associated with an error
 
   securitySchemes:
-    jwt:
+    odf_access_token:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: org.odf.access_token

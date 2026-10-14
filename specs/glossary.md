@@ -360,7 +360,7 @@ Repository definition includes:
 - Credentials needed to access it
 - Any necessary protocol-specific configuration
 
-In the most basic form, a [Repository](#repository) can simply be a location where the dataset files are hosted over one of the [supported](../open-data-fabric.md#supported-protocols) file or object-based data transfer protocols. The owner of a dataset will have push privileges to this location, while other participants can pull data from it.
+In the most basic form, a [Repository](#repository) can simply be a location where the dataset files are hosted over one of the file or object-based data [transfer protocols](exchange/transfer-protocols.md). The owner of a dataset will have push privileges to this location, while other participants can pull data from it.
 
 An advanced repository can support more functionality like:
 - Push data API for publishers
@@ -368,7 +368,7 @@ An advanced repository can support more functionality like:
 - Query API for making use of repository's compute resources and reducing the amount of transferred data
 
 See also:
-- [Repository Contract](../open-data-fabric.md#repository-contract)
+- [Transfer Protocols](exchange/transfer-protocols.md)
 
 
 ## Resource

@@ -97,7 +97,7 @@ Status legend:
 
 | Spec | Scope | Sources | Status |
 | --- | --- | --- | --- |
-| **Transfer Protocols** | Repositories, simple and smart transfer protocols, direct-to-storage transfers, replication | Repository, Data Sharing, Dataset Sharing, Repository Contract, [RFC-007], [RFC-008] | Existing |
+| ✅ **Transfer Protocols** | Repositories, simple and smart transfer protocols, direct-to-storage transfers, replication | Repository, Data Sharing, Dataset Sharing, Repository Contract, [RFC-007], [RFC-008] | Existing |
 | **Query Protocols** | Standard query interfaces (Flight SQL / ADBC), federated query planning |  | New |
 | **Verification** | Components of trust, determinism and reproducibility, dataset validation and verification procedures | Verifiability, Components of Trust, Dataset Validation | Existing |
 | ✅ **Verifiable Batch Queries** | Query commitments and proofs that allow consumers to verify that query results correspond to specific dataset states | [RFC-022] | RFC |

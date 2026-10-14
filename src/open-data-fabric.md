@@ -129,7 +129,7 @@ When working with temporal events, stream processing has the following benefits:
 - Modern stream processing techniques make complex problems like handling late and out-of-order data much simpler, more explicit, and significantly less error-prone than equivalent batch operations.
 
 ### Essential Role of Metadata
-Metadata is the cornerstone of our design. It contains every aspect of where the data came from, how it was transformed, and everything that ever influenced how data looks like throughout its entire lifetime. In a way it's like a digital passport of data using which we can audit and verify its validity (see [Data Sharing](#data-sharing)).
+Metadata is the cornerstone of our design. It contains every aspect of where the data came from, how it was transformed, and everything that ever influenced how data looks like throughout its entire lifetime. In a way it's like a digital passport of data using which we can audit and verify its validity (see [Transfer Protocols: Design Goals](specs/exchange/transfer-protocols.md#design-goals)).
 
 The metadata is always updated whenever data gets updated and stays fully consistent with it. The two are cryptographically linked, making spoofing it near impossible.
 
@@ -144,21 +144,6 @@ Our design goals are, therefore:
 - To provide a way to correct past mistakes in data
 
 While for simplicity we previously considered derivative datasets to be only defined by one transformation query, in fact it can comprise multiple queries that were active during different periods of time. The metadata keeps track of which parts of inputs were processed by which query and which parts of output were produced as the result, ensuring reproducibility. This idea will be further explored when we discuss the [Metadata Chain](specs/glossary.md#metadata-chain), but for now, get used to the idea that **almost anything that defines a dataset can change over time**.
-
-## Data Sharing
-The guiding factors in designing how data is shared were:
-- Minimal storage requirements - while a certain degree of replication is necessary to keep data highly available, we don't want to duplicate data more than it's necessary.
-- Decentralization - there should be no central authority that decides what the "right data" is.
-- Verifiable trust - even when data is hosted by a single party any tampering or alterations must still be impossible.
-- Minimize the movement of data - when a trusted party keeps data in an environment that also provides compute resources, we would like to be able to process and query data without the need to always download it locally.
-
-The way we designed [Metadata](#essential-role-of-metadata) plays a crucial role in data sharing.
-
-Metadata is usually several orders of magnitude smaller than the data it describes, so it's ideally suited to be widely shared. The exact way it's shared is out of scope of this document, but in most simple cases it can be published openly by the provider of data and cryptographically signed to ensure authenticity.
-
-When the metadata of a certain dataset is reliably known, a peer can then download the data from any untrusted source and use the metadata validate the authenticity of every data slice that composes it (see [Hash Function](specs/glossary.md#hash)) - this means that we need to only ensure the validity of metadata, while the data can be stored almost anywhere with minimal replication factor, as long as one compromised party does not result in the complete loss of data.
-
-Metadata also provides us with a way to establish the trustworthiness of any dataset by reviewing the transformations declared in it, re-applying those transformations in a trusted environment, and comparing the results to the original data. In a distributed system, having peers cross-validate each other's published data can guarantee trusted results and allow them to promptly identify and exclude malicious peers from the network.
 
 ## Transactional Semantics
 To achieve a perfect reproducibility the system needs to satisfy very strong transactional properties:
@@ -430,65 +415,12 @@ The procedure for modifying the [Query](specs/glossary.md#query) of a [Derivativ
 > **TODO**: Specify how Schema changes in the upstream datasets should be handled
 > - Do we stop processing and ask user to validate that the query takes into account the new columns?
 
-### Dataset Sharing
-Dataset sharing involves uploading the data to some [Repository](specs/glossary.md#repository) where it can be discovered and accessed by other peers. Due to immutable nature of data and metadata it is very easy to keep shared data up-to-date as only new blocks and part files need to be uploaded.
-
-It is important to ensure the atomicity of the sharing, or at least create the perception of atomicity to someone who happens to be downloading the data concurrently with the upload.
-
-For [Repositories](specs/glossary.md#repository) that do not support atomic file/object operations the following sequence of operations can ensure that concurrent downloads will always see the [Dataset](specs/glossary.md#dataset) in a consistent state:
-1. Upload data part files
-2. Upload metadata blocks
-3. Update references in `metadata/refs` directory
-
-#### Dataset Validation
+### Dataset Validation
 The [Derivative Dataset](specs/glossary.md#derivative-dataset) validation confirms that the event data is in fact produced by applying all the transformations stored in the [Metadata](specs/glossary.md#metadata-chain) to the inputs and was not maliciously altered.
 
 The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations) except instead of the `Commit` phase the [Coordinator](specs/glossary.md#coordinator) compares the hashes of the data produced by local transform to the hashes stored in the [Metadata](specs/glossary.md#metadata-chain).
 
 Due to non-determinism of Parquet format the physical hash may not match the one in metadata so a fallback to logical hash is required to verify that the resulting records are logically the same.
-
-## Repository Contract
-> **TODO:**
-> - Supported protocols
-> - Querying data in advanced repository
-
-### Simple Transfer Protocol
-
-Simple Transfer Protocol specified here is a bare-minimum read-only protocol used for synchronizing [Datasets](specs/glossary.md#dataset) between [Repositories](specs/glossary.md#repository). It requires no ODF-specific logic on the server side and can be easily implemented, for example, by serving a dataset directory under an HTTP server. It's designed for maximal interoperability, not for efficiency.
-
-To describe the protocol we will use HTTP `GET {object-key}` notation below, but note that this protocol can be implemented on top of any block or file-based protocol that supports Unix path-like object keys.
-
-1) Process begins with `GET /refs/head` to get the hash of the last [Metadata Block](specs/glossary.md#metadata-chain)
-2) The "metadata walking" process starts with `GET /blocks/{blockHash}` and continues following the `prevBlockHash` links
-3) Data part files can be downloaded by using [`DataSlice::physicalHash`](#dataslice-schema) links with `GET /data/{physicalHash}`
-4) Checkpoints are similarly downloaded using [`Checkpoint::physicalHash`](#checkpoint-schema) links with `GET /checkpoints/{physicalHash}`
-5) The process continues until reaching the first block of the dataset or other termination condition (e.g. reaching the block that has already been synced previously)
-
-See also:
-- [RFC-007: Simple Transfer Protocol](/rfcs/007-simple-transfer-protocol.md)
-
-### Smart Transfer Protocol
-
-Smart Transfer Protocol is a superset of Simple Transfer Protocol, which allows both read and writes
-and solves performance issues to allow efficient synchronization between remote dataset repositories.
-
-The detailed format of endpoints is described here: [Smart Transfer Protocol: OpenAPI](/protocols/smart-transfer-protocol.openapi.yaml).
-
-Smart Transfer Protocol extends the HTTP operations of the Simple Transfer Protocol with 2 more endpoints:
-1) `GET /pull` - to start the smart pull flow on the dataset
-2) `GET /push` - to start the smart push flow on the dataset
-
-Both extensions switch from HTTP to a more advanced asynchronous bi-directional message-based protocol,
-like [WebSockets](https://websockets.spec.whatwg.org/). Parties first exchange the intent of synchronization,
-then switch to transfer of metadata blocks and associated object files. Metadata is transferred as an
-archive of the block files, while object files are transferred separately with unrestricted degree of parallelism.
-The protocol assumes, but does not require, the use of 3rd-party cloud data storage service to exchange object files. 
-
-The details of the individual asynchronous messages are specified here: [Smart Transfer Protocol: AsyncAPI](/protocols/smart-transfer-protocol.asyncapi.yaml).
-
-See also:
-- [RFC-008: Smart Transfer Protocol](/rfcs/008-smart-transfer-protocol.md)
-
 
 ## Future Topics
 
@@ -506,7 +438,3 @@ See also:
 
 ## Engine API Reference
 > **TODO**: Provide `gRPC + FlatBuffers` IDL
-
-## Repository API Reference
-> **TODO**: Provide `gRPC + FlatBuffers` IDL
-
