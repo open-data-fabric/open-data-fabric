@@ -7,7 +7,7 @@
 **Published Date**: (fill in with the date at the time of merging)
 
 **Authors**:
-- [First Last](mailto:first.last@example.com), [Company](example.com)
+- [First Last](mailto:first.last@example.com), [Company](https://example.com)
 
 
 **Compatibility**:

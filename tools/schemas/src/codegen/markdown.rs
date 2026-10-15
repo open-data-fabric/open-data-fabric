@@ -17,6 +17,7 @@ const HEADER: &str = indoc::indoc!(
     Reference of all schemas that ODF specs refer to, grouped by context. Schemas are defined in the [`schemas`](../schemas) directory.
 
 
+    <a name="table-of-contents"></a>
     ## Table of Contents <!-- omit in toc -->
 
     "#
@@ -154,8 +155,7 @@ fn render_type(
         model::TypeDefinition::Union(t) => render_union(t, lvl, model, w)?,
         model::TypeDefinition::Enum(t) => render_enum(t, lvl, w)?,
         model::TypeDefinition::Map(t) => render_map(t, lvl, w)?,
-        // TODO: Not supporting top-level scalar types yet
-        model::TypeDefinition::Scalar(_) => (),
+        model::TypeDefinition::Scalar(t) => render_scalar(t, lvl, w)?,
     }
     Ok(())
 }
@@ -293,6 +293,54 @@ fn render_enum(
     )?;
     writeln!(w)?;
     render_schema_links(&typ.src, true, w)?;
+    Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn render_scalar(
+    typ: &model::Scalar,
+    lvl: usize,
+    w: &mut dyn std::io::Write,
+) -> Result<(), std::io::Error> {
+    let name = typ.id.join("::");
+    render_header(name.as_ref(), Some(schema_id(name.as_ref())), lvl, w)?;
+    writeln!(w, "{}", typ.description)?;
+    writeln!(w)?;
+
+    render_table(
+        vec!["Type", "Format"],
+        vec![":---:", ":---:"],
+        vec![vec![as_json_type(&typ.typ), as_format(&typ.typ)]],
+        w,
+    )?;
+    writeln!(w)?;
+
+    if let Some(props) = &typ.label_properties {
+        let mut rows = Vec::new();
+        if let Some(v) = props.is_auth_attribute {
+            rows.push(vec!["Auth attribute".to_string(), v.to_string()]);
+        }
+        if let Some(v) = props.is_required {
+            rows.push(vec!["Required".to_string(), v.to_string()]);
+        }
+        if let Some(types) = &props.resource_types {
+            let types: Vec<_> = types
+                .iter()
+                .map(|t| {
+                    let name = t.rsplit('/').next().unwrap_or(t);
+                    format!("[{name}](#{})", schema_id(name))
+                })
+                .collect();
+            rows.push(vec!["Resource types".to_string(), types.join(", ")]);
+        }
+        if !rows.is_empty() {
+            render_table(vec!["Label Property", "Value"], vec!["---", "---"], rows, w)?;
+            writeln!(w)?;
+        }
+    }
+
+    render_schema_links(&typ.src, false, w)?;
     Ok(())
 }
 

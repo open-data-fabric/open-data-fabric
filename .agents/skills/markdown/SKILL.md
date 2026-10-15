@@ -43,6 +43,7 @@ More content.
 ## Links
 - Use relative paths for links between files in the repository (e.g. `../glossary.md#dataset`, `../../rfcs/016-odf-schema.md`).
 - Link to source files (e.g. JSON schemas in `schemas/{context}/{version}/{Name}.json`) rather than to generated artifacts.
+- Run `make lint-markdown` after editing markdown files - it checks that all relative links, anchors, and images resolve (requires `lychee`).
 - Prefer reference-style links (`[RFC-016]` with definitions at the bottom of the file) when the same target is linked many times.
 
 

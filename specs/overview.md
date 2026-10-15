@@ -1,10 +1,5 @@
 # Open Data Fabric Overview <!-- omit in toc -->
 
-**Domain**: -
-**Depends on**: -
-**RFCs**: [RFC-021](../rfcs/021-spec-restructuring.md)
-
-
 ## Abstract
 
 **Open Data Fabric** is an open protocol specification for decentralized exchange and transformation of semi-structured data that aims to holistically address many shortcomings of the modern data management systems and workflows.
@@ -12,6 +7,8 @@
 
 ## Table of Contents <!-- omit in toc -->
 
+- [Abstract](#abstract)
+- [Specs](#specs)
 - [Problem Statement](#problem-statement)
 - [Requirements](#requirements)
 - [Scope](#scope)
@@ -27,7 +24,28 @@
   - [Coordinator](#coordinator)
   - [Engine](#engine)
   - [Node](#node)
-- [Specs](#specs)
+
+
+## Specs
+ODF is specified as a set of interconnected specs grouped by domain. Core concepts used by all specs are defined in the [Glossary](glossary.md), and all schemas are described in the [Reference](reference.md).
+
+| Domain | Spec | Description |
+| --- | --- | --- |
+| Datasets | [Logical Structure](datasets/logical-structure.md) | General structure of an ODF dataset |
+| Datasets | [Identity](datasets/identity.md) | `did:odf` identifiers, aliases, and references |
+| Datasets | [Data Model](datasets/data-model.md) | Event model, system columns, retractions and corrections, schema evolution |
+| Datasets | [Data Schema](datasets/data-schema.md) | Logical schema format of data |
+| Datasets | [Metadata Chain](datasets/metadata-chain.md) | Blocks, events, consistency rules, and block hashing |
+| Datasets | [Data & Checkpoint Hashing](datasets/data-and-checkpoint-hashing.md) | Physical and logical hashing of data and checkpoints |
+| Datasets | [Storage Layout](datasets/storage-layout.md) | Layout of dataset components in various storage systems |
+| Datasets | [Ingestion](datasets/ingestion.md) | Sources, ingestion phases, and merge strategies |
+| Transformations | [Processing Model](transformations/processing-model.md) | Derivative datasets, watermarks, checkpoints, and query evolution |
+| Transformations | [Engine Contract](transformations/engine-contract.md) | Communication between coordinators and engines |
+| Exchange | [Transfer Protocols](exchange/transfer-protocols.md) | Simple and Smart Transfer Protocols for synchronizing datasets |
+| Exchange | [Verifiable Batch Queries](exchange/verifiable-batch-queries.md) | Commitments that make query results verifiable |
+| Automation | [Resource Framework](automation/resource-framework.md) | Declarative resource model and manifest format |
+| Automation | [Tasks and Flows](automation/tasks-and-flows.md) | Scheduling and execution of workloads |
+| Auth & Privacy | [Authorization](auth-and-privacy/authorization.md) | Accounts, groups, auth attributes, and policies |
 
 
 ## Problem Statement
@@ -64,7 +82,7 @@ The primary focus of this specification is the **mission-critical data** such as
 - Scientific data
 - As well as any other data used for decision-making
 
-This specification does not target very high volume sources like IoT and sensor data where infinite retention of the entire history may be cost-prohibitive. We do, however, hope to shift the mindset of the data science community towards thinking about such cases as **design compromises**. Routine data loss should no longer be our default mode of operations.
+This end goal is however to make the specification suitable for very high volume sources like IoT and sensor data. We start with infinite retention of history and provide operations like compactions and pruning for use cases where it may be cost-prohibitive. The hope is to shift the mindset of the data science community towards thinking about such cases as **edge cases** and no longer treat routine data and history loss as our default mode of operations.
 
 
 ## Design Decisions
@@ -212,25 +230,3 @@ To guarantee the reproducibility of all transformations, engines run in a sandbo
 - Exposes datasets to other participants via transfer and query protocols (see [Transfer Protocols](exchange/transfer-protocols.md) and [Verifiable Batch Queries](exchange/verifiable-batch-queries.md))
 
 Nodes communicate with one another to replicate datasets, execute parts of queries, and exchange other information, forming a decentralized network.
-
-
-## Specs
-ODF is specified as a set of interconnected specs grouped by domain. Core concepts used by all specs are defined in the [Glossary](glossary.md), and all schemas are described in the [Reference](reference.md).
-
-| Domain | Spec | Description |
-| --- | --- | --- |
-| Datasets | [Logical Structure](datasets/logical-structure.md) | General structure of an ODF dataset |
-| Datasets | [Identity](datasets/identity.md) | `did:odf` identifiers, aliases, and references |
-| Datasets | [Data Model](datasets/data-model.md) | Event model, system columns, retractions and corrections, schema evolution |
-| Datasets | [Data Schema](datasets/data-schema.md) | Logical schema format of data |
-| Datasets | [Metadata Chain](datasets/metadata-chain.md) | Blocks, events, consistency rules, and block hashing |
-| Datasets | [Data & Checkpoint Hashing](datasets/data-and-checkpoint-hashing.md) | Physical and logical hashing of data and checkpoints |
-| Datasets | [Storage Layout](datasets/storage-layout.md) | Layout of dataset components in various storage systems |
-| Datasets | [Ingestion](datasets/ingestion.md) | Sources, ingestion phases, and merge strategies |
-| Transformations | [Processing Model](transformations/processing-model.md) | Derivative datasets, watermarks, checkpoints, and query evolution |
-| Transformations | [Engine Contract](transformations/engine-contract.md) | Communication between coordinators and engines |
-| Exchange | [Transfer Protocols](exchange/transfer-protocols.md) | Simple and Smart Transfer Protocols for synchronizing datasets |
-| Exchange | [Verifiable Batch Queries](exchange/verifiable-batch-queries.md) | Commitments that make query results verifiable |
-| Auth & Privacy | [Authorization](auth-and-privacy/authorization.md) | Accounts, groups, auth attributes, and policies |
-| Automation | [Resource Framework](automation/resource-framework.md) | Declarative resource model and manifest format |
-| Automation | [Tasks and Flows](automation/tasks-and-flows.md) | Scheduling and execution of workloads |

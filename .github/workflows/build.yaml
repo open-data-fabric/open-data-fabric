@@ -13,19 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt
       - run: |
-          make lint
+          make lint-schemas
 
   lint_codegen:
     name: Lint / Codegen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt
@@ -33,3 +33,12 @@ jobs:
         run: make codegen
       - name: Check generated files
         run: git diff && git diff-index --quiet HEAD
+
+  lint_markdown:
+    name: Lint / Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - name: Check links
+        run: nix develop ./tools/nix --command make lint-markdown

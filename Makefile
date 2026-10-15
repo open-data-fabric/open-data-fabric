@@ -41,7 +41,20 @@ codegen:
 
 
 .PHONY: lint
-lint:
+lint: lint-schemas lint-markdown
+
+
+.PHONY: lint-schemas
+lint-schemas:
 	RUST_BACKTRACE=1 cargo run -q -- lint
 	cargo test
+
+
+.PHONY: lint-markdown
+lint-markdown:
+	lychee --offline --include-fragments --no-progress \
+		--root-dir $(CURDIR) \
+		--exclude-path target \
+		--exclude-path .priv \
+		'./**/*.md'
 

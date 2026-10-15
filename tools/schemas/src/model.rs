@@ -263,6 +263,8 @@ pub struct Scalar {
     pub description: String,
     pub src: PathBuf,
     pub codegen_hints: CodegenHints,
+    /// Set for scalar schemas defining resource labels
+    pub label_properties: Option<json_schema::LabelProperties>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -466,7 +468,7 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
 
         let src = schema.src.take().expect("Schema without source path");
 
-        let _ = schema.label_properties.take();
+        let label_properties = schema.label_properties.take();
 
         // Extract all $defs into top-level types
         for (dname, dsch) in schema.defs.take().unwrap_or_default() {
@@ -481,8 +483,11 @@ pub fn parse_jsonschema(schemas: Vec<json_schema::Schema>) -> Model {
             types.insert(typ.id().clone(), typ);
         }
 
-        let typ =
+        let mut typ =
             parse_type_definition(root_id.clone(), schema, src, format!("{}", root_id.name()));
+        if let TypeDefinition::Scalar(scalar) = &mut typ {
+            scalar.label_properties = label_properties;
+        }
         types.insert(typ.id().clone(), typ);
     }
 
@@ -1036,6 +1041,7 @@ fn parse_fragment_type_scalar(
         description,
         src,
         codegen_hints: Default::default(),
+        label_properties: None,
     })
 }
 

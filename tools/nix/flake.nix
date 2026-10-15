@@ -14,6 +14,7 @@
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = [
+            pkgs.lychee
             pkgs.markdown-toc
             pkgs.mermaid-cli
             pkgs.plantuml

@@ -5,6 +5,7 @@
 Reference of all schemas that ODF specs refer to, grouped by context. Schemas are defined in the [`schemas`](../schemas) directory.
 
 
+<a name="table-of-contents"></a>
 ## Table of Contents <!-- omit in toc -->
 
 - [auth](#reference-auth)
@@ -1436,6 +1437,38 @@ Indicates that data has been ingested into a root dataset.
 [^](#table-of-contents)
 
 
+<a name="allowanonymousread-schema"></a>
+### AllowAnonymousRead
+Controls whether the dataset is readable by users who did not authenticate. Materialized into the auth engine by the Dataset controller.
+
+| Type | Format |
+| :---: | :---: |
+| `boolean` |  |
+
+| Label Property | Value |
+| --- | --- |
+| Auth attribute | true |
+| Resource types | [Dataset](#dataset-schema) |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/datasets/v1alpha1/AllowAnonymousRead.json)
+[^](#table-of-contents)
+
+
+<a name="allowpublicread-schema"></a>
+### AllowPublicRead
+Controls whether the dataset is readable by any authenticated principal. Materialized into the auth engine by the Dataset controller.
+
+| Type | Format |
+| :---: | :---: |
+| `boolean` |  |
+
+| Label Property | Value |
+| --- | --- |
+| Auth attribute | true |
+| Resource types | [Dataset](#dataset-schema) |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/datasets/v1alpha1/AllowPublicRead.json)
+[^](#table-of-contents)
 
 
 <a name="alterhistory-schema"></a>

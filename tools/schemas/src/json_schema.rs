@@ -93,7 +93,7 @@ impl Schema {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[skip_serializing_none]
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct LabelProperties {

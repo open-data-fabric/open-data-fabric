@@ -157,7 +157,7 @@ This format is compatible with old event format because flatbuffers only care ab
 
 `[1]` New `schema` field replaces the old `schema` field now containing the ODF schema. Note that schema includes the system columns like `offset`, `op`, and `system_time`.
 
-`[2]` The `extra` field is a container for custom attributes (see [format explanation](#attributes-format) below). Extra attributes will be allowed on the schema level too and work the same as on field (column) level.
+`[2]` The `extra` field is a container for custom attributes (see [format explanation](#extra-attributes-format) below). Extra attributes will be allowed on the schema level too and work the same as on field (column) level.
 
 `[3]` We introduce `opendatafabric.org/description` attribute to contain field (column) description.
 
