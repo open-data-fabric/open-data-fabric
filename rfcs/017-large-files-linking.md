@@ -3,8 +3,7 @@
 [![Issue](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/108?label=Issue)](https://github.com/kamu-data/open-data-fabric/issues/108)
 [![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/116?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/116)
 
-**Start Date**: 2025-06-14
-
+**Start Date**: 2025-06-14\
 **Published Date**: 2025-08-25
 
 **Specs**:

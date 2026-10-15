@@ -49,6 +49,7 @@ More content.
 
 ## Text
 - Use `-` for bullet lists.
+- Consecutive single-line header fields (e.g. `**Start Date**:` and `**Published Date**:` in RFCs, or the spec header fields) end with `\` - a hard line break - so they render on separate lines without extra spacing.
 - Use ` - ` (spaced hyphen) rather than em dashes.
 - Specify a language on fenced code blocks (`yaml`, `json`, `sql`, `fbs`) when there is one.
 - End files with a single newline.

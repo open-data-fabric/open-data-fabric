@@ -1,7 +1,6 @@
 # RFC-022: Batch Query Commitments <!-- omit in toc -->
 
-**Start Date**: 2024-07-26
-
+**Start Date**: 2024-07-26\
 **Published Date**: 2024-10-01
 
 **Specs**:

@@ -3,7 +3,7 @@
 [![Issue](https://img.shields.io/github/issues/detail/state/kamu-data/open-data-fabric/1?label=Issue)](https://github.com/kamu-data/open-data-fabric/issues/1)
 [![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/12?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/12)
 
-**Start Date**: (fill me in with today's date, YYYY-MM-DD)
+**Start Date**: (fill me in with today's date, YYYY-MM-DD)\
 **Published Date**: (fill in with the date at the time of merging)
 
 **Authors**:

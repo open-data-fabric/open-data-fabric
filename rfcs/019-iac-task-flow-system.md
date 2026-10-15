@@ -2,8 +2,7 @@
 
 [![PR](https://img.shields.io/github/pulls/detail/state/kamu-data/open-data-fabric/131?label=PR)](https://github.com/kamu-data/open-data-fabric/pull/131)
 
-**Start Date**: 2026-09-10
-
+**Start Date**: 2026-09-10\
 **Published Date**: 2026-09-22
 
 **Specs**:
