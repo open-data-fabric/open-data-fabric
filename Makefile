@@ -11,7 +11,7 @@ CODEGEN_CMD = RUST_BACKTRACE=1 cargo run -q -- codegen
 RUSTFMT = rustfmt --edition 2024 --style-edition 2024
 
 
-all: lint codegen $(SCHEMA_MERMAID_ERD_SVG) $(DIAGRAMS)
+all: lint codegen contracts/erd.svg $(DIAGRAMS)
 
 .PHONY: nix
 nix:
@@ -21,15 +21,15 @@ nix:
 $(DIAGRAMS): %.svg: %.puml
 	$(PLANTUML) -tsvg $<
 
-schemas-generated/mermaid/erd.svg: schemas-generated/mermaid/erd.mmd
-	mmdc -i schemas-generated/mermaid/erd.mmd -o $@
+contracts/erd.svg: contracts/erd.mmd
+	mmdc -i contracts/erd.mmd -o $@
 
 
 .PHONY: codegen
 codegen:
 	$(CODEGEN_CMD) markdown > specs/reference.md
-	$(CODEGEN_CMD) flatbuffers-schema > schemas-generated/flatbuffers/opendatafabric.fbs
-	$(CODEGEN_CMD) mermaid-erd > schemas-generated/mermaid/erd.mmd
+	$(CODEGEN_CMD) flatbuffers-schema > contracts/metadata/opendatafabric.fbs
+	$(CODEGEN_CMD) mermaid-erd > contracts/erd.mmd
 	$(CODEGEN_CMD) rust-dtos > tools/schemas/output/rust-dtos.rs
 	$(CODEGEN_CMD) rust-serde > tools/schemas/output/rust-serde.rs
 	$(CODEGEN_CMD) rust-serde-flatbuffers > tools/schemas/output/rust-serde-flatbuffers.rs

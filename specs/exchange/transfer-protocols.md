@@ -161,5 +161,5 @@ Object files that were uploaded during failed operations remain orphaned in the 
 
 
 ## API Definitions
-- [Smart Transfer Protocol: OpenAPI](../../protocols/smart-transfer-protocol.openapi.yaml) - HTTP endpoints of the Simple and Smart Transfer Protocols
-- [Smart Transfer Protocol: AsyncAPI](../../protocols/smart-transfer-protocol.asyncapi.yaml) - asynchronous messages of the Smart Transfer Protocol
+- [Smart Transfer Protocol: OpenAPI](../../contracts/transfer/smart-transfer-protocol.openapi.yaml) - HTTP endpoints of the Simple and Smart Transfer Protocols
+- [Smart Transfer Protocol: AsyncAPI](../../contracts/transfer/smart-transfer-protocol.asyncapi.yaml) - asynchronous messages of the Smart Transfer Protocol

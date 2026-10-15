@@ -11,8 +11,8 @@ Also follow the conventions in [`authoring_schemas.md`](../../../authoring_schem
 ## Workflow
 After any change in `schemas/`:
 1. Run `make lint` - validates schemas and runs tests against the examples.
-2. Run `make codegen` - regenerates `schemas-generated/` and `tools/schemas/output/`. Commit the regenerated files together with the schema change.
-3. Run `make schemas-generated/mermaid/erd.svg` to refresh the ERD diagram (requires `mmdc`). If it's not available, mention that the SVG is stale.
+2. Run `make codegen` - regenerates `specs/reference.md`, `contracts/` (FlatBuffers schema and ERD source), and `tools/schemas/output/`. Commit the regenerated files together with the schema change.
+3. Run `make contracts/erd.svg` to refresh the ERD diagram (requires `mmdc`). If it's not available, mention that the SVG is stale.
 4. Update the specs that describe the changed schemas, and the RFCs if the change affects their proposals (see the [specs](../specs/SKILL.md) skill).
 
 

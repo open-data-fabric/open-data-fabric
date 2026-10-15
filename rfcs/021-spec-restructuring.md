@@ -132,7 +132,7 @@ Schemas and API definitions that domain specs refer to, largely generated from m
 | ✅ **Metadata Schemas** | Metadata blocks, events, and their nested types | Metadata Reference, `MetadataBlock` / `MetadataEvent` and related types in `schemas/{datasets,data}` | Existing |
 | ✅ **Resource Schemas** | Resource types and their specs, grouped by API group and version | `schemas/*` | RFC |
 | **Engine API** | Engine communication interface IDL and messages | Engine API Reference, `schemas/engines` | Existing |
-| **Transfer Protocol API** | Simple and smart transfer protocol endpoints and messages | Repository API Reference, `protocols/smart-transfer-protocol.{openapi,asyncapi}.yaml` | Existing |
+| **Transfer Protocol API** | Simple and smart transfer protocol endpoints and messages | Repository API Reference, `contracts/transfer/smart-transfer-protocol.{openapi,asyncapi}.yaml` | Existing |
 
 ### Repository Structure
 

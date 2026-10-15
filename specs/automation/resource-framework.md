@@ -391,4 +391,4 @@ When a batch of manifests is applied, the node performs the following steps:
 | [`meta/ResourceAnnotation`](../../schemas/resources/v1alpha1/meta/ResourceAnnotation.json) | Metaschema for annotation schemas |
 | [`meta/ResourceCondition`](../../schemas/resources/v1alpha1/meta/ResourceCondition.json) | Metaschema for condition schemas |
 
-Example manifests of various resource types are available in the [`examples`](../../examples) directory, and the relationships between core resource types are shown in the [entity-relationship diagram](../../schemas-generated/mermaid/erd.svg).
+Example manifests of various resource types are available in the [`examples`](../../examples) directory, and the relationships between core resource types are shown in the [entity-relationship diagram](../../contracts/erd.svg).

@@ -173,7 +173,7 @@ fn render_schema_links(
     if flatbuffers {
         writeln!(
             w,
-            "[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)]({ROOT}/schemas-generated/flatbuffers/opendatafabric.fbs)"
+            "[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)]({ROOT}/contracts/metadata/opendatafabric.fbs)"
         )?;
     }
     writeln!(w, "[^](#table-of-contents)")?;

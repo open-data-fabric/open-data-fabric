@@ -709,6 +709,6 @@ tasks:
 # Appendix A: Example Manifests
 Example resource manifests are provided with this RFC in the [`/examples`](/examples) directory.
 
-An [entity-relationship diagram](/schemas-generated/mermaid/erd.svg) is also available to see the interplay of core prototype types.
+An [entity-relationship diagram](/contracts/erd.svg) is also available to see the interplay of core prototype types.
 
 Note that many resource types are still in **early prototype stage** of maturity and will be refined during the reference implementation.

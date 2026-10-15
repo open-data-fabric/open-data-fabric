@@ -190,7 +190,7 @@ We use the following combination of formats to satisfy these requirements:
 - [FlatBuffers](https://google.github.io/flatbuffers/) format is used for binary representation
   - Highly efficient and cross-platform serialization format
 
-The JSON Schemas of all metadata objects are provided in the [`schemas`](../../schemas) directory, and the FlatBuffers schema is [generated](../../schemas-generated/flatbuffers/opendatafabric.fbs) from them.
+The JSON Schemas of all metadata objects are provided in the [`schemas`](../../schemas) directory, and the FlatBuffers schema is [generated](../../contracts/metadata/opendatafabric.fbs) from them.
 
 
 ## Hash Representation
