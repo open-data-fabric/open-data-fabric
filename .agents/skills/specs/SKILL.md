@@ -33,8 +33,8 @@ Every spec file starts with:
 ```markdown
 # {Spec Title} <!-- omit in toc -->
 
-**Domain**: {Domain}
-**Depends on**: [{Spec}](../{domain}/{spec}.md), ... (or `-` if none)
+**Domain**: {Domain}\
+**Depends on**: [{Spec}](../{domain}/{spec}.md), ... (or `-` if none)\
 **RFCs**: [RFC-{NNN}](../../rfcs/{NNN}-{rfc}.md), ... (or `-` if none)
 
 
@@ -52,6 +52,7 @@ One paragraph describing what this spec covers.
 Spec-specific sections.
 ```
 
+- Header fields end with `\` (a hard line break) so that they render on separate lines.
 - **Depends on** lists other specs this spec builds upon. Keep it accurate - it will be used to generate the dependency map.
 - **RFCs** lists the RFCs that introduced or changed the spec, in ascending order. It must mirror the `**Specs**:` field of those RFCs (see [Cross-linking](#cross-linking)).
 - Don't add manual change history - history is provided by GitHub.

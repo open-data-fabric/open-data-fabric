@@ -1,7 +1,7 @@
 # Data Schema <!-- omit in toc -->
 
-**Domain**: Datasets
-**Depends on**: -
+**Domain**: Datasets\
+**Depends on**: -\
 **RFCs**: [RFC-016](../../rfcs/016-odf-schema.md)
 
 

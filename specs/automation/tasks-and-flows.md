@@ -1,7 +1,7 @@
 # Tasks and Flows <!-- omit in toc -->
 
-**Domain**: Automation
-**Depends on**: [Resource Framework](resource-framework.md), [Authorization](../auth-and-privacy/authorization.md)
+**Domain**: Automation\
+**Depends on**: [Resource Framework](resource-framework.md), [Authorization](../auth-and-privacy/authorization.md)\
 **RFCs**: [RFC-019](../../rfcs/019-iac-task-flow-system.md)
 
 

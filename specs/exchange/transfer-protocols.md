@@ -1,7 +1,7 @@
 # Transfer Protocols <!-- omit in toc -->
 
-**Domain**: Exchange
-**Depends on**: [Storage Layout](../datasets/storage-layout.md)
+**Domain**: Exchange\
+**Depends on**: [Storage Layout](../datasets/storage-layout.md)\
 **RFCs**: [RFC-007](../../rfcs/007-simple-transfer-protocol.md), [RFC-008](../../rfcs/008-smart-transfer-protocol.md)
 
 

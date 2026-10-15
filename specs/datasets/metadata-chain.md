@@ -1,7 +1,7 @@
 # Metadata Chain <!-- omit in toc -->
 
-**Domain**: Datasets
-**Depends on**: [Data Model](data-model.md), [Data Schema](data-schema.md), [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)
+**Domain**: Datasets\
+**Depends on**: [Data Model](data-model.md), [Data Schema](data-schema.md), [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)\
 **RFCs**: [RFC-004](../../rfcs/004-metadata-extensibility.md), [RFC-005](../../rfcs/005-dataset-annotations.md), [RFC-010](../../rfcs/010-data-schema-in-metadata.md), [RFC-012](../../rfcs/012-recommend-base16-encoding.md), [RFC-014](../../rfcs/014-minimize-offset-scanning.md)
 
 

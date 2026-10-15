@@ -1,7 +1,7 @@
 # Authorization <!-- omit in toc -->
 
-**Domain**: Auth & Privacy
-**Depends on**: [Resource Framework](../automation/resource-framework.md)
+**Domain**: Auth & Privacy\
+**Depends on**: [Resource Framework](../automation/resource-framework.md)\
 **RFCs**: [RFC-020](../../rfcs/020-auth.md)
 
 

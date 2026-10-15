@@ -1,7 +1,7 @@
 # Storage Layout <!-- omit in toc -->
 
-**Domain**: Datasets
-**Depends on**: [Data Model](data-model.md), [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)
+**Domain**: Datasets\
+**Depends on**: [Data Model](data-model.md), [Data & Checkpoint Hashing](data-and-checkpoint-hashing.md)\
 **RFCs**: [RFC-003](../../rfcs/003-content-addressability.md), [RFC-006](../../rfcs/006-checkpoints-as-files.md), [RFC-017](../../rfcs/017-large-files-linking.md)
 
 

@@ -1,7 +1,7 @@
 # Resource Framework <!-- omit in toc -->
 
-**Domain**: Automation
-**Depends on**: -
+**Domain**: Automation\
+**Depends on**: -\
 **RFCs**: [RFC-018](../../rfcs/018-iac-resource-framework.md)
 
 

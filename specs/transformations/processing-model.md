@@ -1,7 +1,7 @@
 # Processing Model <!-- omit in toc -->
 
-**Domain**: Transformations
-**Depends on**: [Data Model](../datasets/data-model.md), [Metadata Chain](../datasets/metadata-chain.md), [Engine Contract](engine-contract.md)
+**Domain**: Transformations\
+**Depends on**: [Data Model](../datasets/data-model.md), [Metadata Chain](../datasets/metadata-chain.md), [Engine Contract](engine-contract.md)\
 **RFCs**: [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 

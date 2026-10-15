@@ -1,7 +1,7 @@
 # Ingestion <!-- omit in toc -->
 
-**Domain**: Datasets
-**Depends on**: [Data Model](data-model.md), [Data Schema](data-schema.md), [Resource Framework](../automation/resource-framework.md)
+**Domain**: Datasets\
+**Depends on**: [Data Model](data-model.md), [Data Schema](data-schema.md), [Resource Framework](../automation/resource-framework.md)\
 **RFCs**: [RFC-009](../../rfcs/009-ingest-source-state.md), [RFC-011](../../rfcs/011-push-ingest-sources.md), [RFC-014](../../rfcs/014-minimize-offset-scanning.md)
 
 

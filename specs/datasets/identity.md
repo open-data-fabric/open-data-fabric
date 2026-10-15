@@ -1,7 +1,7 @@
 # Identity <!-- omit in toc -->
 
-**Domain**: Datasets
-**Depends on**: [Metadata Chain](metadata-chain.md)
+**Domain**: Datasets\
+**Depends on**: [Metadata Chain](metadata-chain.md)\
 **RFCs**: [RFC-003](../../rfcs/003-content-addressability.md), [RFC-007](../../rfcs/007-simple-transfer-protocol.md), [RFC-012](../../rfcs/012-recommend-base16-encoding.md)
 
 

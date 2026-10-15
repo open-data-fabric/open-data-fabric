@@ -215,8 +215,8 @@ All spec files follow a common structure:
 ```markdown
 # {Spec Title} <!-- omit in toc -->
 
-**Domain**: {Domain}
-**Depends on**: [{Spec}](../{domain}/{spec}.md), ...
+**Domain**: {Domain}\
+**Depends on**: [{Spec}](../{domain}/{spec}.md), ...\
 **RFCs**: [RFC-{NNN}](../../rfcs/{NNN}-{rfc}.md), ...
 
 ## Abstract <!-- omit in toc -->

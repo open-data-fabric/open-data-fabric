@@ -1,7 +1,7 @@
 # Engine Contract <!-- omit in toc -->
 
-**Domain**: Transformations
-**Depends on**: [Data Model](../datasets/data-model.md)
+**Domain**: Transformations\
+**Depends on**: [Data Model](../datasets/data-model.md)\
 **RFCs**: [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 

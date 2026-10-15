@@ -1,7 +1,7 @@
 # Data Model <!-- omit in toc -->
 
-**Domain**: Datasets
-**Depends on**: [Data Schema](data-schema.md)
+**Domain**: Datasets\
+**Depends on**: [Data Schema](data-schema.md)\
 **RFCs**: [RFC-001](../../rfcs/001-record-offsets.md), [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 

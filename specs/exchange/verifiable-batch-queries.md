@@ -1,7 +1,7 @@
 # Verifiable Batch Queries <!-- omit in toc -->
 
-**Domain**: Exchange
-**Depends on**: -
+**Domain**: Exchange\
+**Depends on**: -\
 **RFCs**: [RFC-022](../../rfcs/022-batch-query-commitments.md)
 
 
