@@ -77,6 +77,15 @@ The `retract` and `correct-from` events must carry the same exact data fields (a
 
 The `correct-to` event carries the new values for the event being corrected. This event must immediately follow the `correct-from` event. This model allows data engines that operate on changelog / diff events that simultaneously carry both old and new values for event during a correction to reconstruct such events easily by sequentially reading the [Data Slice](../glossary.md#data-slice).
 
+A pair of `correct-from` and `correct-to` events must belong to the same [Data Slice](../glossary.md#data-slice) - they cannot span across slices.
+
+The order of records in a dataset, as defined by their [Offsets](../glossary.md#offset), is significant: a retraction or correction always follows the event it applies to, and correction pairs must stay adjacent. Records therefore must not be reordered (e.g. sorted by [Event Time](../glossary.md#event-time)) when they are processed or written, as that may produce an invalid stream.
+
+Not every stream needs to use all operation types. The following are all valid subsets of this model:
+- **Append-only stream** - contains only `append` events
+- **Retract stream** - contains only `append` and `retract` events, where a change of a previously published event is represented as its retraction followed by an append of the new value
+- **Changelog stream** - uses all operation types, differentiating retractions from corrections
+
 See also:
 - [RFC-015: Unified Changelog Stream Schema](../../rfcs/015-unified-changelog-stream-schema.md)
 

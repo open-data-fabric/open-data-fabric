@@ -2,7 +2,7 @@
 
 **Domain**: Transformations
 **Depends on**: [Data Model](../datasets/data-model.md), [Metadata Chain](../datasets/metadata-chain.md), [Engine Contract](engine-contract.md)
-**RFCs**: -
+**RFCs**: [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 
 ## Abstract <!-- omit in toc -->
@@ -15,6 +15,7 @@ This spec defines how data of [Derivative Datasets](../glossary.md#derivative-da
 - [Derivative Datasets](#derivative-datasets)
   - [Derivative Data Transience](#derivative-data-transience)
 - [Time and Watermarks](#time-and-watermarks)
+- [Retractions and Corrections](#retractions-and-corrections)
 - [Checkpoints](#checkpoints)
 - [Derivative Transformations](#derivative-transformations)
 - [Validation](#validation)
@@ -65,6 +66,57 @@ When performing time-based windowed operations, aggregations, or joins it is imp
 - In derivative datasets, watermarks of the inputs are passed into the [Engine](../glossary.md#engine) along with the data (see [Engine Contract: Execute Query](engine-contract.md#execute-query)), and the engine determines the output watermark
 
 Watermarks are monotonically non-decreasing. Events that arrive after their time interval was closed by the watermark are considered "late", and it's up to individual queries to decide how to handle them - ignore them, emit them into a side output, or emit [corrections](../glossary.md#retractions-and-corrections) into the output.
+
+
+## Retractions and Corrections
+Data of all datasets is a changelog stream that can contain [retractions and corrections](../glossary.md#retractions-and-corrections) of previously published events (see [Data Model](../datasets/data-model.md#representation-of-retractions-and-corrections)). Transformations must take them into account:
+- **Retractions and corrections in the inputs** must be propagated - a transformation must update its previously produced results that were influenced by the retracted or corrected input events, by emitting retractions or corrections into the output
+- **Late events** in the inputs can similarly cause a transformation to retract or correct its previously produced results (see [Time and Watermarks](#time-and-watermarks))
+- **The nature of the query** itself may require it to revise its results as new events arrive, even when the inputs contain only appends
+
+This makes all derivative datasets self-correcting - a correction issued in a root dataset propagates through the entire graph of transformations without any manual intervention.
+
+For example, consider a `match_scores` dataset that receives events as players complete the matches:
+
+| op | match_time | match_id | player_name | score |
+| --- | --- | --- | --- | --- |
+| +A | t1 | 1 | Alice | 100 |
+| +A | t1 | 1 | Bob | 80 |
+| +A | t2 | 2 | Alice | 70 |
+| +A | t2 | 2 | Charlie | 90 |
+| +A | t3 | 3 | Bob | 60 |
+| +A | t3 | 3 | Charlie | 110 |
+
+A derivative dataset that continuously tracks the two highest-scoring players (a leader board) can be defined using a Top-N query:
+
+```sql
+select *
+from (
+  select
+    row_number() over (order by score desc) as place,
+    match_time,
+    player_name,
+    score
+  from match_scores
+) where place <= 2
+```
+
+Even though the input contains only appends, the leader board changes as new scores arrive, so the output contains corrections:
+
+| op | place | match_time | player_name | score |
+| --- | --- | --- | --- | --- |
+| +A | 1 | t1 | Alice | 100 |
+| +A | 2 | t1 | Bob | 80 |
+| -C | 2 | t1 | Bob | 80 |
+| +C | 2 | t2 | Charlie | 90 |
+| -C | 1 | t1 | Alice | 100 |
+| +C | 1 | t3 | Charlie | 110 |
+| -C | 2 | t2 | Charlie | 90 |
+| +C | 2 | t1 | Alice | 100 |
+
+If the source later retracted the result of the first match, the leader board would in turn issue retractions and corrections of the affected places.
+
+[Engines](../glossary.md#engine) are responsible for implementing these semantics and producing valid changelog streams (see [Engine Contract: Execute Query](engine-contract.md#execute-query)).
 
 
 ## Checkpoints

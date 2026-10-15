@@ -7,6 +7,8 @@
 
 **Specs**:
 - [Data Model](../specs/datasets/data-model.md)
+- [Processing Model](../specs/transformations/processing-model.md)
+- [Engine Contract](../specs/transformations/engine-contract.md)
 
 **Authors**:
 - [Sergii Mikhtoniuk](mailto:sergii.mikhtoniuk@kamu.dev), [Kamu](https://kamu.dev)

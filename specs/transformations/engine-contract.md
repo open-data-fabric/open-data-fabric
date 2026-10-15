@@ -2,7 +2,7 @@
 
 **Domain**: Transformations
 **Depends on**: [Data Model](../datasets/data-model.md)
-**RFCs**: -
+**RFCs**: [RFC-015](../../rfcs/015-unified-changelog-stream-schema.md)
 
 
 ## Abstract <!-- omit in toc -->
@@ -107,6 +107,13 @@ Outputs (`TransformResponse`):
 - Operation progress and status
 
 This operation must be [idempotent](https://en.wikipedia.org/wiki/Idempotence).
+
+Input and output data are changelog streams that can contain [retractions and corrections](../glossary.md#retractions-and-corrections) (see [Processing Model: Retractions and Corrections](processing-model.md#retractions-and-corrections)). The [Engine](../glossary.md#engine) must:
+- Consume input records in the order of their [Offsets](../glossary.md#offset), as the order of retractions and corrections relative to the events they apply to is significant
+- Take the operation type of input records into account and propagate retractions and corrections into the output
+- Produce output that is a valid changelog stream (see [Data Model](../datasets/data-model.md#representation-of-retractions-and-corrections)) - in particular, it must not reorder records in a way that separates a correction pair or places a retraction before the event it retracts, and must write both events of a correction pair into the same output [Data Slice](../glossary.md#data-slice)
+
+Engines that process data in batches and parallelize work must preserve the order of records (e.g. by coalescing inputs into one partition). Such engines that only support simple record-by-record operations (like `map` and `filter`) must propagate the operation type column as-is, so that operations apply identically to appends, retractions, and corrections and produce a valid changelog stream.
 
 When an operation is committed by the [Coordinator](../glossary.md#coordinator), the [Engine](../glossary.md#engine) will not see the same input data again. If due to the nature of the query (e.g. windowing or watermarking configuration) [Engine](../glossary.md#engine) cannot fully process and discard the input data - it should use the [Checkpoint](../glossary.md#checkpoint) to buffer it.
 
