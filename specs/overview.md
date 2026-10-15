@@ -162,17 +162,11 @@ All this combined allows us to build **verifiable trust** between parties.
 
 
 #### Verification
-Verification is not a single procedure, but a set of mechanisms specified alongside the parts of the system they apply to. Fully verifying a [Dataset](glossary.md#dataset) involves several layers:
-
-| Layer | What is verified | Spec |
-| --- | --- | --- |
-| Metadata | Integrity and consistency of the metadata chain, given the hash of its last block | [Metadata Chain: Validation](datasets/metadata-chain.md#validation) |
-| Data and checkpoints | Integrity of data part files and checkpoints against hashes in metadata | [Data & Checkpoint Hashing: Verification](datasets/data-and-checkpoint-hashing.md#verification) |
-| Transfer | Validity of all objects received from untrusted repositories and peers | [Transfer Protocols: Validation of Transferred Data](exchange/transfer-protocols.md#validation-of-transferred-data) |
-| Transformations | Data of derivative datasets corresponds to applying the declared transformations to the inputs | [Processing Model: Validation](transformations/processing-model.md#validation) |
-| Queries | Query results correspond to specific states of the queried datasets | [Verifiable Batch Queries](exchange/verifiable-batch-queries.md) |
-
-Verification does not have to happen synchronously with updates of data. Since all components of a dataset are immutable and every block refers to the exact state of its inputs, verification can proceed incrementally and **asynchronously** - e.g. a dataset may already be on block `T` while verification is still processing block `T - 100`, eventually catching up. This allows participants to use data **optimistically**, while preserving the ability to detect and dispute invalid data later.
+Different kinds of data are verified using different mechanisms, each specified alongside the part of the system it applies to:
+- **Integrity of datasets** - having only the hash of the last metadata block obtained from a trusted source, the entire [Metadata Chain](datasets/metadata-chain.md#validation) and all [data and checkpoint files](datasets/data-and-checkpoint-hashing.md#validation-and-verification) it references can be validated, regardless of where they were [downloaded from](exchange/transfer-protocols.md#validation-of-transferred-data)
+- **Root data** - cannot be reproduced, so its validity depends on its publisher (see [Ingestion: Validity of Root Data](datasets/ingestion.md#validity-of-root-data))
+- **Derivative data** - can be verified by reproducing the declared transformations, recursively across the entire lineage, or using other forms of verifiable computing (e.g. TEEs and zero-knowledge proofs) (see [Processing Model: Verification](transformations/processing-model.md#verification))
+- **Query results** - can be verified using query commitments (see [Verifiable Batch Queries](exchange/verifiable-batch-queries.md))
 
 See also:
 - [Verifiability](glossary.md#verifiability)

@@ -32,6 +32,7 @@ This spec defines how external data is brought into [Root Datasets](../glossary.
   - [Upsert Stream](#upsert-stream)
 - [Committing Data](#committing-data)
   - [Source State](#source-state)
+- [Validity of Root Data](#validity-of-root-data)
 - [Legacy Source Events](#legacy-source-events)
 - [Schemas](#schemas)
 
@@ -375,6 +376,17 @@ Where:
 Both `sourceName` and `kind` are plain strings, allowing implementations to define their own extensions. It is safe to ignore source state that an implementation does not understand.
 
 If the state didn't change but is still relevant for subsequent runs it should be carried over into the new event, as only the last state per source is considered when resuming.
+
+
+## Validity of Root Data
+Unlike data of [Derivative Datasets](../glossary.md#derivative-dataset), data of [Root Datasets](../glossary.md#root-dataset) cannot be reproduced - it captures observations of the outside world. Its validity therefore depends entirely on its publisher, who is in full control of the data they present, so measuring and processing errors or even malicious data can make their way into a root dataset.
+
+What can be validated mechanically is that root data was not altered after it was published (see [Metadata Chain: Validation](metadata-chain.md#validation) and [Data & Checkpoint Hashing: Validation and Verification](data-and-checkpoint-hashing.md#validation-and-verification)), and who published it. Trust in the data itself is established through:
+- **Authority** - the reputation of the publisher, e.g. organizations that directly operate the systems from which the data is collected
+- **Cross-validation** - comparing data against other similar sources to detect anomalies
+
+See also:
+- [Verifiability](../glossary.md#verifiability)
 
 
 ## Legacy Source Events

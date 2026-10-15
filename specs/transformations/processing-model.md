@@ -18,7 +18,10 @@ This spec defines how data of [Derivative Datasets](../glossary.md#derivative-da
 - [Retractions and Corrections](#retractions-and-corrections)
 - [Checkpoints](#checkpoints)
 - [Derivative Transformations](#derivative-transformations)
-- [Validation](#validation)
+- [Verification](#verification)
+  - [Verification via Reproducibility](#verification-via-reproducibility)
+  - [Verification via Verifiable Computing](#verification-via-verifiable-computing)
+  - [Asynchronous Verification](#asynchronous-verification)
 - [Dataset Evolution](#dataset-evolution)
   - [Query Evolution](#query-evolution)
 - [Provenance](#provenance)
@@ -141,16 +144,32 @@ Here are the steps that the [Coordinator](../glossary.md#coordinator) performs d
 - **Commit** - Atomically adds the new [Data Slice](../glossary.md#data-slice) and the [Metadata Block](../glossary.md#metadata-chain) to the [Dataset](../glossary.md#dataset)
 
 
-## Validation
-The validation of a [Derivative Dataset](../glossary.md#derivative-dataset) confirms that its data is in fact produced by applying all the transformations stored in its [Metadata Chain](../datasets/metadata-chain.md) to the inputs and was not maliciously altered.
+## Verification
+The verification of a [Derivative Dataset](../glossary.md#derivative-dataset) confirms that its data is in fact produced by applying all the transformations stored in its [Metadata Chain](../datasets/metadata-chain.md) to the inputs and was not maliciously altered.
 
-The process of validation is almost identical to the [Derivative Transformation](#derivative-transformations), except instead of the `Commit` step the [Coordinator](../glossary.md#coordinator) compares the hashes of the data produced by the local transformation to the hashes stored in the `ExecuteTransform` events, using the exact versions of engines recorded in the metadata.
+Verification is **recursive**: data of a derivative dataset can only be as valid as the data of its inputs, so fully verifying it involves verifying all datasets in its lineage, up to the [Root Datasets](../glossary.md#root-dataset) (see [Ingestion: Validity of Root Data](../datasets/ingestion.md#validity-of-root-data)). Since every `ExecuteTransform` event records the exact blocks of the inputs it was applied to, each input is verified at the specific state that was used, regardless of how it has evolved since.
 
-Due to non-determinism of the Parquet format the physical hash may not match the one in metadata, so a fallback to the logical hash is required to verify that the resulting records are logically the same (see [Data & Checkpoint Hashing: Verification](../datasets/data-and-checkpoint-hashing.md#verification)).
+Verification does not prove that the declared transformations are correct or benign - only that they were applied faithfully. Transformations are expressed as [Queries](../glossary.md#query) that are usually small, so they can be audited to ensure they are sound and done in good faith. Establishing trust in a derivative dataset therefore combines inspecting its lineage, auditing the transformations along the way, and verifying that its data matches them.
 
-Since every `ExecuteTransform` event captures the exact intervals of inputs it processed, validation can proceed incrementally and asynchronously from the last validated block, lagging behind the head of the dataset and eventually catching up (see [Verification](../overview.md#verification)).
 
-Validation can be scheduled using the `Verify` task with `replayTransform` enabled (see [Tasks and Flows](../automation/tasks-and-flows.md#task-types)).
+### Verification via Reproducibility
+Reproducing transformations is conceptually the simplest way of verifying derivative data. The process is almost identical to the [Derivative Transformation](#derivative-transformations), except instead of the `Commit` step the [Coordinator](../glossary.md#coordinator) compares the hashes of the data produced by the local transformation to the hashes stored in the `ExecuteTransform` events, using the exact versions of engines recorded in the metadata.
+
+Due to non-determinism of the Parquet format the physical hash may not match the one in metadata, so a fallback to the logical hash is required to verify that the resulting records are logically the same (see [Data & Checkpoint Hashing: Validation and Verification](../datasets/data-and-checkpoint-hashing.md#validation-and-verification)).
+
+Reproducing transformations is necessary even when hashes of data match the ones in metadata. Hash checks only ensure that data was not tampered with or corrupted, but data and metadata could have been replaced together. Reproducing the transformations ensures that the data in fact corresponds to the declared transformations, so metadata cannot be spoofed to match fake results.
+
+This form of verification requires access to all input data and the compute resources to repeat the processing.
+
+
+### Verification via Verifiable Computing
+ODF aims to also support forms of verifiable computing that allow verifying results without repeating the transformations, such as attestations from [Trusted Execution Environments](https://en.wikipedia.org/wiki/Trusted_execution_environment) (TEEs) and [zero-knowledge proofs](https://en.wikipedia.org/wiki/Zero-knowledge_proof) (ZKPs). In this model the party performing the transformation produces a proof that the declared transformation was applied faithfully to the specific inputs, which others can check at a fraction of the cost of repeating the computation.
+
+Since verifying such proofs does not require access to the input data, verifiable computing can also **preserve privacy** - derivative data can be verified without disclosing the potentially sensitive data it was produced from to the verifying parties.
+
+
+### Asynchronous Verification
+Verification does not have to happen synchronously with updates of data. Since every `ExecuteTransform` event captures the exact intervals of inputs it processed, verifiers can proceed incrementally and asynchronously from the last verified block - e.g. a dataset may already be on block `T` while verifiers are still checking processing block `T - 100`, aiming to eventually catch up. This allows participants to use data optimistically, while preserving the ability to detect and dispute invalid data later. Clients can define verification thresholds, e.g. requiring N verifiers to check the block before it is consumed.
 
 
 ## Dataset Evolution

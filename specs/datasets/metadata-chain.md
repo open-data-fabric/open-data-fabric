@@ -150,7 +150,7 @@ Since metadata blocks are content-addressed, a chain obtained from any untrusted
 - Recomputing the [hash](#metadata-block-hashing) of every block and comparing it to the hash by which the block was referenced (via a [block reference](#block-references) or the `prevBlockHash` of the following block)
 - Checking that all [consistency rules](#consistency-rules) are satisfied
 
-A valid chain guarantees the integrity of all data slices and checkpoints it references, as long as their hashes are also verified (see [Data & Checkpoint Hashing: Verification](data-and-checkpoint-hashing.md#verification)).
+A valid chain guarantees the integrity of all data slices and checkpoints it references, as long as their hashes are also validated (see [Data & Checkpoint Hashing: Validation and Verification](data-and-checkpoint-hashing.md#validation-and-verification)).
 
 
 ## Block References

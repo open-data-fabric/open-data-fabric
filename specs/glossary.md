@@ -36,7 +36,9 @@ Definitions of core concepts and terms shared by all ODF specs.
 - [Time](#time)
   - [System Time](#system-time)
   - [Event Time](#event-time)
+- [Validation](#validation)
 - [Verifiability](#verifiability)
+- [Verification](#verification)
 - [Watermark](#watermark)
 
 
@@ -432,6 +434,19 @@ See also:
 * [The Dataflow Model  by Tyler Akidau et al](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/43864.pdf)
 
 
+## Validation
+Validation is the process of checking that an object conforms to the rules it must follow - e.g. that a [Metadata Chain](#metadata-chain) satisfies its consistency rules, that a file matches the [Hash](#hash) under which it is referenced, or that data follows its [Schema](#schema).
+
+Validation answers the question *"is this object intact and well-formed?"*. It is cheap, performed locally, and does not depend on any other data, so it is usually done every time an object is received or read.
+
+Not to be confused with [Verification](#verification), which establishes whether a claim about how data was produced is true.
+
+See also:
+- [Metadata Chain: Validation](datasets/metadata-chain.md#validation)
+- [Data & Checkpoint Hashing: Validation and Verification](datasets/data-and-checkpoint-hashing.md#validation-and-verification)
+- [Transfer Protocols: Validation of Transferred Data](exchange/transfer-protocols.md#validation-of-transferred-data)
+
+
 ## Verifiability
 In the scope of this specification, verifiability of data means the ability to establish:
 - The ultimate source(s) of data:
@@ -468,6 +483,19 @@ Verifiability provides the foundation upon which *trust* in data can be built:
 - First in the form **authority** - organizations putting their name behind the data they publish
 - Secondly in the form of **reputation** - trusting the sources or pipelines used by large parts of the community
 - Thirdly in the form of **cross-validation** - e.g. performing outlier detection on data from several similar publishers to establish common truth.
+
+
+## Verification
+Verification is the process of confirming that a claim about how data came to be is true - e.g. that data of a [Derivative Dataset](#derivative-dataset) is in fact the result of applying the declared transformations to its inputs, or that a query result corresponds to specific states of the queried datasets.
+
+Verification answers the question *"is this claim true?"*. It can be performed by reproducing the computation or by checking proofs of verifiable computing, may require significant resources and access to other data, and can happen asynchronously and be delegated to other parties. Verification relies on [Validation](#validation) of all objects involved.
+
+Verification is the means of achieving [Verifiability](#verifiability).
+
+See also:
+- [Overview: Verification](overview.md#verification)
+- [Processing Model: Verification](transformations/processing-model.md#verification)
+- [Verifiable Batch Queries](exchange/verifiable-batch-queries.md)
 
 
 ## Watermark

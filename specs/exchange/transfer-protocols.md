@@ -56,7 +56,7 @@ For [Repositories](../glossary.md#repository) that do not support atomic file/ob
 ## Validation of Transferred Data
 Repositories, storage systems, and peers that data is transferred from are not trusted. Regardless of the transfer protocol used, the receiving party must validate all received objects before committing them:
 - Metadata blocks are validated according to [Metadata Chain: Validation](../datasets/metadata-chain.md#validation), and must form a valid continuation of the chain the receiver already has
-- Data part files and checkpoints are validated against the physical hashes stored in metadata (see [Data & Checkpoint Hashing: Verification](../datasets/data-and-checkpoint-hashing.md#verification))
+- Data part files and checkpoints are validated against the physical hashes stored in metadata (see [Data & Checkpoint Hashing: Validation and Verification](../datasets/data-and-checkpoint-hashing.md#validation-and-verification))
 - Block references are updated only after all objects they make reachable were received and validated
 
 This applies both to clients pulling data, and to servers accepting data pushed to them. The trust in the transferred dataset is therefore reduced to the trust in the hash of its last block.

@@ -13,7 +13,7 @@ This spec defines how hash sums of data part files and checkpoints are computed,
 ## Table of Contents <!-- omit in toc -->
 
 - [Physical vs. Logical Hashes](#physical-vs-logical-hashes)
-- [Verification](#verification)
+- [Validation and Verification](#validation-and-verification)
 - [Logical Hashing Algorithm](#logical-hashing-algorithm)
   - [Properties](#properties)
   - [Value Encoding](#value-encoding)
@@ -33,12 +33,12 @@ Because the on-disk Parquet data format is non-deterministic (serializing same l
 **Logical hashing** is used for equivalence checks when reproducing results of computations. It is computed over the in-memory representation of data in [Apache Arrow](https://arrow.apache.org/) format using the algorithm described below.
 
 
-## Verification
-Hashes stored in [Metadata Blocks](../glossary.md#metadata-chain) are used to verify data and checkpoints in two scenarios:
-- **Integrity** - when a data part file or a checkpoint is obtained from any (possibly untrusted) source, its physical hash is computed and compared to the `physicalHash` stored in the corresponding [`DataSlice`](../../schemas/datasets/v1alpha1/DataSlice.json) or [`Checkpoint`](../../schemas/datasets/v1alpha1/Checkpoint.json) object. A mismatch means that the file was corrupted or tampered with, and it must be rejected.
-- **Reproducibility** - when data is reproduced by repeating a transformation (see [Processing Model: Validation](../transformations/processing-model.md#validation)), the physical hash of the result is compared first. If it doesn't match due to non-determinism of the on-disk format, the logical hash is compared instead, and a match confirms that the resulting records are logically the same.
+## Validation and Verification
+Hashes stored in [Metadata Blocks](../glossary.md#metadata-chain) are used in two scenarios:
+- **Validation of integrity** - when a data part file or a checkpoint is obtained from any (possibly untrusted) source, its physical hash is computed and compared to the `physicalHash` stored in the corresponding [`DataSlice`](../../schemas/datasets/v1alpha1/DataSlice.json) or [`Checkpoint`](../../schemas/datasets/v1alpha1/Checkpoint.json) object. A mismatch means that the file was corrupted or tampered with, and it must be rejected.
+- **Verification of reproduced results** - when data is reproduced by repeating a transformation (see [Processing Model: Verification via Reproducibility](../transformations/processing-model.md#verification-via-reproducibility)), the physical hash of the result is compared first. If it doesn't match due to non-determinism of the on-disk format, the logical hash is compared instead, and a match confirms that the resulting records are logically the same.
 
-Checkpoints are engine-specific and are not required to be reproducible, so their hashes are only used for integrity checks.
+Checkpoints are engine-specific and are not required to be reproducible, so their hashes are only used for validation of integrity.
 
 
 ## Logical Hashing Algorithm

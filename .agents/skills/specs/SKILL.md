@@ -68,6 +68,7 @@ Spec-specific sections.
 - Core concepts are defined in `specs/glossary.md`, with entries sorted alphabetically and the TOC kept in the same order.
 - Link glossary terms where they are used in specs (e.g. `[Dataset](../glossary.md#dataset)`), so readers can always reach the definition.
 - Don't redefine glossary terms in specs - link to them and add spec-specific details.
+- Use **validation** for checking that an object conforms to rules (consistency, hashes, schemas) and **verification** for confirming a claim about how data was produced (reproducing computations, proofs, query commitments) - see the glossary entries.
 
 
 ## Cross-linking
