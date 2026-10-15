@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.0] - 2026-10-15
+### Added
+- [RFC-021: ODF Spec Restructuring](rfcs/021-spec-restructuring.md)
+- [RFC-022: Batch Query Commitments](rfcs/022-batch-query-commitments.md)
+- Specification is now split into domain-based specs under `specs/` (see [Overview](specs/overview.md))
+  - New specs for areas previously covered only by RFCs: Authorization, Resource Framework, Tasks and Flows, Verifiable Batch Queries
+  - Clarified retractions and corrections semantics in Data Model, Processing Model, and Engine Contract
+  - Differentiated validation from verification and described verification mechanisms for root data, derivative data, and queries
+- Schema reference is generated into `specs/reference.md`, including scalar label schemas
+- `ReconciliationError` resource condition
+- `Interval` and `InputsUpdated` flow triggers
+- `enabled`, `cooldown`, and `cooldownMaxBatch` as common properties of all flow triggers
+- `onNoOp` and `onFailure` task properties controlling how a flow run proceeds
+- `recentBindingsRetention` and `recentRunsRetention` flow properties
+- `retryPolicy` in canonical `WebhookCall` task spec
+- `make lint-markdown` target for checking links in markdown files
+### Changed
+- Generated artifacts moved from `schemas-generated/` and `protocols/` to `contracts/`
+- Images moved next to the specs that use them
+- Spec documents no longer carry a version - releases are versioned by tagging the repository
+### Removed
+- **Breaking:** `Dataset` flow trigger in favor of `Event` and `InputsUpdated` triggers
+- Monolithic `open-data-fabric.md` spec
+### Fixed
+- Retraction code in `Snapshot` merge strategy description (`-R` instead of `-D`)
+- Smart Transfer Protocol AsyncAPI definition (`DatasetPushMetadata` payload, duplicated channel name, auth scheme)
+- Schema URL pattern in `Resource` description no longer includes the `.json` extension
+
 ## [0.41.1] - 2026-10-12
 - Move `PolicyBinding` action to `auth` domain
 
