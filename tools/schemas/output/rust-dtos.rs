@@ -1949,7 +1949,7 @@ pub mod engines {
     /// Sent by the coordinator to an engine to perform query on raw input data, usually as part of ingest preprocessing step
     ///
     /// Schema: https://opendatafabric.org/schemas/engines/v1alpha1/RawQueryRequest
-    #[derive(Clone, Debug, Eq, PartialEq)]
+    #[derive(Clone, Debug, Eq)]
     pub struct RawQueryRequest {
         /// Paths to input data files to perform query over. Must all have identical schema.
         pub input_data_paths: Vec<PathBuf>,
@@ -1957,6 +1957,34 @@ pub mod engines {
         pub transform: datasets::Transform,
         /// Path where query result will be written.
         pub output_data_path: PathBuf,
+        /// Requires the engine to keep the order of records read from the input in the query result, or fail the request if it cannot.
+        ///
+        /// Defaults to: false
+        pub preserve_order: Option<bool>,
+    }
+
+    impl RawQueryRequest {
+        pub fn default_preserve_order() -> bool {
+            false
+        }
+        pub fn preserve_order(&self) -> bool {
+            self.preserve_order
+                .unwrap_or(Self::default_preserve_order())
+        }
+    }
+
+    impl PartialEq for RawQueryRequest {
+        fn eq(&self, other: &Self) -> bool {
+            self.input_data_paths == other.input_data_paths
+                && self.transform == other.transform
+                && self.output_data_path == other.output_data_path
+                && self
+                    .preserve_order
+                    .or_else(|| Some(Self::default_preserve_order()))
+                    == other
+                        .preserve_order
+                        .or_else(|| Some(Self::default_preserve_order()))
+        }
     }
 
     /// Sent by an engine to coordinator when performing the raw query operation

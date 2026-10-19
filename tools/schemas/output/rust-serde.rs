@@ -4741,6 +4741,9 @@ pub mod engines {
         pub input_data_paths: Vec<PathBuf>,
         pub transform: datasets::Transform,
         pub output_data_path: PathBuf,
+        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub preserve_order: Option<bool>,
     }
 
     impl IntoDto for RawQueryRequest {
@@ -4756,6 +4759,7 @@ pub mod engines {
                 input_data_paths: v.input_data_paths,
                 transform: v.transform.into(),
                 output_data_path: v.output_data_path,
+                preserve_order: v.preserve_order,
             }
         }
     }
@@ -4767,6 +4771,7 @@ pub mod engines {
                 input_data_paths: v.input_data_paths,
                 transform: dtos::datasets::Transform::try_from(v.transform)?,
                 output_data_path: v.output_data_path,
+                preserve_order: v.preserve_order,
             })
         }
     }

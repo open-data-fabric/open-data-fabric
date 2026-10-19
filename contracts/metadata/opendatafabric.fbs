@@ -3973,6 +3973,10 @@ table RawQueryRequest {
   transform: Transform;
   // Path where query result will be written.
   output_data_path: string;
+  // Requires the engine to keep the order of records read from the input in the query result, or fail the request if it cannot.
+  //
+  // Defaults to: false
+  preserve_order: bool = null;
 }
 
 union RawQueryResponse {

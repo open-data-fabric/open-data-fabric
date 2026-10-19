@@ -5498,6 +5498,7 @@ impl<'fb> FlatbuffersSerializable<'fb> for odf::engines::RawQueryRequest {
         builder.add_transform_type(transform_offset.0);
         builder.add_transform(transform_offset.1);
         builder.add_output_data_path(output_data_path_offset);
+        self.preserve_order.map(|v| builder.add_preserve_order(v));
         builder.finish()
     }
 }
@@ -5514,6 +5515,7 @@ impl<'fb> FlatbuffersDeserializable<fb::RawQueryRequest<'fb>> for odf::engines::
                 .map(|v| odf::datasets::Transform::deserialize(v, proxy.transform_type()))
                 .unwrap(),
             output_data_path: proxy.output_data_path().map(|v| PathBuf::from(v)).unwrap(),
+            preserve_order: proxy.preserve_order().map(|v| v),
         }
     }
 }

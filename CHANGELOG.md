@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- `preserveOrder` property of `RawQueryRequest` requiring the engine to keep the input order of records in the query result
+### Changed
+- Clarified that the order of ingested records is significant for `ChangelogStream` and `UpsertStream` merge strategies and must be preserved by preprocessing
+
 ## [0.42.0] - 2026-10-15
 ### Added
 - [RFC-021: ODF Spec Restructuring](rfcs/021-spec-restructuring.md)

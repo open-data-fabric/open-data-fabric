@@ -2023,6 +2023,7 @@ Sent by the coordinator to an engine to perform query on raw input data, usually
 | `inputDataPaths` | array(`string`) | V |  | Paths to input data files to perform query over. Must all have identical schema. |
 | `transform` | [Transform](#transform-schema) | V |  | Transformation that will be applied to produce new data. |
 | `outputDataPath` | `string` | V | `path` | Path where query result will be written. |
+| `preserveOrder` | `boolean` |  |  | Requires the engine to keep the order of records read from the input in the query result, or fail the request if it cannot.<br/><br/>Default: false |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/engines/v1alpha1/RawQueryRequest.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
