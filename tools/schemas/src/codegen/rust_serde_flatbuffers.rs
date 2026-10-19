@@ -191,10 +191,11 @@ fn render_impl(
     };
 
     for typ in model.types.values() {
-        if typ.id().name() == "Manifest"
-            || typ.id().name() == "DatasetSnapshot"
-            || typ.id().name() == "Resource"
-            || typ.id().name() == "ResourceInput"
+        if typ.id().parent().is_none()
+            && matches!(
+                typ.id().name(),
+                "Manifest" | "DatasetSnapshot" | "Resource" | "ResourceInput"
+            )
         {
             continue;
         }

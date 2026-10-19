@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `preserveOrder` property of `RawQueryRequest` requiring the engine to keep the input order of records in the query result
 ### Changed
 - Clarified that the order of ingested records is significant for `ChangelogStream` and `UpsertStream` merge strategies and must be preserved by preprocessing
+### Fixed
+- Rust flatbuffers codegen skipped the `Resource` variants of `SubjectHandle` and `SubjectRef` unions, producing code that does not compile
 
 ## [0.42.0] - 2026-10-15
 ### Added
