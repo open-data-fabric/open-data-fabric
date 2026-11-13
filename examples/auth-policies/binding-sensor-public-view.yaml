@@ -8,5 +8,5 @@ spec:
   # Any authenticated principal can view the dataset manifest, while reading
   # its data still requires the `AllowPublicRead` label or other grants.
   # Short form, equivalent to { kind: Authenticated }
-  subject: Authenticated
+  subject: Authenticated:*
   object: Dataset:acme/sensor

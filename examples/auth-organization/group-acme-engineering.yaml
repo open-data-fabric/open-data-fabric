@@ -8,6 +8,6 @@ spec:
   members:
     - User:bob
     # Full form of a subject reference
-    - kind: Resource
+    - kind: Principal
       type: User
       name: carol

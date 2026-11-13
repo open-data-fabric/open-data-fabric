@@ -198,29 +198,7 @@ fn render_struct(
 
         writeln!(
             w,
-            "{}",
-            indoc::formatdoc!(
-                "
-                impl std::str::FromStr for {name} {{
-                    type Err = String;
-
-                    fn from_str(s: &str) -> Result<Self, Self::Err> {{
-                        let v = dtos::{context}::{name}::try_from(s).map_err(|e| e.to_string())?;
-                        Ok(v.into())
-                    }}
-                }}
-                "
-            )
-        )?;
-
-        writeln!(
-            w,
-            "impl From<dtos::{context}::{name}> for StructOrString<{name}> {{ fn from(v: dtos::{context}::{name}) -> Self {{ Self(v.into()) }} }}"
-        )?;
-
-        writeln!(
-            w,
-            "impl TryFrom<StructOrString<{name}>> for dtos::{context}::{name} {{ type Error = ValidationError; fn try_from(v: StructOrString<{name}>) -> Result<Self, ValidationError> {{ v.0.try_into() }} }}"
+            "impl_struct_or_string!({name}, dtos::{context}::{name});",
         )?;
     }
 
@@ -449,6 +427,9 @@ fn format_try_into(typ: &model::Type, ident: &str) -> String {
 fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
     let context = typ.id.context();
     let name = typ.id.join("");
+    let is_external = typ
+        .get_hint::<String>(CodegenLanguage::Rust, CodegenHint::DtoType)
+        .is_some();
 
     writeln!(w, "#[derive(Debug, Serialize, Deserialize)]")?;
     writeln!(w, "#[serde(deny_unknown_fields)]")?;
@@ -472,13 +453,13 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
 
         writeln!(
             w,
-            "impl From<dtos::{context}::{name}> for UnionOrString<{name}> {{ fn from(v: dtos::{context}::{name}) -> Self {{ Self(v.into()) }} }}"
+            "impl_struct_or_string!({name}, dtos::{context}::{name});",
         )?;
+    }
 
-        writeln!(
-            w,
-            "impl TryFrom<UnionOrString<{name}>> for dtos::{context}::{name} {{ type Error = ValidationError; fn try_from(v: UnionOrString<{name}>) -> Result<Self, Self::Error> {{ v.0.try_into() }} }}"
-        )?;
+    if is_external {
+        // External types should implement serde proxy conversions manually
+        return Ok(());
     }
 
     writeln!(w)?;
@@ -733,7 +714,7 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
                     format!("StructOrString<{ctx}::{name}>")
                 }
                 model::TypeDefinition::Union(t) if t.from_string => {
-                    format!("UnionOrString<{ctx}::{name}>")
+                    format!("StructOrString<{ctx}::{name}>")
                 }
                 _ => format!("{ctx}::{name}"),
             }

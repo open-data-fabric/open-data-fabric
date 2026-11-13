@@ -239,7 +239,7 @@ Group specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `members` | array([SubjectHandle](#subjecthandle-schema)) |  |  | Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group. |
+| `members` | array([SubjectHandle](#subjecthandle-schema)) |  |  | Members of the group. Only the `Principal` and `Group` subject kinds are allowed, so that well-known subjects like `Everyone` cannot be nested into a group. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/GroupSpec.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
@@ -252,7 +252,7 @@ Group specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `members` | array([SubjectRef](#subjectref-schema)) |  |  | Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group. |
+| `members` | array([SubjectRef](#subjectref-schema)) |  |  | Members of the group. Only the `Principal` and `Group` subject kinds are allowed, so that well-known subjects like `Everyone` cannot be nested into a group. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/GroupSpecInput.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
@@ -615,7 +615,8 @@ Resolved reference to a party a grant is given to.
 
 | Union Type | Description |
 | :---: | --- |
-| [SubjectHandle::Resource](#subjecthandle-resource-schema) | A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`. |
+| [SubjectHandle::Principal](#subjecthandle-principal-schema) | A specific `User`, `ServiceAccount`, or `Node`. |
+| [SubjectHandle::Group](#subjecthandle-group-schema) | Members of a `Group`, including members of nested groups. |
 | [SubjectHandle::Authenticated](#subjecthandle-authenticated-schema) | Matches any authenticated principal. |
 | [SubjectHandle::Anonymous](#subjecthandle-anonymous-schema) | Matches any unauthenticated principal. |
 | [SubjectHandle::Everyone](#subjecthandle-everyone-schema) | Matches any principal, authenticated or not. |
@@ -652,17 +653,32 @@ Matches any principal, authenticated or not.
 [^](#table-of-contents)
 
 
-<a name="subjecthandle-resource-schema"></a>
-### SubjectHandle::Resource
-A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+<a name="subjecthandle-group-schema"></a>
+### SubjectHandle::Group
+Members of a `Group`, including members of nested groups.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `type` | `string` | V |  | Type URI of the subject resource. |
-| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Account that owns the subject resource (for service accounts and groups). |
-| `id` | `string` | V |  | ID of the subject resource. |
-| `did` | `string` |  | `did` | DID of the subject resource, if applicable. |
-| `name` | `string` | V |  | Name of the subject resource. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Account that owns the group. |
+| `id` | `string` | V |  | ID of the group resource. |
+| `name` | `string` | V |  | Name of the group resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/SubjectHandle.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
+[^](#table-of-contents)
+
+
+<a name="subjecthandle-principal-schema"></a>
+### SubjectHandle::Principal
+A specific `User`, `ServiceAccount`, or `Node`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `type` | `string` | V |  | Type URI of the principal. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Account that owns the service account. |
+| `id` | `string` | V |  | ID of the principal resource. |
+| `did` | `string` |  | `did` | DID of the principal, if applicable. |
+| `name` | `string` | V |  | Name of the principal resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/SubjectHandle.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
@@ -671,11 +687,12 @@ A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
 
 <a name="subjectref-schema"></a>
 ### SubjectRef
-Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form is either a well-known subject name (e.g. `Authenticated`) or a resource reference with a type prefix, DID, or ID (e.g. `Group:acme/engineering`).
+Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form always starts with a prefix that determines the subject kind: a resource type followed by a resource name (e.g. `User:alice`, `Group:acme/engineering`), or a well-known subject followed by `*` (e.g. `Authenticated:*`).
 
 | Union Type | Description |
 | :---: | --- |
-| [SubjectRef::Resource](#subjectref-resource-schema) | A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`. |
+| [SubjectRef::Principal](#subjectref-principal-schema) | A specific `User`, `ServiceAccount`, or `Node`. |
+| [SubjectRef::Group](#subjectref-group-schema) | Members of a `Group`, including members of nested groups. |
 | [SubjectRef::Authenticated](#subjectref-authenticated-schema) | Matches any authenticated principal. |
 | [SubjectRef::Anonymous](#subjectref-anonymous-schema) | Matches any unauthenticated principal. |
 | [SubjectRef::Everyone](#subjectref-everyone-schema) | Matches any principal, authenticated or not. |
@@ -712,17 +729,32 @@ Matches any principal, authenticated or not.
 [^](#table-of-contents)
 
 
-<a name="subjectref-resource-schema"></a>
-### SubjectRef::Resource
-A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.
+<a name="subjectref-group-schema"></a>
+### SubjectRef::Group
+Members of a `Group`, including members of nested groups.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `type` | `string` |  |  | Short type name or full type URI of the subject resource. |
-| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the subject resource (for service accounts and groups). |
-| `id` | `string` |  |  | ID of the subject resource. |
-| `did` | `string` |  | `did` | DID of the subject resource. |
-| `name` | `string` |  |  | Name of the subject resource. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the group. |
+| `id` | `string` |  |  | ID of the group resource. |
+| `name` | `string` |  |  | Name of the group resource. |
+
+[![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/SubjectRef.json)
+[![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
+[^](#table-of-contents)
+
+
+<a name="subjectref-principal-schema"></a>
+### SubjectRef::Principal
+A specific `User`, `ServiceAccount`, or `Node`.
+
+| Property | Type | Required | Format | Description |
+| :---: | :---: | :---: | :---: | --- |
+| `type` | `string` |  |  | Short type name or full type URI of the principal. |
+| `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the service account. |
+| `id` | `string` |  |  | ID of the principal resource. |
+| `did` | `string` |  | `did` | DID of the principal. |
+| `name` | `string` |  |  | Name of the principal resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/SubjectRef.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)

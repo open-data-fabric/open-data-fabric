@@ -2,9 +2,14 @@
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/SubjectHandle",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Resolved reference to a party a grant is given to.",
+  "codegen": {
+    "rust": {
+      "dtoType": "SubjectHandle"
+    }
+  },
   "$defs": {
-    "Resource": {
-      "description": "A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.",
+    "Principal": {
+      "description": "A specific `User`, `ServiceAccount`, or `Node`.",
       "type": "object",
       "required": [
         "type",
@@ -15,27 +20,53 @@
         "type": {
           "type": "string",
           "format": "type-uri",
-          "description": "Type URI of the subject resource."
+          "description": "Type URI of the principal."
         },
         "account": {
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle",
-          "description": "Account that owns the subject resource (for service accounts and groups).",
+          "description": "Account that owns the service account.",
           "unevaluatedProperties": false
         },
         "id": {
           "type": "string",
           "format": "resource-id",
-          "description": "ID of the subject resource."
+          "description": "ID of the principal resource."
         },
         "did": {
           "type": "string",
           "format": "did",
-          "description": "DID of the subject resource, if applicable."
+          "description": "DID of the principal, if applicable."
         },
         "name": {
           "type": "string",
           "format": "resource-name",
-          "description": "Name of the subject resource."
+          "description": "Name of the principal resource."
+        }
+      }
+    },
+    "Group": {
+      "description": "Members of a `Group`, including members of nested groups.",
+      "type": "object",
+      "required": [
+        "account",
+        "id",
+        "name"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle",
+          "description": "Account that owns the group.",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the group resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of the group resource."
         }
       }
     },
@@ -65,7 +96,7 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "Resource"
+              "const": "Principal"
             }
           },
           "required": [
@@ -73,7 +104,25 @@
           ]
         },
         {
-          "$ref": "#/$defs/Resource"
+          "$ref": "#/$defs/Principal"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Group"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Group"
         }
       ]
     },

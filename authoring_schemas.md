@@ -199,7 +199,7 @@ To achieve this you can use a special schema pattern:
 }
 ```
 
-Note: The short form may not be preserved during the serialization round-trip.
+> **Note:** The short form may not be preserved during the serialization round-trip.
 
 
 ### Short-form Unions
@@ -244,6 +244,11 @@ schema:
   - name: population
     type:
       kind: String
+  - name: last_census
+    type:
+      kind: Option
+      inner:
+        type: Date
 ```
 
 Short form:
@@ -256,9 +261,11 @@ schema:
     type: String
   - name: population
     type: String
+  - name: last_census
+    type: Date?
 ```
 
-Note: The short form may not be preserved during the serialization round-trip.
+> **Note:** The short form may not be preserved during the serialization round-trip.
 
 
 ## Maps

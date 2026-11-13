@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- **Breaking:** `Resource` variant of `SubjectRef` and `SubjectHandle` is split into `Principal` (`User`, `ServiceAccount`, `Node`) and `Group` variants. Short form of these subjects now requires a type prefix
+- **Breaking:** Short form of well-known subjects is now `Authenticated:*`, `Anonymous:*`, and `Everyone:*`, to avoid ambiguity with resource names
+### Fixed
+- Cedar policy template examples now use `principal in ?principal`, so that bindings to `Group` subjects match group members
+
 ## [0.42.1] - 2026-10-19
 ### Added
 - `preserveOrder` property of `RawQueryRequest` requiring the engine to keep the input order of records in the query result

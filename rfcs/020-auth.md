@@ -179,23 +179,31 @@ Subjects are referenced using `SubjectRef`, which is a union of:
 
 | Kind | Matches | Short form |
 |---|---|---|
-| `Resource` | A specific `User`, `ServiceAccount`, `Node`, or members of a `Group` | `User:alice`, `Group:acme/engineering` |
-| `Authenticated` | Any authenticated principal | `Authenticated` |
-| `Anonymous` | Any unauthenticated request | `Anonymous` |
-| `Everyone` | Any principal, authenticated or not | `Everyone` |
+| `Principal` | A specific `User`, `ServiceAccount`, or `Node` | `User:alice`, `ServiceAccount:acme/ingest-prod` |
+| `Group` | Members of a `Group`, including members of nested groups | `Group:acme/engineering` |
+| `Authenticated` | Any authenticated principal | `Authenticated:*` |
+| `Anonymous` | Any unauthenticated request | `Anonymous:*` |
+| `Everyone` | Any principal, authenticated or not | `Everyone:*` |
 
 Short forms expand as follows:
 
 ```yaml
+subject: ServiceAccount:acme/ingest-prod
+# Expands to:
+subject:
+  kind: Principal
+  type: ServiceAccount
+  account: acme
+  name: ingest-prod
+
 subject: Group:acme/engineering
 # Expands to:
 subject:
-  kind: Resource
-  type: Group
+  kind: Group
   account: acme
   name: engineering
 
-subject: Authenticated
+subject: Authenticated:*
 # Expands to:
 subject:
   kind: Authenticated
@@ -206,7 +214,7 @@ subject:
 
 ### Groups
 
-A `Group` resource represents a named set of subjects. Membership is declared inline in the spec. Groups support nesting — a group may include other groups as members.
+A `Group` resource represents a named set of subjects. Membership is declared inline in the spec. Groups support nesting — a group may include other groups as members. Only `Principal` and `Group` subjects are allowed as members.
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
@@ -414,7 +422,7 @@ spec:
   kind: Cedar
   body: |
     permit(
-      principal == ?principal,
+      principal in ?principal,
       action in [
         odf::resources::Action::"https://opendatafabric.org/schemas/resources/v1alpha1/actions/View",
         odf::datasets::Action::"https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Read"
@@ -425,7 +433,7 @@ spec:
     };
 ```
 
-The `?principal` and `?resource` slots above are filled in by the `subject` and `object` of the `PolicyBinding`:
+The `?principal` and `?resource` slots above are filled in by the `subject` and `object` of the `PolicyBinding`. The principal is constrained with `in` rather than `==`, so that the binding applies to members of a `Group` subject as well as to a single principal:
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding
@@ -759,7 +767,8 @@ permit(
 
 | `SubjectRef` | Cedar |
 |---|---|
-| `Resource` (e.g. `Group:acme/engineering`) | Entity UID, e.g. `odf::auth::Group::"acme/engineering"` |
+| `Principal` (e.g. `User:alice`) | Entity UID, e.g. `odf::auth::User::"alice"` |
+| `Group` (e.g. `Group:acme/engineering`) | Entity UID, e.g. `odf::auth::Group::"acme/engineering"` |
 | `Authenticated` | `odf::auth::Authenticated::""` |
 | `Anonymous` | `odf::auth::Anonymous::""` |
 | `Everyone` | No slot — compiled into a static policy with an unconstrained `principal` |
@@ -915,7 +924,7 @@ The following names cannot be used by `User` or `Organization` accounts, to prev
 |---|---|
 | `node` | Conventional name of the local `Node` account |
 | `admin`, `admins`, `root`, `system` | Suggest administrative privileges |
-| `authenticated`, `anonymous`, `everyone` | Match subject keywords |
+| `authenticated`, `anonymous`, `everyone` | Could be confused with subject keywords |
 
 Matching is case-insensitive. Implementations may reserve additional names (e.g. their own product name).
 
@@ -929,12 +938,3 @@ Matching is case-insensitive. Implementations may reserve additional names (e.g.
 
 Reserved groups are created together with the account that owns them and cannot be created or deleted independently.
 
-**Subject keywords**
-
-| Keyword | Description |
-|---|---|
-| `Authenticated` | `SubjectRef` matching any authenticated principal |
-| `Anonymous` | `SubjectRef` matching any unauthenticated principal |
-| `Everyone` | `SubjectRef` matching any principal |
-
-Subject keywords cannot collide with resource names, as resource references in short form always include a type prefix, a DID, or an ID.

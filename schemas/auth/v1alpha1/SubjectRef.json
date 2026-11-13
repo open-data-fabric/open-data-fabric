@@ -1,37 +1,64 @@
 {
   "$id": "https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form is either a well-known subject name (e.g. `Authenticated`) or a resource reference with a type prefix, DID, or ID (e.g. `Group:acme/engineering`).",
+  "description": "Reference to a party a grant is given to. Unlike a principal, a subject may stand for many principals at once. Short form always starts with a prefix that determines the subject kind: a resource type followed by a resource name (e.g. `User:alice`, `Group:acme/engineering`), or a well-known subject followed by `*` (e.g. `Authenticated:*`).",
+  "codegen": {
+    "rust": {
+      "dtoType": "SubjectRef"
+    }
+  },
   "$defs": {
-    "Resource": {
-      "description": "A specific `User`, `ServiceAccount`, `Node`, or members of a `Group`.",
+    "Principal": {
+      "description": "A specific `User`, `ServiceAccount`, or `Node`.",
       "type": "object",
       "required": [],
       "properties": {
         "type": {
           "type": "string",
           "format": "type-ref",
-          "description": "Short type name or full type URI of the subject resource."
+          "description": "Short type name or full type URI of the principal."
         },
         "account": {
           "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef",
-          "description": "Reference to an account that owns the subject resource (for service accounts and groups).",
+          "description": "Reference to an account that owns the service account.",
           "unevaluatedProperties": false
         },
         "id": {
           "type": "string",
           "format": "resource-id",
-          "description": "ID of the subject resource."
+          "description": "ID of the principal resource."
         },
         "did": {
           "type": "string",
           "format": "did",
-          "description": "DID of the subject resource."
+          "description": "DID of the principal."
         },
         "name": {
           "type": "string",
           "format": "resource-name",
-          "description": "Name of the subject resource."
+          "description": "Name of the principal resource."
+        }
+      }
+    },
+    "Group": {
+      "description": "Members of a `Group`, including members of nested groups.",
+      "type": "object",
+      "required": [],
+      "properties": {
+        "account": {
+          "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef",
+          "description": "Reference to an account that owns the group.",
+          "unevaluatedProperties": false
+        },
+        "id": {
+          "type": "string",
+          "format": "resource-id",
+          "description": "ID of the group resource."
+        },
+        "name": {
+          "type": "string",
+          "format": "resource-name",
+          "description": "Name of the group resource."
         }
       }
     },
@@ -65,7 +92,7 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "Resource"
+              "const": "Principal"
             }
           },
           "required": [
@@ -73,7 +100,25 @@
           ]
         },
         {
-          "$ref": "#/$defs/Resource"
+          "$ref": "#/$defs/Principal"
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Group"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Group"
         }
       ]
     },

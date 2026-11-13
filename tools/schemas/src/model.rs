@@ -224,6 +224,16 @@ pub struct Union {
     pub src: PathBuf,
 }
 
+impl Union {
+    pub fn get_hint<V: serde::de::DeserializeOwned>(
+        &self,
+        lang: CodegenLanguage,
+        key: CodegenHint,
+    ) -> Option<V> {
+        get_hint(&self.codegen_hints, lang, key)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Enum {
     pub id: TypeId,
@@ -743,7 +753,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         default: None,
         description: Some(description),
         tag: None,
-        codegen: None,
+        codegen,
         deprecated: None,
         examples: _,
         label_properties: None,
@@ -773,7 +783,7 @@ fn parse_type_union(id: TypeId, schema: json_schema::Schema, src: PathBuf, ctx: 
         variants,
         description,
         from_string,
-        codegen_hints: Default::default(),
+        codegen_hints: codegen.unwrap_or_default(),
         src,
     }
 }

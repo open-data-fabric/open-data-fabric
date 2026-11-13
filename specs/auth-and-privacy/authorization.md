@@ -161,35 +161,43 @@ Subjects are referenced using `SubjectRef`, which is a union of:
 
 | Kind | Matches | Short form |
 | --- | --- | --- |
-| `Resource` | A specific `User`, `ServiceAccount`, `Node`, or members of a `Group` | `User:alice`, `Group:acme/engineering` |
-| `Authenticated` | Any authenticated principal | `Authenticated` |
-| `Anonymous` | Any unauthenticated request | `Anonymous` |
-| `Everyone` | Any principal, authenticated or not | `Everyone` |
+| `Principal` | A specific `User`, `ServiceAccount`, or `Node` | `User:alice`, `ServiceAccount:acme/ingest-prod` |
+| `Group` | Members of a `Group`, including members of nested groups | `Group:acme/engineering` |
+| `Authenticated` | Any authenticated principal | `Authenticated:*` |
+| `Anonymous` | Any unauthenticated request | `Anonymous:*` |
+| `Everyone` | Any principal, authenticated or not | `Everyone:*` |
 
 Short forms expand as follows:
 
 ```yaml
+subject: ServiceAccount:acme/ingest-prod
+# Expands to:
+subject:
+  kind: Principal
+  type: ServiceAccount
+  account: acme
+  name: ingest-prod
+
 subject: Group:acme/engineering
 # Expands to:
 subject:
-  kind: Resource
-  type: Group
+  kind: Group
   account: acme
   name: engineering
 
-subject: Authenticated
+subject: Authenticated:*
 # Expands to:
 subject:
   kind: Authenticated
 ```
 
-A `Resource` subject can alternatively be identified by `id` or `did`.
+Every short form has a prefix that determines the subject kind: `Principal` and `Group` subjects are prefixed with the resource type, while well-known subjects are written as their kind followed by `:*` to signify that they match many principals. This makes a bare name like `anonymous` invalid, so it can never be mistaken for a resource name. In the full form, `Principal` and `Group` subjects can alternatively be identified by `id`, and a `Principal` also by `did`.
 
 `Authenticated`, `Anonymous`, and `Everyone` can be used in policy bindings, but not as group members - otherwise nesting such a subject into a group would extend the group's permissions to all principals.
 
 
 ## Groups
-A `Group` resource represents a named set of subjects. Membership is declared inline in the spec. Groups support nesting - a group may include other groups as members. Only the `Resource` subject kind is allowed as a member.
+A `Group` resource represents a named set of subjects. Membership is declared inline in the spec. Groups support nesting - a group may include other groups as members. Only `Principal` and `Group` subjects are allowed as members.
 
 ```yaml
 $schema: https://opendatafabric.org/schemas/auth/v1alpha1/Group
@@ -366,7 +374,7 @@ spec:
   kind: Cedar
   body: |
     permit(
-      principal == ?principal,
+      principal in ?principal,
       action in [
         odf::resources::Action::"https://opendatafabric.org/schemas/resources/v1alpha1/actions/View",
         odf::datasets::Action::"https://opendatafabric.org/schemas/datasets/v1alpha1/actions/Read"
@@ -393,7 +401,7 @@ Names that implementations must reserve and treat consistently.
 | --- | --- |
 | `node` | Conventional name of the local `Node` account |
 | `admin`, `admins`, `root`, `system` | Suggest administrative privileges |
-| `authenticated`, `anonymous`, `everyone` | Match subject keywords |
+| `authenticated`, `anonymous`, `everyone` | Could be confused with subject keywords |
 
 Matching is case-insensitive. Implementations may reserve additional names (e.g. their own product name).
 
@@ -404,14 +412,6 @@ Matching is case-insensitive. Implementations may reserve additional names (e.g.
 | `{node}/admins` | `Node` | Node administrators |
 | `{org}/admins` | `Organization` | Organization administrators, have owner rights over all resources of the organization |
 | `{org}/members` | `Organization` | Organization members |
-
-**Subject keywords** - cannot collide with resource names, as resource references in short form always include a type prefix, a DID, or an ID:
-
-| Keyword | Description |
-| --- | --- |
-| `Authenticated` | `SubjectRef` matching any authenticated principal |
-| `Anonymous` | `SubjectRef` matching any unauthenticated principal |
-| `Everyone` | `SubjectRef` matching any principal |
 
 
 ## Schemas
@@ -687,7 +687,8 @@ permit(
 
 | `SubjectRef` | Cedar |
 |---|---|
-| `Resource` (e.g. `Group:acme/engineering`) | Entity UID, e.g. `odf::auth::Group::"acme/engineering"` |
+| `Principal` (e.g. `User:alice`) | Entity UID, e.g. `odf::auth::User::"alice"` |
+| `Group` (e.g. `Group:acme/engineering`) | Entity UID, e.g. `odf::auth::Group::"acme/engineering"` |
 | `Authenticated` | `odf::auth::Authenticated::""` |
 | `Anonymous` | `odf::auth::Anonymous::""` |
 | `Everyone` | No slot — compiled into a static policy with an unconstrained `principal` |

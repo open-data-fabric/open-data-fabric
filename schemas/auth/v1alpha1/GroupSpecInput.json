@@ -8,7 +8,7 @@
   "properties": {
     "members": {
       "type": "array",
-      "description": "Members of the group. Only the `Resource` subject kind is allowed, so that well-known subjects like `Everyone` cannot be nested into a group.",
+      "description": "Members of the group. Only the `Principal` and `Group` subject kinds are allowed, so that well-known subjects like `Everyone` cannot be nested into a group.",
       "items": {
         "$ref": "https://opendatafabric.org/schemas/auth/v1alpha1/SubjectRef",
         "unevaluatedProperties": false
