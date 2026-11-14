@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- **Breaking:** `Resource` variant of `SubjectRef` and `SubjectHandle` is split into `Principal` (`User`, `ServiceAccount`, `Node`) and `Group` variants. Short form of these subjects now requires a type prefix
-- **Breaking:** Short form of well-known subjects is now `Authenticated:*`, `Anonymous:*`, and `Everyone:*`, to avoid ambiguity with resource names
+- `Resource` variant of `SubjectRef` and `SubjectHandle` is split into `Principal` (`User`, `ServiceAccount`, `Node`) and `Group` variants. Short form of these subjects now requires a type prefix
+- Short form of well-known subjects is now `Authenticated:*`, `Anonymous:*`, and `Everyone:*`, to avoid ambiguity with resource names
+- Format renaming `account-id -> account-did`, `dataset-id -> dataset-did`
 ### Fixed
 - Cedar policy template examples now use `principal in ?principal`, so that bindings to `Group` subjects match group members
 

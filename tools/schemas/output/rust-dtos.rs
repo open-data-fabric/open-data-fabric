@@ -109,8 +109,8 @@ pub mod auth {
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpec
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct NodeSpec {
-        /// DID associated with the account by ODF or an external system.
-        pub did: Option<AccountID>,
+        /// DID associated with the ODF node.
+        pub did: Option<NodeDid>,
         /// Human-friendly display name.
         pub display_name: Option<String>,
     }
@@ -120,8 +120,8 @@ pub mod auth {
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/NodeSpecInput
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct NodeSpecInput {
-        /// DID associated with the account by ODF or an external system.
-        pub did: Option<AccountID>,
+        /// DID associated with the ODF node.
+        pub did: Option<NodeDid>,
         /// Human-friendly display name.
         pub display_name: Option<String>,
     }
@@ -415,7 +415,7 @@ pub mod auth {
         /// ID of the account resource.
         pub id: ResourceID,
         /// DID of the account.
-        pub did: AccountID,
+        pub did: AccountDid,
         /// Name of the account.
         pub name: AccountName,
     }
@@ -429,7 +429,7 @@ pub mod auth {
         /// UUID of the account resource.
         pub id: Option<ResourceID>,
         /// DID of the account.
-        pub did: Option<AccountID>,
+        pub did: Option<AccountDid>,
         /// Name of the account.
         pub name: Option<AccountName>,
     }
@@ -652,7 +652,7 @@ pub mod auth {
     #[derive(Clone, Debug, Eq, Default)]
     pub struct UserSpec {
         /// DID associated with the account by ODF or an external system.
-        pub did: Option<AccountID>,
+        pub did: Option<AccountDid>,
         /// Human-friendly display name.
         pub display_name: Option<String>,
         /// Email address of the user.
@@ -694,7 +694,7 @@ pub mod auth {
     #[derive(Clone, Debug, Eq, Default)]
     pub struct UserSpecInput {
         /// DID associated with the account by ODF or an external system.
-        pub did: Option<AccountID>,
+        pub did: Option<AccountDid>,
         /// Human-friendly display name.
         pub display_name: Option<String>,
         /// Email address of the user.
@@ -1422,7 +1422,7 @@ pub mod datasets {
         /// ID of the dataset resource.
         pub id: ResourceID,
         /// DID of the dataset.
-        pub did: DatasetID,
+        pub did: DatasetDid,
         /// Name of the dataset.
         pub name: ResourceName,
     }
@@ -1447,7 +1447,7 @@ pub mod datasets {
         /// UUID of the dataset resource.
         pub id: Option<ResourceID>,
         /// DID of the dataset.
-        pub did: Option<DatasetID>,
+        pub did: Option<DatasetDid>,
         /// Name of the dataset.
         pub name: Option<ResourceName>,
     }
@@ -1461,7 +1461,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct DatasetSpec {
         /// DID of the dataset in global ODF network
-        pub did: DatasetID,
+        pub did: DatasetDid,
         /// Type of the dataset.
         pub kind: datasets::DatasetKind,
         /// An array of metadata events that will be used to populate the chain, e.g. to set info, licenses, and attachments. As the dataset evolves, it maintains a snapshot of the key events that describe the dataset in its latest state, excluding intermediate transitions (e.g. previous schema changes) and events related to ingestions and transformations.
@@ -1476,7 +1476,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct DatasetSpecInput {
         /// DID of the dataset in global ODF network
-        pub did: Option<DatasetID>,
+        pub did: Option<DatasetDid>,
         /// Type of the dataset.
         pub kind: datasets::DatasetKind,
         /// An array of metadata events that will be used to populate the chain, e.g. to set info, licenses, and attachments. As the dataset evolves, it maintains a snapshot of the key events that describe the dataset in its latest state, excluding intermediate transitions (e.g. previous schema changes) and events related to ingestions and transformations.
@@ -1604,7 +1604,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct ExecuteTransformInput {
         /// Input dataset identifier.
-        pub dataset_id: DatasetID,
+        pub dataset_id: DatasetDid,
         /// Last block of the input dataset that was previously incorporated into the derivative transformation, if any. Must be equal to the last non-empty `newBlockHash`. Together with `newBlockHash` defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction.
         pub prev_block_hash: Option<Multihash>,
         /// Hash of the last block that will be incorporated into the derivative transformation. When present, defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction.
@@ -1777,7 +1777,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct Seed {
         /// Unique identity of the dataset.
-        pub dataset_id: DatasetID,
+        pub dataset_id: DatasetDid,
         /// Type of the dataset.
         pub dataset_kind: datasets::DatasetKind,
     }
@@ -2045,7 +2045,7 @@ pub mod engines {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct TransformRequest {
         /// Unique identifier of the output dataset.
-        pub dataset_id: DatasetID,
+        pub dataset_id: DatasetDid,
         /// Alias of the output dataset, for logging purposes only.
         pub dataset_alias: crate::datasets::legacy::DatasetAlias,
         /// System time to use for new records.
@@ -2072,7 +2072,7 @@ pub mod engines {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct TransformRequestInput {
         /// Unique identifier of the dataset.
-        pub dataset_id: DatasetID,
+        pub dataset_id: DatasetDid,
         /// Alias of the output dataset, for logging purposes only.
         pub dataset_alias: crate::datasets::legacy::DatasetAlias,
         /// An alias of this input to be used in queries.

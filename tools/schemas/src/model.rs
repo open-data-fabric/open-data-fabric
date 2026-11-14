@@ -323,12 +323,14 @@ pub enum Type {
     TypeRef,
 
     // Identity & references
-    AccountId,
+    AccountDid,
     AccountName,
 
     DatasetAlias, // DEPRECATED in favor of `DatasetRef` schema
-    DatasetId,
+    DatasetDid,
     DatasetRef, // DEPRECATED in favor of `DatasetRef` schema
+
+    NodeDid,
 
     ResourceId,
     ResourceName,
@@ -1194,12 +1196,14 @@ fn parse_type_scalar(schema: json_schema::Schema, ctx: String) -> Type {
         (json_schema::Type::String, Some(json_schema::Format::Uri)) => Type::Url,
         (json_schema::Type::String, Some(json_schema::Format::Did)) => Type::Did,
 
-        (json_schema::Type::String, Some(json_schema::Format::AccountId)) => Type::AccountId,
+        (json_schema::Type::String, Some(json_schema::Format::AccountDid)) => Type::AccountDid,
         (json_schema::Type::String, Some(json_schema::Format::AccountName)) => Type::AccountName,
 
         (json_schema::Type::String, Some(json_schema::Format::DatasetAlias)) => Type::DatasetAlias,
-        (json_schema::Type::String, Some(json_schema::Format::DatasetId)) => Type::DatasetId,
+        (json_schema::Type::String, Some(json_schema::Format::DatasetDid)) => Type::DatasetDid,
         (json_schema::Type::String, Some(json_schema::Format::DatasetRef)) => Type::DatasetRef,
+
+        (json_schema::Type::String, Some(json_schema::Format::NodeDid)) => Type::NodeDid,
 
         (json_schema::Type::String, Some(json_schema::Format::ResourceId)) => Type::ResourceId,
         (json_schema::Type::String, Some(json_schema::Format::ResourceName)) => Type::ResourceName,

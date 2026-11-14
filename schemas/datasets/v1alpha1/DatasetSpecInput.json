@@ -11,7 +11,7 @@
   "properties": {
     "did": {
       "type": "string",
-      "format": "dataset-id",
+      "format": "dataset-did",
       "description": "DID of the dataset in global ODF network"
     },
     "kind": {

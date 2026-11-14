@@ -24,7 +24,7 @@
         },
         "did": {
           "type": "string",
-          "format": "dataset-id",
+          "format": "dataset-did",
           "description": "DID of the dataset."
         },
         "name": {

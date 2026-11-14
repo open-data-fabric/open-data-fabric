@@ -3691,7 +3691,7 @@ table MetadataBlock {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table NodeSpecInput {
-  // DID associated with the account by ODF or an external system.
+  // DID associated with the ODF node.
   did: [ubyte];
   // Human-friendly display name.
   display_name: string;
@@ -3705,7 +3705,7 @@ table NodeSpecInput {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 table NodeSpec {
-  // DID associated with the account by ODF or an external system.
+  // DID associated with the ODF node.
   did: [ubyte];
   // Human-friendly display name.
   display_name: string;

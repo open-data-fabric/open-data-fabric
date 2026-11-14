@@ -540,11 +540,14 @@ fn format_type(typ: &model::Type) -> String {
         model::Type::TypeName => format!("string"),
         model::Type::TypeRef => format!("string"),
 
-        model::Type::AccountId => format!("[ubyte]"),
+        model::Type::AccountDid => format!("[ubyte]"),
         model::Type::AccountName => format!("string"),
         model::Type::DatasetAlias => format!("string"),
-        model::Type::DatasetId => format!("[ubyte]"),
+        model::Type::DatasetDid => format!("[ubyte]"),
         model::Type::DatasetRef => format!("string"),
+
+        model::Type::NodeDid => format!("[ubyte]"),
+
         model::Type::ResourceId => format!("[ubyte]"),
         model::Type::ResourceName => format!("string"),
 

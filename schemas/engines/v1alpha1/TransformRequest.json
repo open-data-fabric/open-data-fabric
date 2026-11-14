@@ -18,7 +18,7 @@
   "properties": {
     "datasetId": {
       "type": "string",
-      "format": "dataset-id",
+      "format": "dataset-did",
       "description": "Unique identifier of the output dataset."
     },
     "datasetAlias": {

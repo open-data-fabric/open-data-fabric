@@ -168,7 +168,7 @@ pub mod auth {
     pub struct NodeSpec {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::auth::AccountID>,
+        pub did: Option<odf::auth::NodeDid>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub display_name: Option<String>,
@@ -209,7 +209,7 @@ pub mod auth {
     pub struct NodeSpecInput {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::auth::AccountID>,
+        pub did: Option<odf::auth::NodeDid>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub display_name: Option<String>,
@@ -784,7 +784,7 @@ pub mod auth {
     #[serde(rename_all = "camelCase")]
     pub struct ResourceOwnerHandle {
         pub id: odf::resources::ResourceID,
-        pub did: odf::auth::AccountID,
+        pub did: odf::auth::AccountDid,
         pub name: odf::auth::AccountName,
     }
 
@@ -828,7 +828,7 @@ pub mod auth {
         pub id: Option<odf::resources::ResourceID>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::auth::AccountID>,
+        pub did: Option<odf::auth::AccountDid>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub name: Option<odf::auth::AccountName>,
@@ -1367,7 +1367,7 @@ pub mod auth {
     pub struct UserSpec {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::auth::AccountID>,
+        pub did: Option<odf::auth::AccountDid>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub display_name: Option<String>,
@@ -1431,7 +1431,7 @@ pub mod auth {
     pub struct UserSpecInput {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::auth::AccountID>,
+        pub did: Option<odf::auth::AccountDid>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub display_name: Option<String>,
@@ -3332,7 +3332,7 @@ pub mod datasets {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub account: Option<auth::ResourceOwnerHandle>,
         pub id: odf::resources::ResourceID,
-        pub did: odf::datasets::DatasetID,
+        pub did: odf::datasets::DatasetDid,
         pub name: odf::resources::ResourceName,
     }
 
@@ -3422,7 +3422,7 @@ pub mod datasets {
         pub id: Option<odf::resources::ResourceID>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::datasets::DatasetID>,
+        pub did: Option<odf::datasets::DatasetDid>,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub name: Option<odf::resources::ResourceName>,
@@ -3503,7 +3503,7 @@ pub mod datasets {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct DatasetSpec {
-        pub did: odf::datasets::DatasetID,
+        pub did: odf::datasets::DatasetDid,
         pub kind: datasets::DatasetKind,
         pub metadata: Vec<datasets::MetadataEvent>,
         pub volume: resources::ResourceHandle,
@@ -3552,7 +3552,7 @@ pub mod datasets {
     pub struct DatasetSpecInput {
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub did: Option<odf::datasets::DatasetID>,
+        pub did: Option<odf::datasets::DatasetDid>,
         pub kind: datasets::DatasetKind,
         pub metadata: Vec<datasets::MetadataEvent>,
         #[serde(default)]
@@ -3725,7 +3725,7 @@ pub mod datasets {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct ExecuteTransformInput {
-        pub dataset_id: odf::datasets::DatasetID,
+        pub dataset_id: odf::datasets::DatasetDid,
         #[serde(default)]
         #[serde(skip_serializing_if = "Option::is_none")]
         pub prev_block_hash: Option<odf::Multihash>,
@@ -4037,7 +4037,7 @@ pub mod datasets {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct Seed {
-        pub dataset_id: odf::datasets::DatasetID,
+        pub dataset_id: odf::datasets::DatasetDid,
         pub dataset_kind: datasets::DatasetKind,
     }
 
@@ -4834,7 +4834,7 @@ pub mod engines {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct TransformRequest {
-        pub dataset_id: odf::datasets::DatasetID,
+        pub dataset_id: odf::datasets::DatasetDid,
         pub dataset_alias: odf::datasets::legacy::DatasetAlias,
         #[serde(with = "datetime_rfc3339")]
         pub system_time: DateTime<Utc>,
@@ -4902,7 +4902,7 @@ pub mod engines {
     #[serde(deny_unknown_fields)]
     #[serde(rename_all = "camelCase")]
     pub struct TransformRequestInput {
-        pub dataset_id: odf::datasets::DatasetID,
+        pub dataset_id: odf::datasets::DatasetDid,
         pub dataset_alias: odf::datasets::legacy::DatasetAlias,
         pub query_alias: String,
         pub vocab: datasets::DatasetVocabulary,

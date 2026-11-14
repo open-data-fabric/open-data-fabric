@@ -8,7 +8,7 @@
   "properties": {
     "did": {
       "type": "string",
-      "format": "account-id",
+      "format": "account-did",
       "description": "DID associated with the account by ODF or an external system."
     },
     "displayName": {

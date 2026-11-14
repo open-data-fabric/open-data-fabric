@@ -8,8 +8,8 @@
   "properties": {
     "did": {
       "type": "string",
-      "format": "account-id",
-      "description": "DID associated with the account by ODF or an external system."
+      "format": "node-did",
+      "description": "DID associated with the ODF node."
     },
     "displayName": {
       "type": "string",

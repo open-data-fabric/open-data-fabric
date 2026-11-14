@@ -526,12 +526,14 @@ pub enum Format {
     TypeRef,
 
     // Identity and references
-    AccountId,
+    AccountDid,
     AccountName,
 
-    DatasetId,
+    DatasetDid,
     DatasetAlias, // TODO: Should this be replaced by DatasetRef everywhere?
     DatasetRef,
+
+    NodeDid,
 
     ResourceId,
     ResourceName,

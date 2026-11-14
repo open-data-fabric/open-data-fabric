@@ -421,7 +421,7 @@ fn as_json_type(typ: &model::Type) -> String {
         | model::Type::UInt64 => format!("`integer`"),
         model::Type::ByteSize
         | model::Type::DatasetAlias
-        | model::Type::DatasetId
+        | model::Type::DatasetDid
         | model::Type::DatasetRef
         | model::Type::DateTime
         | model::Type::Duration
@@ -435,8 +435,9 @@ fn as_json_type(typ: &model::Type) -> String {
         | model::Type::TypeUri
         | model::Type::TypeName
         | model::Type::TypeRef
-        | model::Type::AccountId
+        | model::Type::AccountDid
         | model::Type::AccountName
+        | model::Type::NodeDid
         | model::Type::ResourceId
         | model::Type::ResourceName
         | model::Type::String => format!("`string`"),
@@ -464,7 +465,7 @@ fn as_format(typ: &model::Type) -> String {
         model::Type::String => String::new(),
         model::Type::Did => format!("`did`"),
         model::Type::DatasetAlias => format!("[dataset-alias](datasets/identity.md#grammar)"),
-        model::Type::DatasetId => format!("[dataset-id](datasets/identity.md#unique-identifiers)"),
+        model::Type::DatasetDid => format!("[dataset-id](datasets/identity.md#unique-identifiers)"),
         model::Type::DatasetRef => format!("[dataset-ref](datasets/identity.md#grammar)"),
         model::Type::ByteSize => "[byte-size](https://www.thierry-lequeu.fr/data/PELS/Comm/Publications/Newsletter/9704/STORY18.HTML)".to_string(),
         model::Type::DateTime => "[date-time](https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.7.3.1)".to_string(),
@@ -480,8 +481,9 @@ fn as_format(typ: &model::Type) -> String {
         model::Type::Custom(_) => String::new(),
         model::Type::AnyJson => String::new(),
         // TODO: Link to the spec section
-        model::Type::AccountId => String::new(),
+        model::Type::AccountDid => String::new(),
         model::Type::AccountName => String::new(),
+        model::Type::NodeDid => String::new(),
         model::Type::ResourceId => String::new(),
         model::Type::ResourceName => String::new(),
         model::Type::TypeUri => String::new(),

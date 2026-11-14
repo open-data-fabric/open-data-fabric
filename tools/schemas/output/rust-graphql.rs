@@ -392,7 +392,7 @@ impl From<odf::metadata::datasets::ExecuteTransform> for ExecuteTransform {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct ExecuteTransformInput {
     /// Input dataset identifier.
-    pub dataset_id: DatasetID<'static>,
+    pub dataset_id: DatasetDid<'static>,
     /// Last block of the input dataset that was previously incorporated into the derivative transformation, if any. Must be equal to the last non-empty `newBlockHash`. Together with `newBlockHash` defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction.
     pub prev_block_hash: Option<Multihash<'static>>,
     /// Hash of the last block that will be incorporated into the derivative transformation. When present, defines a half-open `(prevBlockHash, newBlockHash]` interval of blocks that will be considered in this transaction.
@@ -1680,7 +1680,7 @@ pub struct ResourceOwnerHandle {
     /// ID of the account resource.
     pub id: ResourceID<'static>,
     /// DID of the account.
-    pub did: AccountID<'static>,
+    pub did: AccountDid<'static>,
     /// Name of the account.
     pub name: AccountName<'static>,
 }
@@ -1754,7 +1754,7 @@ impl From<odf::metadata::resources::ResourceStatus> for ResourceStatus {
 #[derive(SimpleObject, Debug, Clone)]
 pub struct Seed {
     /// Unique identity of the dataset.
-    pub dataset_id: DatasetID<'static>,
+    pub dataset_id: DatasetDid<'static>,
     /// Type of the dataset.
     pub dataset_kind: DatasetKind,
 }

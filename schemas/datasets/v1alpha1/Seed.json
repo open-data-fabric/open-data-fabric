@@ -10,7 +10,7 @@
   "properties": {
     "datasetId": {
       "type": "string",
-      "format": "dataset-id",
+      "format": "dataset-did",
       "description": "Unique identity of the dataset."
     },
     "datasetKind": {

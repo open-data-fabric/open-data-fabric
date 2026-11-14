@@ -280,7 +280,7 @@ Node account specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `did` | `string` |  |  | DID associated with the account by ODF or an external system. |
+| `did` | `string` |  |  | DID associated with the ODF node. |
 | `displayName` | `string` |  |  | Human-friendly display name. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/NodeSpec.json)
@@ -294,7 +294,7 @@ Node account specification.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `did` | `string` |  |  | DID associated with the account by ODF or an external system. |
+| `did` | `string` |  |  | DID associated with the ODF node. |
 | `displayName` | `string` |  |  | Human-friendly display name. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/NodeSpecInput.json)

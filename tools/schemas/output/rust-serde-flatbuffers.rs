@@ -1281,7 +1281,7 @@ impl<'fb> FlatbuffersDeserializable<fb::DatasetHandle<'fb>> for odf::datasets::D
                 .unwrap(),
             did: proxy
                 .did()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             name: proxy
                 .name()
@@ -1348,7 +1348,7 @@ impl<'fb> FlatbuffersDeserializable<fb::DatasetRef<'fb>> for odf::datasets::Data
                 .map(|v| odf::resources::ResourceID::from_bytes(v.bytes()).unwrap()),
             did: proxy
                 .did()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap()),
             name: proxy
                 .name()
                 .map(|v| odf::resources::ResourceName::try_from(v).unwrap()),
@@ -1395,7 +1395,7 @@ impl<'fb> FlatbuffersDeserializable<fb::DatasetSpec<'fb>> for odf::datasets::Dat
         odf::datasets::DatasetSpec {
             did: proxy
                 .did()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             kind: proxy.kind().into(),
             metadata: proxy
@@ -1458,7 +1458,7 @@ impl<'fb> FlatbuffersDeserializable<fb::DatasetSpecInput<'fb>> for odf::datasets
         odf::datasets::DatasetSpecInput {
             did: proxy
                 .did()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap()),
             kind: proxy.kind().into(),
             metadata: proxy
                 .metadata()
@@ -1865,7 +1865,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ExecuteTransformInput<'fb>>
         odf::datasets::ExecuteTransformInput {
             dataset_id: proxy
                 .dataset_id()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             prev_block_hash: proxy
                 .prev_block_hash()
@@ -4542,7 +4542,7 @@ impl<'fb> FlatbuffersDeserializable<fb::NodeSpec<'fb>> for odf::auth::NodeSpec {
         odf::auth::NodeSpec {
             did: proxy
                 .did()
-                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::auth::NodeDid::from_bytes(v.bytes()).unwrap()),
             display_name: proxy.display_name().map(|v| v.to_owned()),
         }
     }
@@ -4571,7 +4571,7 @@ impl<'fb> FlatbuffersDeserializable<fb::NodeSpecInput<'fb>> for odf::auth::NodeS
         odf::auth::NodeSpecInput {
             did: proxy
                 .did()
-                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::auth::NodeDid::from_bytes(v.bytes()).unwrap()),
             display_name: proxy.display_name().map(|v| v.to_owned()),
         }
     }
@@ -6531,7 +6531,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceOwnerHandle<'fb>>
                 .unwrap(),
             did: proxy
                 .did()
-                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::auth::AccountDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             name: proxy
                 .name()
@@ -6569,7 +6569,7 @@ impl<'fb> FlatbuffersDeserializable<fb::ResourceOwnerRef<'fb>> for odf::auth::Re
                 .map(|v| odf::resources::ResourceID::from_bytes(v.bytes()).unwrap()),
             did: proxy
                 .did()
-                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::auth::AccountDid::from_bytes(v.bytes()).unwrap()),
             name: proxy
                 .name()
                 .map(|v| odf::auth::AccountName::try_from(v).unwrap()),
@@ -6903,7 +6903,7 @@ impl<'fb> FlatbuffersDeserializable<fb::Seed<'fb>> for odf::datasets::Seed {
         odf::datasets::Seed {
             dataset_id: proxy
                 .dataset_id()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             dataset_kind: proxy.dataset_kind().into(),
         }
@@ -9841,7 +9841,7 @@ impl<'fb> FlatbuffersDeserializable<fb::TransformRequest<'fb>> for odf::engines:
         odf::engines::TransformRequest {
             dataset_id: proxy
                 .dataset_id()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             dataset_alias: proxy
                 .dataset_alias()
@@ -9926,7 +9926,7 @@ impl<'fb> FlatbuffersDeserializable<fb::TransformRequestInput<'fb>>
         odf::engines::TransformRequestInput {
             dataset_id: proxy
                 .dataset_id()
-                .map(|v| odf::datasets::DatasetID::from_bytes(v.bytes()).unwrap())
+                .map(|v| odf::datasets::DatasetDid::from_bytes(v.bytes()).unwrap())
                 .unwrap(),
             dataset_alias: proxy
                 .dataset_alias()
@@ -10166,7 +10166,7 @@ impl<'fb> FlatbuffersDeserializable<fb::UserSpec<'fb>> for odf::auth::UserSpec {
         odf::auth::UserSpec {
             did: proxy
                 .did()
-                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::auth::AccountDid::from_bytes(v.bytes()).unwrap()),
             display_name: proxy.display_name().map(|v| v.to_owned()),
             email: proxy.email().map(|v| v.to_owned()),
             avatar_url: proxy.avatar_url().map(|v| v.to_owned()),
@@ -10208,7 +10208,7 @@ impl<'fb> FlatbuffersDeserializable<fb::UserSpecInput<'fb>> for odf::auth::UserS
         odf::auth::UserSpecInput {
             did: proxy
                 .did()
-                .map(|v| odf::auth::AccountID::from_bytes(v.bytes()).unwrap()),
+                .map(|v| odf::auth::AccountDid::from_bytes(v.bytes()).unwrap()),
             display_name: proxy.display_name().map(|v| v.to_owned()),
             email: proxy.email().map(|v| v.to_owned()),
             avatar_url: proxy.avatar_url().map(|v| v.to_owned()),

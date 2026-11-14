@@ -140,10 +140,11 @@ impl Helpers {
             | model::Type::Boolean
             | model::Type::String
             | model::Type::DatasetAlias
-            | model::Type::DatasetId
+            | model::Type::DatasetDid
             | model::Type::DatasetRef
-            | model::Type::AccountId
+            | model::Type::AccountDid
             | model::Type::AccountName
+            | model::Type::NodeDid
             | model::Type::ResourceId
             | model::Type::ResourceName
             | model::Type::TypeUri
@@ -377,8 +378,9 @@ fn format_pre_ser_type(
         | model::Type::DatasetAlias
         | model::Type::DatasetRef => writeln!(w, "fb.create_string(&{name}.to_string())")?,
         model::Type::Did
-        | model::Type::AccountId
-        | model::Type::DatasetId
+        | model::Type::AccountDid
+        | model::Type::DatasetDid
+        | model::Type::NodeDid
         | model::Type::ResourceId => writeln!(w, "fb.create_vector(&{name}.as_bytes())")?,
         model::Type::Flatbuffers | model::Type::Generic(_) => {
             writeln!(w, "fb.create_vector(&{name}[..])")?
@@ -492,7 +494,7 @@ fn render_type_ser(
         model::Type::String
         | model::Type::Did
         | model::Type::DatasetAlias
-        | model::Type::DatasetId
+        | model::Type::DatasetDid
         | model::Type::DatasetRef
         | model::Type::Flatbuffers
         | model::Type::Multicodec
@@ -500,8 +502,9 @@ fn render_type_ser(
         | model::Type::Path
         | model::Type::Regex
         | model::Type::Url
-        | model::Type::AccountId
+        | model::Type::AccountDid
         | model::Type::AccountName
+        | model::Type::NodeDid
         | model::Type::ResourceId
         | model::Type::ResourceName
         | model::Type::TypeUri
@@ -596,9 +599,9 @@ fn render_type_de(
             w,
             "odf::datasets::legacy::DatasetAlias::try_from({name}).unwrap()"
         )?,
-        model::Type::DatasetId => writeln!(
+        model::Type::DatasetDid => writeln!(
             w,
-            "odf::datasets::DatasetID::from_bytes({name}.bytes()).unwrap()"
+            "odf::datasets::DatasetDid::from_bytes({name}.bytes()).unwrap()"
         )?,
         model::Type::DatasetRef => writeln!(
             w,
@@ -648,12 +651,15 @@ fn render_type_de(
             model::TypeDefinition::Scalar(_) => unreachable!(),
         },
         model::Type::AnyJson => writeln!(w, "serde_json::from_str({name}).unwrap()")?,
-        model::Type::AccountId => writeln!(
+        model::Type::AccountDid => writeln!(
             w,
-            "odf::auth::AccountID::from_bytes({name}.bytes()).unwrap()"
+            "odf::auth::AccountDid::from_bytes({name}.bytes()).unwrap()"
         )?,
         model::Type::AccountName => {
             writeln!(w, "odf::auth::AccountName::try_from({name}).unwrap()")?
+        }
+        model::Type::NodeDid => {
+            writeln!(w, "odf::auth::NodeDid::from_bytes({name}.bytes()).unwrap()")?
         }
         model::Type::ResourceId => writeln!(
             w,
@@ -663,7 +669,9 @@ fn render_type_de(
             writeln!(w, "odf::resources::ResourceName::try_from({name}).unwrap()")?
         }
         model::Type::TypeUri => writeln!(w, "odf::resources::TypeUri::try_from({name}).unwrap()")?,
-        model::Type::TypeName => writeln!(w, "odf::resources::TypeName::try_from({name}).unwrap()")?,
+        model::Type::TypeName => {
+            writeln!(w, "odf::resources::TypeName::try_from({name}).unwrap()")?
+        }
         model::Type::TypeRef => writeln!(w, "odf::resources::TypeRef::try_from({name}).unwrap()")?,
     }
     Ok(())

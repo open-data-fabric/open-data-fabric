@@ -102,7 +102,7 @@ Proposed `InputSlice` schema:
   "properties": {
     "datasetId": {
       "type": "string",
-      "format": "dataset-id",
+      "format": "dataset-did",
       "description": "Input dataset identifier."
     },
     "prevBlockHash": {

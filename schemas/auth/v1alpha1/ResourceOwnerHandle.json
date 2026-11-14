@@ -16,7 +16,7 @@
     },
     "did": {
       "type": "string",
-      "format": "account-id",
+      "format": "account-did",
       "description": "DID of the account."
     },
     "name": {

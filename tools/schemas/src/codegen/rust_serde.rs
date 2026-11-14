@@ -692,10 +692,11 @@ fn format_type(model: &model::Model, typ: &model::Type) -> String {
         model::Type::Did => format!("odf::Did"),
 
         model::Type::DatasetAlias => format!("odf::datasets::legacy::DatasetAlias"),
-        model::Type::DatasetId => format!("odf::datasets::DatasetID"),
+        model::Type::DatasetDid => format!("odf::datasets::DatasetDid"),
         model::Type::DatasetRef => format!("odf::datasets::legacy::DatasetRef"),
-        model::Type::AccountId => format!("odf::auth::AccountID"),
+        model::Type::AccountDid => format!("odf::auth::AccountDid"),
         model::Type::AccountName => format!("odf::auth::AccountName"),
+        model::Type::NodeDid => format!("odf::auth::NodeDid"),
         model::Type::ResourceId => format!("odf::resources::ResourceID"),
         model::Type::ResourceName => format!("odf::resources::ResourceName"),
         model::Type::TypeUri => format!("odf::resources::TypeUri"),
