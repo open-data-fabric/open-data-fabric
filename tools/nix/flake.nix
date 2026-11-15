@@ -1,7 +1,7 @@
 {
   description = "Dev environment with supporting tools";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/26.05";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, flake-utils }:
