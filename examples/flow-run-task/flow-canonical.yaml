@@ -3,6 +3,7 @@ $schema: https://opendatafabric.org/schemas/resources/v1alpha1/Resource
 headers:
   id: bb-6767a4ee
   account:
+    type: User
     id: 6767a4ee-d74d-436e-84f9-709407869a26
     did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
     name: foo
@@ -37,6 +38,7 @@ status:
             id: a1b2c3d4-aaaa-bbbb-cccc-dddddddddddd
             name: foo
             account:
+              type: User
               id: 6767a4ee-d74d-436e-84f9-709407869a26
               did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
               name: foo
@@ -48,6 +50,7 @@ status:
             id: f47ac10b-1111-2222-3333-444444444444
             name: flow-run-f47ac10b
             account:
+              type: User
               id: 6767a4ee-d74d-436e-84f9-709407869a26
               did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
               name: foo
@@ -59,6 +62,7 @@ status:
             id: 9b2e4f1a-5555-6666-7777-888888888888
             name: flow-run-9b2e4f1a
             account:
+              type: User
               id: 6767a4ee-d74d-436e-84f9-709407869a26
               did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
               name: foo
@@ -68,6 +72,7 @@ status:
             id: 9b2e4f1a-5555-6666-7777-888888888888
             name: flow-run-9b2e4f1a-2
             account:
+              type: User
               id: 6767a4ee-d74d-436e-84f9-709407869a26
               did: did:odf:fed01816ef0a9abe93aba816ef0a9abe93aba90e6065747170300c0d3d30c2cd8d7a4
               name: foo

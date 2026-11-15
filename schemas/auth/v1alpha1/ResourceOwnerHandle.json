@@ -4,11 +4,17 @@
   "description": "Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.",
   "type": "object",
   "required": [
+    "type",
     "id",
     "did",
     "name"
   ],
   "properties": {
+    "type": {
+      "type": "string",
+      "format": "type-uri",
+      "description": "Type URI of the account."
+    },
     "id": {
       "type": "string",
       "format": "resource-id",

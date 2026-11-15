@@ -16,6 +16,15 @@
           "description": "Reference to an account that owns the target resource.",
           "unevaluatedProperties": false
         },
+        "type": {
+          "type": "string",
+          "format": "type-ref",
+          "examples": [
+            "SecretSet",
+            "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
+          ],
+          "description": "Short type name or full type URI of the target resource."
+        },
         "id": {
           "type": "string",
           "format": "resource-id",
@@ -25,15 +34,6 @@
           "type": "string",
           "format": "did",
           "description": "DID of the resource."
-        },
-        "type": {
-          "type": "string",
-          "format": "type-ref",
-          "examples": [
-            "SecretSet",
-            "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
-          ],
-          "description": "Short type name or full type URI of the target resource."
         },
         "name": {
           "type": "string",

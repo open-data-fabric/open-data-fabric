@@ -508,11 +508,11 @@ Link to a resolved identity that can act as a principal: `User`, `ServiceAccount
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Owner account, if principal is a service account. |
 | `type` | `string` | V |  | Type URI of the principal. |
-| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Account that owns the service account. |
-| `id` | `string` | V |  | ID of the principal resource. |
-| `did` | `string` |  | `did` | DID of the principal, if applicable. |
-| `name` | `string` | V |  | Name of the principal resource. |
+| `id` | `string` | V |  | ID of the principal account resource. |
+| `did` | `string` |  | `did` | DID of the principal account. |
+| `name` | `string` | V |  | Name of the principal account. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/PrincipalHandle.json)
 [![Flatbuffers Schema](https://img.shields.io/badge/schema-flatbuffers-blue)](../contracts/metadata/opendatafabric.fbs)
@@ -528,7 +528,7 @@ Reference to an identity that can act as a principal: `User`, `ServiceAccount`, 
 | `type` | `string` |  |  | Short type name or full type URI of the principal. |
 | `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the service account. |
 | `id` | `string` |  |  | ID of the principal resource. |
-| `did` | `string` |  | `did` | DID of the principal. |
+| `did` | `string` |  | `did` | DID of the principal account or node. |
 | `name` | `string` |  |  | Name of the principal resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/auth/v1alpha1/PrincipalRef.json)
@@ -542,6 +542,7 @@ Link to a resolved account that can own resources: `User`, `Organization`, or `N
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `type` | `string` | V |  | Type URI of the account. |
 | `id` | `string` | V |  | ID of the account resource. |
 | `did` | `string` | V |  | DID of the account. |
 | `name` | `string` | V |  | Name of the account. |
@@ -557,6 +558,7 @@ Reference to an account that can own resources: `User`, `Organization`, or `Node
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
+| `type` | `string` |  |  | Name or URI of the account type. |
 | `id` | `string` |  |  | UUID of the account resource. |
 | `did` | `string` |  |  | DID of the account. |
 | `name` | `string` |  |  | Name of the account. |
@@ -1602,7 +1604,7 @@ Link to a dataset.
 
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
-| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) |  |  | Reference to an account that owns the dataset. |
+| `account` | [ResourceOwnerHandle](#resourceownerhandle-schema) | V |  | Reference to an account that owns the dataset. |
 | `id` | `string` | V |  | ID of the dataset resource. |
 | `did` | `string` | V | [dataset-id](datasets/identity.md#unique-identifiers) | DID of the dataset. |
 | `name` | `string` | V |  | Name of the dataset. |
@@ -3321,9 +3323,9 @@ Reference to another resource.
 | Property | Type | Required | Format | Description |
 | :---: | :---: | :---: | :---: | --- |
 | `account` | [ResourceOwnerRef](#resourceownerref-schema) |  |  | Reference to an account that owns the target resource. |
+| `type` | `string` |  |  | Short type name or full type URI of the target resource. |
 | `id` | `string` |  |  | ID of the resource within a node. |
 | `did` | `string` |  | `did` | DID of the resource. |
-| `type` | `string` |  |  | Short type name or full type URI of the target resource. |
 | `name` | `string` |  |  | Name of a resource. |
 
 [![JSON Schema](https://img.shields.io/badge/schema-JSON-orange)](../schemas/resources/v1alpha1/ResourceRef.json)

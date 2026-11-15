@@ -4,6 +4,7 @@
   "description": "Link to a dataset.",
   "type": "object",
   "required": [
+    "account",
     "id",
     "did",
     "name"

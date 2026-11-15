@@ -376,15 +376,15 @@ pub mod auth {
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/PrincipalHandle
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct PrincipalHandle {
+        /// Owner account, if principal is a service account.
+        pub account: Option<auth::ResourceOwnerHandle>,
         /// Type URI of the principal.
         pub r#type: TypeUri,
-        /// Account that owns the service account.
-        pub account: Option<auth::ResourceOwnerHandle>,
-        /// ID of the principal resource.
+        /// ID of the principal account resource.
         pub id: ResourceID,
-        /// DID of the principal, if applicable.
+        /// DID of the principal account.
         pub did: Option<Did>,
-        /// Name of the principal resource.
+        /// Name of the principal account.
         pub name: ResourceName,
     }
     impl IntoResourceRef for PrincipalHandle {}
@@ -400,7 +400,7 @@ pub mod auth {
         pub account: Option<auth::ResourceOwnerRef>,
         /// ID of the principal resource.
         pub id: Option<ResourceID>,
-        /// DID of the principal.
+        /// DID of the principal account or node.
         pub did: Option<Did>,
         /// Name of the principal resource.
         pub name: Option<ResourceName>,
@@ -412,6 +412,8 @@ pub mod auth {
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct ResourceOwnerHandle {
+        /// Type URI of the account.
+        pub r#type: TypeUri,
         /// ID of the account resource.
         pub id: ResourceID,
         /// DID of the account.
@@ -426,6 +428,8 @@ pub mod auth {
     /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerRef
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct ResourceOwnerRef {
+        /// Name or URI of the account type.
+        pub r#type: Option<TypeRef>,
         /// UUID of the account resource.
         pub id: Option<ResourceID>,
         /// DID of the account.
@@ -1418,7 +1422,7 @@ pub mod datasets {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct DatasetHandle {
         /// Reference to an account that owns the dataset.
-        pub account: Option<auth::ResourceOwnerHandle>,
+        pub account: auth::ResourceOwnerHandle,
         /// ID of the dataset resource.
         pub id: ResourceID,
         /// DID of the dataset.
@@ -3362,16 +3366,16 @@ pub mod resources {
     pub struct ResourceRef {
         /// Reference to an account that owns the target resource.
         pub account: Option<auth::ResourceOwnerRef>,
-        /// ID of the resource within a node.
-        pub id: Option<ResourceID>,
-        /// DID of the resource.
-        pub did: Option<Did>,
         /// Short type name or full type URI of the target resource.
         ///
         /// Examples:
         /// - "SecretSet"
         /// - "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
         pub r#type: Option<TypeRef>,
+        /// ID of the resource within a node.
+        pub id: Option<ResourceID>,
+        /// DID of the resource.
+        pub did: Option<Did>,
         /// Name of a resource.
         pub name: Option<ResourceName>,
     }

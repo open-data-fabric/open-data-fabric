@@ -29,7 +29,7 @@
         "did": {
           "type": "string",
           "format": "did",
-          "description": "DID of the principal."
+          "description": "DID of the principal account or node."
         },
         "name": {
           "type": "string",

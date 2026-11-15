@@ -1677,6 +1677,8 @@ impl async_graphql::ScalarType for ResourceLabels {
 /// Schema: https://opendatafabric.org/schemas/auth/v1alpha1/ResourceOwnerHandle
 #[derive(SimpleObject, Debug, Clone)]
 pub struct ResourceOwnerHandle {
+    /// Type URI of the account.
+    pub r#type: TypeUri<'static>,
     /// ID of the account resource.
     pub id: ResourceID<'static>,
     /// DID of the account.
@@ -1688,6 +1690,7 @@ pub struct ResourceOwnerHandle {
 impl From<odf::metadata::auth::ResourceOwnerHandle> for ResourceOwnerHandle {
     fn from(v: odf::metadata::auth::ResourceOwnerHandle) -> Self {
         Self {
+            r#type: v.r#type.into(),
             id: v.id.into(),
             did: v.did.into(),
             name: v.name.into(),
