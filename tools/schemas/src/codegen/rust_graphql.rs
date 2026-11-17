@@ -95,8 +95,8 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 }
             }
 
-            impl From<odf::metadata::TransformInput> for TransformInput {
-                fn from(v: odf::metadata::TransformInput) -> Self {
+            impl From<odf::meta::TransformInput> for TransformInput {
+                fn from(v: odf::meta::TransformInput) -> Self {
                     Self {
                         dataset_ref: v.dataset_ref.into(),
                         alias: v.alias.unwrap(),
@@ -119,8 +119,8 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub temporal_tables: Option<Vec<TemporalTable>>,
             }
 
-            impl From<odf::metadata::TransformSql> for TransformSql {
-                fn from(v: odf::metadata::TransformSql) -> Self {
+            impl From<odf::meta::TransformSql> for TransformSql {
+                fn from(v: odf::meta::TransformSql) -> Self {
                     let queries = if let Some(query) = v.query {
                         vec![SqlQueryStep { alias: None, query }]
                     } else {
@@ -160,8 +160,8 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 }
             }
 
-            impl From<odf::metadata::SetDataSchema> for SetDataSchema {
-                fn from(v: odf::metadata::SetDataSchema) -> Self {
+            impl From<odf::meta::SetDataSchema> for SetDataSchema {
+                fn from(v: odf::meta::SetDataSchema) -> Self {
                     Self {
                         schema: std::sync::Arc::new(v.upgrade().schema),
                     }
@@ -190,16 +190,16 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 NdGeoJson(ReadStepNdGeoJson),
             }
 
-            impl From<odf::metadata::ReadStep> for ReadStep {
-                fn from(v: odf::metadata::ReadStep) -> Self {
+            impl From<odf::meta::ReadStep> for ReadStep {
+                fn from(v: odf::meta::ReadStep) -> Self {
                     match v {
-                        odf::metadata::ReadStep::Csv(v) => Self::Csv(v.into()),
-                        odf::metadata::ReadStep::GeoJson(v) => Self::GeoJson(v.into()),
-                        odf::metadata::ReadStep::EsriShapefile(v) => Self::EsriShapefile(v.into()),
-                        odf::metadata::ReadStep::Parquet(v) => Self::Parquet(v.into()),
-                        odf::metadata::ReadStep::Json(v) => Self::Json(v.into()),
-                        odf::metadata::ReadStep::NdJson(v) => Self::NdJson(v.into()),
-                        odf::metadata::ReadStep::NdGeoJson(v) => Self::NdGeoJson(v.into()),
+                        odf::meta::ReadStep::Csv(v) => Self::Csv(v.into()),
+                        odf::meta::ReadStep::GeoJson(v) => Self::GeoJson(v.into()),
+                        odf::meta::ReadStep::EsriShapefile(v) => Self::EsriShapefile(v.into()),
+                        odf::meta::ReadStep::Parquet(v) => Self::Parquet(v.into()),
+                        odf::meta::ReadStep::Json(v) => Self::Json(v.into()),
+                        odf::meta::ReadStep::NdJson(v) => Self::NdJson(v.into()),
+                        odf::meta::ReadStep::NdGeoJson(v) => Self::NdGeoJson(v.into()),
                     }
                 }
             }
@@ -267,9 +267,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepCsv> for ReadStepCsv {
-                fn from(v: odf::metadata::ReadStepCsv) -> Self {
-                    let odf::metadata::ReadStepCsv {
+            impl From<odf::meta::ReadStepCsv> for ReadStepCsv {
+                fn from(v: odf::meta::ReadStepCsv) -> Self {
+                    let odf::meta::ReadStepCsv {
                         ddl_schema,
                         separator,
                         encoding,
@@ -336,9 +336,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepEsriShapefile> for ReadStepEsriShapefile {
-                fn from(v: odf::metadata::ReadStepEsriShapefile) -> Self {
-                    let odf::metadata::ReadStepEsriShapefile {
+            impl From<odf::meta::ReadStepEsriShapefile> for ReadStepEsriShapefile {
+                fn from(v: odf::meta::ReadStepEsriShapefile) -> Self {
+                    let odf::meta::ReadStepEsriShapefile {
                         ddl_schema,
                         sub_path,
                         schema,
@@ -384,9 +384,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepGeoJson> for ReadStepGeoJson {
-                fn from(v: odf::metadata::ReadStepGeoJson) -> Self {
-                    let odf::metadata::ReadStepGeoJson {
+            impl From<odf::meta::ReadStepGeoJson> for ReadStepGeoJson {
+                fn from(v: odf::meta::ReadStepGeoJson) -> Self {
+                    let odf::meta::ReadStepGeoJson {
                         ddl_schema,
                         schema,
                     } = v;
@@ -449,9 +449,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepJson> for ReadStepJson {
-                fn from(v: odf::metadata::ReadStepJson) -> Self {
-                    let odf::metadata::ReadStepJson {
+            impl From<odf::meta::ReadStepJson> for ReadStepJson {
+                fn from(v: odf::meta::ReadStepJson) -> Self {
+                    let odf::meta::ReadStepJson {
                         sub_path,
                         ddl_schema,
                         date_format,
@@ -504,9 +504,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepNdGeoJson> for ReadStepNdGeoJson {
-                fn from(v: odf::metadata::ReadStepNdGeoJson) -> Self {
-                    let odf::metadata::ReadStepNdGeoJson { ddl_schema, schema } = v;
+            impl From<odf::meta::ReadStepNdGeoJson> for ReadStepNdGeoJson {
+                fn from(v: odf::meta::ReadStepNdGeoJson) -> Self {
+                    let odf::meta::ReadStepNdGeoJson { ddl_schema, schema } = v;
                     Self {
                         ddl_schema,
                         schema: schema.map(Arc::new),
@@ -562,9 +562,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepNdJson> for ReadStepNdJson {
-                fn from(v: odf::metadata::ReadStepNdJson) -> Self {
-                    let odf::metadata::ReadStepNdJson {
+            impl From<odf::meta::ReadStepNdJson> for ReadStepNdJson {
+                fn from(v: odf::meta::ReadStepNdJson) -> Self {
+                    let odf::meta::ReadStepNdJson {
                         ddl_schema,
                         date_format,
                         encoding,
@@ -615,9 +615,9 @@ const CUSTOM_TYPES: [(&str, &str); 11] = [
                 pub schema: Option<Arc<odf::schema::DataSchema>>,
             }
 
-            impl From<odf::metadata::ReadStepParquet> for ReadStepParquet {
-                fn from(v: odf::metadata::ReadStepParquet) -> Self {
-                    let odf::metadata::ReadStepParquet { ddl_schema, schema } = v;
+            impl From<odf::meta::ReadStepParquet> for ReadStepParquet {
+                fn from(v: odf::meta::ReadStepParquet) -> Self {
+                    let odf::meta::ReadStepParquet { ddl_schema, schema } = v;
                     Self {
                         ddl_schema,
                         schema: schema.map(Arc::new),
@@ -829,11 +829,11 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     writeln!(w)?;
     writeln!(
         w,
-        "impl From<odf::metadata::{context}::{name}{generics}> for {name} {{"
+        "impl From<odf::meta::{context}::{name}{generics}> for {name} {{"
     )?;
     writeln!(
         w,
-        "fn from(v: odf::metadata::{context}::{name}{generics}) -> Self {{"
+        "fn from(v: odf::meta::{context}::{name}{generics}) -> Self {{"
     )?;
     writeln!(w, "Self {{")?;
 
@@ -894,15 +894,15 @@ fn render_union(typ: &model::Union, w: &mut dyn std::io::Write) -> Result<(), st
     writeln!(w)?;
     writeln!(
         w,
-        "impl From<odf::metadata::{context}::{name}> for {name} {{"
+        "impl From<odf::meta::{context}::{name}> for {name} {{"
     )?;
-    writeln!(w, "fn from(v: odf::metadata::{context}::{name}) -> Self {{")?;
+    writeln!(w, "fn from(v: odf::meta::{context}::{name}) -> Self {{")?;
     writeln!(w, "match v {{")?;
     for variant in &typ.variants {
         let varname = &variant.name();
         writeln!(
             w,
-            "odf::metadata::{context}::{name}::{varname}(v) => Self::{varname}(v.into()),"
+            "odf::meta::{context}::{name}::{varname}(v) => Self::{varname}(v.into()),"
         )?;
     }
     writeln!(w, "}}")?;
@@ -921,7 +921,7 @@ fn render_enum(typ: &model::Enum, w: &mut dyn std::io::Write) -> Result<(), std:
     writeln!(w, "#[derive(Enum, Debug, Clone, Copy, PartialEq, Eq)]")?;
     writeln!(
         w,
-        "#[graphql(remote = \"odf::metadata::{context}::{name}\")]"
+        "#[graphql(remote = \"odf::meta::{context}::{name}\")]"
     )?;
 
     writeln!(w, "pub enum {} {{", typ.id.join(""))?;
@@ -944,18 +944,18 @@ fn render_map(typ: &model::Map, w: &mut dyn std::io::Write) -> Result<(), std::i
         w,
         r#"
         #[nutype::nutype(derive(AsRef, Clone, Debug, From, Into))]
-        pub struct {name}(odf::metadata::{context}::{name});
+        pub struct {name}(odf::meta::{context}::{name});
         
         #[async_graphql::Scalar]
         impl async_graphql::ScalarType for {name} {{
             fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {{
-                let proxy: odf::metadata::serde::yaml::{context}::{name} = async_graphql::from_value(value)?;
-                let dto = proxy.try_into().map_err(|e: odf::metadata::errors::ValidationError| async_graphql::InputValueError::custom(e.to_string()))?;
+                let proxy: odf::meta::serde::yaml::{context}::{name} = async_graphql::from_value(value)?;
+                let dto = proxy.try_into().map_err(|e: odf::meta::errors::ValidationError| async_graphql::InputValueError::custom(e.to_string()))?;
                 Ok(Self::new(dto))
             }}
 
             fn to_value(&self) -> async_graphql::Value {{
-                let value: odf::metadata::serde::yaml::{context}::{name} = self.as_ref().clone().into();
+                let value: odf::meta::serde::yaml::{context}::{name} = self.as_ref().clone().into();
                 async_graphql::to_value(&value).unwrap()
             }}
         }}

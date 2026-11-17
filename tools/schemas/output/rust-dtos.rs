@@ -47,19 +47,10 @@ pub mod auth {
         pub spec: auth::GroupSpecInput,
     }
 
-    impl Group {
-        pub fn schema() -> &'static TypeUri {
-            &GROUP_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            GROUP_SCHEMA_STR
-        }
-    }
-
-    static GROUP_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Group";
-
-    static GROUP_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(GROUP_SCHEMA_STR));
+    impl_resource_type!(
+        Group,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/Group"
+    );
 
     /// Group specification.
     ///
@@ -90,19 +81,10 @@ pub mod auth {
         pub spec: auth::NodeSpecInput,
     }
 
-    impl Node {
-        pub fn schema() -> &'static TypeUri {
-            &NODE_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            NODE_SCHEMA_STR
-        }
-    }
-
-    static NODE_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Node";
-
-    static NODE_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(NODE_SCHEMA_STR));
+    impl_resource_type!(
+        Node,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/Node"
+    );
 
     /// Node account specification.
     ///
@@ -137,20 +119,10 @@ pub mod auth {
         pub spec: auth::OrganizationSpecInput,
     }
 
-    impl Organization {
-        pub fn schema() -> &'static TypeUri {
-            &ORGANIZATION_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            ORGANIZATION_SCHEMA_STR
-        }
-    }
-
-    static ORGANIZATION_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/auth/v1alpha1/Organization";
-
-    static ORGANIZATION_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(ORGANIZATION_SCHEMA_STR));
+    impl_resource_type!(
+        Organization,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/Organization"
+    );
 
     /// Organization account specification.
     ///
@@ -229,19 +201,10 @@ pub mod auth {
         pub spec: auth::PolicySpecInput,
     }
 
-    impl Policy {
-        pub fn schema() -> &'static TypeUri {
-            &POLICY_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            POLICY_SCHEMA_STR
-        }
-    }
-
-    static POLICY_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/Policy";
-
-    static POLICY_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(POLICY_SCHEMA_STR));
+    impl_resource_type!(
+        Policy,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/Policy"
+    );
 
     /// Instantiates a `Policy` template for a concrete subject and object.
     ///
@@ -254,20 +217,10 @@ pub mod auth {
         pub spec: auth::PolicyBindingSpecInput,
     }
 
-    impl PolicyBinding {
-        pub fn schema() -> &'static TypeUri {
-            &POLICY_BINDING_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            POLICY_BINDING_SCHEMA_STR
-        }
-    }
-
-    static POLICY_BINDING_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding";
-
-    static POLICY_BINDING_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(POLICY_BINDING_SCHEMA_STR));
+    impl_resource_type!(
+        PolicyBinding,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/PolicyBinding"
+    );
 
     /// Policy binding specification.
     ///
@@ -307,6 +260,7 @@ pub mod auth {
         /// Name of the resource.
         pub name: Option<ResourceName>,
     }
+
     impl IntoResourceRef for PolicyRef {}
 
     /// Policy specification. The `kind` selects the policy language.
@@ -387,6 +341,7 @@ pub mod auth {
         /// Name of the principal account.
         pub name: ResourceName,
     }
+
     impl IntoResourceRef for PrincipalHandle {}
 
     /// Reference to an identity that can act as a principal: `User`, `ServiceAccount`, or `Node`. Short form requires a type prefix, e.g. `ServiceAccount:acme/ingest-prod`.
@@ -405,6 +360,7 @@ pub mod auth {
         /// Name of the principal resource.
         pub name: Option<ResourceName>,
     }
+
     impl IntoResourceRef for PrincipalRef {}
 
     /// Link to a resolved account that can own resources: `User`, `Organization`, or `Node`.
@@ -421,6 +377,7 @@ pub mod auth {
         /// Name of the account.
         pub name: AccountName,
     }
+
     impl IntoResourceRef for ResourceOwnerHandle {}
 
     /// Reference to an account that can own resources: `User`, `Organization`, or `Node`. Short form is the account name, as names of these accounts are unique within a node.
@@ -437,6 +394,7 @@ pub mod auth {
         /// Name of the account.
         pub name: Option<AccountName>,
     }
+
     impl IntoResourceRef for ResourceOwnerRef {}
 
     /// A non-human identity used by automation (scheduled flows, CI, installed applications). Service accounts are scoped under an owning account and can act as principals, but cannot own resources.
@@ -450,20 +408,10 @@ pub mod auth {
         pub spec: auth::ServiceAccountSpecInput,
     }
 
-    impl ServiceAccount {
-        pub fn schema() -> &'static TypeUri {
-            &SERVICE_ACCOUNT_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            SERVICE_ACCOUNT_SCHEMA_STR
-        }
-    }
-
-    static SERVICE_ACCOUNT_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccount";
-
-    static SERVICE_ACCOUNT_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(SERVICE_ACCOUNT_SCHEMA_STR));
+    impl_resource_type!(
+        ServiceAccount,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/ServiceAccount"
+    );
 
     /// Service account specification.
     ///
@@ -636,19 +584,10 @@ pub mod auth {
         pub spec: auth::UserSpecInput,
     }
 
-    impl User {
-        pub fn schema() -> &'static TypeUri {
-            &USER_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            USER_SCHEMA_STR
-        }
-    }
-
-    static USER_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/auth/v1alpha1/User";
-
-    static USER_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(USER_SCHEMA_STR));
+    impl_resource_type!(
+        User,
+        "https://opendatafabric.org/schemas/auth/v1alpha1/User"
+    );
 
     /// User account specification.
     ///
@@ -770,20 +709,10 @@ pub mod config {
         pub spec: config::SecretSetSpecInput,
     }
 
-    impl SecretSet {
-        pub fn schema() -> &'static TypeUri {
-            &SECRET_SET_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            SECRET_SET_SCHEMA_STR
-        }
-    }
-
-    static SECRET_SET_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet";
-
-    static SECRET_SET_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(SECRET_SET_SCHEMA_STR));
+    impl_resource_type!(
+        SecretSet,
+        "https://opendatafabric.org/schemas/config/v1alpha1/SecretSet"
+    );
 
     /// Defines a set of secrets stored and managed by the ODF node and accessible via embedded sercets provider.
     ///
@@ -831,6 +760,7 @@ pub mod config {
         /// - "postgres.schemaName"
         pub path: Option<String>,
     }
+
     impl IntoResourceRef for ValueHandle {}
 
     /// Reference to a value within a `VariableSet` or a `SecretSet`.
@@ -858,6 +788,7 @@ pub mod config {
         /// - "postgres.schemaName"
         pub path: Option<String>,
     }
+
     impl IntoResourceRef for ValueRef {}
 
     /// Container for key-value variables. Every key must be a string. Values shoud reference fields in `SecretSet`s and `VariableSet`s.
@@ -888,20 +819,10 @@ pub mod config {
         pub spec: config::VariableSetSpecInput,
     }
 
-    impl VariableSet {
-        pub fn schema() -> &'static TypeUri {
-            &VARIABLE_SET_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            VARIABLE_SET_SCHEMA_STR
-        }
-    }
-
-    static VARIABLE_SET_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet";
-
-    static VARIABLE_SET_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(VARIABLE_SET_SCHEMA_STR));
+    impl_resource_type!(
+        VariableSet,
+        "https://opendatafabric.org/schemas/config/v1alpha1/VariableSet"
+    );
 
     /// Defines a set of variables stored and managed by the ODF node and accessible via embedded variables provider.
     ///
@@ -1401,20 +1322,10 @@ pub mod datasets {
         pub spec: datasets::DatasetSpecInput,
     }
 
-    impl Dataset {
-        pub fn schema() -> &'static TypeUri {
-            &DATASET_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            DATASET_SCHEMA_STR
-        }
-    }
-
-    static DATASET_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset";
-
-    static DATASET_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(DATASET_SCHEMA_STR));
+    impl_resource_type!(
+        Dataset,
+        "https://opendatafabric.org/schemas/datasets/v1alpha1/Dataset"
+    );
 
     /// Link to a dataset.
     ///
@@ -1430,6 +1341,7 @@ pub mod datasets {
         /// Name of the dataset.
         pub name: ResourceName,
     }
+
     impl IntoResourceRef for DatasetHandle {}
 
     /// Represents type of the dataset.
@@ -1455,6 +1367,7 @@ pub mod datasets {
         /// Name of the dataset.
         pub name: Option<ResourceName>,
     }
+
     impl IntoResourceRef for DatasetRef {}
 
     pub use crate::datasets::DatasetSelector;
@@ -1732,20 +1645,10 @@ pub mod datasets {
         pub spec: datasets::ProjectionSpecInput,
     }
 
-    impl Projection {
-        pub fn schema() -> &'static TypeUri {
-            &PROJECTION_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            PROJECTION_SCHEMA_STR
-        }
-    }
-
-    static PROJECTION_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/datasets/v1alpha1/Projection";
-
-    static PROJECTION_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(PROJECTION_SCHEMA_STR));
+    impl_resource_type!(
+        Projection,
+        "https://opendatafabric.org/schemas/datasets/v1alpha1/Projection"
+    );
 
     /// Represents a projection of a dataaset history into a state for fast lookups.
     ///
@@ -2190,19 +2093,10 @@ pub mod flows {
         pub spec: flows::FlowSpecInput,
     }
 
-    impl Flow {
-        pub fn schema() -> &'static TypeUri {
-            &FLOW_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            FLOW_SCHEMA_STR
-        }
-    }
-
-    static FLOW_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/flows/v1alpha1/Flow";
-
-    static FLOW_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(FLOW_SCHEMA_STR));
+    impl_resource_type!(
+        Flow,
+        "https://opendatafabric.org/schemas/flows/v1alpha1/Flow"
+    );
 
     /// Defines a set of tasks to be executed in a sequence.
     ///
@@ -2215,19 +2109,10 @@ pub mod flows {
         pub spec: flows::FlowRunSpecInput,
     }
 
-    impl FlowRun {
-        pub fn schema() -> &'static TypeUri {
-            &FLOW_RUN_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            FLOW_RUN_SCHEMA_STR
-        }
-    }
-
-    static FLOW_RUN_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/flows/v1alpha1/FlowRun";
-
-    static FLOW_RUN_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(FLOW_RUN_SCHEMA_STR));
+    impl_resource_type!(
+        FlowRun,
+        "https://opendatafabric.org/schemas/flows/v1alpha1/FlowRun"
+    );
 
     /// Cause of the flow run activation
     ///
@@ -3272,6 +3157,7 @@ pub mod resources {
         /// Name of a resource.
         pub name: ResourceName,
     }
+
     impl IntoResourceRef for ResourceHandle {}
 
     /// Container for identity and ownership information of a resource.
@@ -3379,6 +3265,7 @@ pub mod resources {
         /// Name of a resource.
         pub name: Option<ResourceName>,
     }
+
     impl IntoResourceRef for ResourceRef {}
 
     pub use crate::resources::ResourceSelector;
@@ -3427,20 +3314,10 @@ pub mod sinks {
         pub spec: sinks::WebhookEndpointSpecInput,
     }
 
-    impl WebhookEndpoint {
-        pub fn schema() -> &'static TypeUri {
-            &WEBHOOK_ENDPOINT_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            WEBHOOK_ENDPOINT_SCHEMA_STR
-        }
-    }
-
-    static WEBHOOK_ENDPOINT_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/sinks/v1alpha1/WebhookEndpoint";
-
-    static WEBHOOK_ENDPOINT_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(WEBHOOK_ENDPOINT_SCHEMA_STR));
+    impl_resource_type!(
+        WebhookEndpoint,
+        "https://opendatafabric.org/schemas/sinks/v1alpha1/WebhookEndpoint"
+    );
 
     /// Defines a webhook endpoint that can receive event notifications and data.
     ///
@@ -4265,19 +4142,10 @@ pub mod sources {
         pub spec: sources::SourceSpecInput,
     }
 
-    impl Source {
-        pub fn schema() -> &'static TypeUri {
-            &SOURCE_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            SOURCE_SCHEMA_STR
-        }
-    }
-
-    static SOURCE_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/sources/v1alpha1/Source";
-
-    static SOURCE_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(SOURCE_SCHEMA_STR));
+    impl_resource_type!(
+        Source,
+        "https://opendatafabric.org/schemas/sources/v1alpha1/Source"
+    );
 
     /// Defines how external data should be cached.
     ///
@@ -4401,20 +4269,10 @@ pub mod storage {
         pub spec: storage::PersistentVolumeSpecInput,
     }
 
-    impl PersistentVolume {
-        pub fn schema() -> &'static TypeUri {
-            &PERSISTENT_VOLUME_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            PERSISTENT_VOLUME_SCHEMA_STR
-        }
-    }
-
-    static PERSISTENT_VOLUME_SCHEMA_STR: &str =
-        "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume";
-
-    static PERSISTENT_VOLUME_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(PERSISTENT_VOLUME_SCHEMA_STR));
+    impl_resource_type!(
+        PersistentVolume,
+        "https://opendatafabric.org/schemas/storage/v1alpha1/PersistentVolume"
+    );
 
     /// Reference to a `PersistentVolume`.
     ///
@@ -4428,6 +4286,7 @@ pub mod storage {
         /// Name of the resource.
         pub name: Option<ResourceName>,
     }
+
     impl IntoResourceRef for PersistentVolumeRef {}
 
     /// Defines a storage volume where data can be stored and its access credentials.
@@ -4678,19 +4537,10 @@ pub mod tasks {
         pub spec: Option<tasks::TaskSpecInput>,
     }
 
-    impl Task {
-        pub fn schema() -> &'static TypeUri {
-            &TASK_SCHEMA
-        }
-        pub const fn schema_str() -> &'static str {
-            TASK_SCHEMA_STR
-        }
-    }
-
-    static TASK_SCHEMA_STR: &str = "https://opendatafabric.org/schemas/tasks/v1alpha1/Task";
-
-    static TASK_SCHEMA: std::sync::LazyLock<TypeUri> =
-        std::sync::LazyLock::new(|| TypeUri::new_unchecked(TASK_SCHEMA_STR));
+    impl_resource_type!(
+        Task,
+        "https://opendatafabric.org/schemas/tasks/v1alpha1/Task"
+    );
 
     /// Type-specific details of a task failure. The `kind` property identifies the error, e.g. `InputDatasetCompacted`, and the remaining properties depend on it.
     ///

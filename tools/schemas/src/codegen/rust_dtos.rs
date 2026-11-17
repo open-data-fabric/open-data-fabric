@@ -116,21 +116,23 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
     let mut derives = vec!["Clone", "Debug", "Eq"];
 
-    if !typ.fields.values().any(|f| f.default.is_some()) {
+    let flields_no_const: Vec<&model::Field> = typ
+        .fields
+        .values()
+        .filter(|f| f.constant.is_none())
+        .collect();
+
+    if !flields_no_const.iter().any(|f| f.default.is_some()) {
         derives.push("PartialEq");
     }
-    if typ.fields.values().all(|f| f.optional) {
+    if flields_no_const.iter().all(|f| f.optional) {
         derives.push("Default");
     }
 
     writeln!(w, "#[derive({})]", derives.join(", "))?;
     writeln!(w, "pub struct {name}{generics} {{")?;
 
-    for field in typ.fields.values() {
-        if field.constant.is_some() {
-            continue;
-        }
-
+    for field in &flields_no_const {
         render_description(
             &field.description,
             field.default.as_ref(),
@@ -154,16 +156,20 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
 
     let mut statics = Vec::new();
 
-    if typ
+    let fields_defaults_and_consts: Vec<&model::Field> = typ
         .fields
         .values()
-        .any(|f| f.constant.is_some() || f.default.is_some())
-    {
+        .filter(|f| f.constant.is_some() || f.default.is_some())
+        // Resource schema is handled more compactly by the macro
+        .filter(|f| !(matches!(typ.metatype, model::MetaType::Resource) && f.name == "$schema"))
+        .collect();
+
+    if !fields_defaults_and_consts.is_empty() {
         writeln!(w)?;
         writeln!(w, "impl {name} {{")?;
 
         // Constants: free static field + accessor method
-        for field in typ.fields.values() {
+        for field in &fields_defaults_and_consts {
             let Some(constant) = &field.constant else {
                 continue;
             };
@@ -208,7 +214,7 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
         }
 
         // Defaults
-        for field in typ.fields.values() {
+        for field in &fields_defaults_and_consts {
             let Some(default) = &field.default else {
                 continue;
             };
@@ -263,12 +269,12 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     }
 
     // Impl PartialEq that treats missing default properties equal to default values
-    if typ.fields.values().any(|f| f.default.is_some()) {
+    if flields_no_const.iter().any(|f| f.default.is_some()) {
         writeln!(w)?;
         writeln!(w, "impl PartialEq for {} {{", typ.id.join(""))?;
         writeln!(w, "fn eq(&self, other: &Self) -> bool {{")?;
 
-        for (i, field) in typ.fields.values().enumerate() {
+        for (i, field) in flields_no_const.iter().enumerate() {
             let fname = format_ident(&field.name);
             let bare = fname.trim_start_matches("r#");
             if i != 0 {
@@ -294,7 +300,13 @@ fn render_struct(typ: &model::Struct, w: &mut dyn std::io::Write) -> Result<(), 
     }
 
     match typ.metatype {
+        model::MetaType::Resource => {
+            let type_uri = typ.fields["$schema"].constant.as_ref().unwrap();
+            writeln!(w)?;
+            writeln!(w, "impl_resource_type!({name}, {type_uri});")?;
+        }
         model::MetaType::ResourceRef | model::MetaType::ResourceHandle => {
+            writeln!(w)?;
             writeln!(w, "impl IntoResourceRef for {name} {{}}\n")?
         }
         _ => (),
